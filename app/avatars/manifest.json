@@ -1,0 +1,4 @@
+{
+  "_help": "Optional: your own portrait images per level. Put image files in this folder and map the level they start at to the file name, e.g. {\"1\": \"lv01.jpg\", \"5\": \"lv05.jpg\", \"10\": \"lv10.png\"}. Leave empty to use the built-in hooded hunter.",
+  "levels": {}
+}

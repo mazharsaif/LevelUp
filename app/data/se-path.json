@@ -1,0 +1,527 @@
+{
+  "version": 1,
+  "kind": "tree",
+  "title": "Software Engineering",
+  "xpPerSkill": 15,
+  "branches": [
+    {
+      "id": "web",
+      "title": "Web Fundamentals",
+      "icon": "🌐",
+      "color": "#4FB3FF",
+      "status": "soon",
+      "order": 1,
+      "planned": [
+        "HTTP requests & responses",
+        "REST & JSON APIs",
+        "Browsers, origins & CORS",
+        "Caching & CDNs"
+      ]
+    },
+    {
+      "id": "backend",
+      "title": "Backend with FastAPI",
+      "icon": "⚙️",
+      "color": "#57E3A0",
+      "status": "soon",
+      "order": 2,
+      "planned": [
+        "Routing & validation",
+        "Dependency injection",
+        "Background tasks",
+        "Async & concurrency"
+      ]
+    },
+    {
+      "id": "db",
+      "title": "Databases",
+      "icon": "🗄️",
+      "color": "#FFCC4D",
+      "status": "soon",
+      "order": 3,
+      "planned": [
+        "SQL basics",
+        "Data modelling",
+        "Indexes & query plans",
+        "Transactions",
+        "Migrations"
+      ]
+    },
+    {
+      "id": "auth",
+      "title": "Authentication & Security",
+      "icon": "🔐",
+      "color": "#B48CFF",
+      "status": "open",
+      "order": 4,
+      "reading": "data/se/auth/",
+      "intro": 0
+    },
+    {
+      "id": "frontend",
+      "title": "Frontend & PWAs",
+      "icon": "📱",
+      "color": "#FF9F43",
+      "status": "soon",
+      "order": 6,
+      "planned": [
+        "The DOM & events",
+        "State & rendering",
+        "Service workers & offline",
+        "Accessibility"
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing & Quality",
+      "icon": "🧪",
+      "color": "#5ED3C7",
+      "status": "soon",
+      "order": 7,
+      "planned": [
+        "Unit tests",
+        "Integration tests",
+        "Browser tests",
+        "Code review"
+      ]
+    },
+    {
+      "id": "devops",
+      "title": "DevOps & Hosting",
+      "icon": "🚀",
+      "color": "#FF7A90",
+      "status": "soon",
+      "order": 8,
+      "planned": [
+        "Git workflows",
+        "CI pipelines",
+        "Deploying & HTTPS",
+        "Monitoring & logs"
+      ]
+    },
+    {
+      "id": "design",
+      "title": "System Design",
+      "icon": "🏗️",
+      "color": "#9BA8FF",
+      "status": "soon",
+      "order": 9,
+      "planned": [
+        "Scaling reads & writes",
+        "Caching strategies",
+        "Queues & events",
+        "Design reviews"
+      ]
+    },
+    {
+      "id": "net",
+      "title": "Networking & HTTPS",
+      "icon": "🔏",
+      "color": "#6FD0FF",
+      "status": "soon",
+      "order": 5,
+      "planned": [
+        "How HTTPS and certificates work",
+        "Certificate authorities, Let's Encrypt & mkcert",
+        "DNS, domains & local names (.home.arpa)",
+        "VPNs, WireGuard & Tailscale",
+        "Local network vs public hosting"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "auth.model",
+      "branch": "auth",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🧭",
+      "req": [],
+      "mins": 10,
+      "chapter": 1,
+      "title": "The mental model",
+      "short": "Identity, authn, authz",
+      "learn": [
+        "Tell identity, authentication, sessions, authorisation and recovery apart",
+        "Online vs offline attacks",
+        "Never trust the client",
+        "Defence in depth, least privilege, fail closed"
+      ],
+      "concepts": [
+        "Identity vs identifier",
+        "MFA",
+        "Trust boundary",
+        "Threat model",
+        "Fail closed"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Myth or fact",
+        "Threat-model it"
+      ]
+    },
+    {
+      "id": "auth.passwords",
+      "branch": "auth",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "🧂",
+      "req": [
+        "auth.model"
+      ],
+      "mins": 15,
+      "chapter": 2,
+      "title": "Storing passwords",
+      "short": "Argon2id, salts, peppers",
+      "learn": [
+        "Why plaintext, encryption and SHA-256 are wrong",
+        "Salts, peppers and memory-hard hashing",
+        "Choosing Argon2id parameters and rehashing on login",
+        "Modern NIST password policy and breach checks"
+      ],
+      "concepts": [
+        "Argon2id",
+        "Salt",
+        "Pepper",
+        "PHC string",
+        "k-anonymity"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code",
+        "Myth or fact"
+      ]
+    },
+    {
+      "id": "auth.login",
+      "branch": "auth",
+      "n": 3,
+      "level": 2,
+      "col": 1,
+      "icon": "🚪",
+      "req": [
+        "auth.passwords"
+      ],
+      "mins": 18,
+      "chapter": 3,
+      "title": "The login flow",
+      "short": "Sign-up, login, rate limits",
+      "learn": [
+        "Users table and identifier normalisation",
+        "User enumeration and the dummy hash",
+        "Layered rate limiting without lockout DoS",
+        "What to log and never log"
+      ],
+      "concepts": [
+        "Enumeration",
+        "Dummy hash",
+        "Sliding window",
+        "Credential stuffing",
+        "Audit log"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario judgement",
+        "Fix the code"
+      ]
+    },
+    {
+      "id": "auth.sessions",
+      "branch": "auth",
+      "n": 4,
+      "level": 3,
+      "col": 1,
+      "icon": "🍪",
+      "req": [
+        "auth.login"
+      ],
+      "mins": 20,
+      "chapter": 4,
+      "title": "Sessions & tokens",
+      "short": "Cookies, CSRF, JWT",
+      "learn": [
+        "Server-side sessions, timeouts and rotation",
+        "Cookie flags: HttpOnly, Secure, SameSite, __Host-",
+        "CSRF and XSS, and where tokens should live",
+        "JWT, refresh rotation and reuse detection"
+      ],
+      "concepts": [
+        "Session fixation",
+        "SameSite",
+        "CSRF",
+        "JWT",
+        "Refresh rotation"
+      ],
+      "exercises": [
+        "Concept check",
+        "Attack ↔ defence",
+        "Spot the bug",
+        "Design decision"
+      ]
+    },
+    {
+      "id": "auth.recovery",
+      "branch": "auth",
+      "n": 5,
+      "level": 4,
+      "col": 0,
+      "icon": "🔑",
+      "req": [
+        "auth.sessions"
+      ],
+      "mins": 13,
+      "chapter": 5,
+      "title": "Account recovery",
+      "short": "Reset tokens, codes",
+      "learn": [
+        "The reset-token flow done right",
+        "Email verification and magic links",
+        "Recovery codes and admin resets",
+        "Email as the master key, social engineering"
+      ],
+      "concepts": [
+        "Reset token",
+        "Host header injection",
+        "Recovery codes",
+        "SPF/DKIM/DMARC"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario judgement",
+        "Spot the bug",
+        "Myth or fact"
+      ]
+    },
+    {
+      "id": "auth.methods",
+      "branch": "auth",
+      "n": 6,
+      "level": 4,
+      "col": 1,
+      "icon": "🪪",
+      "req": [
+        "auth.sessions"
+      ],
+      "mins": 17,
+      "chapter": 6,
+      "title": "Other ways to log in",
+      "short": "OAuth, passkeys, TOTP",
+      "learn": [
+        "OAuth 2.0 vs OpenID Connect",
+        "Authorization code flow with PKCE, state and nonce",
+        "Passkeys and WebAuthn",
+        "TOTP, SMS and family PINs"
+      ],
+      "concepts": [
+        "OIDC",
+        "PKCE",
+        "Passkey",
+        "TOTP",
+        "Account linking"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Match the terms",
+        "Scenario judgement",
+        "Design decision"
+      ]
+    },
+    {
+      "id": "auth.authz",
+      "branch": "auth",
+      "n": 7,
+      "level": 4,
+      "col": 2,
+      "icon": "🛡️",
+      "req": [
+        "auth.sessions"
+      ],
+      "mins": 12,
+      "chapter": 7,
+      "title": "Authorisation",
+      "short": "IDOR, roles, RLS",
+      "learn": [
+        "Ownership checks and IDOR",
+        "RBAC vs ABAC vs ReBAC",
+        "Central policy functions and FastAPI dependencies",
+        "Row-level security"
+      ],
+      "concepts": [
+        "IDOR",
+        "Mass assignment",
+        "RBAC",
+        "Policy function",
+        "RLS"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fix the code",
+        "Concept check",
+        "Capstone review"
+      ]
+    },
+    {
+      "id": "auth.buy",
+      "branch": "auth",
+      "n": 8,
+      "level": 5,
+      "col": 1,
+      "icon": "⚖️",
+      "req": [
+        "auth.recovery",
+        "auth.methods",
+        "auth.authz"
+      ],
+      "mins": 13,
+      "chapter": 8,
+      "title": "Build vs buy",
+      "short": "DIY vs providers",
+      "learn": [
+        "What 'auth' really includes",
+        "Supabase, Firebase, Auth0, Clerk, Cognito, Keycloak",
+        "Lock-in and hash export",
+        "A decision framework by conditions"
+      ],
+      "concepts": [
+        "MAU pricing",
+        "Hash export",
+        "Lazy migration",
+        "SSO"
+      ],
+      "exercises": [
+        "Design decision",
+        "Concept check",
+        "Scenario judgement"
+      ]
+    },
+    {
+      "id": "auth.wrong",
+      "branch": "auth",
+      "n": 9,
+      "level": 6,
+      "col": 0,
+      "icon": "🔥",
+      "req": [
+        "auth.buy"
+      ],
+      "mins": 15,
+      "chapter": 9,
+      "title": "What can go wrong",
+      "short": "24 failure scenarios",
+      "learn": [
+        "Leaks, stolen sessions, weak recovery",
+        "How you'd notice each failure",
+        "Prevention and response",
+        "Incident response checklist"
+      ],
+      "concepts": [
+        "Detection",
+        "Rotation",
+        "Revocation",
+        "Incident response"
+      ],
+      "exercises": [
+        "Scenario judgement",
+        "Order the flow",
+        "Attack ↔ defence"
+      ]
+    },
+    {
+      "id": "auth.ops",
+      "branch": "auth",
+      "n": 10,
+      "level": 6,
+      "col": 2,
+      "icon": "📊",
+      "req": [
+        "auth.buy"
+      ],
+      "mins": 12,
+      "chapter": 10,
+      "title": "Scaling & operations",
+      "short": "Capacity, keys, GDPR",
+      "learn": [
+        "The cost model of auth",
+        "Hashing concurrency limits",
+        "Key rotation with kid and JWKS",
+        "Monitoring, privacy law and testing"
+      ],
+      "concepts": [
+        "Semaphore",
+        "JWKS",
+        "72-hour notice",
+        "OWASP ASVS"
+      ],
+      "exercises": [
+        "Concept check",
+        "Design decision",
+        "Myth or fact"
+      ]
+    },
+    {
+      "id": "auth.capstone",
+      "branch": "auth",
+      "n": 11,
+      "level": 7,
+      "col": 1,
+      "icon": "🏛️",
+      "req": [
+        "auth.wrong",
+        "auth.ops"
+      ],
+      "mins": 12,
+      "chapter": 11,
+      "title": "Capstone: Rankwise auth",
+      "short": "Design the real thing",
+      "learn": [
+        "Threat-model a real app",
+        "Phase 1 design for the home network",
+        "Migrating existing users",
+        "Phase 2 options for public hosting"
+      ],
+      "concepts": [
+        "mkcert",
+        "Policy dependency",
+        "Migration plan",
+        "Minimal endpoints"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Threat-model it",
+        "Design decision"
+      ]
+    },
+    {
+      "id": "auth.boss",
+      "branch": "auth",
+      "n": 12,
+      "level": 8,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "auth.capstone"
+      ],
+      "mins": 10,
+      "chapter": 12,
+      "boss": true,
+      "title": "Boss: Security review",
+      "short": "Mixed final challenge",
+      "learn": [
+        "All 43 self-check questions",
+        "Mixed exercises from every node",
+        "Timed, no hints"
+      ],
+      "concepts": [
+        "Everything"
+      ],
+      "exercises": [
+        "Mixed review (all types)"
+      ]
+    }
+  ]
+}

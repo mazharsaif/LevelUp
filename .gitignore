@@ -1,0 +1,15 @@
+# Python environments (regenerated: `uv sync` in server_fastapi; tools/.venv for audio)
+server_fastapi/.venv/
+tools/.venv/
+**/__pycache__/
+*.pyc
+
+# Learner progress, daily backups and bug reports (private user data; the server recreates users.json)
+progress/
+
+# Generated pronunciation audio (~48 MB, regenerate with tools/fetch_audio.py)
+app/audio/
+
+# macOS / editor cruft
+.DS_Store
+*.swp

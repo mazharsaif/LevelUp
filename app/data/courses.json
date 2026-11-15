@@ -1,0 +1,12 @@
+{
+  "_help": "Each course: id, title, subject group, flag/emoji, colour, status (ready | soon), and for ready courses the content file. Add a course by adding an entry plus its content.",
+  "courses": [
+    { "id": "de-a1", "title": "German A1", "subtitle": "Goethe A1 · 821 words · 20 grammar chapters", "group": "Languages", "icon": "🇩🇪", "color": "#4FB3FF", "status": "ready", "type": "language", "content": "data/content.json" },
+    { "id": "es-a1", "title": "Spanish A1", "subtitle": "Coming Soon", "group": "Languages", "icon": "🇪🇸", "color": "#FF9F43", "status": "soon" },
+    { "id": "fr-a1", "title": "French A1", "subtitle": "Coming Soon", "group": "Languages", "icon": "🇫🇷", "color": "#5AA9FF", "status": "soon" },
+    { "id": "se-path", "title": "Software Engineering", "subtitle": "Skill tree · Authentication branch open", "group": "Tech & Science", "icon": "🛠️", "color": "#9B8CFF", "status": "ready", "type": "tree", "content": "data/se-path.json" },
+    { "id": "ds-basics", "title": "Data Science", "subtitle": "Coming Soon", "group": "Tech & Science", "icon": "📊", "color": "#57E3A0", "status": "soon" },
+    { "id": "py-basics", "title": "Python", "subtitle": "Coming Soon", "group": "Tech & Science", "icon": "🐍", "color": "#FFCC4D", "status": "soon" },
+    { "id": "math-core", "title": "Mathematics", "subtitle": "Coming Soon", "group": "Tech & Science", "icon": "➗", "color": "#B48CFF", "status": "soon" }
+  ]
+}

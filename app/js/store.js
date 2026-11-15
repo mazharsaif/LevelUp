@@ -1,0 +1,532 @@
+// State per user (saved on the Mac via server.py, cached in the browser), spaced repetition, A1 progress / pace maths.
+export const C = { content: null, course: null, word: {}, item: {}, grammar: {}, phrases: {} };
+
+// ---------- courses (German A1 now; more languages / subjects later) ----------
+export let COURSES = [];
+export const DEFAULT_COURSE = "de-a1";
+export let COURSE = DEFAULT_COURSE;
+export async function loadCourses() {
+  try { COURSES = (await (await fetch("data/courses.json", { cache: "no-store" })).json()).courses; }
+  catch { COURSES = [{ id: DEFAULT_COURSE, title: "German A1", icon: "🇩🇪", status: "ready", content: "data/content.json" }]; }
+  return COURSES;
+}
+export const courseInfo = id => COURSES.find(c => c.id === id) || COURSES[0];
+const cq = () => (COURSE === DEFAULT_COURSE ? "" : `?c=${encodeURIComponent(COURSE)}`);
+
+export async function loadContent(courseId = COURSE) {
+  const info = courseInfo(courseId);
+  if (C.content && C.course && C.course.id === info.id) return C.content;
+  const r = await fetch(info.content || "data/content.json");
+  const c = await r.json();
+  C.content = c; C.course = info; COURSE = info.id;
+  C.word = {}; C.item = {}; C.grammar = {}; C.phrases = {};
+  _w = null; _plan = null; _planKey = "";
+  (c.words || []).forEach(w => (C.word[w.id] = w));
+  numberTopics(c.path || []);
+  (c.path || []).forEach(p => (C.item[p.id] = p));
+  (c.grammar || []).forEach(g => (C.grammar[g.id] = g));
+  (c.phrases || []).forEach(p => (C.phrases[p.id] = p));
+  return c;
+}
+
+// "A: Zahlen" over 4 lessons → "A: Zahlen I", "A: Zahlen II" … (only for topics that span several lessons)
+const ROMAN = n => [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]].reduce((a, [v, r]) => { while (n >= v) { a += r; n -= v; } return a; }, "");
+function numberTopics(path) {
+  const vocab = path.filter(i => i.kind === "vocab");
+  const total = {}, seen = {};
+  vocab.forEach(i => i.title.split(" · ").forEach(t => (total[t] = (total[t] || 0) + 1)));
+  vocab.forEach(i => {
+    i.title = i.title.split(" · ").map(t => total[t] > 1 ? `${t} ${ROMAN((seen[t] = (seen[t] || 0) + 1))}` : t).join(" · ");
+  });
+}
+
+// ---------- dates (local, YYYY-MM-DD) ----------
+export const iso = d => {
+  const z = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+};
+export const today = () => iso(new Date());
+export const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+export const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
+export const daysBetween = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
+export const fmtDate = (s, opts = { day: "numeric", month: "short" }) => parse(s).toLocaleDateString("en-GB", opts);
+
+// ---------- local cache helpers ----------
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } },
+  del(k) { try { localStorage.removeItem(k); } catch { /* storage blocked */ } },
+};
+const cacheKey = u => COURSE === DEFAULT_COURSE ? `a1.state.${u}` : `a1.state.${u}@${COURSE}`;
+export const lastCourse = u => ls.get(`a1.course.${u}`);
+export function setCourse(id) { COURSE = id; if (USER) ls.set(`a1.course.${USER}`, id); }
+const LEGACY = "a1.state.v1";
+
+// ---------- users ----------
+export let USERS = [];
+export let USER = null; // current user id
+export let SYNC = { online: true, pending: false, last: null };
+export const userInfo = id => USERS.find(u => u.id === id) || { id, name: id, color: "#888" };
+
+export async function loadUsers() {
+  try {
+    const r = await fetch("api/users", { cache: "no-store" });
+    USERS = await r.json();
+    ls.set("a1.users", JSON.stringify(USERS));
+  } catch {
+    USERS = JSON.parse(ls.get("a1.users") || "null") || [{ id: "taha", name: "Taha", color: "#1c7cd6" }, { id: "batul", name: "Batul", color: "#ce4fa0" }];
+    SYNC.online = false;
+  }
+  const u = ls.get("a1.user");
+  USER = USERS.some(x => x.id === u) ? u : null;
+  return USERS;
+}
+export async function fetchAllStates() {
+  try { const r = await fetch("api/states" + cq(), { cache: "no-store" }); return await r.json(); }
+  catch { const o = {}; USERS.forEach(u => (o[u.id] = u.id === USER ? S : JSON.parse(ls.get(cacheKey(u.id)) || "null"))); return o; }
+}
+
+// ---------- state ----------
+export let S = null;
+export const blank = () => ({
+  v: 2,
+  created: today(),
+  updated: 0,
+  setup: false,
+  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system" },
+  words: {},   // id -> {box, due, r, w}
+  done: {},    // path item id -> {date, score}
+  log: [],     // {d, id, xp}
+  xp: {},      // date -> xp
+  reviews: {}, // date -> count reviewed
+  pen: {},     // date -> XP lost (missed reviews, very low review scores)
+  penLog: [],  // {d, xp, why}
+  penChecked: null, // last day checked for missed reviews
+  lastLv: 1,
+  gems: 0,        // 💎 balance
+  gifts: [],      // {id, m (streak milestone), tier, earned, opened, amount}
+  questDays: {},  // date -> true when the daily-quest diamonds were paid
+  gemLog: [],     // {d, n, why}
+  bits: {},       // path item id -> [date per finished bit]
+  tree: {},       // skill-tree courses: node id -> date learned
+  say: {},        // phrase (German) -> times produced correctly in "Say it in German"
+});
+function normalize(st) {
+  const b = blank();
+  st = st || b;
+  st.settings = { ...b.settings, ...(st.settings || {}) };
+  for (const k of Object.keys(b)) if (st[k] === undefined) st[k] = b[k];
+  return st;
+}
+
+// Load a user's state: newest of server copy and browser cache wins.
+export async function switchUser(id) {
+  if (S && USER && SYNC.pending) { clearTimeout(timer); await push(); } // flush the previous learner first
+  USER = id; ls.set("a1.user", id);
+  let local = JSON.parse(ls.get(cacheKey(id)) || "null");
+  let server = null;
+  try {
+    const r = await fetch(`api/state/${id}` + cq(), { cache: "no-store" });
+    server = (await r.json()).state; SYNC.online = true;
+  } catch { SYNC.online = false; }
+  // one-time migration of progress made before profiles existed
+  const legacy = JSON.parse(ls.get(LEGACY) || "null");
+  if (!server && !local && legacy && legacy.setup && id === USERS[0].id) { local = legacy; local.updated = Date.now(); ls.del(LEGACY); }
+  S = normalize((server && (!local || (server.updated || 0) >= (local.updated || 0))) ? server : local);
+  ls.set(cacheKey(id), JSON.stringify(S));
+  checkMissed();
+  if (local && (!server || (local.updated || 0) > (server.updated || 0))) push(); // local is newer: upload it
+  return S;
+}
+// Switch the active course for the current learner: save the old course first, then load the new one's content + progress.
+export async function switchCourse(id) {
+  if (S && USER && SYNC.pending) { clearTimeout(timer); await push(); }
+  setCourse(id);
+  await loadContent(id);
+  S = null;
+  if (USER) await switchUser(USER);
+}
+export function signOut() { if (S && USER && SYNC.pending) { clearTimeout(timer); push(); } USER = null; S = null; ls.del("a1.user"); }
+
+let timer = null;
+export function save() {
+  if (!S || !USER) return;
+  S.updated = Date.now();
+  ls.set(cacheKey(USER), JSON.stringify(S));
+  SYNC.pending = true;
+  clearTimeout(timer);
+  timer = setTimeout(push, 600);
+}
+export async function push() {
+  if (!S || !USER) return;
+  const u = USER, body = JSON.stringify(S);
+  try {
+    const r = await fetch(`api/state/${u}` + cq(), { method: "PUT", headers: { "Content-Type": "application/json" }, body });
+    const j = await r.json();
+    if (r.status === 409 && j.state && u === USER) { // a newer copy exists (other device) – take it
+      S = normalize(j.state); ls.set(cacheKey(u), JSON.stringify(S));
+      window.dispatchEvent(new Event("a1:state-replaced"));
+    }
+    SYNC.online = true; SYNC.pending = false; SYNC.last = Date.now();
+  } catch { SYNC.online = false; SYNC.pending = true; }
+  window.dispatchEvent(new Event("a1:sync"));
+}
+// pull newer data saved from another device (called when the app comes back to the foreground)
+export async function refreshFromServer() {
+  if (!USER) return false;
+  if (SYNC.pending) { await push(); return false; }
+  try {
+    const r = await fetch(`api/state/${USER}` + cq(), { cache: "no-store" });
+    const s = (await r.json()).state; SYNC.online = true;
+    if (s && (s.updated || 0) > (S.updated || 0)) { S = normalize(s); ls.set(cacheKey(USER), JSON.stringify(S)); checkMissed(); return true; }
+    if (checkMissed()) return true;
+  } catch { SYNC.online = false; }
+  return false;
+}
+export function resetAll() { const st = S.settings; S = blank(); S.settings = { ...st }; save(); }
+export function exportState() { return JSON.stringify(S, null, 1); }
+export function importState(txt) {
+  const o = JSON.parse(txt);
+  if (!o || !o.settings || !o.words) throw new Error("Not a backup file");
+  S = normalize(o); save();
+}
+
+// ---------- XP / streak ----------
+export function addXP(n) { const t = today(); S.xp[t] = (S.xp[t] || 0) + n; save(); }
+export const xpToday = (st = S) => st.xp[today()] || 0;
+export function streak(st = S) {
+  let d = today(), n = 0;
+  if (!st.xp[d]) d = addDays(d, -1); // today not done yet – the streak still counts until midnight
+  while (st.xp[d]) { n++; d = addDays(d, -1); }
+  return n;
+}
+export const totalXP = (st = S) => Math.max(0, Object.values(st.xp).reduce((a, b) => a + b, 0) - Object.values(st.pen || {}).reduce((a, b) => a + b, 0));
+export function addPenalty(n, why, d = today()) {
+  if (n <= 0) return;
+  S.pen[d] = (S.pen[d] || 0) + n;
+  S.penLog.push({ d, xp: n, why });
+  if (S.penLog.length > 200) S.penLog = S.penLog.slice(-200);
+  save();
+}
+// A day counts as missed when words were due that day and no review was done.
+export const MISSED_DAY_XP = 10;
+export function checkMissed() {
+  if (!S || !S.setup) return 0;
+  const y = addDays(today(), -1);
+  let d = S.penChecked ? addDays(S.penChecked, 1) : y;
+  let lost = 0;
+  for (; d <= y; d = addDays(d, 1)) {
+    if (S.reviews[d]) continue;
+    const overdue = Object.values(S.words).filter(w => w.due <= d && (!w.last || w.last < d)).length;
+    if (overdue > 0) {
+      const n = Math.min(30, MISSED_DAY_XP + Math.floor(overdue / 10));
+      addPenalty(n, `Missed reviews (${overdue} words were due)`, d); lost += n;
+    }
+  }
+  if (S.penChecked !== y) { S.penChecked = y; save(); }
+  return lost;
+}
+
+// ---------- level (from total XP) and hunter rank (from A1 %) ----------
+// Level 1 → 100 follows A1 completion (level 100 = all A1 content covered and kept in memory).
+// After that, every POST_A1_XP earned since reaching A1 adds one more level (101, 102, …).
+export const A1_LEVEL = 100;
+export const POST_A1_XP = 200;
+export function level(pct, st = S) {
+  const p = Math.min(100, Math.max(0, pct));
+  if (p >= 99.999) {
+    if (st && st.a1XP == null) st.a1XP = totalXP(st); // remember the XP at the moment A1 was reached
+    const extra = st ? Math.max(0, totalXP(st) - (st.a1XP || 0)) : 0;
+    return { lv: A1_LEVEL + Math.floor(extra / POST_A1_XP), a1: true, frac: (extra % POST_A1_XP) / POST_A1_XP,
+             xpInto: extra % POST_A1_XP, xpNeed: POST_A1_XP, toNext: 0 };
+  }
+  const x = 1 + (p * (A1_LEVEL - 1)) / 100;
+  const lv = Math.min(A1_LEVEL - 1, Math.floor(x + 1e-9));
+  const frac = x - lv;
+  return { lv, a1: false, frac, toNext: ((1 - frac) * 100) / (A1_LEVEL - 1) };
+}
+export const RANKS = [["E", 0], ["D", 10], ["C", 25], ["B", 45], ["A", 70], ["S", 95]];
+export function rank(pct) {
+  let r = RANKS[0], nx = RANKS[1];
+  RANKS.forEach((x, i) => { if (pct >= x[1]) { r = x; nx = RANKS[i + 1]; } });
+  return { r: r[0], next: nx ? nx[0] : null, nextAt: nx ? nx[1] : null };
+}
+
+// ---------- diamonds & gift boxes ----------
+export const QUEST_GEMS = 5;
+export const MILESTONES = [7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365];
+export const TIERS = {
+  common: { name: "Common", min: 15, max: 30, color: "#5aa9ff" },
+  rare: { name: "Rare", min: 40, max: 80, color: "#b48cff" },
+  epic: { name: "Epic", min: 100, max: 180, color: "#ff6bd5" },
+  legendary: { name: "Legendary", min: 250, max: 400, color: "#ffcc4d" },
+};
+export const tierFor = m => m < 14 ? "common" : m < 30 ? "rare" : m < 90 ? "epic" : "legendary";
+function addGems(n, why) {
+  S.gems = (S.gems || 0) + n;
+  S.gemLog.push({ d: today(), n, why });
+  if (S.gemLog.length > 100) S.gemLog = S.gemLog.slice(-100);
+}
+// Pays daily-quest diamonds and hands out streak gift boxes. Returns what was newly earned.
+export function checkRewards(questDone) {
+  const out = { gems: 0, gifts: [] };
+  if (!S || !S.setup) return out;
+  const t = today();
+  if (questDone && !S.questDays[t]) { S.questDays[t] = true; addGems(QUEST_GEMS, "Daily quest cleared"); out.gems = QUEST_GEMS; }
+  const n = streak();
+  if (n > 0) {
+    let end = S.xp[t] ? t : addDays(t, -1);
+    const runStart = addDays(end, -(n - 1)); // a new streak run can earn the boxes again
+    for (const m of MILESTONES) {
+      const id = `${runStart}:${m}`;
+      if (n >= m && !S.gifts.some(g => g.id === id)) {
+        const g = { id, m, tier: tierFor(m), earned: t, opened: false, amount: 0 };
+        S.gifts.push(g); out.gifts.push(g);
+      }
+    }
+  }
+  if (out.gems || out.gifts.length) save();
+  return out;
+}
+export function openGift(id) {
+  const g = S.gifts.find(x => x.id === id);
+  if (!g || g.opened) return 0;
+  const T = TIERS[g.tier];
+  g.amount = T.min + Math.floor(Math.random() * (T.max - T.min + 1));
+  g.opened = true; g.openedOn = today();
+  addGems(g.amount, `${T.name} gift box (${g.m}-day streak)`);
+  save();
+  return g.amount;
+}
+export const nextMilestone = () => MILESTONES.find(m => m > streak()) || null;
+
+// ---------- spaced repetition (Leitner boxes) ----------
+// SM-2 style spaced repetition (as used by SuperMemo / Anki): grades 1 Again · 2 Hard · 3 Good · 4 Easy
+export const GRADES = ["", "Again", "Hard", "Good", "Easy"];
+function srs(s) { // migrate old Leitner data
+  if (s.ivl === undefined) { s.ivl = [0, 1, 3, 7, 14, 30, 60, 120][s.box || 0] || 0; s.ef = 2.5; s.reps = s.box || 0; s.lapses = s.w || 0; }
+  return s;
+}
+export function learnWord(id) {
+  if (S.words[id]) return;
+  S.words[id] = { ivl: 0, ef: 2.5, reps: 0, lapses: 0, due: addDays(today(), 1), since: today(), r: 0, w: 0 };
+}
+export function nextIvl(s, g) {
+  s = srs({ ...s });
+  if (g === 1) return 1;
+  if (g === 2) return s.reps === 0 ? 2 : Math.max(s.ivl + 1, Math.round(s.ivl * 1.2));
+  if (g === 3) return s.reps === 0 ? 3 : Math.max(s.ivl + 1, Math.round(s.ivl * s.ef));
+  return s.reps === 0 ? 6 : Math.max(s.ivl + 2, Math.round(s.ivl * s.ef * 1.3));
+}
+export function gradeWord(id, g) {
+  const s = srs(S.words[id] || (S.words[id] = { ivl: 0, ef: 2.5, reps: 0, lapses: 0, due: today(), since: today(), r: 0, w: 0 }));
+  const ivl = Math.min(365, nextIvl(s, g));
+  if (g === 1) { s.lapses++; s.reps = 0; s.ef = Math.max(1.3, s.ef - 0.2); s.lapsed = true; s.w++; }
+  else {
+    s.reps++; s.r++;
+    if (g === 2) s.ef = Math.max(1.3, s.ef - 0.15);
+    if (g === 4) s.ef = Math.min(3.0, s.ef + 0.15);
+    if (g >= 3) s.lapsed = false;
+  }
+  s.ivl = ivl; s.due = addDays(today(), ivl); s.last = today();
+  save();
+  return ivl;
+}
+export const dueWords = (st = S) => Object.entries(st.words).filter(([, s]) => s.due <= today())
+  .sort((a, b) => a[1].due.localeCompare(b[1].due)).map(([id]) => id);
+export const overdueDays = s => Math.max(0, daysBetween(s.due, today()) - 1); // 1 day of grace
+export function wordStatus(id, st = S) {
+  const s = st.words[id];
+  if (!s) return "new";
+  const ivl = s.ivl !== undefined ? s.ivl : [0, 1, 3, 7, 14, 30, 60, 120][s.box || 0];
+  if (ivl >= 30) return "mastered";
+  if (ivl >= 7) return "known";
+  return "learning";
+}
+// How much a learned word still counts toward A1: overdue words fade (−1/14 per day, floor 25 %), failed words count half.
+export function health(s) {
+  if (!s) return 0;
+  const fade = Math.max(0.25, 1 - overdueDays(s) / 14);
+  return (s.lapsed ? 0.5 : 1) * fade;
+}
+
+// ---------- A1 progress ----------
+// A1 coverage: vocabulary 55 % (by words), grammar 30 % (20 chapters), phrases 15 % (14 sections).
+export const WEIGHTS = { vocab: 55, grammar: 30, phrases: 15 };
+let _w = null;
+export function itemWeights() {
+  if (_w) return _w;
+  const p = C.content.path, nWords = C.content.words.length;
+  const nG = p.filter(i => i.kind === "grammar").length, nP = p.filter(i => i.kind === "phrases").length;
+  _w = {};
+  for (const i of p) {
+    _w[i.id] = i.kind === "vocab" ? WEIGHTS.vocab * i.words.length / nWords
+      : i.kind === "grammar" ? WEIGHTS.grammar / nG : WEIGHTS.phrases / nP;
+  }
+  return _w;
+}
+// total = memory-adjusted A1 % (drives level, rank, aura); coverage = lessons completed, ignoring memory.
+export function progress(st = S) {
+  const w = itemWeights(), out = { total: 0, vocab: 0, grammar: 0, phrases: 0, coverage: 0 };
+  const perWord = WEIGHTS.vocab / C.content.words.length;
+  for (const it of C.content.path) {
+    const n = bitsDone(it, st); if (!n) continue;
+    const frac = st.done[it.id] ? 1 : n / bitCount(it);
+    out.coverage += w[it.id] * frac;
+    if (it.kind === "vocab") {
+      const v = it.words.reduce((a, wid) => a + (st.words[wid] ? perWord * health(st.words[wid]) : 0), 0);
+      out.vocab += v; out.total += v;
+    } else { out[it.kind] += w[it.id] * frac; out.total += w[it.id] * frac; }
+  }
+  return out;
+}
+export function memory(st = S) {
+  const ws = Object.values(st.words);
+  const overdue = ws.filter(s => overdueDays(s) > 0).length, lapsed = ws.filter(s => s.lapsed).length;
+  const h = ws.length ? ws.reduce((a, s) => a + health(s), 0) / ws.length : 1;
+  return { overdue, lapsed, health: h, due: dueWords(st).length };
+}
+export function retention(st = S) {
+  const ids = Object.keys(st.words);
+  const c = { learning: 0, known: 0, mastered: 0 };
+  ids.forEach(id => c[wordStatus(id, st)]++);
+  return { ...c, learned: ids.length, total: C.content.words.length };
+}
+
+// cumulative progress by day, from the completion log
+export function history(st = S) {
+  const w = itemWeights(), byDay = {};
+  for (const [id, d] of Object.entries(st.done)) byDay[d.date] = (byDay[d.date] || 0) + (w[id] || 0);
+  let acc = 0;
+  return Object.keys(byDay).sort().map(d => [d, (acc += byDay[d])]);
+}
+
+export function pace(st = S) {
+  const t = today(), { startDate: start, targetDate: target } = st.settings;
+  const span = Math.max(1, daysBetween(start, target));
+  const el = Math.min(Math.max(daysBetween(start, t), 0), span);
+  const expected = Math.min(100, 100 * el / span);
+  const p = progress(st).coverage;
+  const left = Math.max(0, daysBetween(t, target));
+  const needPerDay = left > 0 ? (100 - p) / left : 100 - p;
+  // actual pace: average over the last 14 days (or since start if shorter)
+  const win = Math.max(1, Math.min(14, daysBetween(start, t) + 1));
+  const from = addDays(t, -win + 1), w = itemWeights();
+  let recent = 0;
+  for (const [id, d] of Object.entries(st.done)) if (d.date >= from && d.date <= t) recent += w[id] || 0;
+  const actualPerDay = recent / win;
+  const projDays = actualPerDay > 0 ? Math.ceil((100 - p) / actualPerDay) : null;
+  const projected = projDays != null ? addDays(t, projDays) : null;
+  const avgItem = 100 / C.content.path.length; // translate % into lessons
+  const gap = p - expected; // + ahead, – behind
+  return { expected, actual: progress(st).total, coverage: p, needPerDay, actualPerDay, projected, left, gap, gapLessons: gap / avgItem,
+           needLessonsPerWeek: needPerDay * 7 / avgItem, actualLessonsPerWeek: actualPerDay * 7 / avgItem, span, el };
+}
+
+// one-line stats for the comparison views
+export function summary(st) {
+  if (!st || !st.setup) return null;
+  st = normalize(st);
+  const pc = pace(st);
+  return { gems: st.gems || 0, lv: level(pc.actual, st).lv, rank: rank(pc.actual).r, xpToday: xpToday(st), xp: totalXP(st), streak: streak(st), lessons: Object.keys(st.done).filter(id => C.item[id]).length,
+           of: C.content.path.length, pct: pc.actual, expected: pc.expected, gapLessons: pc.gapLessons, words: Object.keys(st.words).length,
+           goal: goalFor(st), target: st.settings.targetDate };
+}
+
+// ---------- bits: each lesson is split into short parts (4 words / 5 phrases) ----------
+function chunk(arr, size, minLast) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  if (out.length > 1 && out.at(-1).length < minLast) out.at(-2).push(...out.pop());
+  return out;
+}
+export function bitsOf(it) {
+  if (it.kind === "vocab") return chunk(it.words, 4, 3);
+  if (it.kind === "phrases") return chunk(C.phrases[it.id].items.map((_, i) => i), 5, 3);
+  return [[0]]; // grammar: one part
+}
+export const bitCount = it => bitsOf(it).length;
+export function bitsDone(it, st = S) {
+  if (st.done[it.id]) return bitCount(it);
+  return ((st.bits || {})[it.id] || []).filter(Boolean).length;
+}
+export function nextBit(it) {
+  const b = (S.bits[it.id] || []);
+  for (let i = 0; i < bitCount(it); i++) if (!b[i]) return i;
+  return 0; // all done – practise from the first bit again
+}
+// returns true when this finished the whole lesson
+export function completeBit(it, i, score, xp) {
+  const b = S.bits[it.id] || (S.bits[it.id] = []);
+  b[i] = b[i] || today();
+  S.log.push({ d: today(), id: it.id, bit: i, xp });
+  const all = bitsDone(it) >= bitCount(it) || b.filter(Boolean).length >= bitCount(it);
+  if (all && !S.done[it.id]) { S.done[it.id] = { date: today(), score, last: today() }; save(); return true; }
+  if (S.done[it.id]) S.done[it.id].last = today();
+  save();
+  return false;
+}
+
+// ---------- weekly plan from the learner's own pace ----------
+// Weeks start on Monday. Week 1 is the week containing the start date; the last week contains the target date.
+// Each lesson goes into the week in which the expected (straight-line) pace reaches it.
+export const mondayOf = d => { const x = parse(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return iso(x); };
+let _plan = null, _planKey = "";
+export function weekPlan(st = S) {
+  const { startDate: start, targetDate: target } = st.settings, key = start + "|" + target;
+  if (_plan && _planKey === key) return _plan;
+  const m0 = mondayOf(start), span = Math.max(1, daysBetween(start, target));
+  const nWeeks = Math.max(1, Math.floor(daysBetween(m0, target) / 7) + 1);
+  const weeks = Array.from({ length: nWeeks }, (_, k) => ({ n: k + 1, from: addDays(m0, k * 7), to: addDays(m0, k * 7 + 6), items: [] }));
+  const w = itemWeights(), of = {};
+  let cum = 0;
+  for (const it of C.content.path) {
+    const mid = cum + w[it.id] / 2; cum += w[it.id];
+    const day = addDays(start, Math.floor((span * mid) / 100));
+    const k = Math.min(nWeeks - 1, Math.max(0, Math.floor(daysBetween(m0, day) / 7)));
+    weeks[k].items.push(it); of[it.id] = k + 1;
+  }
+  _plan = { weeks, of, nWeeks }; _planKey = key;
+  return _plan;
+}
+export const weekOf = it => weekPlan().of[it.id];
+export const thisWeek = () => { const p = weekPlan(), t = today(); const w = p.weeks.find(x => x.from <= t && t <= x.to); return w ? w.n : (t < p.weeks[0].from ? 0 : p.nWeeks + 1); };
+
+// ---------- dynamic daily XP goal: what it takes to reach A1 (level 100, incl. S-rank) by the target date ----------
+const PART_XP = 14, LESSON_BONUS = 10;
+export function remainingXP(st = S) {
+  let xp = 0;
+  for (const it of C.content.path) {
+    if (st.done[it.id]) continue;
+    if (it.kind === "grammar") { xp += 10 + Math.round(2 * 0.8 * (C.grammar[it.id].q.length || 6)); continue; }
+    const left = bitCount(it) - bitsDone(it, st);
+    xp += left * PART_XP + LESSON_BONUS;
+  }
+  return xp;
+}
+export function autoGoal(st = S) {
+  const days = Math.max(1, daysBetween(today(), st.settings.targetDate) + 1); // today counts
+  const learned = Object.keys(st.words || {}).length;
+  const reviewAllowance = Math.min(30, 5 + Math.round(learned * 0.04)); // daily reviews grow with what you know
+  const raw = remainingXP(st) / days + reviewAllowance;
+  return Math.max(20, Math.min(300, Math.round(raw / 5) * 5));
+}
+// Goal for today: manual setting, or the auto goal frozen once per day (so finishing a lesson doesn't move it).
+export function goalFor(st = S) {
+  if (st.settings.goalMode === "manual") return st.settings.dailyGoal || 50;
+  const t = today();
+  if (!st.goalDay || st.goalDay.d !== t || st.goalDay.target !== st.settings.targetDate) {
+    st.goalDay = { d: t, v: autoGoal(st), target: st.settings.targetDate };
+    if (st === S) save();
+  }
+  return st.goalDay.v;
+}
+
+export const nextItem = () => C.content.path.find(i => !S.done[i.id]);
+export function completeItem(id, score, xp) {
+  const first = !S.done[id];
+  S.done[id] = { date: first ? today() : S.done[id].date, score, last: today() };
+  S.log.push({ d: today(), id, xp });
+  save();
+  return first;
+}

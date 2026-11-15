@@ -1,0 +1,966 @@
+import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
+  save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
+  dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS } from "./store.js";
+import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson } from "./lesson.js";
+import { play } from "./audio.js";
+import { installBugButton } from "./bugreport.js";
+import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
+
+const view = () => document.getElementById("view");
+const sheetRoot = () => document.getElementById("sheet-root");
+const ICON = { vocab: "🔤", grammar: "📐", phrases: "💬" };
+const KIND = { vocab: "Vocabulary", grammar: "Grammar", phrases: "Phrases" };
+// distinct glyphs per lesson type (inline SVG, coloured per theme via .k-vocab / .k-grammar / .k-phrases)
+const GLYPH = {
+  vocab: `<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" font-family="system-ui,sans-serif" fill="currentColor">Aa</text></svg>`,
+  grammar: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="3" y="12" width="8" height="8" rx="1.6"/><rect x="13" y="12" width="8" height="8" rx="1.6"/><rect x="8" y="3" width="8" height="8" rx="1.6"/></svg>`,
+  phrases: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><circle cx="8.5" cy="9.5" r="1.3" fill="var(--kbg,#fff)"/><circle cx="12" cy="9.5" r="1.3" fill="var(--kbg,#fff)"/><circle cx="15.5" cy="9.5" r="1.3" fill="var(--kbg,#fff)"/></svg>`,
+};
+const kicon = (kind, done, sm) => `<span class="kicon k-${kind} ${sm ? "sm" : ""}">${GLYPH[kind]}${done ? `<span class="kdone">✓</span>` : ""}</span>`;
+
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+}
+function sheet(html, wire) {
+  sheetRoot().innerHTML = `<div class="sheet-bg"><div class="sheet">${html}</div></div>`;
+  const bg = sheetRoot().querySelector(".sheet-bg");
+  bg.onclick = e => { if (e.target === bg) closeSheet(); };
+  wire && wire(sheetRoot().querySelector(".sheet"));
+}
+const closeSheet = () => (sheetRoot().innerHTML = "");
+
+// ------------------------------------------------------------------ routing
+function route() {
+  closeSheet();
+  const h = location.hash || "#/today";
+  if (h === "#/lesson") { if (inLesson()) return; location.replace("#/today"); return; }
+  if (inLesson()) abortLesson();
+  document.body.classList.remove("in-lesson");
+  applyTheme();
+  if (!USER || !S) return whoView();
+  if (!syncHero()) return heroPickView();
+  if (!picked()) return courseView();
+  if (courseInfo(COURSE).type === "tree") return treeView(name0(h));
+  if (!S.setup) return setupView();
+  const [, name, arg] = h.split("/");
+  document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
+  ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, grammar: () => grammarView(arg) }[name] || todayView)();
+  window.scrollTo(0, 0);
+}
+
+function startItem(it, bit) {
+  closeSheet();
+  const b = bit != null ? bit : nextBit(it);
+  if (it.kind === "vocab") startVocab(it, b);
+  else if (it.kind === "grammar") location.hash = "#/grammar/" + it.id;
+  else startPhrases(C.phrases[it.id], it, b);
+}
+const partLabel = it => { const n = bitCount(it), d = bitsDone(it); return n > 1 ? `Part ${Math.min(d + 1, n)} of ${n}` : ""; };
+
+// ------------------------------------------------------------------ setup
+function setupView() {
+  document.body.classList.add("in-lesson"); // hides the tab bar until setup is done
+  view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>Willkommen, ${esc(userInfo(USER).name)}! 👋</h1>
+  <p class="muted">${esc(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
+  <div class="card">
+    <label class="f">When do you want to finish A1?</label><input type="date" id="tg" value="${S.settings.targetDate}">
+    <label class="f">Count your pace from</label><input type="date" id="sd" value="${S.settings.startDate}">
+    <label class="f">Daily goal</label>
+    <select id="dg">${[["auto", "Auto – reach A1 by my target date (recommended)"], [30, "Casual · 30 XP"], [50, "Regular · 50 XP"], [80, "Serious · 80 XP"], [120, "Intense · 120 XP"]]
+      .map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
+  </div>
+  <button class="btn" id="go">Start learning</button>`;
+  view().querySelector("#sw").onclick = () => { signOut(); route(); };
+  view().querySelector("#go").onclick = () => {
+    S.settings.targetDate = view().querySelector("#tg").value || S.settings.targetDate;
+    S.settings.startDate = view().querySelector("#sd").value || S.settings.startDate;
+    const gv = view().querySelector("#dg").value;
+    if (gv === "auto") S.settings.goalMode = "auto"; else { S.settings.goalMode = "manual"; S.settings.dailyGoal = +gv; }
+    if (S.settings.targetDate <= today()) return toast("Pick a target date in the future");
+    S.setup = true; save(); document.body.classList.remove("in-lesson"); location.hash = "#/today"; route();
+  };
+}
+
+function markDone(it, date = today()) {
+  if (S.done[it.id]) return;
+  S.done[it.id] = { date, score: null, marked: true };
+  if (it.kind === "vocab") it.words.forEach(id => { learnWord(id, true); S.words[id].due = today(); });
+  save();
+}
+
+// ------------------------------------------------------------------ today
+function topBar() {
+  const g = goalFor(), x = xpToday(), p = Math.min(100, Math.round(100 * x / g));
+  return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} ${esc(C.course.title)} ▾</button>
+    <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span>${gemChip()}</div>${playerBar()}<div class="top classic-only">
+    <div class="ring" id="xpring" style="--p:${p};cursor:pointer"><div>${x}<br><span class="tiny muted">/${g} XP</span></div></div>
+    <div class="grow"><div style="font-weight:800;font-size:18px">${x >= g ? "Daily goal done ✅" : "Today's goal"}</div>
+      <div class="muted small">${x >= g ? "Anything extra is a bonus." : `${g - x} XP to go`}</div></div>
+    <div class="stat" title="Day streak">🔥 ${streak()}</div></div>`;
+}
+
+function paceLine(pc) {
+  const L = Math.abs(pc.gapLessons);
+  if (pc.left <= 0) return pc.actual >= 99.9 ? "A1 content complete 🎓" : "Target date reached";
+  if (L < 1) return `<span class="pill green">On track</span>`;
+  const n = Math.round(L);
+  return pc.gap > 0 ? `<span class="pill green">${n} lesson${n > 1 ? "s" : ""} ahead</span>` : `<span class="pill amber">${n} lesson${n > 1 ? "s" : ""} behind</span>`;
+}
+
+function paceCard(pc) {
+  return `<div class="card tap" id="pacecard"><div class="sys-h">Progress to A1</div><div class="row"><div class="grow"><div style="font-weight:800">📈 A1 progress · ${pc.actual.toFixed(1)}%</div>
+    <div class="muted small">Expected today: ${pc.expected.toFixed(1)}% · target ${fmtDate(S.settings.targetDate)} <a href="#/settings" class="link" style="padding:0" onclick="event.stopPropagation()">edit</a></div></div>${paceLine(pc)}</div>
+    <div class="hbar" style="position:relative;margin-top:10px"><div style="width:${pc.actual}%;background:var(--green)"></div>
+    <span style="position:absolute;top:-3px;left:calc(${pc.expected}% - 1px);width:3px;height:18px;background:var(--ink);border-radius:2px"></span></div></div>`;
+}
+
+function todayView() {
+  const it = nextItem(), due = dueWords();
+  view().innerHTML = topBar() + `
+  ${dailyQuest(due)}
+  ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
+      <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
+      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
+      <div class="muted small">${[partLabel(it), it.kind === "vocab" ? `${bitsOf(it)[Math.min(bitsDone(it), bitCount(it) - 1)].length} new words` : ""].filter(Boolean).join(" · ")}</div>
+      <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button></div>`
+    : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
+  ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
+    <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Recall ${due.length} due word${due.length > 1 ? "s" : ""}</b>
+      <div class="muted small">Pending – review them before they fade</div></div>
+      <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div>
+    ${memWarn()}</div>` : ""}`;
+  const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
+  const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
+  levelWatch();
+  wireTop();
+  const rw = checkRewards(questStatus(due).all);
+  if (rw.gems || rw.gifts.length) {
+    const chip = view().querySelector("#gem"); if (chip) chip.outerHTML = gemChip();
+    wireTop();
+    if (rw.gifts.length) giftEarnedSheet(rw.gifts);
+    else toast(`💎 +${rw.gems} – daily quest cleared!`);
+  }
+}
+
+const wkRange = w => `${fmtDate(w.from, { weekday: "short", day: "numeric", month: "short" })} – ${fmtDate(w.to, { weekday: "short", day: "numeric", month: "short" })}`;
+function weekHead(w, items) {
+  const tw = thisWeek(), done = items.filter(i => S.done[i.id]).length;
+  const tag = w.n === tw ? `<span class="pill green" style="margin-left:6px">This week</span>` : w.n < tw && done < items.length ? `<span class="pill amber" style="margin-left:6px">Catch up</span>` : "";
+  return `<b>Week ${w.n}</b>${tag}<div class="small">${wkRange(w)}</div><div class="muted tiny">${done}/${items.length} done${items.length ? "" : " · no new lessons – review week"}</div>`;
+}
+
+// ------------------------------------------------------------------ path
+function pathView() {
+  const nx = nextItem();
+  const plan = weekPlan();
+  let k = 0;
+  view().innerHTML = `<h1>Your path to A1</h1>${paceCard(pace())}<p class="muted small">Everything is open – tap any lesson.</p>` +
+    plan.weeks.map(W => [W, W.items]).map(([W, items]) => `<div class="week"><div class="week-h">${weekHead(W, items)}</div>
+      <div class="nodes">${items.map(i => {
+        const off = Math.round(Math.sin(k++ * 0.95) * 64);
+        const done = !!S.done[i.id], cur = nx && nx.id === i.id;
+        const side = off > 0 ? "l" : "r";
+        return `<button class="node ${i.kind} ${done ? "done" : "avail"} ${cur ? "cur" : ""}" data-id="${i.id}" style="transform:translateX(${off}px)">
+          ${cur ? `<span class="start-tip">${bitsDone(i) ? `${bitsDone(i)}/${bitCount(i)}` : "START"}</span>` : ""}<span class="nglyph">${done ? "✓" : GLYPH[i.kind]}</span>
+          ${!done && !cur && bitsDone(i) ? `<span class="bitbadge">${bitsDone(i)}/${bitCount(i)}</span>` : ""}
+          <span class="lbl ${side}">${esc(i.kind === "vocab" ? `${i.n}. ${i.title}` : i.title)}</span></button>`;
+      }).join("")}</div></div>`).join("");
+  view().querySelectorAll(".node").forEach(b => (b.onclick = () => itemSheet(C.item[b.dataset.id])));
+  view().querySelector("#pacecard").onclick = () => (location.hash = "#/progress");
+  const cur = view().querySelector(".node.cur");
+  if (cur) setTimeout(() => cur.scrollIntoView({ block: "center" }), 30);
+}
+
+function itemSheet(it, refresh = pathView) {
+  const d = S.done[it.id];
+  let body = "";
+  if (it.kind === "vocab") body = `<div class="chips">${it.words.map(id => `<span class="chip">${esc(C.word[id].de)}</span>`).join("")}</div>`;
+  if (it.kind === "grammar") { const g = C.grammar[it.id]; body = `<p class="small muted">${esc(g.intro).slice(0, 220)}…</p><p class="small">🎬 ${esc(g.watch)}</p>`; }
+  if (it.kind === "phrases") body = `<p class="small muted">${C.phrases[it.id].items.length} phrases</p>`;
+  sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
+    <h2 style="margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</h2>${body}
+    ${d ? `<p class="small"><span class="pill green">✓ Done ${fmtDate(d.date)}${d.score != null ? ` · ${d.score}%` : ""}</span></p>` : ""}
+    ${bitCount(it) > 1 ? `<div class="parts">${bitsOf(it).map((b, k) => { const ok = d || (S.bits[it.id] || [])[k];
+      const lbl = it.kind === "vocab" ? b.map(id => C.word[id].de).join(", ") : b.map(j => C.phrases[it.id].items[j].de).join(" · ");
+      return `<button class="part ${ok ? "ok" : ""}" data-b="${k}"><span class="pn">${ok ? "✓" : k + 1}</span><span class="grow pl">${esc(lbl)}</span><span>›</span></button>`; }).join("")}</div>` : ""}
+    <button class="btn" id="go">${d ? "Practise again" : it.kind === "grammar" ? "Read & practise" : bitsDone(it) ? `Continue · ${partLabel(it)}` : bitCount(it) > 1 ? `Start · ${partLabel(it)}` : "Start"}</button>
+    ${d ? `<button class="btn ghost" id="undo">Mark as not done</button>` : `<button class="btn ghost" id="mk">I already know this – mark done</button>`}`,
+  s => {
+    s.querySelector("#go").onclick = () => startItem(it);
+    s.querySelectorAll(".part").forEach(b => (b.onclick = () => startItem(it, +b.dataset.b)));
+    const mk = s.querySelector("#mk"); if (mk) mk.onclick = () => { markDone(it); closeSheet(); toast("Marked as done"); refresh(); };
+    const un = s.querySelector("#undo"); if (un) un.onclick = () => { delete S.done[it.id]; delete S.bits[it.id]; save(); closeSheet(); refresh(); };
+  });
+}
+
+// ------------------------------------------------------------------ grammar reading
+function grammarView(id) {
+  const g = C.grammar[id], it = C.item[id];
+  if (!g) return todayView();
+  document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "path"));
+  view().innerHTML = `<button class="link" id="back">‹ Path</button>
+  <div class="small muted" style="font-weight:800">📐 GRAMMAR · CHAPTER ${g.num}</div><h1>${esc(g.title)}</h1>
+  <p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>
+  <div class="gram">${g.body}${g.after || ""}</div>
+  <h2>Examples</h2>${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
+    <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
+  ${g.mist.length ? `<h2>Common mistakes</h2><div class="mist">${g.mist.map(m => `<div><span style="color:var(--red)">✗ ${esc(m.wrong)}</span><br>
+    <span style="color:var(--green);font-weight:700">✓ ${esc(m.right)}</span><br><span class="muted">${esc(m.why)}</span></div>`).join("")}</div>` : ""}
+  <div style="height:16px"></div><button class="btn" id="prac">Practise (${g.q.length} questions)</button>
+  ${S.done[id] ? `<p class="small muted" style="text-align:center">Done ${fmtDate(S.done[id].date)}${S.done[id].score != null ? ` · ${S.done[id].score}%` : ""}</p>` : ""}`;
+  wireSpeakers(view());
+  view().querySelector("#back").onclick = () => (location.hash = "#/path");
+  view().querySelector("#prac").onclick = () => startGrammarPractice(g, it);
+}
+
+// ------------------------------------------------------------------ words
+let wf = { q: "", f: "all" };
+function wordsView() {
+  const r = retention();
+  view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} learned · ${r.mastered} mastered</p>
+    <input class="search" id="q" placeholder="Search German or English…" value="${esc(wf.q)}">
+    <div class="seg" id="seg">${[["all", "All"], ["due", "Due"], ["learning", "Learning"], ["known", "Known"], ["mastered", "Mastered"], ["new", "New"], ["core", "★ Core"]]
+      .map(([k, l]) => `<button data-f="${k}" class="${wf.f === k ? "on" : ""}">${l}</button>`).join("")}</div>
+    <div class="wl" id="wl"></div>`;
+  const draw = () => {
+    const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());
+    const list = C.content.words.filter(w => {
+      if (q && !w.de.toLowerCase().includes(q) && !w.en.toLowerCase().includes(q)) return false;
+      if (wf.f === "all") return true;
+      if (wf.f === "due") return due.has(w.id);
+      if (wf.f === "core") return w.core;
+      return wordStatus(w.id) === wf.f;
+    });
+    const cls = { new: "", learning: "l", known: "k", mastered: "m" };
+    view().querySelector("#wl").innerHTML = list.length ? list.slice(0, 300).map(w => `<div class="wrow" data-id="${w.id}">
+      <span class="dot ${cls[wordStatus(w.id)]}"></span><div class="t"><div>${esc(w.de)}</div><div>${esc(w.en)}</div></div>
+      <button class="spk sm" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button></div>`).join("") +
+      (list.length > 300 ? `<div class="wrow muted small">…${list.length - 300} more – search to narrow down</div>` : "")
+      : `<div class="wrow muted">No words here yet.</div>`;
+    wireSpeakers(view().querySelector("#wl"));
+    view().querySelectorAll(".wrow[data-id]").forEach(r => (r.onclick = () => wordSheet(C.word[r.dataset.id])));
+  };
+  view().querySelector("#q").oninput = e => { wf.q = e.target.value; draw(); };
+  view().querySelectorAll("#seg button").forEach(b => (b.onclick = () => { wf.f = b.dataset.f; wordsView(); }));
+  draw();
+}
+function wordSheet(w) {
+  const s = S.words[w.id];
+  const st = { new: "Not learned yet", learning: "Learning", known: "Known", mastered: "Mastered" }[wordStatus(w.id)];
+  sheet(wordCard(w) + `<p class="small muted" style="margin-top:12px">${st}${s ? ` · next review ${fmtDate(s.due)} · ✓${s.r} ✗${s.w}` : ""} · ${esc(w.topic)}</p>`,
+    el => { wireSpeakers(el); play(w.a, w.de); });
+}
+
+// ------------------------------------------------------------------ progress
+function chartSVG(pc) {
+  const W = 340, H = 190, L = 30, Rm = 10, T = 10, B = 26;
+  const start = S.settings.startDate, target = S.settings.targetDate;
+  let end = target;
+  if (pc.projected && pc.projected > target) end = pc.projected > addDays(target, 60) ? addDays(target, 60) : pc.projected;
+  const span = Math.max(1, daysBetween(start, end));
+  const X = d => L + (W - L - Rm) * Math.min(1, Math.max(0, daysBetween(start, d) / span));
+  const Y = p => T + (H - T - B) * (1 - p / 100);
+  const t = today();
+  // actual
+  let acc = 0; const pts = [[start, 0]];
+  for (const [d, v] of history()) { if (d < start) { acc = v; pts[0][1] = acc; continue; } pts.push([d, v]); acc = v; }
+  if (t > start) pts.push([t, acc]);
+  const stepPath = pts.map(([d, v], i) => `${i ? "L" : "M"}${X(d).toFixed(1)},${Y(i ? pts[i - 1][1] : v).toFixed(1)}${i ? ` L${X(d).toFixed(1)},${Y(v).toFixed(1)}` : ""}`).join(" ");
+  const grid = [0, 25, 50, 75, 100].map(p => `<line x1="${L}" x2="${W - Rm}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 4}" y="${Y(p) + 3}" text-anchor="end">${p}%</text>`).join("");
+  // month ticks
+  let ticks = ""; const d0 = parse(start); const m = new Date(d0.getFullYear(), d0.getMonth() + 1, 1);
+  while (m <= parse(end)) {
+    const s = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}-01`;
+    ticks += `<text x="${X(s)}" y="${H - 8}" text-anchor="middle">${m.toLocaleDateString("en-GB", { month: "short" })}</text>`;
+    m.setMonth(m.getMonth() + 1);
+  }
+  const proj = pc.projected && t >= start ? `<line x1="${X(t)}" y1="${Y(pc.actual)}" x2="${X(pc.projected <= end ? pc.projected : end)}" y2="${Y(pc.projected <= end ? 100 : pc.actual + pc.actualPerDay * daysBetween(t, end))}" stroke="var(--green)" stroke-width="2" stroke-dasharray="2 4" opacity=".8"/>` : "";
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Expected versus actual pace">
+    ${grid}${ticks}
+    <line x1="${X(target)}" x2="${X(target)}" y1="${T}" y2="${H - B}" stroke="var(--amber)" stroke-dasharray="3 3"/>
+    <text x="${X(target) - 3}" y="${T + 9}" text-anchor="end" style="fill:var(--amber);font-weight:700">🎯 target</text>
+    <line x1="${X(start)}" y1="${Y(0)}" x2="${X(target)}" y2="${Y(100)}" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 5"/>
+    ${proj}
+    <path d="${stepPath}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="${X(t)}" cy="${Y(pc.actual)}" r="5" fill="var(--green)" stroke="var(--card)" stroke-width="2"/>
+  </svg>`;
+}
+
+function progressView() {
+  const pr = progress(), pc = pace(), r = retention();
+  const nG = C.content.path.filter(i => i.kind === "grammar"), nP = C.content.path.filter(i => i.kind === "phrases"), nV = C.content.path.filter(i => i.kind === "vocab");
+  const cnt = a => a.filter(i => S.done[i.id]).length;
+  const wDone = nV.filter(i => S.done[i.id]).reduce((a, i) => a + i.words.length, 0);
+  const bar = (label, val, max, sub, color) => `<div class="b"><div class="row"><span class="grow">${label}</span><span class="muted">${sub}</span></div>
+    <div class="hbar"><div style="width:${100 * val / max}%;background:${color}"></div></div></div>`;
+  const projTxt = pc.actual >= 99.9 ? "Done 🎓" : pc.projected ? fmtDate(pc.projected, { day: "numeric", month: "short", year: "numeric" }) : "—";
+  const late = pc.projected && pc.projected > S.settings.targetDate;
+  view().innerHTML = `<div class="row"><h1 class="grow">Progress</h1><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+  ${statusWindow(pr, pc, r)}
+  <div class="card" style="display:flex;gap:16px;align-items:center">
+    <div class="ring big" style="--p:${pr.total}"><div>${pr.total.toFixed(0)}%<small>of A1</small></div></div>
+    <div class="grow bars">
+      ${bar("🔤 Vocabulary", pr.vocab, WEIGHTS.vocab, `${wDone}/${C.content.words.length}`, "var(--green)")}
+      ${bar("📐 Grammar", pr.grammar, WEIGHTS.grammar, `${cnt(nG)}/${nG.length}`, "var(--blue)")}
+      ${bar("💬 Phrases", pr.phrases, WEIGHTS.phrases, `${cnt(nP)}/${nP.length}`, "#ce82ff")}
+    </div></div>
+  <div class="card"><div class="row"><div class="grow" style="font-weight:800">Pace to ${fmtDate(S.settings.targetDate, { day: "numeric", month: "short", year: "numeric" })}</div>${paceLine(pc)}</div>
+    ${chartSVG(pc)}
+    <div class="legend"><span><i style="background:var(--muted)"></i>Expected pace</span><span><i style="background:var(--green)"></i>Your progress</span><span><i style="background:var(--green);opacity:.5"></i>Projection at current pace</span></div>
+    <div class="stat-grid" style="margin-top:12px">
+      <div class="tile"><span>Expected today</span><b>${pc.expected.toFixed(1)}%</b></div>
+      <div class="tile"><span>You are at</span><b>${pc.actual.toFixed(1)}%</b></div>
+      <div class="tile"><span>Needed pace</span><b>${pc.needLessonsPerWeek.toFixed(1)}</b><span class="tiny"> lessons / week</span></div>
+      <div class="tile"><span>Your pace (14 d)</span><b>${pc.actualLessonsPerWeek.toFixed(1)}</b><span class="tiny"> lessons / week</span></div>
+      <div class="tile"><span>Projected finish</span><b style="color:${late ? "var(--amber)" : "var(--green)"}">${projTxt}</b></div>
+      <div class="tile"><span>Days left</span><b>${pc.left}</b></div>
+    </div>
+    <p class="muted tiny">A1 % = vocabulary ${WEIGHTS.vocab}% (by words) + grammar ${WEIGHTS.grammar}% (20 chapters) + phrases ${WEIGHTS.phrases}% (14 topics). Expected pace is a straight line from your start date to your target.</p>
+  </div>
+  <div class="card"><div style="font-weight:800;margin-bottom:6px">🧠 Memory</div>
+    <div class="stat-grid">
+      <div class="tile"><span>Learning</span><b style="color:var(--amber)">${r.learning}</b></div>
+      <div class="tile"><span>Known (1 wk+)</span><b style="color:var(--green)">${r.known}</b></div>
+      <div class="tile"><span>Mastered (1 mo+)</span><b style="color:#e0a800">${r.mastered}</b></div>
+      <div class="tile"><span>Due now</span><b style="color:var(--blue)">${dueWords().length}</b></div>
+      <div class="tile"><span>Memory health</span><b style="color:${memory().health < 0.85 ? "var(--red)" : "var(--green)"}">${Math.round(memory().health * 100)}%</b></div>
+      <div class="tile"><span>Overdue · Forgotten</span><b>${memory().overdue} · ${memory().lapsed}</b></div>
+    </div>
+    ${memWarn()}
+    <p class="muted small" style="margin-bottom:0">🔥 ${streak()} day streak · ⚡ ${totalXP()} XP total</p></div>
+  <div class="card"><div class="row"><div class="grow" style="font-weight:800">⚡ XP</div><button class="link" id="xph">How is XP measured?</button></div>
+    <div class="stat-grid"><div class="tile"><span>Today</span><b>${xpToday()}<span class="tiny muted">/${goalFor()}</span></b></div>
+    <div class="tile"><span>Total</span><b>${totalXP()}</b></div>
+    <div class="tile"><span>Last 7 days</span><b>${[0,1,2,3,4,5,6].reduce((a, k) => a + (S.xp[addDays(today(), -k)] || 0), 0)}</b></div>
+    <div class="tile"><span>Days goal met</span><b>${Object.values(S.xp).filter(v => v >= goalFor()).length}</b></div></div>
+    ${(S.penLog || []).length ? `<div class="small" style="margin-top:10px"><b style="color:var(--red)">Penalties: −${Object.values(S.pen).reduce((a, b) => a + b, 0)} XP</b>
+      ${S.penLog.slice(-4).reverse().map(p => `<div class="muted tiny">${fmtDate(p.d)} · −${p.xp} XP · ${esc(p.why)}</div>`).join("")}</div>` : ""}</div>
+`;
+  const v = view();
+  v.insertAdjacentHTML("beforeend", `<div id="cmp"></div>`); wireTop(); fillCompare();
+  v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
+}
+
+// ------------------------------------------------------------------ settings
+function settingsView() {
+  const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
+  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+  <div class="card"><div class="sys-h">Goal & pace</div><div style="font-weight:800">🎯 Goal & pace</div>
+    <label class="f">Target completion date (A1 reached)</label><input type="date" id="tg" value="${S.settings.targetDate}" min="${addDays(today(), 7)}">
+    <p class="muted small" style="margin:6px 0 0">${daysLeft > 0 ? `${daysLeft} days left` : "Target date has passed"} · ${p.nWeeks} weeks planned (Mon–Sun). Changing the date re-spreads all lessons across the weeks.</p>
+    <label class="f">Pace counted from</label><input type="date" id="sd" value="${S.settings.startDate}">
+    <label class="f">Daily goal</label>
+    <select id="gm"><option value="auto" ${S.settings.goalMode !== "manual" ? "selected" : ""}>Auto – reach A1 by the target date (recommended)</option><option value="manual" ${S.settings.goalMode === "manual" ? "selected" : ""}>Manual – my own fixed goal</option></select>
+    ${S.settings.goalMode === "manual" ? `<label class="f">My daily goal (XP)</label><input type="number" id="dg" min="10" step="10" value="${S.settings.dailyGoal}">`
+      : `<div class="note" style="margin-top:8px">Today's goal: <b>${goalFor()} XP</b> · about ${remainingXP()} XP of lessons left over ${Math.max(1, daysBetween(today(), S.settings.targetDate) + 1)} days, plus daily reviews. It is set each morning and goes up if you fall behind, down if you get ahead.</div>`}
+    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
+    <button class="link" id="xph">How is XP measured?</button></div>
+  <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
+    <label class="f">Theme</label><select id="th"><option value="system" ${S.settings.theme === "system" || !S.settings.theme ? "selected" : ""}>⚔️ Hunter System</option><option value="system3" ${S.settings.theme === "system3" ? "selected" : ""}>🛡️ Hunter Mid</option><option value="system2" ${S.settings.theme === "system2" ? "selected" : ""}>🗡️ Hunter Simple</option><option value="calm" ${S.settings.theme === "calm" ? "selected" : ""}>🌿 Calm</option><option value="classic" ${S.settings.theme === "classic" ? "selected" : ""}>🟢 Classic</option></select>
+    <label class="f">Hero</label><select id="hero">${Object.entries(HERO_STYLES).map(([k, n]) => `<option value="${k}" ${heroStyle() === k ? "selected" : ""}>${k === "f" ? "🗡️" : "⚔️"} ${n}</option>`).join("")}</select>
+    <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
+    <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
+    <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label></div>
+  <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
+    <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
+    <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
+  <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
+    <p class="muted small">Progress is saved on your Mac (A1-App/progress/${esc(USER)}.json, with a daily backup). You can also export a copy here.</p>
+    <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
+    <input type="file" id="imf" accept="application/json" hidden>
+    <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset ${esc(userInfo(USER).name)}'s progress…</button></div>
+  <div class="card"><div class="sys-h">Profile</div><div class="row"><div class="grow"><b>Learner</b><div class="muted small">${esc(userInfo(USER).name)}</div></div>
+    <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`;
+  const v = view();
+  wireTop();
+  v.querySelector("#swu").onclick = userSheet;
+  v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
+  const setS = (k, val) => { S.settings[k] = val; save(); };
+  v.querySelector("#tg").onchange = e => {
+    const t = e.target.value;
+    if (!t || t <= today()) return toast("Pick a target date in the future"), (e.target.value = S.settings.targetDate);
+    if (t <= S.settings.startDate) return toast("Target must be after the start date"), (e.target.value = S.settings.targetDate);
+    setS("targetDate", t); toast(`Target set to ${fmtDate(t, { day: "numeric", month: "long", year: "numeric" })}`); settingsView();
+  };
+  v.querySelector("#sd").onchange = e => { if (e.target.value && e.target.value < S.settings.targetDate) { setS("startDate", e.target.value); settingsView(); } else { toast("Start must be before the target"); e.target.value = S.settings.startDate; } };
+  const dg = v.querySelector("#dg"); if (dg) dg.onchange = e => setS("dailyGoal", Math.max(10, +e.target.value || 50));
+  v.querySelector("#gm").onchange = e => { setS("goalMode", e.target.value); if (e.target.value === "manual" && !S.settings.dailyGoal) setS("dailyGoal", goalFor()); settingsView(); };
+  v.querySelector("#th").onchange = e => { setS("theme", e.target.value); applyTheme(); settingsView(); };
+  v.querySelector("#hero").onchange = e => { setHero(e.target.value); toast(`${HERO_STYLES[e.target.value]} selected`); settingsView(); };
+  v.querySelector("#hi").onchange = e => setS("hindi", e.target.checked);
+  v.querySelector("#ap").onchange = e => setS("autoplay", e.target.checked);
+  v.querySelector("#snd").onchange = e => setS("sound", e.target.checked);
+  v.querySelector("#dl").onclick = downloadAudio;
+  v.querySelector("#ex").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([exportState()], { type: "application/json" }));
+    a.download = `deutsch-a1-backup-${today()}.json`; a.click();
+  };
+  v.querySelector("#im").onclick = () => v.querySelector("#imf").click();
+  v.querySelector("#imf").onchange = async e => {
+    try { importState(await e.target.files[0].text()); toast("Backup restored"); settingsView(); } catch (err) { toast("Could not read that file"); }
+  };
+  v.querySelector("#reset").onclick = () => sheet(`<h2 style="margin-top:0">Reset ${esc(userInfo(USER).name)}'s progress?</h2><p class="muted">All of ${esc(userInfo(USER).name)}'s lessons, words, XP and streak will be deleted (yesterday's backup stays in A1-App/progress/backups). Export a backup first if unsure.</p>
+    <button class="btn red" id="yes">Delete all progress</button><button class="btn ghost" id="no">Cancel</button>`, el => {
+    el.querySelector("#no").onclick = closeSheet;
+    el.querySelector("#yes").onclick = () => { resetAll(); closeSheet(); location.hash = "#/today"; route(); };
+  });
+}
+
+async function downloadAudio() {
+  const st = view().querySelector("#dlst");
+  if (!("caches" in window)) { st.textContent = "This browser can't store files offline."; return; }
+  const ids = new Set();
+  C.content.words.forEach(w => { w.a && ids.add(w.a); (w.ex || []).forEach(e => e.a && ids.add(e.a)); });
+  C.content.grammar.forEach(g => g.ex.forEach(e => e.a && ids.add(e.a)));
+  C.content.phrases.forEach(p => p.items.forEach(i => i.a && ids.add(i.a)));
+  const cache = await caches.open("a1-audio-v1");
+  const list = [...ids]; let done = 0, fail = 0;
+  const work = async () => {
+    while (list.length) {
+      const id = list.pop(), url = `audio/${id}.mp3`;
+      try { if (!(await cache.match(url))) { const r = await fetch(url); if (r.ok) await cache.put(url, r); else fail++; } } catch { fail++; }
+      done++; if (done % 25 === 0 || !list.length) st.textContent = `${done} / ${ids.size} clips saved${fail ? ` (${fail} failed)` : ""}`;
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, work));
+  st.textContent = `✅ ${ids.size - fail} clips saved for offline use${fail ? ` · ${fail} failed – try again later` : ""}`;
+}
+
+// ------------------------------------------------------------------ course picker (homepage: what to study)
+const pickKey = () => `a1.picked.${USER}`;
+function picked() { try { return sessionStorage.getItem(pickKey()) === COURSE; } catch { return true; } }
+function unpick() { try { sessionStorage.removeItem(pickKey()); } catch { /* ignore */ } }
+function markPicked() { try { sessionStorage.setItem(pickKey(), COURSE); } catch { /* ignore */ } }
+function courseView() {
+  document.body.classList.add("in-lesson"); // full-screen, no tabs
+  const groups = {};
+  COURSES.forEach(c => (groups[c.group || "Courses"] = groups[c.group || "Courses"] || []).push(c));
+  const sm = S && S.setup ? summary(S) : null;
+  view().innerHTML = `<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+    <div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Select a path</div><h1>What do you want to study?</h1>
+    <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p>
+    <button class="herochip" id="hc">${heroHTML(sm ? sm.lv : 1, "sm")}<span>Your hero: <b>${HERO_STYLES[heroStyle()]}</b></span><span class="muted small">Change ›</span></button></div>
+    ${Object.entries(groups).map(([g, cs]) => `<h3>${esc(g)}</h3><div class="courses">${cs.map(c => {
+      const here = sm && c.id === COURSE;
+      return `<button class="course ${c.status !== "ready" ? "soon" : ""} ${c.id === COURSE ? "cur" : ""}" data-c="${c.id}" ${c.status !== "ready" ? "disabled" : ""} style="--c:${c.color || "#5aa9ff"}">
+        <span class="cicon">${esc(c.icon)}</span><span class="grow"><b>${esc(c.title)}</b>
+        <span class="muted small">${here ? `Lv ${sm.lv} · ${sm.rank}-Rank · ${sm.pct.toFixed(0)}% done` : esc(c.subtitle || "")}</span></span>
+        <span class="cgo">${c.status === "ready" ? (here ? "Continue ›" : "Start ›") : "Coming Soon"}</span></button>`; }).join("")}</div>`).join("")}`;
+  wireTop();
+  view().querySelectorAll(".course[data-c]:not([disabled])").forEach(b => (b.onclick = async () => {
+    b.disabled = true;
+    if (b.dataset.c !== COURSE || !S) await switchCourse(b.dataset.c); else setCourse(b.dataset.c);
+    markPicked(); document.body.classList.remove("in-lesson");
+    if (location.hash !== "#/today") location.hash = "#/today"; else route();
+  }));
+  view().querySelector("#hc").onclick = () => heroPickView(true);
+}
+
+// ------------------------------------------------------------------ skill-tree courses (Software Engineering)
+const name0 = h => h.split("/")[1];
+let treeBranch = null;
+const treeNodes = b => (C.content.nodes || []).filter(n => n.branch === b);
+const nodeDone = id => !!(S.tree || {})[id];
+const nodeOpen = n => n.req.every(nodeDone);
+function treeView() {
+  document.body.classList.add("in-lesson");                 // full screen: language tabs don't apply here
+  S.tree = S.tree || {};
+  const T = C.content, branches = [...T.branches].sort((a, b) => a.order - b.order);
+  if (!treeBranch || !branches.some(b => b.id === treeBranch)) treeBranch = (branches.find(b => b.status === "open") || branches[0]).id;
+  const br = branches.find(b => b.id === treeBranch), nodes = treeNodes(br.id), done = nodes.filter(n => nodeDone(n.id)).length;
+  view().innerHTML = `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button>
+      <button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} ${esc(C.course.title)} ▾</button><span class="grow"></span>
+      <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>
+    <div class="card"><div class="sys-h">Skill tree</div><div style="font-size:21px;font-weight:800">${esc(T.title)}</div>
+      <div class="muted small">Pick a branch. Each skill unlocks the ones below it.</div></div>
+    <div class="branches">${branches.map(b => `<button class="branch ${b.id === br.id ? "on" : ""} ${b.status !== "open" ? "soon" : ""}" data-b="${b.id}" style="--c:${b.color}">
+      <span class="bi">${b.icon}</span><span>${esc(b.title)}</span>${b.status !== "open" ? `<span class="tiny">Soon</span>` : ""}</button>`).join("")}</div>
+    ${br.status === "open" ? `<div class="card" style="--c:${br.color}"><div class="row"><div class="grow"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div>
+        <div class="muted small">${done} of ${nodes.length} skills learned · about ${nodes.reduce((a, n) => a + n.mins, 0)} min of reading</div></div>
+        ${br.intro != null ? `<button class="btn ghost sm" id="intro" style="width:auto;margin:0">📖 About</button>` : ""}</div>
+        <div class="hbar" style="margin-top:8px"><div style="width:${100 * done / nodes.length}%;background:${br.color}"></div></div>
+        ${br.reading ? `<div class="tiny muted dlbar" id="dlbar"></div>` : ""}</div>
+      <div class="treebox">${treeSVG(nodes, br.color)}</div>`
+    : `<div class="card"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div><p class="muted small">Coming soon. Planned skills:</p>
+        <ol class="planned">${(br.planned || []).map(p => `<li>${esc(p)}</li>`).join("")}</ol></div>`}`;
+  wireTop();
+  view().querySelectorAll(".branch").forEach(b => (b.onclick = () => { treeBranch = b.dataset.b; treeView(); }));
+  view().querySelectorAll(".tnode").forEach(g => (g.onclick = () => nodeSheet(g.dataset.id)));
+  const ib = view().querySelector("#intro"); if (ib) ib.onclick = () => openReader(br, null);
+  if (br.status === "open") fillDownloads(br);
+  const on = view().querySelector(".branch.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+  window.scrollTo(0, 0);
+}
+const wrapT = t => { const w = t.split(" "), out = [""]; w.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > 15) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out.slice(0, 2); };
+const wrapN = t => wrapT(t).length;
+function treeSVG(nodes, color) {
+  const W = 340, top = 40, gapY = 104, X = c => [62, 170, 278][c], Y = l => top + l * gapY;
+  const maxL = Math.max(...nodes.map(n => n.level)), H = Y(maxL) + 70;
+  const by = Object.fromEntries(nodes.map(n => [n.id, n]));
+  let edges = "", body = "";
+  for (const n of nodes) for (const r of n.req) {
+    const p = by[r]; if (!p) continue;
+    const x1 = X(p.col), y1 = Y(p.level) + 27 + (wrapN(p.title) * 13) + 8, x2 = X(n.col), y2 = Y(n.level) - 27, my = (y1 + y2) / 2;
+    edges += `<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" class="tedge ${nodeDone(r) ? "lit" : ""}" style="--c:${color}"/>`;
+  }
+  const wrap = wrapT;
+  for (const n of nodes) {
+    const st = nodeDone(n.id) ? "done" : nodeOpen(n) ? "open" : "locked", x = X(n.col), y = Y(n.level);
+    body += `<g class="tnode ${st} ${n.boss ? "boss" : ""}" data-id="${n.id}" style="--c:${color}" tabindex="0" role="button" aria-label="${esc(n.title)} (${st})">
+      <circle cx="${x}" cy="${y}" r="${n.boss ? 30 : 26}" class="tc"/>
+      ${st === "open" ? `<circle cx="${x}" cy="${y}" r="${n.boss ? 36 : 32}" class="tring"/>` : ""}
+      <text x="${x}" y="${y + 7}" text-anchor="middle" font-size="22">${st === "locked" ? "🔒" : n.icon}</text>
+      ${st === "done" ? `<circle cx="${x + 19}" cy="${y - 19}" r="8" class="tcheck"/><text x="${x + 19}" y="${y - 15.5}" text-anchor="middle" font-size="10" fill="#0b1222" font-weight="900">✓</text>` : ""}
+      ${wrap(n.title).map((l, i) => `<text x="${x}" y="${y + 44 + i * 13}" text-anchor="middle" class="tlabel">${esc(l)}</text>`).join("")}</g>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:420px;display:block;margin:0 auto">${edges}${body}</svg>`;
+}
+function nodeSheet(id) {
+  const n = C.content.nodes.find(x => x.id === id), T = C.content, st = nodeDone(id) ? "done" : nodeOpen(n) ? "open" : "locked";
+  const need = n.req.filter(r => !nodeDone(r)).map(r => C.content.nodes.find(x => x.id === r).title);
+  const dependents = C.content.nodes.filter(x => x.req.includes(id) && nodeDone(x.id));
+  sheet(`<div class="row" style="gap:12px;align-items:center"><div class="nodeicon">${n.icon}</div><div class="grow">
+      <div class="tiny muted" style="letter-spacing:1px;text-transform:uppercase">Skill ${n.n} · about ${n.mins} min</div>
+      <h2 style="margin:2px 0 0">${esc(n.title)}</h2></div></div>
+    ${st === "locked" ? `<div class="note" style="margin-top:10px">🔒 Unlocks after: <b>${need.map(esc).join(", ")}</b></div>` : ""}
+    <div style="font-weight:800;margin:14px 0 4px">What you'll learn</div><ul class="small" style="margin:0;padding-left:18px">${n.learn.map(l => `<li>${esc(l)}</li>`).join("")}</ul>
+    <div style="font-weight:800;margin:12px 0 6px">Key ideas</div><div class="chips">${n.concepts.map(c => `<span class="chipx">${esc(c)}</span>`).join("")}</div>
+    <div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div><div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>
+    ${st !== "locked" ? `<button class="btn" id="read" style="margin-top:14px">${readLabel(n, st)}</button><div class="tiny muted" id="dlst" style="text-align:center;margin-top:4px"></div>` : ""}
+    ${st === "done" ? `<div class="note" style="margin-top:8px">✅ Learned on ${fmtDate(S.tree[id])}</div>${dependents.length ? "" : `<button class="link" id="undo">Undo</button>`}` : ""}
+    <button class="btn ghost" id="close">Close</button>`, el => {
+    el.querySelector("#close").onclick = closeSheet;
+    const brN = C.content.branches.find(b => b.id === n.branch), dl = el.querySelector("#dlst");
+    if (dl && brN.reading) loadIndex(brN).then(async idx => {
+      const info = idx.chapters[String(n.chapter)]; if (!info) return;
+      dl.textContent = (await isDownloaded(brN, n.chapter)) ? `✓ Saved on this phone · ${info.cards} cards` : `${info.cards} cards · ${kb(info.bytes)} · downloads when you start`;
+    }).catch(() => {});
+    const R0 = el.querySelector("#read");
+    if (R0) R0.onclick = () => { closeSheet(); openReader(C.content.branches.find(b => b.id === n.branch), n); };
+    const U = el.querySelector("#undo");
+    if (U) U.onclick = () => { delete S.tree[id]; save(); closeSheet(); treeView(); };
+  });
+}
+
+// ---- in-app reader: each skill's chapter as bite-sized cards (built by tools/build_se_content.py)
+// Reading is NOT bundled with the app: each chapter is a small file fetched from the Mac the first time a skill
+// is opened. Over HTTPS the service worker keeps a copy (cache "a1-content-v1") so it works offline;
+// learners can download a whole branch or remove downloads to free space.
+const CONTENT_CACHE = "a1-content-v1";
+const readingCache = {};
+const chapterUrl = (br, ch) => `${br.reading}${String(ch).padStart(2, "0")}.json`;
+const canDownload = () => "caches" in window && !!navigator.serviceWorker && !!navigator.serviceWorker.controller;
+async function loadChapter(br, ch) {
+  const u = chapterUrl(br, ch);
+  if (!readingCache[u]) { const r = await fetch(u); if (!r.ok) throw new Error(r.status); readingCache[u] = await r.json(); }
+  return readingCache[u];
+}
+async function loadIndex(br) {
+  const u = br.reading + "index.json";
+  if (!readingCache[u]) readingCache[u] = await (await fetch(u)).json();
+  return readingCache[u];
+}
+async function isDownloaded(br, ch) {
+  if (!canDownload()) return false;
+  try { return !!(await (await caches.open(CONTENT_CACHE)).match(new URL(chapterUrl(br, ch), location.href).href, { ignoreSearch: true })); } catch { return false; }
+}
+const kb = b => b < 1024 ? `${b} B` : `${Math.round(b / 1024)} KB`;
+async function fillDownloads(br) {
+  const el = view().querySelector("#dlbar"); if (!el || !br.reading) return;
+  let idx; try { idx = await loadIndex(br); } catch { el.textContent = ""; return; }
+  const chs = Object.keys(idx.chapters), total = chs.reduce((a, c) => a + idx.chapters[c].bytes, 0);
+  if (!canDownload()) { el.innerHTML = `📖 Reading loads from the Mac when you open a skill (${kb(total)} in total). Offline downloads need HTTPS.`; return; }
+  const have = [];
+  for (const c of chs) if (await isDownloaded(br, c)) have.push(c);
+  const size = have.reduce((a, c) => a + idx.chapters[c].bytes, 0);
+  el.innerHTML = `📥 On this phone: <b>${have.length}/${chs.length}</b> chapters (${kb(size)} of ${kb(total)})
+    ${have.length < chs.length ? `<button class="link" id="dlall">Download all</button>` : ""}${have.length ? `<button class="link" id="dlrm">Remove</button>` : ""}`;
+  const a = el.querySelector("#dlall"), r = el.querySelector("#dlrm");
+  if (a) a.onclick = async () => { a.textContent = "Downloading…"; for (const c of chs) { try { await fetch(chapterUrl(br, c)); } catch { /* offline */ } } fillDownloads(br); toast("Saved for offline reading"); };
+  if (r) r.onclick = async () => { const cache = await caches.open(CONTENT_CACHE); for (const c of chs) await cache.delete(new URL(chapterUrl(br, c), location.href).href, { ignoreSearch: true }); Object.keys(readingCache).forEach(k => k.startsWith(br.reading) && delete readingCache[k]); fillDownloads(br); toast("Downloads removed"); };
+}
+function readLabel(n, st) {
+  const pos = (S.read || {})[n.id];
+  if (st === "done") return "📖 Read again";
+  return pos ? `📖 Continue reading (card ${pos + 1})` : "📖 Start reading";
+}
+async function openReader(br, node) {
+  let ch = null;
+  if (br.reading) { try { ch = await loadChapter(br, node ? node.chapter : br.intro); } catch { ch = null; } }
+  if (!ch) { toast(navigator.onLine ? "Reading material for this skill isn't available yet." : "Can't reach the Mac to download this skill. Try again on home Wi-Fi."); return; }
+  S.read = S.read || {};
+  const key = node ? node.id : br.id + ".intro";
+  let i = Math.min(S.read[key] || 0, ch.cards.length - 1);
+  if (node && nodeDone(node.id) && i >= ch.cards.length - 1) i = 0;           // re-reading a finished skill starts over
+  document.body.classList.add("in-lesson");
+  const T = C.content;
+  const draw = () => {
+    const c = ch.cards[i], last = i === ch.cards.length - 1, pct = Math.round(100 * (i + 1) / ch.cards.length);
+    const finishLabel = node && !nodeDone(node.id) && nodeOpen(node) ? `Finish · +${T.xpPerSkill} XP` : "Done";
+    view().innerHTML = `<div class="lesson-top"><button class="x" id="rx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i + 1} / ${ch.cards.length}</span></div>
+      <div class="reader" id="rd">
+        <div class="r-eyebrow">${node ? `${node.icon} ${esc(node.title)}` : `${br.icon} ${esc(br.title)}`}</div>
+        <div class="q-title r-sec">${esc(c.s)}</div>${c.sub ? `<div class="r-sub">${esc(c.sub)}</div>` : ""}
+        <div class="rcard">${c.html}</div></div>
+      <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="rb" ${i === 0 ? "disabled" : ""} style="margin:0">‹ Back</button>
+        <button class="btn grow" id="rn" style="margin:0">${last ? finishLabel : "Next ›"}</button></div></div>`;
+    window.scrollTo(0, 0);
+    view().querySelector("#rx").onclick = () => { treeView(); };
+    view().querySelector("#rb").onclick = () => { if (i > 0) { i--; S.read[key] = i; save(); draw(); } };
+    view().querySelector("#rn").onclick = () => {
+      if (!last) { i++; S.read[key] = i; save(); draw(); return; }
+      S.read[key] = 0;
+      if (node && !nodeDone(node.id) && nodeOpen(node)) {
+        S.tree[node.id] = today(); addXP(T.xpPerSkill);
+        const left = treeNodes(node.branch).filter(x => !nodeDone(x.id)).length;
+        toast(left ? `${node.icon} ${node.title} learned! +${T.xpPerSkill} XP` : `👑 Branch complete! You mastered ${br.title}`);
+      } else save();
+      treeView();
+    };
+    // swipe left/right to move between cards
+    const rd = view().querySelector("#rd"); let x0 = null, y0 = null;
+    rd.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    rd.addEventListener("touchend", e => {
+      if (x0 == null || e.target.closest("pre, .tablewrap")) return;            // let code and tables scroll sideways
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) view().querySelector(dx < 0 ? "#rn" : "#rb").click();
+    });
+  };
+  draw();
+}
+
+// ------------------------------------------------------------------ hero choice (Hunter / Huntress), per learner
+const heroKey = () => `a1.hero.${USER}`;
+// returns false when this learner hasn't picked a hero yet
+function syncHero() {
+  let h = S.settings.hero;
+  if (!h) { try { h = localStorage.getItem(heroKey()); } catch { /* ignore */ } if (h) { S.settings.hero = h; save(); } } // carry the choice into other courses
+  setHeroStyle(h || "m");
+  return !!h;
+}
+function setHero(h) {
+  S.settings.hero = h; save();
+  try { localStorage.setItem(heroKey(), h); } catch { /* ignore */ }
+  setHeroStyle(h);
+}
+function heroPickView(back = false) {
+  document.body.classList.add("in-lesson");
+  const lv = S && S.setup ? level(progress().total).lv : 1, cur = S.settings.hero;
+  view().innerHTML = `<div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Choose your hero</div>
+    <h1>Hallo ${esc(userInfo(USER).name)}!</h1><p class="muted">Pick the hero who levels up with you. You can change it any time in Settings.</p></div>
+    <div class="heropick">${Object.entries(HERO_STYLES).map(([k, name]) => `<button class="hp ${cur === k ? "cur" : ""}" data-h="${k}">${heroHTML(lv, "big", k)}
+      <b>${name}</b><span class="muted small">${k === "f" ? "Heldin" : "Held"}</span></button>`).join("")}</div>
+    ${back ? `<button class="btn ghost" id="hb" style="margin-top:14px">Back</button>` : ""}`;
+  view().querySelectorAll(".hp").forEach(b => (b.onclick = () => { setHero(b.dataset.h); toast(`${HERO_STYLES[b.dataset.h]} selected`); route(); }));
+  const hb = view().querySelector("#hb"); if (hb) hb.onclick = () => route();
+}
+
+// ------------------------------------------------------------------ Hunter System theme
+function applyTheme() {
+  const t = S ? S.settings.theme : (localStorage.getItem("a1.theme") || "system");
+  try { localStorage.setItem("a1.theme", t); } catch { /* ignore */ }
+  document.body.classList.toggle("theme-sl", t === "system" || t === "system2" || t === "system3");
+  document.body.classList.toggle("theme-sl2", t === "system2");
+  document.body.classList.toggle("theme-sl3", t === "system3");
+  document.body.classList.toggle("theme-calm", t === "calm");
+  applyAura(S && S.setup && courseInfo(COURSE).type !== "tree" ? level(progress().total).lv : 1);
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.content = t === "system" || t === "system2" || t === "system3" ? "#0a0f1a" : t === "calm" ? "#f6f3ee" : "#58a700";
+}
+const RANK_TITLE = { E: "E-Rank Hunter", D: "D-Rank Hunter", C: "C-Rank Hunter", B: "B-Rank Hunter", A: "A-Rank Hunter", S: "S-Rank Hunter" };
+function playerBar() {
+  const L = level(progress().total), rk = rank(progress().total);
+  return `<div class="player sl-only">${heroHTML(L.lv, "sm")}<div class="rank ${rk.r}">${rk.r}</div>
+    <div class="grow"><div class="lv">Level <b>${L.lv}</b> · ${RANK_TITLE[rk.r]}</div>
+    <div class="hbar" style="margin-top:4px"><div style="width:${100 * L.frac}%"></div></div>
+    <div class="tiny muted" style="margin-top:2px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1}`}</div></div>
+    <div class="stat" style="font-size:18px">🔥 ${streak()}</div></div>`;
+}
+function questStatus(due) {
+  const t = today(), g = goalFor(), x = xpToday();
+  const newToday = (S.log || []).filter(l => l.d === t).length; // any finished part / lesson today
+  const revDone = S.reviews[t] || 0, revGoal = Math.min(20, due.length + revDone);
+  const q = [
+    { ok: x >= g, txt: `Earn ${g} XP`, v: `${x}/${g}` },
+    { ok: newToday >= 1, txt: "Clear 1 lesson part", v: `${Math.min(newToday, 1)}/1` },
+    { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Recall all ${revGoal} due words` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
+  ];
+  return { q, all: q.every(i => i.ok), x };
+}
+function dailyQuest(due) {
+  const { q, all, x } = questStatus(due), paid = S.questDays && S.questDays[today()];
+  return `<div class="card sl-only"><div class="sys-h"><span class="ex">!</span> Daily quest</div>
+    <div class="small muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">TRAINING FOR ${esc((C.course && C.course.title) || "YOUR COURSE").toUpperCase()} HAS ARRIVED</div>
+    ${q.map(i => `<div class="quest ${i.ok ? "ok" : ""}"><span class="box">${i.ok ? "✓" : ""}</span>${esc(i.txt)}<span class="v">${i.v}</span></div>`).join("")}
+    <div class="small" style="text-align:center;margin-top:8px;letter-spacing:1px;color:${all ? "#57e3a0" : "var(--muted)"}">
+      ${all ? `QUEST COMPLETE · 💎 +${QUEST_GEMS} ${paid ? "COLLECTED" : ""}` : `REWARD: 💎 ${QUEST_GEMS}`}</div>
+    ${!all && x === 0 && streak() > 0 ? `<div class="warn-line">⚠ Earn at least 1 XP before midnight to keep your 🔥 ${streak()} day streak.</div>` : ""}</div>`;
+}
+function statusWindow(pr, pc, r) {
+  const L = level(pr.total), rk = rank(pr.total);
+  const scores = Object.values(S.done).map(d => d.score).filter(v => v != null);
+  const acc = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const nG = Object.keys(S.done).filter(id => id.startsWith("g")).length, nP = Object.keys(S.done).filter(id => id.startsWith("p")).length;
+  return `<div class="card sl-only"><div class="sys-h">Status</div>
+    ${heroHTML(L.lv, "big")}<div class="hero-cap">Form: <b>${form(stageFor(L.lv)).name}</b> (${esc(form(stageFor(L.lv)).de)}) · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
+    <div class="row" style="margin-bottom:10px"><div class="rank ${rk.r}" style="width:58px;height:58px;font-size:32px">${rk.r}</div>
+      <div class="grow"><div style="font-size:22px;font-weight:700;letter-spacing:1px">${esc(userInfo(USER).name.toUpperCase())}</div>
+      <div class="muted small">Title: ${RANK_TITLE[rk.r]}${rk.next ? ` · ${rk.next}-Rank at ${rk.nextAt}% of A1` : " · highest rank"}</div></div>
+      <div style="text-align:right"><div class="lv">Level</div><div style="font-size:34px;font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:14px">/${A1_LEVEL}</span>`}</div></div></div>
+    <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
+    <div class="statgrid">
+      <div><span>📖 Words</span><b>${r.learned}</b></div><div><span>🏆 Mastered</span><b>${r.mastered}</b></div>
+      <div><span>📐 Grammar</span><b>${nG}/20</b></div><div><span>💬 Phrases</span><b>${nP}/14</b></div>
+      <div><span>🔥 Streak</span><b>${streak()}</b></div><div><span>🎯 Accuracy</span><b>${acc}%</b></div>
+      <div><span>⚡ Total XP</span><b>${totalXP()}</b></div><div><span>📈 A1</span><b>${pr.total.toFixed(1)}%</b></div>
+    </div></div>`;
+}
+
+function memWarn() {
+  const m = memory(), pr = progress();
+  const loss = level(pr.coverage).lv - level(pr.total).lv;
+  if (!m.overdue && !m.lapsed) return "";
+  return `<div class="warn-line">⚠ ${m.overdue ? `${m.overdue} overdue` : ""}${m.overdue && m.lapsed ? " · " : ""}${m.lapsed ? `${m.lapsed} forgotten` : ""} – ${loss > 0 ? `costing you ${loss} level${loss > 1 ? "s" : ""}` : "they start fading from your level"}. Review to win it back.</div>`;
+}
+function levelWatch() {
+  // levels were re-scaled (level 100 = A1): adopt the current level once, without a false "level down"
+  if (S.lvScale !== 100) { S.lvScale = 100; S.lastLv = level(progress().total).lv; save(); }
+  const lv = level(progress().total).lv, prev = S.lastLv || lv;
+  if (lv < prev) {
+    const m = memory();
+    sheet(`<div class="sysbanner" style="border-color:#ff7f97;box-shadow:0 0 16px rgba(255,77,109,.6)">⚠ System</div>
+      <h2 style="margin-top:0;color:#ff8ea3">Level down: ${prev} → ${lv}</h2>
+      <p>${m.overdue} word${m.overdue === 1 ? " is" : "s are"} overdue${m.lapsed ? ` and ${m.lapsed} forgotten` : ""}. Words you don't review fade from your A1 %, so your level dropped.</p>
+      <p class="muted small">Do your reviews to recover the levels.</p><button class="btn" id="ok">Start review</button><button class="btn ghost" id="later">Later</button>`, el => {
+      el.querySelector("#ok").onclick = () => { closeSheet(); const d = dueWords(); if (d.length) startReview(d.slice(0, 20)); };
+      el.querySelector("#later").onclick = closeSheet;
+    });
+  }
+  if (lv !== S.lastLv) { S.lastLv = lv; save(); }
+}
+
+// ------------------------------------------------------------------ diamonds & gift boxes
+const unopened = () => (S.gifts || []).filter(g => !g.opened);
+function gemChip() {
+  const n = unopened().length;
+  return `<button class="gemchip" id="gem" aria-label="Total XP and diamonds">⚡ <b>${totalXP()}</b><span class="sep"></span>💎 <b>${S.gems || 0}</b>${n ? `<span class="giftbadge">🎁${n > 1 ? n : ""}</span>` : ""}</button>`;
+}
+const boxHTML = (tier, cls = "") => `<div class="giftbox ${cls}" style="--c:${TIERS[tier].color}"><div class="lid"></div><div class="body"></div></div>`;
+function giftEarnedSheet(gifts) {
+  const g = gifts[gifts.length - 1];
+  sheet(`<div style="text-align:center"><div class="sysbanner">🎁 Reward</div>
+    <h2 style="margin-top:0">${g.m}-day streak!</h2>${boxHTML(g.tier, "shake")}
+    <p>You earned ${gifts.length > 1 ? `${gifts.length} gift boxes` : `a <b style="color:${TIERS[g.tier].color}">${TIERS[g.tier].name}</b> gift box`}.</p>
+    <button class="btn" id="open">Open now</button><button class="btn ghost" id="later">Later</button></div>`, el => {
+    el.querySelector("#open").onclick = () => openGiftSheet(g.id);
+    el.querySelector("#later").onclick = closeSheet;
+  });
+}
+function openGiftSheet(id) {
+  const g = S.gifts.find(x => x.id === id); if (!g) return;
+  const T = TIERS[g.tier];
+  sheet(`<div style="text-align:center"><div class="small muted" style="letter-spacing:2px;text-transform:uppercase">${T.name} gift box · ${g.m}-day streak</div>
+    <div id="gb" style="cursor:pointer">${boxHTML(g.tier, "shake big")}</div>
+    <p class="muted" id="hint">Tap the box to open it</p><div id="res"></div></div>`, el => {
+    const gb = el.querySelector("#gb");
+    gb.onclick = () => {
+      if (gb.dataset.done) return; gb.dataset.done = 1;
+      const amt = openGift(g.id);
+      gb.querySelector(".giftbox").classList.remove("shake"); gb.querySelector(".giftbox").classList.add("opened");
+      el.querySelector("#hint").textContent = "";
+      setTimeout(() => {
+        el.querySelector("#res").innerHTML = `<div class="gemburst">💎 +<span id="cnt">0</span></div>
+          <p class="muted small">New balance: ${S.gems} 💎</p><button class="btn" id="ok">Collect</button>`;
+        let c = 0; const step = Math.max(1, Math.ceil(amt / 25));
+        const iv = setInterval(() => { c = Math.min(amt, c + step); const e = document.getElementById("cnt"); if (e) e.textContent = c; if (c >= amt) clearInterval(iv); }, 30);
+        el.querySelector("#ok").onclick = () => { closeSheet(); route(); };
+      }, 550);
+    };
+  });
+}
+function treasureSheet() {
+  const box = unopened(), nm = nextMilestone(), st = streak();
+  const prevM = [0, ...[7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365].filter(m => m <= st)].pop();
+  const recent = (S.gemLog || []).slice(-5).reverse();
+  const g = goalFor(), xt = xpToday(), wk = [0, 1, 2, 3, 4, 5, 6].reduce((a, i) => a + (S.xp[addDays(today(), -i)] || 0), 0);
+  sheet(`<div class="sys-h">XP &amp; Diamonds</div>
+    <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin:6px 0 14px">
+      <div class="tile" style="text-align:center"><span>Total XP</span><b style="font-size:30px">⚡ ${totalXP()}</b></div>
+      <div class="tile" style="text-align:center"><span>Diamonds</span><b style="font-size:30px">💎 ${S.gems || 0}</b></div></div>
+    <div style="font-weight:800;margin-bottom:4px">⚡ XP</div>
+    <div class="small muted">Today: <b style="color:var(--ink)">${xt} / ${g} XP</b> daily goal</div>
+    <div class="hbar" style="margin:4px 0"><div style="width:${Math.min(100, 100 * xt / g)}%;background:var(--blue, #4fb3ff)"></div></div>
+    <div class="small muted">Last 7 days: <b style="color:var(--ink)">${wk} XP</b> · 🔥 ${st}-day streak</div>
+    <div style="font-weight:700;margin:12px 0 2px">How you earn XP</div>
+    <div class="small muted" style="margin-bottom:6px">Roughly 1 XP for every answer you get right.</div>
+    <div class="xprules">${[
+      ["📘", "Start a lesson part", "+4"],
+      ["✅", "Each correct answer", "+1"],
+      ["🏁", "Finish a whole lesson", "+10"],
+      ["📐", "Grammar practice", "+10, then +2 per correct"],
+      ["🔁", "Review: Good or Easy", "+1"],
+    ].map(([i, t, v]) => `<div><span>${i} ${t}</span><b class="up">${v}</b></div>`).join("")}</div>
+    <div style="font-weight:700;margin:10px 0 4px">How you lose XP</div>
+    <div class="xprules">${[
+      ["↩️", "Review: Again (forgot it)", "−1"],
+      ["⛔", "Skipping a day with reviews due", "−10 to −30"],
+    ].map(([i, t, v]) => `<div><span>${i} ${t}</span><b class="down">${v}</b></div>`).join("")}</div>
+    <button class="btn ghost sm" id="xpmore" style="margin-top:8px">How XP works ›</button>
+    <div style="font-weight:800;margin:16px 0 4px">💎 Diamonds</div>
+    ${box.length ? `<div style="font-weight:800;margin-bottom:6px">🎁 Unopened gift boxes</div>
+      <div class="giftgrid">${box.map(g => `<button class="giftcell" data-id="${g.id}">${boxHTML(g.tier, "shake")}<div class="tiny">${TIERS[g.tier].name}<br>${g.m}-day</div></button>`).join("")}</div>` : ""}
+    ${nm ? `<div style="font-weight:800;margin:14px 0 4px">Next gift box: ${nm}-day streak <span class="muted small">(${TIERS[tierFor(nm)].name})</span></div>
+      <div class="hbar"><div style="width:${100 * (st - prevM) / (nm - prevM)}%;background:var(--amber)"></div></div>
+      <div class="muted small" style="margin-top:4px">🔥 ${st} / ${nm} days</div>` : `<p class="muted">You've collected every streak box. Legendary!</p>`}
+    <div class="small muted" style="margin-top:10px">Daily quest cleared: +${QUEST_GEMS} 💎 each day.</div>
+    ${recent.length ? `<div style="font-weight:800;margin:14px 0 4px">Recent</div>${recent.map(r => `<div class="small muted">${fmtDate(r.d)} · <b style="color:var(--ink)">+${r.n} 💎</b> · ${esc(r.why)}</div>`).join("")}` : ""}
+    <button class="btn" id="ok" style="margin-top:16px">Close</button>`, el => {
+    el.querySelectorAll(".giftcell").forEach(b => (b.onclick = () => openGiftSheet(b.dataset.id)));
+    el.querySelector("#xpmore").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, e2 => (e2.querySelector("#ok").onclick = closeSheet));
+    el.querySelector("#ok").onclick = closeSheet;
+  });
+}
+
+// ------------------------------------------------------------------ XP explainer
+const XP_HELP = `<h2 style="margin-top:0">⚡ How XP works</h2>
+  <p><b>1 XP ≈ one thing you got right.</b> Each finished lesson also gives a 10 XP bonus.</p>
+  <table class="cmp"><tr><td>🔤 Vocabulary part (4 words)</td><td><b>4</b> + 1 per correct answer <span class="tiny muted">(max 16)</span> · <b>+10</b> when the whole lesson is done</td></tr>
+  <tr><td>📐 Grammar practice</td><td><b>10</b> + 2 per correct answer</td></tr>
+  <tr><td>💬 Phrases part (≈5 phrases)</td><td><b>4</b> + 1 per correct answer <span class="tiny muted">(max 16)</span> · <b>+10</b> when the topic is done</td></tr>
+  <tr><td>🔁 Review</td><td>+1 per Good/Easy · 0 per Hard · <b style="color:var(--red)">−1 per Again</b><br>+5 bonus at ≥80 % recalled · <b style="color:var(--red)">−5</b> below 50 %</td></tr>
+  <tr><td>⛔ Missed review day</td><td><b style="color:var(--red)">−10 XP</b> (+1 per 10 overdue words, max −30)</td></tr></table>
+  <p class="small">Retried questions and a quit lesson give no XP. Repeating a finished lesson earns XP again, but doesn't raise your A1 %.</p>
+  <p class="small"><b>Daily goal</b> = the XP you aim for each day (a typical new lesson + a review ≈ 50 XP).
+  <b>Streak</b> = days in a row with at least 1 XP. XP is added per day to your progress file on the Mac, which also feeds the Me &amp; Batul comparison.</p>
+  <p class="small"><b>💎 Diamonds</b>: +${QUEST_GEMS} for clearing all three daily quests. Streak milestones (7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365 days) give a gift box – tap it to open: Common 15–30 💎, Rare 40–80, Epic 100–180, Legendary 250–400.</p>
+  <p class="small muted">XP measures effort. Your A1 % measures how much of the course you've covered.</p>
+  <p class="small"><b>Level</b> follows your A1 %, not XP: level 1 at the start, <b>level 100 = A1 reached</b>: every lesson done and remembered (about one level per lesson). After that you keep levelling: every ${POST_A1_XP} XP from reviews and practice adds another level (101, 102 …). Your hunter rank (E → S) and the purple aura grow with it.</p>
+  <p class="small"><b>Levels can drop.</b> Each learned word only counts fully while you keep it alive: once a review is overdue it counts 1/14 less every day (down to 25 %), and a word you mark "Again" counts half until you recall it. Catch up on reviews to win the levels back.</p>
+  <p class="small"><b>Reviews</b> use active recall with SM-2 spacing (like Anki): recall the answer first, then rate yourself. Good pushes the next review further out (≈1 → 3 → 8 → 20 → 50 days); Again brings the word back in the same session and restarts it.</p>`;
+
+// ------------------------------------------------------------------ lessons list
+let lf = "all";
+function lessonsView() {
+  const P = C.content.path, done = P.filter(i => S.done[i.id]);
+  const by = k => P.filter(i => i.kind === k), dk = k => by(k).filter(i => S.done[i.id]).length;
+  const xpBy = {};
+  (S.log || []).forEach(l => (xpBy[l.id] = (xpBy[l.id] || 0) + (l.xp || 0)));
+  const list = P.filter(i => lf === "all" || (lf === "done" ? S.done[i.id] : lf === "todo" ? !S.done[i.id] : i.kind === lf));
+  const plan = weekPlan(), inList = new Set(list.map(i => i.id));
+  view().innerHTML = `<h1>All lessons</h1>
+  <div class="card"><div class="row"><div class="grow"><div style="font-size:28px;font-weight:900">${done.length}<span class="muted" style="font-size:18px"> / ${P.length}</span></div>
+    <div class="muted small">lessons done</div></div><div class="ring" style="--p:${100 * done.length / P.length}"><div>${Math.round(100 * done.length / P.length)}%</div></div></div>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+      <div class="tile"><span>🔤 Vocab</span><b>${dk("vocab")}<span class="tiny muted">/${by("vocab").length}</span></b></div>
+      <div class="tile"><span>📐 Grammar</span><b>${dk("grammar")}<span class="tiny muted">/${by("grammar").length}</span></b></div>
+      <div class="tile"><span>💬 Phrases</span><b>${dk("phrases")}<span class="tiny muted">/${by("phrases").length}</span></b></div></div>
+    <button class="link" id="xph">⚡ How is XP measured?</button></div>
+  <div class="seg" id="lseg">${[["all", "All"], ["todo", "To do"], ["done", "Done"], ["vocab", "🔤 Vocab"], ["grammar", "📐 Grammar"], ["phrases", "💬 Phrases"]]
+    .map(([k, l]) => `<button data-f="${k}" class="${lf === k ? "on" : ""}">${l}</button>`).join("")}</div>
+  ${plan.weeks.map(W => [W, W.items.filter(i => inList.has(i.id))]).filter(([, items]) => items.length).map(([W, items]) => `<div class="week-h" style="margin:14px 0 6px">${weekHead(W, W.items)}</div>
+    <div class="wl ll">${items.map(i => { const d = S.done[i.id]; return `<div class="wrow" data-id="${i.id}">
+      ${kicon(i.kind, !!d)}
+      <div class="t"><div>${esc(i.kind === "vocab" ? `${i.n}. ${i.title}` : i.title)}</div>
+      <div>${KIND[i.kind]}${i.kind === "vocab" ? ` · ${i.words.length} words` : ""}${bitCount(i) > 1 ? ` · ${bitsDone(i)}/${bitCount(i)} parts` : ""}${d ? ` · done ${fmtDate(d.date)}${d.score != null ? ` · ${d.score}%` : d.marked ? " · marked" : ""}${xpBy[i.id] ? ` · ${xpBy[i.id]} XP` : ""}` : ""}</div></div>
+      <span class="muted">›</span></div>`; }).join("")}</div>`).join("") || `<p class="muted">Nothing here.</p>`}`;
+  view().querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
+  view().querySelectorAll("#lseg button").forEach(b => (b.onclick = () => { lf = b.dataset.f; lessonsView(); }));
+  view().querySelectorAll(".wrow[data-id]").forEach(r => (r.onclick = () => itemSheet(C.item[r.dataset.id], lessonsView)));
+}
+
+// ------------------------------------------------------------------ profiles
+function avatar(id, sm) {
+  const u = userInfo(id);
+  return `<span class="av ${sm ? "sm" : ""}" style="background:${u.color}">${esc(u.name[0].toUpperCase())}</span>`;
+}
+function syncText() {
+  if (SYNC.pending && !SYNC.online) return "⚠️ Mac not reachable – saved on phone, will sync";
+  if (SYNC.pending) return "Saving…";
+  return SYNC.online ? "" : "⚠️ Offline";
+}
+function wireTop() {
+  const uc = view().querySelector("#uc");
+  if (uc) uc.onclick = userSheet;
+  const gm = view().querySelector("#gem");
+  if (gm) gm.onclick = treasureSheet;
+  const cc = view().querySelector("#cc");
+  if (cc) cc.onclick = () => { unpick(); courseView(); };
+  const xr = view().querySelector("#xpring");
+  if (xr) xr.onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
+}
+async function whoView() {
+  document.body.classList.add("in-lesson");
+  view().innerHTML = `<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">Rankwise</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
+    <div class="who">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}<div class="grow"><div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
+      <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:24px;color:var(--muted)">›</span></button>`).join("")}</div>`;
+  view().querySelectorAll(".who button").forEach(b => (b.onclick = async () => {
+    b.disabled = true; await switchUser(b.dataset.u); unpick(); document.body.classList.remove("in-lesson");
+    if (location.hash !== "#/today") location.hash = "#/today"; else route();
+  }));
+  const all = await fetchAllStates();
+  for (const u of USERS) {
+    const sm = summary(all[u.id]), el = view().querySelector(`[data-s="${u.id}"]`);
+    if (el && courseInfo(COURSE).type === "tree") { const n = Object.keys((all[u.id] || {}).tree || {}).length; el.textContent = `${courseInfo(COURSE).title} · ${n} skill${n === 1 ? "" : "s"} learned`; continue; }
+    if (el) el.textContent = sm ? `Lv ${sm.lv} · ${sm.rank}-Rank · 🔥 ${sm.streak} · ${sm.pct.toFixed(0)}% of A1` : "New – tap to start";
+  }
+}
+function userSheet() {
+  sheet(`<h2 style="margin-top:0">Switch learner</h2><div class="who" style="margin-top:8px">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}
+    <div class="grow"><div style="font-size:18px;font-weight:800">${esc(u.name)}</div><div class="muted small">${u.id === USER ? "Current" : "Tap to switch"}</div></div>
+    ${u.id === USER ? "✓" : "›"}</button>`).join("")}</div>`, el => {
+    el.querySelectorAll("button[data-u]").forEach(b => (b.onclick = async () => {
+      closeSheet();
+      if (b.dataset.u === USER) return;
+      await switchUser(b.dataset.u); unpick(); toast(`Hallo ${userInfo(USER).name}!`);
+      location.hash = "#/today"; route();
+    }));
+  });
+}
+async function fillCompare() {
+  const box = view().querySelector("#cmp");
+  const people = USERS.filter(u => !u.demo || u.id === USER); // demo profiles stay out of the comparison
+  if (!box || people.length < 2) return;
+  const all = await fetchAllStates();
+  all[USER] = S; // always show the freshest local numbers for the current user
+  const rows = people.map(u => ({ u, s: summary(all[u.id]) }));
+  const best = k => Math.max(...rows.map(r => (r.s ? r.s[k] : -1)));
+  const cell = (r, k, fmt) => !r.s ? `<td class="muted">–</td>` : `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${fmt(r.s[k], r.s)}</b></td>`;
+  const pacefmt = (g) => Math.abs(g) < 1 ? "on track" : g > 0 ? `+${Math.round(g)}` : `${Math.round(g)}`;
+  box.innerHTML = `<div class="card"><div class="sys-h">Party</div><div style="font-weight:800;margin-bottom:6px">👥 ${people.map(u => esc(u.name)).join(" & ")}</div>
+    <table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
+    <tr class="sl-only-row"><td>Level · Rank</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b>Lv ${r.s.lv}</b> <span class="rank ${r.s.rank}" style="display:inline-grid;width:24px;height:24px;font-size:14px;border-width:1.5px;vertical-align:middle">${r.s.rank}</span></td>`).join("")}</tr>
+    <tr><td>XP today</td>${rows.map(r => cell(r, "xpToday", (v, s) => `${v}<span class="tiny muted">/${s.goal}</span>`)).join("")}</tr>
+    <tr><td>Diamonds</td>${rows.map(r => cell(r, "gems", v => `💎 ${v}`)).join("")}</tr>
+    <tr><td>Total XP</td>${rows.map(r => cell(r, "xp", v => v)).join("")}</tr>
+    <tr><td>Streak</td>${rows.map(r => cell(r, "streak", v => `🔥 ${v}`)).join("")}</tr>
+    <tr><td>Lessons done</td>${rows.map(r => cell(r, "lessons", (v, s) => `${v}<span class="tiny muted">/${s.of}</span>`)).join("")}</tr>
+    <tr><td>Words learned</td>${rows.map(r => cell(r, "words", v => v)).join("")}</tr>
+    <tr><td>A1 complete</td>${rows.map(r => cell(r, "pct", v => `${v.toFixed(1)}%`)).join("")}</tr>
+    <tr><td>Pace (lessons)</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b style="color:${r.s.gapLessons >= -1 ? "var(--green)" : "var(--amber)"}">${pacefmt(r.s.gapLessons)}</b></td>`).join("")}</tr>
+    </table></div>`;
+}
+
+// ------------------------------------------------------------------ boot
+(async function boot() {
+  installBugButton();   // first, so it works even if loading fails
+  applyTheme();
+  loadAvatars();
+  await loadCourses();
+  await loadUsers();
+  const startCourse = (USER && lastCourse(USER)) || COURSE;
+  setCourse(courseInfo(startCourse).status === "ready" ? startCourse : COURSE);
+  try { await loadContent(); } catch (e) { view().innerHTML = `<div class="loading">Could not load lessons. Is the Mac's server running? Then reload.</div>`; return; }
+  if (USER) await switchUser(USER);
+  window.addEventListener("hashchange", route);
+  window.addEventListener("a1:state-replaced", () => { if (!inLesson()) route(); });
+  window.addEventListener("a1:sync", () => { const e = document.getElementById("syncst"); if (e) e.textContent = syncText(); });
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible" && !inLesson() && await refreshFromServer()) route();
+  });
+  route();
+  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
