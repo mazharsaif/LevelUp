@@ -709,9 +709,9 @@ function finish() {
   const cheer = cheerFor(acc, perfect);
   const words = [...r.words].map(id => C.word[id]).filter(Boolean);
   if (r.failed) {
-    view().innerHTML = `<div class="done-wrap"><div class="sysbanner">Keep training</div><div class="cheer-art">💪</div>
-      <h1>Almost there!</h1>
-      <p class="cheer">You got ${acc}% right. A part counts once you reach ${PASS_ACC}%, so practise it once more and it will stick.</p>
+    view().innerHTML = `<div class="done-wrap"><div class="sysbanner">Good effort</div><div class="cheer-art">💪</div>
+      <h1>Nice try — one more go!</h1>
+      <p class="cheer">You got <b>${r.right}</b> right this time${r.best > 1 ? ` and a best streak of ${r.best}` : ""}. One more round and this part is yours — it counts once you reach ${PASS_ACC}%.</p>
       <p class="muted small">${esc(r.title)}</p>
       <div class="tiles"><div class="tile"><b style="color:#ffc800">+${xp}</b><span>XP</span></div>
       <div class="tile"><b style="color:var(--amber)">${acc}%</b><span>Accuracy</span></div>

@@ -79,12 +79,12 @@ function openBox() {
   const snap = capture();                                  // screen as it was when tapped
   const root = document.createElement("div");
   root.id = "bug-root";
-  root.innerHTML = `<div class="bug-bg"><div class="bug-box" role="dialog" aria-label="Report a problem">
-    <div class="bug-h">🐞 Report a problem</div>
+  root.innerHTML = `<div class="bug-bg"><div class="bug-box" role="dialog" aria-label="Send feedback">
+    <div class="bug-h">💬 Send feedback</div>
     <div class="bug-page">On: <b>${esc(snap.page)}</b></div>
     <div class="bug-kinds">${[["bug", "Something broke"], ["content", "Wrong answer / text"], ["idea", "Idea"]].map(([k, l], i) =>
       `<label><input type="radio" name="bk" value="${k}" ${i === 0 ? "checked" : ""}> ${l}</label>`).join("")}</div>
-    <textarea id="bug-text" maxlength="4000" placeholder="What happened? What did you expect instead?"></textarea>
+    <textarea id="bug-text" maxlength="4000" placeholder="What happened, or what would make this better?"></textarea>
     <label class="bug-inc"><input type="checkbox" id="bug-inc" checked> Include what's on the screen (text and layout)</label>
     <div class="bug-msg" id="bug-msg"></div>
     <div class="bug-btns"><button class="bug-cancel" id="bug-cancel">Cancel</button><button class="bug-send" id="bug-send" disabled>Send report</button></div>
@@ -116,8 +116,8 @@ function openBox() {
 export function installBugButton() {
   if (document.getElementById("bugbtn")) return;
   const b = document.createElement("button");
-  b.id = "bugbtn"; b.type = "button"; b.title = "Report a problem"; b.setAttribute("aria-label", "Report a problem");
-  b.textContent = "🐞";
+  b.id = "bugbtn"; b.type = "button"; b.title = "Send feedback"; b.setAttribute("aria-label", "Send feedback");
+  b.innerHTML = "💬<span>Feedback</span>";
   b.onclick = openBox;
   document.body.appendChild(b);
   flushBugQueue();

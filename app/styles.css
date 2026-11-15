@@ -830,3 +830,12 @@ body.theme-sl #bug-root .bug-box,body.theme-sl3 #bug-root .bug-box,body.theme-sl
 .answer-box{margin-top:14px;padding:12px 14px;border:2px solid var(--green);border-radius:14px;text-align:center}
 .answer-box div{font-size:24px;font-weight:800;margin-top:2px}
 body.theme-sl .answer-box,body.theme-sl3 .answer-box{border-color:var(--accent);box-shadow:0 0 14px var(--accent-soft)}
+/* alpha fixes (11-15): clearer feedback tab */
+#bugbtn{width:42px;height:auto;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 3px;font-size:15px;opacity:.72}
+#bugbtn span{font-size:8px;font-weight:800;letter-spacing:.2px;text-transform:uppercase;line-height:1;opacity:.85}
+/* brighter, inviting primary CTA in the Hunter themes (was easy to mistake for disabled) */
+body.theme-sl .next-card .btn,body.theme-sl3 .next-card .btn{background:linear-gradient(180deg,#4aa6ff,#2f7fe6);color:#fff;border:1px solid #9fd0ff;box-shadow:0 0 18px rgba(79,179,255,.7);text-shadow:0 1px 2px rgba(0,30,80,.5);animation:ctapulse 2.6s ease-in-out infinite}
+@keyframes ctapulse{0%,100%{box-shadow:0 0 13px rgba(79,179,255,.55)}50%{box-shadow:0 0 26px rgba(79,179,255,.95)}}
+/* let "Key ideas" chips wrap instead of clipping */
+.chips{flex-wrap:wrap}
+.chipx{white-space:normal;max-width:100%}

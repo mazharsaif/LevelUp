@@ -128,8 +128,8 @@ function todayView() {
       <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button></div>`
     : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
-    <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Recall ${due.length} due word${due.length > 1 ? "s" : ""}</b>
-      <div class="muted small">Pending – review them before they fade</div></div>
+    <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
+      <div class="muted small">Review them now to keep them fresh</div></div>
       <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div>
     ${memWarn()}</div>` : ""}`;
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
@@ -577,7 +577,7 @@ async function fillDownloads(br) {
   const have = [];
   for (const c of chs) if (await isDownloaded(br, c)) have.push(c);
   const size = have.reduce((a, c) => a + idx.chapters[c].bytes, 0);
-  el.innerHTML = `📥 On this phone: <b>${have.length}/${chs.length}</b> chapters (${kb(size)} of ${kb(total)})
+  el.innerHTML = `📥 Saved on this phone: <b>${have.length}/${chs.length}</b> reading files (${kb(size)} of ${kb(total)})
     ${have.length < chs.length ? `<button class="link" id="dlall">Download all</button>` : ""}${have.length ? `<button class="link" id="dlrm">Remove</button>` : ""}`;
   const a = el.querySelector("#dlall"), r = el.querySelector("#dlrm");
   if (a) a.onclick = async () => { a.textContent = "Downloading…"; for (const c of chs) { try { await fetch(chapterUrl(br, c)); } catch { /* offline */ } } fillDownloads(br); toast("Saved for offline reading"); };
@@ -687,7 +687,7 @@ function questStatus(due) {
   const q = [
     { ok: x >= g, txt: `Earn ${g} XP`, v: `${x}/${g}` },
     { ok: newToday >= 1, txt: "Clear 1 lesson part", v: `${Math.min(newToday, 1)}/1` },
-    { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Recall all ${revGoal} due words` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
+    { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Review all ${revGoal} words to remember` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
   ];
   return { q, all: q.every(i => i.ok), x };
 }
@@ -795,21 +795,8 @@ function treasureSheet() {
     <div class="small muted">Today: <b style="color:var(--ink)">${xt} / ${g} XP</b> daily goal</div>
     <div class="hbar" style="margin:4px 0"><div style="width:${Math.min(100, 100 * xt / g)}%;background:var(--blue, #4fb3ff)"></div></div>
     <div class="small muted">Last 7 days: <b style="color:var(--ink)">${wk} XP</b> · 🔥 ${st}-day streak</div>
-    <div style="font-weight:700;margin:12px 0 2px">How you earn XP</div>
-    <div class="small muted" style="margin-bottom:6px">Roughly 1 XP for every answer you get right.</div>
-    <div class="xprules">${[
-      ["📘", "Start a lesson part", "+4"],
-      ["✅", "Each correct answer", "+1"],
-      ["🏁", "Finish a whole lesson", "+10"],
-      ["📐", "Grammar practice", "+10, then +2 per correct"],
-      ["🔁", "Review: Good or Easy", "+1"],
-    ].map(([i, t, v]) => `<div><span>${i} ${t}</span><b class="up">${v}</b></div>`).join("")}</div>
-    <div style="font-weight:700;margin:10px 0 4px">How you lose XP</div>
-    <div class="xprules">${[
-      ["↩️", "Review: Again (forgot it)", "−1"],
-      ["⛔", "Skipping a day with reviews due", "−10 to −30"],
-    ].map(([i, t, v]) => `<div><span>${i} ${t}</span><b class="down">${v}</b></div>`).join("")}</div>
-    <button class="btn ghost sm" id="xpmore" style="margin-top:8px">How XP works ›</button>
+    <div class="small muted" style="margin:4px 0 8px">1 XP ≈ one answer you get right. Finishing lessons and reviews adds more.</div>
+    <button class="btn ghost sm" id="xpmore" style="margin-top:4px">How XP works ›</button>
     <div style="font-weight:800;margin:16px 0 4px">💎 Diamonds</div>
     ${box.length ? `<div style="font-weight:800;margin-bottom:6px">🎁 Unopened gift boxes</div>
       <div class="giftgrid">${box.map(g => `<button class="giftcell" data-id="${g.id}">${boxHTML(g.tier, "shake")}<div class="tiny">${TIERS[g.tier].name}<br>${g.m}-day</div></button>`).join("")}</div>` : ""}
