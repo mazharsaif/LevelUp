@@ -1,0 +1,147 @@
+#cloud-config
+# LevelUp droplet: Ubuntu 26.04 LTS on DigitalOcean.
+# Paste into: Create Droplet -> Advanced Options -> Add Initialization scripts.
+#
+# GitHub access uses SSH agent forwarding: no private key ever lives on the droplet.
+# After boot, from the Mac:   ssh -A mazhar@<droplet-ip>   then run:   levelup-deploy
+# (first run clones the repo and starts the app; later runs pull + restart)
+#
+# Logs on the droplet:  /var/log/cloud-init-output.log   journalctl -u levelup -f
+
+package_update: true
+package_upgrade: true
+packages:
+  - git
+  - ufw
+  - unattended-upgrades
+
+users:
+  - name: mazhar
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      # your Mac's personal key: lets you `ssh mazhar@<droplet-ip>`
+      - &personal_pub ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIDwLb/sCvCs3Srip/sZ0mjySH0HxakeGusBUT3RlyLN mazharsaif@outlook.com
+
+ssh_pwauth: false
+disable_root: true
+
+write_files:
+  # PUBLIC half of the personal key. With agent forwarding, the Mac agent holds both
+  # the Endolit and personal keys; pointing IdentityFile at this .pub makes ssh offer
+  # only the personal key to GitHub (otherwise it may log in as mazhar-endolit).
+  - path: /home/mazhar/.ssh/github_personal.pub
+    owner: mazhar:mazhar
+    permissions: "0644"
+    defer: true
+    content: *personal_pub   # same key as above (YAML alias)
+
+  - path: /home/mazhar/.ssh/config
+    owner: mazhar:mazhar
+    permissions: "0600"
+    defer: true
+    content: |
+      Host github.com
+        HostName github.com
+        User git
+        IdentityFile ~/.ssh/github_personal.pub
+        IdentitiesOnly yes
+
+  # Deploy command: clone on first run, then pull + sync + restart
+  - path: /usr/local/bin/levelup-deploy
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      if [ -z "${SSH_AUTH_SOCK:-}" ]; then
+        echo "No forwarded SSH agent. Reconnect with: ssh -A mazhar@<droplet-ip>" >&2
+        exit 1
+      fi
+      cd ~
+      if [ ! -d LevelUp/.git ]; then
+        git clone git@github.com:mazharsaif/LevelUp.git LevelUp
+      else
+        git -C LevelUp pull --ff-only
+      fi
+      (cd LevelUp && ~/.local/bin/uv sync)
+      # Caddy config is versioned in the repo: install it when it changed
+      if [ -f LevelUp/deploy/Caddyfile ] && ! cmp -s LevelUp/deploy/Caddyfile /etc/caddy/Caddyfile; then
+        caddy validate --config LevelUp/deploy/Caddyfile --adapter caddyfile >/dev/null
+        sudo cp LevelUp/deploy/Caddyfile /etc/caddy/Caddyfile
+        sudo systemctl reload caddy
+        echo "Caddy config updated"
+      fi
+      sudo systemctl enable levelup.service
+      sudo systemctl restart levelup.service
+      sleep 2
+      systemctl --no-pager status levelup.service | head -5
+
+  # Block root SSH login. disable_root alone doesn't remove the key DigitalOcean
+  # installs for root when you pick an SSH key at droplet creation.
+  - path: /etc/ssh/sshd_config.d/00-no-root-login.conf
+    content: |
+      PermitRootLogin no
+
+  # Upgrade all packages on every boot, before the app starts
+  - path: /etc/systemd/system/apt-upgrade-on-boot.service
+    content: |
+      [Unit]
+      Description=Upgrade all packages on boot
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      Environment=DEBIAN_FRONTEND=noninteractive
+      ExecStart=/usr/bin/apt-get update
+      ExecStart=/usr/bin/apt-get -y -o Dpkg::Options::=--force-confold upgrade
+      TimeoutStartSec=30min
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # LevelUp (FastAPI) on port 8000; restarts on crash and on reboot
+  - path: /etc/systemd/system/levelup.service
+    content: |
+      [Unit]
+      Description=LevelUp app (FastAPI, port 8000)
+      Wants=network-online.target
+      After=network-online.target apt-upgrade-on-boot.service
+      # don't start (or crash-loop) before the first levelup-deploy has cloned the repo
+      ConditionPathExists=/home/mazhar/LevelUp/server_fastapi/main.py
+
+      [Service]
+      User=mazhar
+      WorkingDirectory=/home/mazhar/LevelUp/server_fastapi
+      Environment=A1_DATA=/home/mazhar/levelup-data
+      ExecStart=/home/mazhar/.local/bin/uv run main.py 8000
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  # firewall: SSH, HTTP/HTTPS (Caddy), app ports 8000-8100
+  - ufw allow OpenSSH
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 8000:8100/tcp
+  - ufw --force enable
+  # daily automatic security updates
+  - dpkg-reconfigure -f noninteractive unattended-upgrades
+  # GitHub host key, uv, data folder
+  - su - mazhar -c "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+  - su - mazhar -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
+  - su - mazhar -c "mkdir -p ~/levelup-data"
+  # Caddy (HTTPS reverse proxy) from its official apt repo; its config arrives with levelup-deploy
+  - apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
+  - curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  - curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt -o /etc/apt/sources.list.d/caddy-stable.list
+  - chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
+  - apt-get update
+  - apt-get install -y caddy
+  - systemctl reload ssh
+  - systemctl daemon-reload
+  - systemctl enable apt-upgrade-on-boot.service

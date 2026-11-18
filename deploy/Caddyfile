@@ -1,0 +1,30 @@
+# Caddy reverse proxy for the LevelUp droplet. Lives at /etc/caddy/Caddyfile.
+# Caddy gets and renews HTTPS certificates (Let's Encrypt) for every site name below by itself.
+# Apply changes:  sudo cp Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Logs:           journalctl -u caddy -f
+#
+# New app = new block:  name.level-up.com.de { reverse_proxy 127.0.0.1:<port> }
+# (plus a DNS A record for "name" in Cloudflare)
+
+# Shared settings for every app
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# LevelUp, dev copy (manual deploys via levelup-deploy)
+dev.level-up.com.de {
+	import common
+	reverse_proxy 127.0.0.1:8000
+}
+
+# Main domain: sends visitors to dev until the main copy exists
+level-up.com.de {
+	import common
+	redir https://dev.level-up.com.de{uri} temporary
+}

@@ -863,10 +863,11 @@ export function startReview(ids) {
   });
 }
 export function startGrammarPractice(g, item) {
-  const qs = g.q.map((q, i) => ({ t: q.opts ? "gmc" : "gq", q, n: i + 1, of: g.q.length }));
+  const P = item && item.gid ? g.parts[item.part] : null, idx = P ? P.q : g.q.map((_, i) => i); // a part asks only its own questions
+  const qs = idx.map((qi, i) => { const q = g.q[qi]; return { t: q.opts ? "gmc" : "gq", q, n: i + 1, of: idx.length }; });
   runLesson({
-    title: `Ch ${g.num}: ${g.title}`, kind: "grammar", steps: qs,
-    onFinish: (r, acc) => { const xp = 10 + 2 * r.right; addXP(xp); if (item) completeItem(item.id, acc, xp); return xp; },
+    title: P ? item.title : `Ch ${g.num}: ${g.title}`, kind: "grammar", steps: qs,
+    onFinish: (r, acc) => { const xp = (P ? 5 : 10) + 2 * r.right; addXP(xp); if (item) completeItem(item.id, acc, xp); return xp; },
   });
 }
 // Phrases, one bit (≈5 phrases) at a time: card → quick check → next card … → mixed quiz

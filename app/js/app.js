@@ -1,7 +1,7 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem } from "./store.js";
 import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson } from "./lesson.js";
 import { play } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -46,6 +46,8 @@ function route() {
   if (!S.setup) return setupView();
   const [, name, arg] = h.split("/");
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
+  const pt = document.querySelector('#tabs a[data-tab="path"]');
+  if (pt) pt.innerHTML = questMode() ? `<span class="ti">🗺️</span><span>Path</span>` : `<span class="ti">🧩</span><span>Skills</span>`;
   ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, grammar: () => grammarView(arg) }[name] || todayView)();
   window.scrollTo(0, 0);
 }
@@ -57,6 +59,8 @@ function startItem(it, bit) {
   else if (it.kind === "grammar") location.hash = "#/grammar/" + it.id;
   else startPhrases(C.phrases[it.id], it, b);
 }
+const chapterDone = gid => (C.gparts[gid] || [gid]).every(id => S.done[id]);
+const chaptersDone = () => C.content.grammar.filter(g => chapterDone(g.id)).length;
 const partLabel = it => { const n = bitCount(it), d = bitsDone(it); return n > 1 ? `Part ${Math.min(d + 1, n)} of ${n}` : ""; };
 
 // ------------------------------------------------------------------ setup
@@ -93,6 +97,8 @@ function markDone(it, date = today()) {
 
 // ------------------------------------------------------------------ today
 function topBar() {
+  if (!questMode()) return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button>
+    <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span><span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>${playerBar()}`;
   const g = goalFor(), x = xpToday(), p = Math.min(100, Math.round(100 * x / g));
   return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button>
     <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span>${gemChip()}</div>${playerBar()}<div class="top classic-only">
@@ -118,6 +124,7 @@ function paceCard(pc) {
 }
 
 function todayView() {
+  if (!questMode()) return freeToday();
   const it = nextItem(), due = dueWords();
   view().innerHTML = topBar() + `
   ${dailyQuest(due)}
@@ -152,8 +159,74 @@ function weekHead(w, items) {
   return `<b>Week ${w.n}</b>${tag}<div class="small">${wkRange(w)}</div><div class="muted tiny">${done}/${items.length} done${items.length ? "" : " · no new lessons – review week"}</div>`;
 }
 
+// ------------------------------------------------------------------ free mode (Quest Mode off): skill map like the SE track
+const KCOL = { vocab: "var(--kv)", grammar: "var(--kg)", phrases: "var(--kp)" };
+function skillGroups() {
+  const P = C.content.path, words = new Map();
+  P.filter(i => i.kind === "vocab").sort((a, b) => a.n - b.n).forEach(i => {
+    const t = i.title.split(" · ")[0].replace(/ [IVXL]+$/, "");
+    if (!words.has(t)) words.set(t, { key: "v:" + t, kind: "vocab", title: t, items: [] });
+    words.get(t).items.push(i);
+  });
+  const grammar = [...C.content.grammar].sort((a, b) => a.num - b.num).map(g => ({ key: "g:" + g.id, kind: "grammar", title: `${g.num}. ${g.title}`,
+    items: (C.gparts[g.id] || [g.id]).map(id => C.item[id]).filter(Boolean) })).filter(s => s.items.length);
+  const phrases = C.content.phrases.map(p => ({ key: "p:" + p.id, kind: "phrases", title: p.title, items: [C.item[p.id]].filter(Boolean) })).filter(s => s.items.length);
+  return [["vocab", "🔤 Words", [...words.values()]], ["grammar", "📐 Grammar", grammar], ["phrases", "💬 Phrases", phrases]];
+}
+const skillUnits = sk => sk.items.flatMap(it => bitsOf(it).map((b, k) => ({ it, k, b })));
+const unitDone = u => !!(S.done[u.it.id] || ((S.bits || {})[u.it.id] || [])[u.k]);
+const skillFrac = sk => { const U = skillUnits(sk); return U.length ? U.filter(unitDone).length / U.length : 0; };
+function unitLabel(u) {
+  if (u.it.kind === "vocab") return `Lesson ${u.it.n} · ${u.b.map(id => C.word[id].de).join(", ")}`;
+  if (u.it.kind === "grammar") { const P = gPart(u.it); return P ? P.t : "Read & practise"; }
+  return u.b.map(j => C.phrases[u.it.id].items[j].de).join(" · ");
+}
+function freeToday() {
+  const it = nextItem(), due = dueWords();
+  view().innerHTML = topBar() + `
+  ${it ? `<div class="card next-card"><div class="sys-h">Up next</div>
+      <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}</div>
+      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
+      <div class="muted small">${partLabel(it) || "A suggestion – or pick any skill"}</div>
+      <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button>
+      <button class="btn ghost" id="all">🧩 Pick a skill</button></div>`
+    : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
+  ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
+    <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
+      <div class="muted small">No pressure – reviews just keep words fresh</div></div>
+      <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div></div>` : ""}
+  <p class="small muted" style="text-align:center">Quest Mode is off – no daily goal, quests or penalties. <a href="#/settings" class="link" style="padding:0">Change</a></p>`;
+  const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
+  const ab = view().querySelector("#all"); if (ab) ab.onclick = () => (location.hash = "#/path");
+  const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
+  levelWatch();
+  wireTop();
+}
+function skillMapView() {
+  const groups = skillGroups(), all = groups.flatMap(g => g[2]);
+  view().innerHTML = `<h1>Skills</h1><p class="muted small">Pick any skill and go at your own pace. Each ring fills as you finish its parts.</p>` +
+    groups.map(([kind, label, sks]) => { const d = sks.filter(sk => skillFrac(sk) >= 1).length;
+      return `<div class="sk-sec"><div class="sys-h">${label} · ${d}/${sks.length}</div><div class="skgrid">${sks.map(sk => { const U = skillUnits(sk), n = U.filter(unitDone).length;
+        return `<button class="sktile ${n >= U.length ? "done" : ""}" data-s="${esc(sk.key)}">${ringSVG(U.length ? n / U.length : 0, KCOL[kind], n >= U.length ? "✓" : GLYPH[kind], 54)}
+          <span class="skt">${esc(sk.title)}</span><span class="tiny muted">${n}/${U.length} parts</span></button>`; }).join("")}</div></div>`; }).join("");
+  view().querySelectorAll(".sktile").forEach(b => (b.onclick = () => skillSheet(all.find(sk => sk.key === b.dataset.s))));
+}
+function skillSheet(sk) {
+  const U = skillUnits(sk), n = U.filter(unitDone).length, nx = U.find(u => !unitDone(u));
+  sheet(`<div class="row" style="gap:12px">${ringSVG(U.length ? n / U.length : 0, KCOL[sk.kind], GLYPH[sk.kind], 54)}<div class="grow">
+      <div class="small muted" style="font-weight:800">${KIND[sk.kind].toUpperCase()} · ${n}/${U.length} PARTS</div><h2 style="margin:2px 0 0">${esc(sk.title)}</h2></div></div>
+    <div class="parts">${U.map((u, i) => `<button class="part ${unitDone(u) ? "ok" : ""}" data-u="${i}"><span class="pn">${unitDone(u) ? "✓" : i + 1}</span><span class="grow pl">${esc(unitLabel(u))}</span><span>›</span></button>`).join("")}</div>
+    <button class="btn" id="go">${nx ? (n ? "Continue" : "Start") : "Practise again"}</button>`,
+  el => {
+    const go = u => { closeSheet(); u.it.kind === "grammar" ? (location.hash = "#/grammar/" + u.it.id) : startItem(u.it, u.k); };
+    el.querySelectorAll(".part").forEach(b => (b.onclick = () => go(U[+b.dataset.u])));
+    el.querySelector("#go").onclick = () => go(nx || U[0]);
+  });
+}
+
 // ------------------------------------------------------------------ path
 function pathView() {
+  if (!questMode()) return skillMapView();
   const nx = nextItem();
   const plan = weekPlan();
   let k = 0;
@@ -178,7 +251,7 @@ function itemSheet(it, refresh = pathView) {
   const d = S.done[it.id];
   let body = "";
   if (it.kind === "vocab") body = `<div class="chips">${it.words.map(id => `<span class="chip">${esc(C.word[id].de)}</span>`).join("")}</div>`;
-  if (it.kind === "grammar") { const g = C.grammar[it.id]; body = `<p class="small muted">${esc(g.intro).slice(0, 220)}…</p><p class="small">🎬 ${esc(g.watch)}</p>`; }
+  if (it.kind === "grammar") { const g = grammarOf(it), P = gPart(it); body = `${P ? `<p class="small"><b>Part ${it.part + 1} of ${it.of}</b> · ${P.q.length ? `${P.q.length} question${P.q.length > 1 ? "s" : ""}` : "short read"}</p>` : ""}<p class="small muted">${esc(g.intro).slice(0, 220)}…</p><p class="small">🎬 ${esc(g.watch)}</p>`; }
   if (it.kind === "phrases") body = `<p class="small muted">${C.phrases[it.id].items.length} phrases</p>`;
   sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
     <h2 style="margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</h2>${body}
@@ -198,22 +271,33 @@ function itemSheet(it, refresh = pathView) {
 
 // ------------------------------------------------------------------ grammar reading
 function grammarView(id) {
-  const g = C.grammar[id], it = C.item[id];
+  const it = C.item[id], g = it && grammarOf(it);
   if (!g) return todayView();
+  const P = gPart(it), first = !P || it.part === 0, last = !P || it.part === it.of - 1, nq = P ? P.q.length : g.q.length;
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "path"));
-  view().innerHTML = `<button class="link" id="back">‹ Path</button>
-  <div class="small muted" style="font-weight:800">📐 GRAMMAR · CHAPTER ${g.num}</div><h1>${esc(g.title)}</h1>
-  <p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>
-  <div class="gram">${g.body}${g.after || ""}</div>
-  <h2>Examples</h2>${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
+  const nextPart = P && !last ? C.item[`${g.id}.${it.part + 2}`] : null;
+  view().innerHTML = `<button class="link" id="back">‹ ${questMode() ? "Path" : "Skills"}</button>
+  <div class="small muted" style="font-weight:800">📐 GRAMMAR · CHAPTER ${g.num}${P ? ` · PART ${it.part + 1} OF ${it.of}` : ""}</div><h1>${esc(P ? P.t : g.title)}</h1>
+  ${P ? `<div class="gparts">${Array.from({ length: it.of }, (_, k) => `<span class="${S.done[`${g.id}.${k + 1}`] ? "ok" : ""} ${k === it.part ? "cur" : ""}"></span>`).join("")}</div>
+    ${P.t.startsWith(g.title) ? "" : `<p class="small muted" style="margin-top:4px">${esc(g.title)}</p>`}` : ""}
+  ${first ? `<p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>` : ""}
+  <div class="gram">${P ? P.html : g.body + (g.after || "")}</div>
+  ${last ? `<h2>Examples</h2>${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
     <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
   ${g.mist.length ? `<h2>Common mistakes</h2><div class="mist">${g.mist.map(m => `<div><span style="color:var(--red)">✗ ${esc(m.wrong)}</span><br>
-    <span style="color:var(--green);font-weight:700">✓ ${esc(m.right)}</span><br><span class="muted">${esc(m.why)}</span></div>`).join("")}</div>` : ""}
-  <div style="height:16px"></div><button class="btn" id="prac">Practise (${g.q.length} questions)</button>
-  ${S.done[id] ? `<p class="small muted" style="text-align:center">Done ${fmtDate(S.done[id].date)}${S.done[id].score != null ? ` · ${S.done[id].score}%` : ""}</p>` : ""}`;
+    <span style="color:var(--green);font-weight:700">✓ ${esc(m.right)}</span><br><span class="muted">${esc(m.why)}</span></div>`).join("")}</div>` : ""}` : ""}
+  <div style="height:16px"></div>
+  <button class="btn" id="prac">${nq ? `Practise (${nq} question${nq > 1 ? "s" : ""})` : "Done reading ✓"}</button>
+  ${S.done[id] ? `<p class="small muted" style="text-align:center">Done ${fmtDate(S.done[id].date)}${S.done[id].score != null ? ` · ${S.done[id].score}%` : ""}</p>` : ""}
+  ${nextPart && !questMode() ? `<button class="btn ghost" id="np">Next part · ${esc(gPart(nextPart).t)} ›</button>` : ""}`;
   wireSpeakers(view());
   view().querySelector("#back").onclick = () => (location.hash = "#/path");
-  view().querySelector("#prac").onclick = () => startGrammarPractice(g, it);
+  view().querySelector("#prac").onclick = () => {
+    if (nq) return startGrammarPractice(g, it);
+    const first = !S.done[id]; completeItem(id, null, first ? 5 : 0); if (first) addXP(5);
+    toast(first ? "Part done · +5 XP" : "Already done"); location.hash = questMode() || !nextPart ? "#/path" : "#/grammar/" + nextPart.id;
+  };
+  const np = view().querySelector("#np"); if (np) np.onclick = () => (location.hash = "#/grammar/" + nextPart.id);
 }
 
 // ------------------------------------------------------------------ words
@@ -304,7 +388,7 @@ function progressView() {
     <div class="ring big" style="--p:${pr.total}"><div>${pr.total.toFixed(0)}%<small>of A1</small></div></div>
     <div class="grow bars">
       ${bar("🔤 Vocabulary", pr.vocab, WEIGHTS.vocab, `${wDone}/${C.content.words.length}`, "var(--green)")}
-      ${bar("📐 Grammar", pr.grammar, WEIGHTS.grammar, `${cnt(nG)}/${nG.length}`, "var(--blue)")}
+      ${bar("📐 Grammar", pr.grammar, WEIGHTS.grammar, `${chaptersDone()}/${C.content.grammar.length} chapters`, "var(--blue)")}
       ${bar("💬 Phrases", pr.phrases, WEIGHTS.phrases, `${cnt(nP)}/${nP.length}`, "#ce82ff")}
     </div></div>
   <div class="card"><div class="row"><div class="grow" style="font-weight:800">Pace to ${fmtDate(S.settings.targetDate, { day: "numeric", month: "short", year: "numeric" })}</div>${paceLine(pc)}</div>
@@ -348,6 +432,10 @@ function progressView() {
 function settingsView() {
   const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
   view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
+  <div class="card"><div class="sys-h">Mode</div><div style="font-weight:800">⚔️ Quest Mode</div>
+    <label class="toggle">Follow the quest system <input type="checkbox" id="qm" ${questMode() ? "checked" : ""}></label>
+    <p class="muted small" style="margin:6px 0 0">${questMode() ? "<b>On:</b> a guided day-by-day Path with a daily goal, daily quests, 💎 diamonds and streak gifts. Missed review days cost XP."
+      : "<b>Off:</b> a skill map like the Software Engineering track: pick any skill and finish its parts at your own pace. No daily goal, quests or penalties. XP, level and reviews still count."} Your progress is the same either way, so you can switch any time.</p></div>
   <div class="card"><div class="sys-h">Goal & pace</div><div style="font-weight:800">🎯 Goal & pace</div>
     <label class="f">Target completion date (A1 reached)</label><input type="date" id="tg" value="${S.settings.targetDate}" min="${addDays(today(), 7)}">
     <p class="muted small" style="margin:6px 0 0">${daysLeft > 0 ? `${daysLeft} days left` : "Target date has passed"} · ${p.nWeeks} weeks planned (Mon–Sun). Changing the date re-spreads all lessons across the weeks.</p>
@@ -388,6 +476,7 @@ function settingsView() {
   v.querySelector("#sd").onchange = e => { if (e.target.value && e.target.value < S.settings.targetDate) { setS("startDate", e.target.value); settingsView(); } else { toast("Start must be before the target"); e.target.value = S.settings.startDate; } };
   const dg = v.querySelector("#dg"); if (dg) dg.onchange = e => setS("dailyGoal", Math.max(10, +e.target.value || 50));
   v.querySelector("#gm").onchange = e => { setS("goalMode", e.target.value); if (e.target.value === "manual" && !S.settings.dailyGoal) setS("dailyGoal", goalFor()); settingsView(); };
+  v.querySelector("#qm").onchange = e => { setS("quest", e.target.checked); if (e.target.checked) S.penChecked = addDays(today(), -1), save(); toast(e.target.checked ? "Quest Mode on" : "Quest Mode off – skill map"); route(); };
   v.querySelector("#th").onchange = e => { setS("theme", e.target.value); applyTheme(); settingsView(); };
   v.querySelector("#hero").onchange = e => { setHero(e.target.value); toast(`${HERO_STYLES[e.target.value]} selected`); settingsView(); };
   v.querySelector("#hi").onchange = e => setS("hindi", e.target.checked);
@@ -840,7 +929,7 @@ function statusWindow(pr, pc, r) {
   const L = level(pr.total), rk = rank(pr.total);
   const scores = Object.values(S.done).map(d => d.score).filter(v => v != null);
   const acc = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  const nG = Object.keys(S.done).filter(id => id.startsWith("g")).length, nP = Object.keys(S.done).filter(id => id.startsWith("p")).length;
+  const nG = chaptersDone(), nP = C.content.phrases.filter(p => S.done[p.id]).length;
   return `<div class="card sl-only"><div class="sys-h">Status</div>
     ${heroHTML(L.lv, "big")}<div class="hero-cap">Form: <b>${form(stageFor(L.lv)).name}</b> (${esc(form(stageFor(L.lv)).de)}) · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
     <div class="row" style="margin-bottom:10px"><div class="rank ${rk.r}" style="width:58px;height:58px;font-size:32px">${rk.r}</div>
@@ -850,7 +939,7 @@ function statusWindow(pr, pc, r) {
     <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
     <div class="statgrid">
       <div><span>📖 Words</span><b>${r.learned}</b></div><div><span>🏆 Mastered</span><b>${r.mastered}</b></div>
-      <div><span>📐 Grammar</span><b>${nG}/20</b></div><div><span>💬 Phrases</span><b>${nP}/14</b></div>
+      <div><span>📐 Grammar</span><b>${nG}/${C.content.grammar.length}</b></div><div><span>💬 Phrases</span><b>${nP}/${C.content.phrases.length}</b></div>
       <div><span>🔥 Streak</span><b>${streak()}</b></div><div><span>🎯 Accuracy</span><b>${acc}%</b></div>
       <div><span>⚡ Total XP</span><b>${totalXP()}</b></div><div><span>📈 A1</span><b>${pr.total.toFixed(1)}%</b></div>
     </div></div>`;

@@ -22,11 +22,98 @@ export async function loadContent(courseId = COURSE) {
   C.word = {}; C.item = {}; C.grammar = {}; C.phrases = {};
   _w = null; _plan = null; _planKey = "";
   (c.words || []).forEach(w => (C.word[w.id] = w));
+  (c.grammar || []).forEach(g => (C.grammar[g.id] = g));
+  C.gparts = {};
+  if (c.grammar && c.path && !c._expanded) { c.path = spreadPath(expandGrammar(c.path)); c._expanded = true; }
+  (c.path || []).forEach(p => { if (p.gid) (C.gparts[p.gid] = C.gparts[p.gid] || []).push(p.id); });
   numberTopics(c.path || []);
   (c.path || []).forEach(p => (C.item[p.id] = p));
-  (c.grammar || []).forEach(g => (C.grammar[g.id] = g));
   (c.phrases || []).forEach(p => (C.phrases[p.id] = p));
   return c;
+}
+
+// ---------- grammar parts: long chapters are cut into short reads (at headings; big tables by rows) ----------
+const PART_MAX = 700, PART_MIN = 250, SPLIT_FROM = 900, TABLE_ROWS = 8; // sizes in characters of visible text
+const tlen = n => (n.textContent || "").replace(/\s+/g, " ").trim().length;
+function tableChunks(t) {
+  const rows = [...t.querySelectorAll(":scope > tbody > tr, :scope > tr")];
+  if (rows.length <= TABLE_ROWS + 2) return [t];
+  const k = Math.ceil(rows.length / TABLE_ROWS), per = Math.ceil(rows.length / k), out = [];
+  for (let i = 0; i < rows.length; i += per) {
+    const c = t.cloneNode(false);
+    t.querySelectorAll(":scope > colgroup, :scope > thead").forEach(x => c.appendChild(x.cloneNode(true)));
+    const tb = t.ownerDocument.createElement("tbody");
+    rows.slice(i, i + per).forEach(r => tb.appendChild(r.cloneNode(true)));
+    c.appendChild(tb); out.push(c);
+  }
+  return out;
+}
+export function splitGrammar(g) {
+  if (g.parts) return g.parts;
+  const doc = new DOMParser().parseFromString(`<div>${g.body}${g.after || ""}</div>`, "text/html"), root = doc.body.firstElementChild;
+  const whole = [{ t: g.title, html: root.innerHTML, q: g.q.map((_, i) => i) }];
+  if (tlen(root) < SPLIT_FROM) return (g.parts = whole);
+  // units: [{sec title, html, len}] – a heading sticks to the block after it
+  const units = []; let sec = g.title, head = "";
+  for (const n of [...root.childNodes]) {
+    if (n.nodeType !== 1) { if ((n.textContent || "").trim()) units.push({ s: sec, html: n.textContent, len: tlen(n) }); continue; }
+    if (/^H[2-5]$/.test(n.tagName)) { sec = n.textContent.trim(); head = n.outerHTML; continue; }
+    const pieces = n.tagName === "TABLE" ? tableChunks(n) : [n];
+    pieces.forEach((p, i) => { units.push({ s: sec, html: (i === 0 ? head : "") + p.outerHTML, len: tlen(p) + (i === 0 && head ? sec.length : 0) }); });
+    head = "";
+  }
+  const parts = [];
+  for (const u of units) {
+    const cur = parts.at(-1);
+    if (cur && (cur.len + u.len <= PART_MAX || cur.len < PART_MIN)) { cur.html += u.html; cur.len += u.len; cur.secs.add(u.s); }
+    else parts.push({ html: u.html, len: u.len, secs: new Set([u.s]), s: u.s });
+  }
+  if (parts.length < 2) return (g.parts = whole);
+  // titles: section name, numbered when one section runs over several parts
+  const per = {}; parts.forEach(p => (per[p.s] = (per[p.s] || 0) + 1));
+  const seen = {}; parts.forEach(p => { p.t = per[p.s] > 1 ? `${p.s} (${(seen[p.s] = (seen[p.s] || 0) + 1)}/${per[p.s]})` : p.s; });
+  // questions go to the part whose text mentions their answer/options most (ties → later part)
+  const texts = parts.map(p => { const d = doc.createElement("div"); d.innerHTML = p.html; return new Set(d.textContent.toLowerCase().split(/[^\p{L}]+/u)); });
+  const qs = parts.map(() => []);
+  g.q.forEach((q, i) => {
+    const words = [q.a, ...(q.opts || [])].join(" ").toLowerCase().split(/[^\p{L}]+/u).filter(w => w.length >= 2);
+    let best = Math.min(parts.length - 1, Math.floor((i * parts.length) / g.q.length)), bs = 0;
+    texts.forEach((t, k) => { const s = words.reduce((a, w) => a + (t.has(w) ? 1 : 0), 0); if (s > 0 && s >= bs) { bs = s; best = k; } });
+    qs[best].push(i);
+  });
+  return (g.parts = parts.map((p, k) => ({ t: p.t, html: p.html, q: qs[k] })));
+}
+// one path item per grammar part (single-part chapters keep their id, so old progress stays valid)
+function expandGrammar(path) {
+  const out = [];
+  for (const it of path) {
+    if (it.kind !== "grammar" || !C.grammar[it.id]) { out.push(it); continue; }
+    const g = C.grammar[it.id], P = splitGrammar(g);
+    if (P.length < 2) { out.push(it); continue; }
+    P.forEach((p, k) => out.push({ ...it, id: `${it.id}.${k + 1}`, gid: it.id, part: k, of: P.length, title: `Ch ${g.num}.${k + 1}: ${p.t}` }));
+  }
+  return out;
+}
+export const grammarOf = it => C.grammar[it.gid || it.id];
+export const gPart = it => { const g = grammarOf(it); return it.gid ? g.parts[it.part] : null; };
+// Spread the path so the same topic doesn't come back-to-back: an item waits until none of the last
+// GAP items share its topic (grammar parts of one chapter wait GAP_G). Looks ahead at most LOOK items,
+// so the original teaching order is kept roughly.
+const GAP = 2, GAP_G = 3, LOOK = 8;
+const topicsOf = it => it.kind === "vocab" ? it.title.split(" · ").map(t => "v:" + t) : it.kind === "grammar" ? ["g:" + (it.gid || it.id)] : ["p:" + it.id];
+function spreadPath(path) {
+  const left = [...path], out = [];
+  const clash = it => {
+    const T = topicsOf(it), gap = it.kind === "grammar" ? GAP_G : GAP;
+    return out.slice(-gap).some(o => topicsOf(o).some(t => T.includes(t)));
+  };
+  while (left.length) {
+    let k = left.slice(0, LOOK).findIndex(it => !clash(it));
+    if (k < 0) k = 0;
+    out.push(left.splice(k, 1)[0]);
+  }
+  let n = 0; out.forEach(it => { if (it.kind === "vocab") it.n = ++n; });
+  return out;
 }
 
 // "A: Zahlen" over 4 lessons → "A: Zahlen I", "A: Zahlen II" … (only for topics that span several lessons)
@@ -93,7 +180,7 @@ export const blank = () => ({
   created: today(),
   updated: 0,
   setup: false,
-  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system" },
+  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system", quest: true },
   words: {},   // id -> {box, due, r, w}
   done: {},    // path item id -> {date, score}
   log: [],     // {d, id, xp}
@@ -117,6 +204,8 @@ function normalize(st) {
   st = st || b;
   st.settings = { ...b.settings, ...(st.settings || {}) };
   for (const k of Object.keys(b)) if (st[k] === undefined) st[k] = b[k];
+  // grammar chapters finished before they were split into parts: every part counts as done
+  for (const [gid, ids] of Object.entries(C.gparts || {})) if (st.done[gid]) ids.forEach(id => { if (!st.done[id]) st.done[id] = { ...st.done[gid] }; });
   return st;
 }
 
@@ -211,9 +300,11 @@ export function addPenalty(n, why, d = today()) {
 }
 // A day counts as missed when words were due that day and no review was done.
 export const MISSED_DAY_XP = 10;
+export const questMode = (st = S) => !st || !st.settings || st.settings.quest !== false;
 export function checkMissed() {
   if (!S || !S.setup) return 0;
   const y = addDays(today(), -1);
+  if (!questMode()) { if (S.penChecked !== y) { S.penChecked = y; save(); } return 0; } // no missed-review penalties without quests
   let d = S.penChecked ? addDays(S.penChecked, 1) : y;
   let lost = 0;
   for (; d <= y; d = addDays(d, 1)) {
@@ -358,11 +449,11 @@ let _w = null;
 export function itemWeights() {
   if (_w) return _w;
   const p = C.content.path, nWords = C.content.words.length;
-  const nG = p.filter(i => i.kind === "grammar").length, nP = p.filter(i => i.kind === "phrases").length;
+  const nG = new Set(p.filter(i => i.kind === "grammar").map(i => i.gid || i.id)).size, nP = p.filter(i => i.kind === "phrases").length;
   _w = {};
   for (const i of p) {
     _w[i.id] = i.kind === "vocab" ? WEIGHTS.vocab * i.words.length / nWords
-      : i.kind === "grammar" ? WEIGHTS.grammar / nG : WEIGHTS.phrases / nP;
+      : i.kind === "grammar" ? WEIGHTS.grammar / nG / (i.of || 1) : WEIGHTS.phrases / nP;
   }
   return _w;
 }
@@ -499,7 +590,7 @@ export function remainingXP(st = S) {
   let xp = 0;
   for (const it of C.content.path) {
     if (st.done[it.id]) continue;
-    if (it.kind === "grammar") { xp += 10 + Math.round(2 * 0.8 * (C.grammar[it.id].q.length || 6)); continue; }
+    if (it.kind === "grammar") { const P = gPart(it), nq = P ? P.q.length : grammarOf(it).q.length || 6; xp += (P ? 5 : 10) + Math.round(2 * 0.8 * nq); continue; }
     const left = bitCount(it) - bitsDone(it, st);
     xp += left * PART_XP + LESSON_BONUS;
   }
