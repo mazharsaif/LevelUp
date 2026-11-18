@@ -609,12 +609,65 @@ function read(s, lb) {
   }
 }
 
+// ---------- tap a German word in a question to see what it means (Batul's request) ----------
+// Meanings come from the word list; common forms the list doesn't hold (ist, den, mir, zum…) come from FORMS.
+const FORMS = { ist: "is", bin: "am", bist: "are", sind: "are", seid: "are", war: "was", hat: "has", habe: "have", hast: "have", habt: "have",
+  den: "the", dem: "the", des: "of the", einen: "a, an", einem: "a, an", eines: "of a", du: "you", mich: "me", mir: "(to) me",
+  dich: "you", dir: "(to) you", uns: "us", euch: "you (plural)", im: "in the", am: "at the, on the", zum: "to the", zur: "to the",
+  vom: "from the", beim: "at the", ins: "into the" };
+let _gIdx = null;
+function glossIndex() {
+  if (_gIdx) return _gIdx;
+  _gIdx = new Map();
+  const add = (k, w) => { k = k.replace(/^(der|die|das)\s+/i, "").replace(/^-+|-+$/g, "").trim().toLowerCase(); if (k && !/\s/.test(k) && !_gIdx.has(k)) _gIdx.set(k, w); };
+  for (const w of C.content.words) {
+    const parts = String(w.de).replace(/[()]/g, ",").split(/[\/,]/);
+    if (parts.some(k => /\s/.test(k.replace(/^\s*(der|die|das)\s+/i, "").trim()))) continue;   // phrases ("Berlin, zwölfter Vierter …") are not single words
+    parts.forEach(k => add(k, w));
+    if (w.pl) String(w.pl).split(/[\/,]/).forEach(k => add(k, w));
+  }
+  return _gIdx;
+}
+const firstMeaning = en => String(en).split(/;/)[0].trim();
+function glossOf(tok, first) {
+  const t = tok.replace(/[^\p{L}ß]/gu, ""), low = t.toLowerCase(), idx = glossIndex();
+  if (!t) return null;
+  if (!first && /^Ihr(e|en|em|er|es)?$/.test(t)) return "your (formal)";
+  if (!first && t === "Sie") return "you (formal)";
+  const hit = k => idx.get(k);
+  let w = hit(low);
+  if (!w && FORMS[low]) return FORMS[low];
+  for (const suf of ["en", "em", "er", "es", "e", "n", "s", "st", "t"]) {
+    if (w) break;
+    if (low.endsWith(suf) && low.length - suf.length >= 3) { const st = low.slice(0, -suf.length); w = hit(st) || hit(st + "en") || hit(st + "n"); }
+  }
+  if (!w) w = hit(low + "en") || hit(low + "n");
+  return w ? `${w.de} = ${firstMeaning(w.en)}` : null;
+}
+// a German token as HTML; known words get a dotted underline and show their meaning when tapped
+function glossTok(tok, first) {
+  const g = glossOf(tok, first);
+  return g ? `<span class="gw" data-g="${esc(g)}">${esc(tok)}</span>` : esc(tok);
+}
+function wireGloss(root) {
+  root.addEventListener("click", e => {
+    const el = e.target.closest(".gw"); document.querySelectorAll(".gloss").forEach(x => x.remove());
+    if (!el) return;
+    const r = el.getBoundingClientRect(), b = document.createElement("div");
+    b.className = "gloss"; b.textContent = el.dataset.g; document.body.appendChild(b);
+    const x = Math.max(8, Math.min(window.innerWidth - b.offsetWidth - 8, r.left + r.width / 2 - b.offsetWidth / 2));
+    b.style.left = x + "px"; b.style.top = (window.scrollY + r.top - b.offsetHeight - 8) + "px";
+    setTimeout(() => b.remove(), 3500);
+  });
+}
+
 // Build the sentence: pre-filled words stay in place; tap tiles to fill the blanks in order
 function build(s, lb) {
   lb.innerHTML = `<div class="q-title">Complete the sentence</div>
     <div class="prompt"><div class="big" style="font-size:20px">${esc(s.ex.en)}</div></div>
-    <div class="answer-line" id="ans">${s.slots.map((x, i) => x.blank ? `<span class="slot" data-k="${i}"></span>` : `<span class="fixed">${esc(x.tok)}</span>`).join("")}</div>
+    <div class="answer-line" id="ans">${s.slots.map((x, i) => x.blank ? `<span class="slot" data-k="${i}"></span>` : `<span class="fixed">${glossTok(x.tok, i === 0)}</span>`).join("")}</div>
     <div class="tiles-bank" id="bank">${s.tiles.map((t, i) => `<button class="tile-w" data-i="${i}">${esc(t)}</button>`).join("")}</div>`;
+  wireGloss(lb.querySelector("#ans"));
   const slots = [...lb.querySelectorAll(".slot")];
   const f = foot(`<button class="btn" id="chk" disabled>Check</button>`), btn = f.querySelector("#chk");
   const upd = () => (btn.disabled = slots.some(x => !x.dataset.i));
@@ -688,9 +741,10 @@ function say(s, lb) {
 function cloze(s, lb) {
   const toks = s.ex.de.split(/(\s+)/);
   let blanked = false;
-  const sent = toks.map(t => { const bare = t.replace(/[.,!?]/g, ""); if (!blanked && bare.toLowerCase() === s.ans.toLowerCase()) { blanked = true; return t.replace(bare, "<span class=\"gap\">____</span>"); } return esc(t); }).join("");
-  lb.innerHTML = `<div class="q-title">Fill the gap</div><div class="card"><div style="font-size:20px;font-weight:700">${sent}</div>
-    <div class="muted small" style="margin-top:6px">${esc(s.ex.en)}</div></div>`;
+  const sent = toks.map((t, k) => { const bare = t.replace(/[.,!?]/g, ""); if (!blanked && bare.toLowerCase() === s.ans.toLowerCase()) { blanked = true; return t.replace(bare, "<span class=\"gap\">____</span>"); } return /\S/.test(t) ? glossTok(t, k === 0) : esc(t); }).join("");
+  lb.innerHTML = `<div class="q-title">Fill the gap</div><div class="card"><div style="font-size:20px;font-weight:700" id="csent">${sent}</div>
+    <div class="muted" style="margin-top:6px;font-size:20px">${esc(s.ex.en)}</div></div>`;
+  wireGloss(lb.querySelector("#csent"));
   const opts = shuffle(s.opts);
   options(lb, opts.map(o => esc(o)), opts.indexOf(s.opts[0]), ok => { play(s.ex.a, s.ex.de); answered({ ...s, key: "c:" + s.ex.de }, ok, { correctHTML: esc(s.ex.de) }); });
 }

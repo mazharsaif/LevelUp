@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="250" viewBox="0 0 660 250">
+<defs><marker id="m757575" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker></defs>
+<text x="110" y="16.0" font-family="Avenir Next" font-size="11.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Trigger</text>
+<text x="330" y="16.0" font-family="Avenir Next" font-size="11.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Retrieval eval (free)</text>
+<text x="550" y="16.0" font-family="Avenir Next" font-size="11.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Faithfulness eval (paid)</text>
+<rect x="20" y="30" width="180" height="34" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4"/>
+<text x="110.0" y="47.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="bold" dominant-baseline="middle">pull request</text>
+<rect x="240" y="30" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="330.0" y="47.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">all 20 questions</text>
+<rect x="460" y="30" width="180" height="34" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4" stroke-dasharray="5 3"/>
+<text x="550.0" y="47.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">skipped</text>
+<path d="M202,47 L238,47" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<path d="M422,47 L458,47" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="20" y="74" width="180" height="34" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4"/>
+<text x="110.0" y="91.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="bold" dominant-baseline="middle">PR + label llm-eval</text>
+<rect x="240" y="74" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="330.0" y="91.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">all 20 questions</text>
+<rect x="460" y="74" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="550.0" y="91.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">5 questions</text>
+<path d="M202,91 L238,91" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<path d="M422,91 L458,91" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="20" y="118" width="180" height="34" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4"/>
+<text x="110.0" y="135.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="bold" dominant-baseline="middle">push to main</text>
+<rect x="240" y="118" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="330.0" y="135.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">all 20 questions</text>
+<rect x="460" y="118" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="550.0" y="135.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">20 questions</text>
+<path d="M202,135 L238,135" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<path d="M422,135 L458,135" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="20" y="162" width="180" height="34" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4"/>
+<text x="110.0" y="179.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="bold" dominant-baseline="middle">nightly 02:30 UTC</text>
+<rect x="240" y="162" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="330.0" y="179.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">all 20 questions</text>
+<rect x="460" y="162" width="180" height="34" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="550.0" y="179.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">20 questions</text>
+<path d="M202,179 L238,179" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<path d="M422,179 L458,179" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<text x="330" y="222.0" font-family="Avenir Next" font-size="10.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">hit rate@3 ≥ 0.90 · MRR ≥ 0.75 · faithfulness ≥ 0.85  →  otherwise the job fails</text>
+<text x="330" y="240.0" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="middle" font-weight="normal" font-style="italic" dominant-baseline="middle">LLM answers and verdicts are cached; a budget cap (--max-usd) stops runaway costs.</text>
+</svg>

@@ -116,8 +116,8 @@ function openBox() {
 export function installBugButton() {
   if (document.getElementById("bugbtn")) return;
   const b = document.createElement("button");
-  b.id = "bugbtn"; b.type = "button"; b.title = "Send feedback"; b.setAttribute("aria-label", "Send feedback");
-  b.innerHTML = "💬<span>Feedback</span>";
+  b.id = "bugbtn"; b.type = "button"; b.title = "Report a problem"; b.setAttribute("aria-label", "Report a problem");
+  b.textContent = "🐞";
   b.onclick = openBox;
   document.body.appendChild(b);
   flushBugQueue();

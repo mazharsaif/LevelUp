@@ -1,6 +1,5 @@
-# Python environments (regenerated: `uv sync` in server_fastapi; tools/.venv for audio)
-server_fastapi/.venv/
-tools/.venv/
+# Python environment (regenerated with `uv sync` in the repo root)
+.venv/
 **/__pycache__/
 *.pyc
 
@@ -13,3 +12,9 @@ app/audio/
 # macOS / editor cruft
 .DS_Store
 *.swp
+
+# Old workspace material (job hunting, source PDFs, notes) moved to ../legacy; ignored in case it ever lands in the repo
+legacy/
+
+# Personal Claude Code settings (shared ones are in .claude/settings.json)
+.claude/settings.local.json

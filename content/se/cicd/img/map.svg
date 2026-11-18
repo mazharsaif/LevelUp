@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="560" viewBox="0 0 660 560">
+<text x="330" y="22.0" font-family="Avenir Next" font-size="15" fill="#37474f" text-anchor="middle" font-weight="bold" dominant-baseline="middle">From zero to production-grade ML CI/CD</text>
+<rect x="20" y="392" width="620" height="68" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<rect x="20" y="392" width="74" height="68" rx="8" fill="#2e7d32"/>
+<text x="57" y="414.0" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Level</text>
+<text x="57" y="436.0" font-family="Avenir Next" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">1</text>
+<text x="108" y="413.0" font-family="Avenir Next" font-size="14" fill="#2e7d32" text-anchor="start" font-weight="bold" dominant-baseline="middle">Tests + first pipeline</text>
+<text x="108" y="438.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">You build: pytest suite · ci.yml runs on every push · README badge</text>
+<rect x="66" y="314" width="574" height="68" rx="8" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<rect x="66" y="314" width="74" height="68" rx="8" fill="#00796b"/>
+<text x="103" y="336.0" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Level</text>
+<text x="103" y="358.0" font-family="Avenir Next" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">2</text>
+<text x="154" y="335.0" font-family="Avenir Next" font-size="14" fill="#00796b" text-anchor="start" font-weight="bold" dominant-baseline="middle">Solid CI</text>
+<text x="154" y="360.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">You build: ruff · mypy · pre-commit · matrix · coverage · protected main</text>
+<rect x="112" y="236" width="528" height="68" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.4"/>
+<rect x="112" y="236" width="74" height="68" rx="8" fill="#1565c0"/>
+<text x="149" y="258.0" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Level</text>
+<text x="149" y="280.0" font-family="Avenir Next" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">3</text>
+<text x="200" y="257.0" font-family="Avenir Next" font-size="14" fill="#1565c0" text-anchor="start" font-weight="bold" dominant-baseline="middle">Continuous delivery to AWS</text>
+<text x="200" y="282.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">You build: Docker image → ECR via OIDC → ECS Express (staging → prod)</text>
+<rect x="158" y="158" width="482" height="68" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<rect x="158" y="158" width="74" height="68" rx="8" fill="#6a1b9a"/>
+<text x="195" y="180.0" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Level</text>
+<text x="195" y="202.0" font-family="Avenir Next" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">4</text>
+<text x="246" y="179.0" font-family="Avenir Next" font-size="14" fill="#6a1b9a" text-anchor="start" font-weight="bold" dominant-baseline="middle">ML-specific CI/CD</text>
+<text x="246" y="204.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">You build: data contract · accuracy gate · MLflow · RAG eval gate</text>
+<rect x="204" y="80" width="436" height="68" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.4"/>
+<rect x="204" y="80" width="74" height="68" rx="8" fill="#e65100"/>
+<text x="241" y="102.0" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Level</text>
+<text x="241" y="124.0" font-family="Avenir Next" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">5</text>
+<text x="292" y="101.0" font-family="Avenir Next" font-size="14" fill="#e65100" text-anchor="start" font-weight="bold" dominant-baseline="middle">DevOps-level awareness</text>
+<text x="292" y="126.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">You learn: vocabulary for K8s, GitOps, IaC, canary, SBOMs</text>
+<rect x="20" y="470" width="620" height="44" rx="8" fill="#eceff1" stroke="#546e7a" stroke-width="1.4"/>
+<text x="330" y="485.0" font-family="Avenir Next" font-size="12.5" fill="#546e7a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Foundation: Git for CI/CD work</text>
+<text x="330" y="502.0" font-family="Avenir Next" font-size="9.6" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">branches · PRs · rebase · conflicts · stash · worktree · reflog · bisect</text>
+<text x="330" y="535.0" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="middle" font-weight="normal" font-style="italic" dominant-baseline="middle">Running examples:  credit-api (scikit-learn + FastAPI, Levels 1–4)   ·   rag-api (pgvector + LLM, Level 4)</text>
+</svg>

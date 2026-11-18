@@ -1,0 +1,189 @@
+{
+  "branch": {
+    "id": "jwt",
+    "title": "JWT for AI Services",
+    "icon": "🎟️",
+    "color": "#8BD450"
+  },
+  "nodes": [
+    {
+      "key": "foundations",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🪪",
+      "chapter": 1,
+      "title": "Authn, authz & tokens",
+      "short": "401 vs 403, why X-Password fails",
+      "learn": [
+        "Tell authentication from authorisation, and 401 from 403",
+        "Sessions vs self-contained tokens",
+        "What a bearer token is and its three rules",
+        "Why the shared X-Password and IP allowlist fall short"
+      ],
+      "concepts": [
+        "Authentication",
+        "Authorisation",
+        "401 vs 403",
+        "Bearer token",
+        "Stateless"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "crypto",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "foundations"
+      ],
+      "icon": "🔏",
+      "chapter": 2,
+      "title": "Cryptography primer",
+      "short": "Encode, encrypt, hash, sign",
+      "learn": [
+        "Encoding vs encryption vs hashing vs signing",
+        "Symmetric (HS256) vs asymmetric (RS256) keys",
+        "How an RSA signature is made and checked",
+        "Why a hash alone proves nothing"
+      ],
+      "concepts": [
+        "Base64url",
+        "SHA-256",
+        "Digital signature",
+        "Public / private key",
+        "HMAC"
+      ],
+      "exercises": [
+        "Myth or fact",
+        "Match the terms",
+        "Order the flow"
+      ]
+    },
+    {
+      "key": "anatomy",
+      "level": 2,
+      "col": 1,
+      "req": [
+        "crypto"
+      ],
+      "icon": "🧬",
+      "chapter": 3,
+      "title": "Anatomy of a JWT",
+      "short": "Header, claims, signature",
+      "learn": [
+        "Decode a token by hand",
+        "Every claim we use and how to check it",
+        "User token vs service token",
+        "Why apps treat the token as opaque"
+      ],
+      "concepts": [
+        "Header (alg, kid)",
+        "Claims",
+        "exp / nbf / iat",
+        "scope",
+        "Unverified decode"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Concept check"
+      ]
+    },
+    {
+      "key": "alg",
+      "level": 3,
+      "col": 0,
+      "req": [
+        "anatomy"
+      ],
+      "icon": "⚔️",
+      "chapter": 4,
+      "title": "RS256 vs HS256",
+      "short": "alg: none & algorithm confusion",
+      "learn": [
+        "Read JWT algorithm names",
+        "Why we use RS256",
+        "The alg: none attack and its defence",
+        "Algorithm confusion (RS256 to HS256)"
+      ],
+      "concepts": [
+        "RS256",
+        "HS256",
+        "alg: none",
+        "Algorithm confusion",
+        "RFC 8725"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Spot the bug",
+        "Fix the code"
+      ]
+    },
+    {
+      "key": "jwks",
+      "level": 3,
+      "col": 2,
+      "req": [
+        "anatomy"
+      ],
+      "icon": "🗝️",
+      "chapter": 5,
+      "title": "JWKS & key rotation",
+      "short": "kid, caching, issuers",
+      "learn": [
+        "What a JWK and a JWKS are",
+        "Select keys by kid, never the first key",
+        "Cache for an hour, refetch once on an unknown kid",
+        "Rotation phases and multiple trusted issuers"
+      ],
+      "concepts": [
+        "JWKS",
+        "kid",
+        "Cache + rate-limited refetch",
+        "Key rotation",
+        "Trusted issuers"
+      ],
+      "exercises": [
+        "Scenario",
+        "Design decision",
+        "Order the flow"
+      ]
+    },
+    {
+      "key": "system",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "alg",
+        "jwks"
+      ],
+      "icon": "🗺️",
+      "chapter": 6,
+      "title": "Our system end to end",
+      "short": "Actors, two tokens, five flows",
+      "learn": [
+        "The actors: issuer, clients, AI hosts",
+        "Login token vs AI token",
+        "Login, SSO, signup, refresh and service-token flows",
+        "What your 401 and 403 make the apps do"
+      ],
+      "concepts": [
+        "Issuer",
+        "ai_token",
+        "Registrant role",
+        "Refresh + retry once",
+        "Service token"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Threat-model it"
+      ]
+    }
+  ]
+}

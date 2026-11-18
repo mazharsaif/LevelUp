@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="220" viewBox="0 0 660 220">
+<defs><marker id="mc62828" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker></defs>
+<defs><marker id="m2e7d32" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
+<defs><marker id="m757575" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker></defs>
+<rect x="10" y="70" width="100" height="50" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="60.0" y="89.1" font-family="Avenir Next" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">train.py</text>
+<text x="60.0" y="101.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">full data</text>
+<path d="M112,95 L140,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="142" y="70" width="110" height="50" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="197.0" y="89.1" font-family="Menlo" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">metrics.json</text>
+<text x="197.0" y="101.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">auc · f1 · acc</text>
+<path d="M254,95 L290,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="292" y="50" width="150" height="90" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="367" y="64.0" font-family="Avenir Next" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">gate.py checks</text>
+<text x="302" y="86.0" font-family="Menlo" font-size="9.8" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">roc_auc ≥ 0.70  (floor)</text>
+<text x="302" y="102.0" font-family="Menlo" font-size="9.8" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">f1      ≥ 0.40  (floor)</text>
+<text x="302" y="118.0" font-family="Menlo" font-size="9.8" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">drop vs baseline ≤ 0.03</text>
+<path d="M444,78 L494,50" fill="none" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#m2e7d32)"/>
+<rect x="450.4" y="51.0" width="37.2" height="14.0" fill="#ffffff" fill-opacity="0.9"/>
+<text x="469.0" y="58.0" font-family="Avenir Next" font-size="10" fill="#2e7d32" text-anchor="middle" font-weight="normal" dominant-baseline="middle">exit 0</text>
+<path d="M444,112 L494,150" fill="none" stroke="#c62828" stroke-width="1.5" marker-end="url(#mc62828)"/>
+<rect x="450.4" y="138.0" width="37.2" height="14.0" fill="#ffffff" fill-opacity="0.9"/>
+<text x="469.0" y="145.0" font-family="Avenir Next" font-size="10" fill="#c62828" text-anchor="middle" font-weight="normal" dominant-baseline="middle">exit 1</text>
+<rect x="496" y="20" width="156" height="56" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="574.0" y="36.2" font-family="Avenir Next" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">pass</text>
+<text x="574.0" y="48.9" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">register → @challenger</text>
+<text x="574.0" y="60.7" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">promote → @champion</text>
+<rect x="496" y="124" width="156" height="56" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.4"/>
+<text x="574.0" y="140.2" font-family="Avenir Next" font-size="11" fill="#c62828" text-anchor="middle" font-weight="bold" dominant-baseline="middle">fail</text>
+<text x="574.0" y="152.9" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">job red, PR blocked</text>
+<text x="574.0" y="164.7" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">nothing deployed</text>
+<text x="150" y="170.0" font-family="Avenir Next" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">MLflow registry aliases</text>
+<text x="150" y="183.8" font-family="Avenir Next" font-size="10" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">@champion = in production</text>
+<text x="150" y="196.2" font-family="Avenir Next" font-size="10" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">@challenger = newest candidate</text>
+</svg>

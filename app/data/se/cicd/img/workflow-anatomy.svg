@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="250" viewBox="0 0 660 250">
+<defs><marker id="m00796b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#00796b"/></marker></defs>
+<rect x="10" y="10" width="640" height="230" rx="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="22" y="28.0" font-family="Avenir Next" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold" dominant-baseline="middle">Workflow  .github/workflows/ci.yml</text>
+<text x="22" y="46.0" font-family="Menlo" font-size="10" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">on: push / pull_request / schedule / workflow_dispatch   (the trigger)</text>
+<rect x="24" y="60" width="298" height="168" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="36" y="76.0" font-family="Avenir Next" font-size="11" fill="#00796b" text-anchor="start" font-weight="bold" dominant-baseline="middle">job: lint</text>
+<text x="36" y="92.0" font-family="Menlo" font-size="9.5" fill="#757575" text-anchor="start" font-weight="normal" dominant-baseline="middle">runs-on: ubuntu-latest VM</text>
+<rect x="36" y="104" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="46" y="119.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 1  uses: actions/checkout</text>
+<rect x="36" y="142" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="46" y="157.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 2  uses: astral-sh/setup-uv</text>
+<rect x="36" y="180" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="46" y="195.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 3  run: uv run ruff check .</text>
+<rect x="342" y="60" width="298" height="168" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="354" y="76.0" font-family="Avenir Next" font-size="11" fill="#00796b" text-anchor="start" font-weight="bold" dominant-baseline="middle">job: test   (needs: lint)</text>
+<text x="354" y="92.0" font-family="Menlo" font-size="9.5" fill="#757575" text-anchor="start" font-weight="normal" dominant-baseline="middle">runs-on: a fresh VM</text>
+<rect x="354" y="104" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="364" y="119.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 1  uses: actions/checkout</text>
+<rect x="354" y="142" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="364" y="157.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 2  uses: astral-sh/setup-uv</text>
+<rect x="354" y="180" width="274" height="30" rx="4" fill="#ffffff" stroke="#757575" stroke-width="1.4"/>
+<text x="364" y="195.0" font-family="Menlo" font-size="9.6" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">step 3  run: uv run pytest</text>
+<path d="M323,144 L341,144" fill="none" stroke="#00796b" stroke-width="1.5" marker-end="url(#m00796b)"/>
+</svg>

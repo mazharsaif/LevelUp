@@ -1,0 +1,426 @@
+{
+  "branch": {
+    "id": "awsml",
+    "title": "AWS ML Engineer",
+    "icon": "☁️",
+    "color": "#FF9900"
+  },
+  "nodes": [
+    {
+      "key": "setup",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🛡️",
+      "chapter": 1,
+      "title": "Safe account setup",
+      "short": "Root, MFA, budgets",
+      "learn": [
+        "Lock down root and use short-lived credentials",
+        "Why AWS has no hard spending cap",
+        "Budgets, alerts and budget actions",
+        "A cleanup routine for every lab"
+      ],
+      "concepts": [
+        "Root user",
+        "IAM Identity Center",
+        "AWS Budgets",
+        "Free tier",
+        "Tagging"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "mlbasics",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "setup"
+      ],
+      "icon": "🧠",
+      "chapter": 2,
+      "title": "AI & ML fundamentals",
+      "short": "AIF Domain 1",
+      "learn": [
+        "AI vs ML vs deep learning vs GenAI",
+        "Supervised, unsupervised, reinforcement",
+        "The ML lifecycle and overfitting",
+        "Which AWS AI service fits which job"
+      ],
+      "concepts": [
+        "Classification",
+        "Regression",
+        "Clustering",
+        "Overfitting",
+        "Data leakage"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "genai",
+      "level": 2,
+      "col": 0,
+      "req": [
+        "mlbasics"
+      ],
+      "icon": "✨",
+      "chapter": 3,
+      "title": "GenAI & FM basics",
+      "short": "AIF Domain 2",
+      "learn": [
+        "Foundation models, tokens and embeddings",
+        "Temperature, top-p and other settings",
+        "Hallucinations and other limits",
+        "Bedrock, JumpStart and pricing options"
+      ],
+      "concepts": [
+        "Transformer",
+        "Token",
+        "Embedding",
+        "Hallucination",
+        "Amazon Bedrock"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Lab: first Bedrock call"
+      ]
+    },
+    {
+      "key": "responsible",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "mlbasics"
+      ],
+      "icon": "⚖️",
+      "chapter": 4,
+      "title": "Responsible & secure AI",
+      "short": "AIF Domains 4–5",
+      "learn": [
+        "Dimensions of responsible AI",
+        "Clarify, Guardrails, A2I and Model Cards",
+        "The shared responsibility model",
+        "Governance and compliance services"
+      ],
+      "concepts": [
+        "Fairness",
+        "Explainability",
+        "Guardrails",
+        "Shared responsibility",
+        "Macie"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Lab: guardrail"
+      ]
+    },
+    {
+      "key": "fmapps",
+      "level": 3,
+      "col": 0,
+      "req": [
+        "genai"
+      ],
+      "icon": "🧩",
+      "chapter": 5,
+      "title": "Prompting, RAG & tuning",
+      "short": "AIF Domain 3",
+      "learn": [
+        "Prompt techniques and prompt injection",
+        "How RAG works",
+        "Fine-tuning vs continued pre-training vs distillation",
+        "Evaluating foundation models"
+      ],
+      "concepts": [
+        "Few-shot",
+        "Chain-of-thought",
+        "RAG",
+        "Fine-tuning",
+        "ROUGE"
+      ],
+      "exercises": [
+        "Design decision",
+        "Order the flow",
+        "Lab: hand-made RAG"
+      ]
+    },
+    {
+      "key": "aif",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "fmapps",
+        "responsible"
+      ],
+      "icon": "🎓",
+      "chapter": 6,
+      "title": "Checkpoint: AI Practitioner",
+      "short": "Take AIF-C01",
+      "learn": [
+        "Exam format and weights",
+        "Keywords that decide the answer",
+        "12 mixed practice questions",
+        "Booking and exam day"
+      ],
+      "concepts": [
+        "AIF-C01",
+        "Scaled score",
+        "Keyword decoder"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "ingest",
+      "level": 5,
+      "col": 1,
+      "req": [
+        "aif"
+      ],
+      "icon": "📥",
+      "chapter": 7,
+      "title": "Data ingestion & storage",
+      "short": "MLA Task 1.1",
+      "learn": [
+        "Pick storage by cost, performance and structure",
+        "Parquet vs CSV vs JSON",
+        "Kinesis, Firehose, Flink and MSK",
+        "Vector databases and Feature Store ingest"
+      ],
+      "concepts": [
+        "S3 data lake",
+        "Parquet",
+        "Data Firehose",
+        "S3 Vectors",
+        "Feature Store"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Lab: lake and stream"
+      ]
+    },
+    {
+      "key": "features",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "ingest"
+      ],
+      "icon": "🧪",
+      "chapter": 8,
+      "title": "Features, quality & bias",
+      "short": "MLA Tasks 1.2–1.3",
+      "learn": [
+        "Scaling, encoding, binning and other transforms",
+        "Data Wrangler, DataBrew and Glue Data Quality",
+        "Clarify bias metrics and class imbalance",
+        "Chunking, PII redaction and fine-tuning data"
+      ],
+      "concepts": [
+        "Standardisation",
+        "SMOTE",
+        "DQDL",
+        "DPL",
+        "Chunking"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Lab: features and bias"
+      ]
+    },
+    {
+      "key": "train",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "ingest"
+      ],
+      "icon": "🏋️",
+      "chapter": 9,
+      "title": "Choosing & training models",
+      "short": "MLA Tasks 2.1–2.2",
+      "learn": [
+        "Choose between AI services, Bedrock and SageMaker",
+        "Built-in algorithms and script mode",
+        "Automatic model tuning and spot training",
+        "Overfitting, forgetting and FM customisation"
+      ],
+      "concepts": [
+        "XGBoost",
+        "Script mode",
+        "AMT",
+        "Spot training",
+        "LoRA"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Lab: XGBoost and tuning"
+      ]
+    },
+    {
+      "key": "evaluate",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "features",
+        "train"
+      ],
+      "icon": "📊",
+      "chapter": 10,
+      "title": "Evaluating ML & GenAI",
+      "short": "MLA Task 2.3",
+      "learn": [
+        "Precision, recall, F1, AUC and thresholds",
+        "SHAP explanations and convergence debugging",
+        "Shadow vs A/B testing",
+        "BLEU, ROUGE, BERTScore, LLM judges and RAG metrics"
+      ],
+      "concepts": [
+        "Confusion matrix",
+        "PR-AUC",
+        "SHAP",
+        "Shadow variant",
+        "Faithfulness"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Lab: evaluate and explain"
+      ]
+    },
+    {
+      "key": "deploy",
+      "level": 8,
+      "col": 1,
+      "req": [
+        "evaluate"
+      ],
+      "icon": "🚀",
+      "chapter": 11,
+      "title": "Deploy models, KBs & agents",
+      "short": "MLA Tasks 3.1–3.2",
+      "learn": [
+        "Real-time, serverless, async, batch and multi-model",
+        "Bedrock on-demand, provisioned and Custom Model Import",
+        "Knowledge bases: chunking, vector stores, reranking",
+        "Agents, AgentCore, MCP and state"
+      ],
+      "concepts": [
+        "Serverless inference",
+        "Async inference",
+        "Multi-model endpoint",
+        "Knowledge base",
+        "Action group"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Lab: endpoint, KB, agent"
+      ]
+    },
+    {
+      "key": "mlops",
+      "level": 9,
+      "col": 0,
+      "req": [
+        "deploy"
+      ],
+      "icon": "🔁",
+      "chapter": 12,
+      "title": "MLOps pipelines & CI/CD",
+      "short": "MLA Task 3.3",
+      "learn": [
+        "SageMaker Pipelines and the Model Registry",
+        "Blue/green, canary and auto rollback",
+        "CodePipeline, CodeBuild and CodeConnections",
+        "Prompt tests, retraining and KB refresh"
+      ],
+      "concepts": [
+        "Condition step",
+        "Model Registry",
+        "Canary",
+        "CodeConnections",
+        "Prompt regression test"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Design decision",
+        "Lab: pipeline and CI/CD"
+      ]
+    },
+    {
+      "key": "operate",
+      "level": 9,
+      "col": 2,
+      "req": [
+        "deploy"
+      ],
+      "icon": "🔭",
+      "chapter": 13,
+      "title": "Monitoring, cost & security",
+      "short": "MLA Domain 4",
+      "learn": [
+        "Model Monitor and CloudWatch observability",
+        "Instance, purchase and token cost levers",
+        "Least privilege, KMS and Bedrock API keys",
+        "VPC isolation, CloudTrail, Config and Inspector"
+      ],
+      "concepts": [
+        "Data capture",
+        "Drift",
+        "Savings Plans",
+        "Least privilege",
+        "Network isolation"
+      ],
+      "exercises": [
+        "Scenario",
+        "Attack ↔ defence",
+        "Lab: monitor and lock down"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 10,
+      "col": 1,
+      "req": [
+        "mlops",
+        "operate"
+      ],
+      "icon": "👑",
+      "chapter": 14,
+      "title": "Boss: MLA-C02 review",
+      "short": "Mixed final mock",
+      "learn": [
+        "Exam format and what was removed from C01",
+        "Keyword decoder",
+        "15-question mixed mock",
+        "Readiness checklist and exam day"
+      ],
+      "concepts": [
+        "MLA-C02",
+        "Keyword decoder",
+        "Readiness"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true
+    }
+  ]
+}

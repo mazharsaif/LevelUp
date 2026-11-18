@@ -127,6 +127,46 @@
         "VPNs, WireGuard & Tailscale",
         "Local network vs public hosting"
       ]
+    },
+    {
+      "id": "awsml",
+      "title": "AWS ML Engineer",
+      "icon": "☁️",
+      "color": "#FF9900",
+      "status": "open",
+      "reading": "data/se/awsml/",
+      "intro": 0,
+      "order": 10
+    },
+    {
+      "id": "jwt",
+      "title": "JWT for AI Services",
+      "icon": "🎟️",
+      "color": "#8BD450",
+      "status": "open",
+      "reading": "data/se/jwt/",
+      "intro": 0,
+      "order": 11
+    },
+    {
+      "id": "sysd",
+      "title": "systemd & Supervisor",
+      "icon": "🧰",
+      "color": "#F4A6C6",
+      "status": "open",
+      "reading": "data/se/sysd/",
+      "intro": 0,
+      "order": 12
+    },
+    {
+      "id": "cicd",
+      "title": "CI/CD for ML",
+      "icon": "🔁",
+      "color": "#FF6B35",
+      "status": "open",
+      "reading": "data/se/cicd/",
+      "intro": 0,
+      "order": 13
     }
   ],
   "nodes": [
@@ -160,6 +200,39 @@
         "Match the terms",
         "Myth or fact",
         "Threat-model it"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Five ideas that are easy to blur"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "The lifecycle of an account"
+          ],
+          "a": 7,
+          "b": 8
+        },
+        {
+          "t": [
+            "Threat modelling basics",
+            "Trust boundaries: never trust the client"
+          ],
+          "a": 9,
+          "b": 16
+        },
+        {
+          "t": [
+            "Principles that recur through this guide",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 17,
+          "b": 23
+        }
       ]
     },
     {
@@ -194,6 +267,46 @@
         "Spot the bug",
         "Fill the code",
         "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Why the obvious approaches are wrong",
+            "Salts",
+            "Slow, memory-hard hashing"
+          ],
+          "a": 0,
+          "b": 8
+        },
+        {
+          "t": [
+            "Using Argon2id in Python",
+            "The encoded hash string",
+            "Choosing parameters and benchmarking",
+            "Rehash on login"
+          ],
+          "a": 9,
+          "b": 16
+        },
+        {
+          "t": [
+            "Migrating legacy hashes",
+            "Peppers",
+            "Password policy: what current NIST guidance says"
+          ],
+          "a": 17,
+          "b": 25
+        },
+        {
+          "t": [
+            "Checking breached passwords with Have I Been Pwned",
+            "Pitfalls",
+            "Decision guide",
+            "Key takeaways"
+          ],
+          "a": 26,
+          "b": 31
+        }
       ]
     },
     {
@@ -228,6 +341,44 @@
         "Spot the bug",
         "Scenario judgement",
         "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The data model",
+            "The flows",
+            "User enumeration"
+          ],
+          "a": 0,
+          "b": 17
+        },
+        {
+          "t": [
+            "Constant-time comparison",
+            "Rate limiting in depth",
+            "Credential stuffing",
+            "Logging and auditing"
+          ],
+          "a": 18,
+          "b": 33
+        },
+        {
+          "t": [
+            "A complete minimal example"
+          ],
+          "a": 34,
+          "b": 43
+        },
+        {
+          "t": [
+            "Using slowapi instead of a hand-written limiter",
+            "Pitfalls",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 44,
+          "b": 48
+        }
       ]
     },
     {
@@ -262,6 +413,42 @@
         "Attack ↔ defence",
         "Spot the bug",
         "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Server-side sessions"
+          ],
+          "a": 0,
+          "b": 9
+        },
+        {
+          "t": [
+            "Cookies in depth",
+            "CSRF",
+            "XSS and where to keep tokens"
+          ],
+          "a": 10,
+          "b": 26
+        },
+        {
+          "t": [
+            "JWT in depth"
+          ],
+          "a": 27,
+          "b": 41
+        },
+        {
+          "t": [
+            "Opaque tokens versus JWT",
+            "When each pattern fits",
+            "Pitfalls",
+            "Decision guide",
+            "Key takeaways"
+          ],
+          "a": 42,
+          "b": 46
+        }
       ]
     },
     {
@@ -295,6 +482,47 @@
         "Scenario judgement",
         "Spot the bug",
         "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The principle: recovery is authentication too",
+            "The reset-token flow done right"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Implementation"
+          ],
+          "a": 7,
+          "b": 11
+        },
+        {
+          "t": [
+            "Email verification",
+            "Magic links and one-time codes",
+            "Why security questions are bad",
+            "Recovery codes",
+            "Admin reset"
+          ],
+          "a": 12,
+          "b": 19
+        },
+        {
+          "t": [
+            "Recovery when there is no email",
+            "Email deliverability basics",
+            "Email as the master key",
+            "Support-desk social engineering",
+            "Pitfalls",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 20,
+          "b": 29
+        }
       ]
     },
     {
@@ -329,6 +557,40 @@
         "Match the terms",
         "Scenario judgement",
         "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "OAuth 2.0 versus OpenID Connect"
+          ],
+          "a": 0,
+          "b": 15
+        },
+        {
+          "t": [
+            "Passkeys and WebAuthn"
+          ],
+          "a": 16,
+          "b": 26
+        },
+        {
+          "t": [
+            "TOTP two-factor authentication"
+          ],
+          "a": 27,
+          "b": 31
+        },
+        {
+          "t": [
+            "PIN per profile for family apps",
+            "Comparison of login methods",
+            "Pitfalls",
+            "Decision guide",
+            "Key takeaways"
+          ],
+          "a": 32,
+          "b": 37
+        }
       ]
     },
     {
@@ -363,6 +625,43 @@
         "Fix the code",
         "Concept check",
         "Capstone review"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Authentication is not authorisation",
+            "IDOR: insecure direct object references"
+          ],
+          "a": 0,
+          "b": 7
+        },
+        {
+          "t": [
+            "Access control models",
+            "Central policy functions versus scattered checks"
+          ],
+          "a": 8,
+          "b": 15
+        },
+        {
+          "t": [
+            "FastAPI dependency patterns for authorisation",
+            "Admin accounts and impersonation",
+            "Multi-tenant considerations"
+          ],
+          "a": 16,
+          "b": 23
+        },
+        {
+          "t": [
+            "Database row-level security",
+            "Pitfalls",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 24,
+          "b": 30
+        }
       ]
     },
     {
@@ -397,6 +696,47 @@
         "Design decision",
         "Concept check",
         "Scenario judgement"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What \"auth\" actually includes",
+            "Option 1: DIY with FastAPI and libraries",
+            "Option 2: Supabase Auth"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Option 3: Firebase Authentication",
+            "Option 4: Auth0 (Okta)",
+            "Option 5: Clerk",
+            "Option 6: AWS Cognito"
+          ],
+          "a": 7,
+          "b": 11
+        },
+        {
+          "t": [
+            "Option 7: Keycloak (self-hosted)",
+            "Summary comparison",
+            "Lock-in in practice",
+            "A decision framework"
+          ],
+          "a": 12,
+          "b": 18
+        },
+        {
+          "t": [
+            "Scenario walk-throughs",
+            "Pitfalls",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 19,
+          "b": 26
+        }
       ]
     },
     {
@@ -429,6 +769,42 @@
         "Scenario judgement",
         "Order the flow",
         "Attack ↔ defence"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Data and secrets"
+          ],
+          "a": 0,
+          "b": 8
+        },
+        {
+          "t": [
+            "Sessions and tokens",
+            "Recovery and email"
+          ],
+          "a": 9,
+          "b": 18
+        },
+        {
+          "t": [
+            "Attacks on login",
+            "OAuth and account linking",
+            "Authorisation",
+            "Transport and dependencies"
+          ],
+          "a": 19,
+          "b": 28
+        },
+        {
+          "t": [
+            "Lost authenticators and operational mistakes",
+            "Incident response checklist for an auth breach",
+            "Key takeaways"
+          ],
+          "a": 29,
+          "b": 38
+        }
       ]
     },
     {
@@ -461,6 +837,43 @@
         "Concept check",
         "Design decision",
         "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The cost model of auth",
+            "Capacity estimates with worked numbers",
+            "Concurrency limits for hashing"
+          ],
+          "a": 0,
+          "b": 7
+        },
+        {
+          "t": [
+            "Multi-server sessions",
+            "Key and secret management"
+          ],
+          "a": 8,
+          "b": 15
+        },
+        {
+          "t": [
+            "Monitoring and alerting",
+            "Backups",
+            "Privacy law basics"
+          ],
+          "a": 16,
+          "b": 22
+        },
+        {
+          "t": [
+            "Testing auth",
+            "Rules of thumb",
+            "Key takeaways"
+          ],
+          "a": 23,
+          "b": 31
+        }
       ]
     },
     {
@@ -476,7 +889,7 @@
       ],
       "mins": 12,
       "chapter": 11,
-      "title": "Capstone: Rankwise auth",
+      "title": "Capstone: LevelUp auth",
       "short": "Design the real thing",
       "learn": [
         "Threat-model a real app",
@@ -494,6 +907,38 @@
         "Capstone review",
         "Threat-model it",
         "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Current state",
+            "Threat model"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "Phase 1: home LAN design"
+          ],
+          "a": 6,
+          "b": 24
+        },
+        {
+          "t": [
+            "Phase 2: public hosting"
+          ],
+          "a": 25,
+          "b": 31
+        },
+        {
+          "t": [
+            "Risks to watch",
+            "Key takeaways"
+          ],
+          "a": 32,
+          "b": 34
+        }
       ]
     },
     {
@@ -521,6 +966,3219 @@
       ],
       "exercises": [
         "Mixed review (all types)"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Self-check questions"
+          ],
+          "a": 0,
+          "b": 10
+        },
+        {
+          "t": [
+            "Glossary"
+          ],
+          "a": 11,
+          "b": 18
+        },
+        {
+          "t": [
+            "Further reading"
+          ],
+          "a": 19,
+          "b": 24
+        },
+        {
+          "t": [
+            "Key takeaways"
+          ],
+          "a": 25,
+          "b": 25
+        }
+      ]
+    },
+    {
+      "id": "awsml.setup",
+      "branch": "awsml",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🛡️",
+      "req": [],
+      "mins": 8,
+      "chapter": 1,
+      "title": "Safe account setup",
+      "short": "Root, MFA, budgets",
+      "learn": [
+        "Lock down root and use short-lived credentials",
+        "Why AWS has no hard spending cap",
+        "Budgets, alerts and budget actions",
+        "A cleanup routine for every lab"
+      ],
+      "concepts": [
+        "Root user",
+        "IAM Identity Center",
+        "AWS Budgets",
+        "Free tier",
+        "Tagging"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Why AWS has no hard spending cap"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Users, root and MFA",
+            "Regions and the free tier"
+          ],
+          "a": 2,
+          "b": 4
+        },
+        {
+          "t": [
+            "Lab: make the account safe (free)",
+            "Cleanup checklist (use after every lab)",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "awsml.mlbasics",
+      "branch": "awsml",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "🧠",
+      "req": [
+        "awsml.setup"
+      ],
+      "mins": 8,
+      "chapter": 2,
+      "title": "AI & ML fundamentals",
+      "short": "AIF Domain 1",
+      "learn": [
+        "AI vs ML vs deep learning vs GenAI",
+        "Supervised, unsupervised, reinforcement",
+        "The ML lifecycle and overfitting",
+        "Which AWS AI service fits which job"
+      ],
+      "concepts": [
+        "Classification",
+        "Regression",
+        "Clustering",
+        "Overfitting",
+        "Data leakage"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "AI, ML, deep learning, generative AI",
+            "Kinds of learning"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The ML lifecycle",
+            "Fitting: bias, variance, overfitting"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Choosing AWS services",
+            "Lab: name the problem and try a managed service (Free Tier)",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "awsml.genai",
+      "branch": "awsml",
+      "n": 3,
+      "level": 2,
+      "col": 0,
+      "icon": "✨",
+      "req": [
+        "awsml.mlbasics"
+      ],
+      "mins": 8,
+      "chapter": 3,
+      "title": "GenAI & FM basics",
+      "short": "AIF Domain 2",
+      "learn": [
+        "Foundation models, tokens and embeddings",
+        "Temperature, top-p and other settings",
+        "Hallucinations and other limits",
+        "Bedrock, JumpStart and pricing options"
+      ],
+      "concepts": [
+        "Transformer",
+        "Token",
+        "Embedding",
+        "Hallucination",
+        "Amazon Bedrock"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Lab: first Bedrock call"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Foundation models and LLMs",
+            "Tokens, context and embeddings",
+            "Controlling the output"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Capabilities and limits",
+            "AWS services for GenAI"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Lab: first Bedrock calls (about $0.01)",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "awsml.responsible",
+      "branch": "awsml",
+      "n": 4,
+      "level": 2,
+      "col": 2,
+      "icon": "⚖️",
+      "req": [
+        "awsml.mlbasics"
+      ],
+      "mins": 7,
+      "chapter": 4,
+      "title": "Responsible & secure AI",
+      "short": "AIF Domains 4–5",
+      "learn": [
+        "Dimensions of responsible AI",
+        "Clarify, Guardrails, A2I and Model Cards",
+        "The shared responsibility model",
+        "Governance and compliance services"
+      ],
+      "concepts": [
+        "Fairness",
+        "Explainability",
+        "Guardrails",
+        "Shared responsibility",
+        "Macie"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Lab: guardrail"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Prompt engineering techniques",
+            "Retrieval Augmented Generation (RAG)"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Customising a model",
+            "Evaluating foundation models"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Lab: prompts and a hand-made RAG (about $0.02)",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "awsml.fmapps",
+      "branch": "awsml",
+      "n": 5,
+      "level": 3,
+      "col": 0,
+      "icon": "🧩",
+      "req": [
+        "awsml.genai"
+      ],
+      "mins": 8,
+      "chapter": 5,
+      "title": "Prompting, RAG & tuning",
+      "short": "AIF Domain 3",
+      "learn": [
+        "Prompt techniques and prompt injection",
+        "How RAG works",
+        "Fine-tuning vs continued pre-training vs distillation",
+        "Evaluating foundation models"
+      ],
+      "concepts": [
+        "Few-shot",
+        "Chain-of-thought",
+        "RAG",
+        "Fine-tuning",
+        "ROUGE"
+      ],
+      "exercises": [
+        "Design decision",
+        "Order the flow",
+        "Lab: hand-made RAG"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Dimensions of responsible AI",
+            "AWS tools for responsible AI"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Security: the shared responsibility model",
+            "Governance and compliance"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Lab: a guardrail (about $0.02)",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "awsml.aif",
+      "branch": "awsml",
+      "n": 6,
+      "level": 4,
+      "col": 1,
+      "icon": "🎓",
+      "req": [
+        "awsml.fmapps",
+        "awsml.responsible"
+      ],
+      "mins": 8,
+      "chapter": 6,
+      "title": "Checkpoint: AI Practitioner",
+      "short": "Take AIF-C01",
+      "learn": [
+        "Exam format and weights",
+        "Keywords that decide the answer",
+        "12 mixed practice questions",
+        "Booking and exam day"
+      ],
+      "concepts": [
+        "AIF-C01",
+        "Scaled score",
+        "Keyword decoder"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What the exam looks like",
+            "Keywords that decide the answer"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Mixed practice"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Booking and exam day"
+          ],
+          "a": 6,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "awsml.ingest",
+      "branch": "awsml",
+      "n": 7,
+      "level": 5,
+      "col": 1,
+      "icon": "📥",
+      "req": [
+        "awsml.aif"
+      ],
+      "mins": 10,
+      "chapter": 7,
+      "title": "Data ingestion & storage",
+      "short": "MLA Task 1.1",
+      "learn": [
+        "Pick storage by cost, performance and structure",
+        "Parquet vs CSV vs JSON",
+        "Kinesis, Firehose, Flink and MSK",
+        "Vector databases and Feature Store ingest"
+      ],
+      "concepts": [
+        "S3 data lake",
+        "Parquet",
+        "Data Firehose",
+        "S3 Vectors",
+        "Feature Store"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Lab: lake and stream"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Where the data lives",
+            "File formats"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Moving and merging data",
+            "Streaming ingestion",
+            "Data for AI applications"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Troubleshooting ingestion",
+            "Lab: formats, a lake and a stream (about $0.15)",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "awsml.features",
+      "branch": "awsml",
+      "n": 8,
+      "level": 6,
+      "col": 0,
+      "icon": "🧪",
+      "req": [
+        "awsml.ingest"
+      ],
+      "mins": 10,
+      "chapter": 8,
+      "title": "Features, quality & bias",
+      "short": "MLA Tasks 1.2–1.3",
+      "learn": [
+        "Scaling, encoding, binning and other transforms",
+        "Data Wrangler, DataBrew and Glue Data Quality",
+        "Clarify bias metrics and class imbalance",
+        "Chunking, PII redaction and fine-tuning data"
+      ],
+      "concepts": [
+        "Standardisation",
+        "SMOTE",
+        "DQDL",
+        "DPL",
+        "Chunking"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Lab: features and bias"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Feature engineering techniques",
+            "Cleaning data",
+            "Tools for transforming data"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Quality and labelling",
+            "Bias in data",
+            "Preparing data for GenAI"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Lab: features, quality and RAG data (about $0.25)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "awsml.train",
+      "branch": "awsml",
+      "n": 9,
+      "level": 6,
+      "col": 2,
+      "icon": "🏋️",
+      "req": [
+        "awsml.ingest"
+      ],
+      "mins": 10,
+      "chapter": 9,
+      "title": "Choosing & training models",
+      "short": "MLA Tasks 2.1–2.2",
+      "learn": [
+        "Choose between AI services, Bedrock and SageMaker",
+        "Built-in algorithms and script mode",
+        "Automatic model tuning and spot training",
+        "Overfitting, forgetting and FM customisation"
+      ],
+      "concepts": [
+        "XGBoost",
+        "Script mode",
+        "AMT",
+        "Spot training",
+        "LoRA"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Lab: XGBoost and tuning"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Choosing the approach",
+            "Choosing a foundation model on Bedrock",
+            "SageMaker built-in algorithms"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Training on SageMaker AI",
+            "Hyperparameters and tuning",
+            "Overfitting, underfitting, forgetting"
+          ],
+          "a": 5,
+          "b": 7
+        },
+        {
+          "t": [
+            "Customising foundation models",
+            "Lab: train and tune (inside the free tier)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "awsml.evaluate",
+      "branch": "awsml",
+      "n": 10,
+      "level": 7,
+      "col": 1,
+      "icon": "📊",
+      "req": [
+        "awsml.features",
+        "awsml.train"
+      ],
+      "mins": 10,
+      "chapter": 10,
+      "title": "Evaluating ML & GenAI",
+      "short": "MLA Task 2.3",
+      "learn": [
+        "Precision, recall, F1, AUC and thresholds",
+        "SHAP explanations and convergence debugging",
+        "Shadow vs A/B testing",
+        "BLEU, ROUGE, BERTScore, LLM judges and RAG metrics"
+      ],
+      "concepts": [
+        "Confusion matrix",
+        "PR-AUC",
+        "SHAP",
+        "Shadow variant",
+        "Faithfulness"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Lab: evaluate and explain"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Classification metrics",
+            "Regression metrics",
+            "Baselines, explanations, debugging"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Reproducible experiments",
+            "Comparing in production",
+            "Evaluating generative AI"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Evaluating RAG",
+            "Lab: evaluate and explain (about $0.10)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "awsml.deploy",
+      "branch": "awsml",
+      "n": 11,
+      "level": 8,
+      "col": 1,
+      "icon": "🚀",
+      "req": [
+        "awsml.evaluate"
+      ],
+      "mins": 10,
+      "chapter": 11,
+      "title": "Deploy models, KBs & agents",
+      "short": "MLA Tasks 3.1–3.2",
+      "learn": [
+        "Real-time, serverless, async, batch and multi-model",
+        "Bedrock on-demand, provisioned and Custom Model Import",
+        "Knowledge bases: chunking, vector stores, reranking",
+        "Agents, AgentCore, MCP and state"
+      ],
+      "concepts": [
+        "Serverless inference",
+        "Async inference",
+        "Multi-model endpoint",
+        "Knowledge base",
+        "Action group"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Lab: endpoint, KB, agent"
+      ],
+      "parts": [
+        {
+          "t": [
+            "SageMaker inference options",
+            "Bedrock deployment options"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Provisioning and scaling",
+            "Bedrock Knowledge Bases"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Agents",
+            "Lab: serve the model and build RAG and an agent (about $0.30)",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "awsml.mlops",
+      "branch": "awsml",
+      "n": 12,
+      "level": 9,
+      "col": 0,
+      "icon": "🔁",
+      "req": [
+        "awsml.deploy"
+      ],
+      "mins": 10,
+      "chapter": 12,
+      "title": "MLOps pipelines & CI/CD",
+      "short": "MLA Task 3.3",
+      "learn": [
+        "SageMaker Pipelines and the Model Registry",
+        "Blue/green, canary and auto rollback",
+        "CodePipeline, CodeBuild and CodeConnections",
+        "Prompt tests, retraining and KB refresh"
+      ],
+      "concepts": [
+        "Condition step",
+        "Model Registry",
+        "Canary",
+        "CodeConnections",
+        "Prompt regression test"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Design decision",
+        "Lab: pipeline and CI/CD"
+      ],
+      "parts": [
+        {
+          "t": [
+            "SageMaker Pipelines",
+            "Model versions",
+            "Deployment strategies"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "CI/CD on AWS",
+            "Testing strategies",
+            "Orchestration and retraining"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Lab: a pipeline and CI/CD (about $0.20)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "awsml.operate",
+      "branch": "awsml",
+      "n": 13,
+      "level": 9,
+      "col": 2,
+      "icon": "🔭",
+      "req": [
+        "awsml.deploy"
+      ],
+      "mins": 12,
+      "chapter": 13,
+      "title": "Monitoring, cost & security",
+      "short": "MLA Domain 4",
+      "learn": [
+        "Model Monitor and CloudWatch observability",
+        "Instance, purchase and token cost levers",
+        "Least privilege, KMS and Bedrock API keys",
+        "VPC isolation, CloudTrail, Config and Inspector"
+      ],
+      "concepts": [
+        "Data capture",
+        "Drift",
+        "Savings Plans",
+        "Least privilege",
+        "Network isolation"
+      ],
+      "exercises": [
+        "Scenario",
+        "Attack ↔ defence",
+        "Lab: monitor and lock down"
+      ],
+      "parts": [
+        {
+          "t": [
+            "SageMaker Model Monitor",
+            "Observability",
+            "Cost: infrastructure"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Cost: foundation models",
+            "Security: identity and data",
+            "Security: network, audit and supply chain"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Lab: monitor, tune cost, lock down (about $0.70)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "awsml.boss",
+      "branch": "awsml",
+      "n": 14,
+      "level": 10,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "awsml.mlops",
+        "awsml.operate"
+      ],
+      "mins": 10,
+      "chapter": 14,
+      "title": "Boss: MLA-C02 review",
+      "short": "Mixed final mock",
+      "learn": [
+        "Exam format and what was removed from C01",
+        "Keyword decoder",
+        "15-question mixed mock",
+        "Readiness checklist and exam day"
+      ],
+      "concepts": [
+        "MLA-C02",
+        "Keyword decoder",
+        "Readiness"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "The exam",
+            "Keyword decoder"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Mixed mock (15 questions)"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Readiness checklist",
+            "Exam day"
+          ],
+          "a": 7,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "jwt.foundations",
+      "branch": "jwt",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🪪",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Authn, authz & tokens",
+      "short": "401 vs 403, why X-Password fails",
+      "learn": [
+        "Tell authentication from authorisation, and 401 from 403",
+        "Sessions vs self-contained tokens",
+        "What a bearer token is and its three rules",
+        "Why the shared X-Password and IP allowlist fall short"
+      ],
+      "concepts": [
+        "Authentication",
+        "Authorisation",
+        "401 vs 403",
+        "Bearer token",
+        "Stateless"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Authentication vs authorization",
+            "A credential is anything that proves identity"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Sessions vs tokens: two ways to remember who logged in",
+            "Bearer tokens"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "What we have today, and why it's weak",
+            "And the IP allowlist?"
+          ],
+          "a": 8,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "jwt.crypto",
+      "branch": "jwt",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "🔏",
+      "req": [
+        "jwt.foundations"
+      ],
+      "mins": 8,
+      "chapter": 2,
+      "title": "Cryptography primer",
+      "short": "Encode, encrypt, hash, sign",
+      "learn": [
+        "Encoding vs encryption vs hashing vs signing",
+        "Symmetric (HS256) vs asymmetric (RS256) keys",
+        "How an RSA signature is made and checked",
+        "Why a hash alone proves nothing"
+      ],
+      "concepts": [
+        "Base64url",
+        "SHA-256",
+        "Digital signature",
+        "Public / private key",
+        "HMAC"
+      ],
+      "exercises": [
+        "Myth or fact",
+        "Match the terms",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Encoding: changing the alphabet, not hiding anything",
+            "Encryption: hiding the content"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Hashing: a fingerprint of the data",
+            "Signing: proof of who wrote it and that nobody changed it",
+            "The comparison in one table"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Symmetric vs asymmetric keys"
+          ],
+          "a": 8,
+          "b": 11
+        },
+        {
+          "t": [
+            "How an RSA signature works, intuitively",
+            "Why not just check a hash?"
+          ],
+          "a": 12,
+          "b": 16
+        }
+      ]
+    },
+    {
+      "id": "jwt.anatomy",
+      "branch": "jwt",
+      "n": 3,
+      "level": 2,
+      "col": 1,
+      "icon": "🧬",
+      "req": [
+        "jwt.crypto"
+      ],
+      "mins": 6,
+      "chapter": 3,
+      "title": "Anatomy of a JWT",
+      "short": "Header, claims, signature",
+      "learn": [
+        "Decode a token by hand",
+        "Every claim we use and how to check it",
+        "User token vs service token",
+        "Why apps treat the token as opaque"
+      ],
+      "concepts": [
+        "Header (alg, kid)",
+        "Claims",
+        "exp / nbf / iat",
+        "scope",
+        "Unverified decode"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The three parts",
+            "Part 1: the header (JOSE header)"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Part 2: the payload (claims)"
+          ],
+          "a": 4,
+          "b": 8
+        },
+        {
+          "t": [
+            "The service token looks like this",
+            "Part 3: the signature",
+            "Decode it yourself in four lines",
+            "Why the apps must not decode the token"
+          ],
+          "a": 9,
+          "b": 13
+        }
+      ]
+    },
+    {
+      "id": "jwt.alg",
+      "branch": "jwt",
+      "n": 4,
+      "level": 3,
+      "col": 0,
+      "icon": "⚔️",
+      "req": [
+        "jwt.anatomy"
+      ],
+      "mins": 6,
+      "chapter": 4,
+      "title": "RS256 vs HS256",
+      "short": "alg: none & algorithm confusion",
+      "learn": [
+        "Read JWT algorithm names",
+        "Why we use RS256",
+        "The alg: none attack and its defence",
+        "Algorithm confusion (RS256 to HS256)"
+      ],
+      "concepts": [
+        "RS256",
+        "HS256",
+        "alg: none",
+        "Algorithm confusion",
+        "RFC 8725"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Spot the bug",
+        "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The algorithm names decoded",
+            "Why RS256 for us"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Attack 1: alg: none"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Attack 2: algorithm confusion (RS256 → HS256)",
+            "The general lesson: never trust what you're verifying to tell you how to verify it"
+          ],
+          "a": 5,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "jwt.jwks",
+      "branch": "jwt",
+      "n": 5,
+      "level": 3,
+      "col": 2,
+      "icon": "🗝️",
+      "req": [
+        "jwt.anatomy"
+      ],
+      "mins": 7,
+      "chapter": 5,
+      "title": "JWKS & key rotation",
+      "short": "kid, caching, issuers",
+      "learn": [
+        "What a JWK and a JWKS are",
+        "Select keys by kid, never the first key",
+        "Cache for an hour, refetch once on an unknown kid",
+        "Rotation phases and multiple trusted issuers"
+      ],
+      "concepts": [
+        "JWKS",
+        "kid",
+        "Cache + rate-limited refetch",
+        "Key rotation",
+        "Trusted issuers"
+      ],
+      "exercises": [
+        "Scenario",
+        "Design decision",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a JWK and a JWKS are",
+            "The kid: a label on the key ring"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Caching: why and how long"
+          ],
+          "a": 5,
+          "b": 7
+        },
+        {
+          "t": [
+            "Key rotation: changing the lock without locking anyone out"
+          ],
+          "a": 8,
+          "b": 10
+        },
+        {
+          "t": [
+            "Multiple issuers: one AI deployment, several Laravel environments",
+            "Network access"
+          ],
+          "a": 11,
+          "b": 14
+        }
+      ]
+    },
+    {
+      "id": "jwt.system",
+      "branch": "jwt",
+      "n": 6,
+      "level": 4,
+      "col": 1,
+      "icon": "🗺️",
+      "req": [
+        "jwt.alg",
+        "jwt.jwks"
+      ],
+      "mins": 8,
+      "chapter": 6,
+      "title": "Our system end to end",
+      "short": "Actors, two tokens, five flows",
+      "learn": [
+        "The actors: issuer, clients, AI hosts",
+        "Login token vs AI token",
+        "Login, SSO, signup, refresh and service-token flows",
+        "What your 401 and 403 make the apps do"
+      ],
+      "concepts": [
+        "Issuer",
+        "ai_token",
+        "Registrant role",
+        "Refresh + retry once",
+        "Service token"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Threat-model it"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The actors",
+            "Two tokens per user, never mixed up"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Flow 1: login",
+            "Flow 2: SSO login",
+            "Flow 3: signup, before the first login"
+          ],
+          "a": 4,
+          "b": 8
+        },
+        {
+          "t": [
+            "Flow 4: calling AI and refreshing"
+          ],
+          "a": 9,
+          "b": 14
+        },
+        {
+          "t": [
+            "Flow 5: the Laravel backend's service token",
+            "Why this design is better, in one table"
+          ],
+          "a": 15,
+          "b": 17
+        }
+      ]
+    },
+    {
+      "id": "sysd.processes",
+      "branch": "sysd",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🧬",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Processes & signals",
+      "short": "PID 1, signals, exit codes",
+      "learn": [
+        "Explain PID 1, parents and daemons",
+        "Stop processes with SIGTERM then SIGKILL",
+        "Read exit codes, including 128 + signal",
+        "Compare restart policies across supervisors"
+      ],
+      "concepts": [
+        "PID 1",
+        "SIGTERM / SIGKILL",
+        "Exit status",
+        "Foreground process",
+        "Restart policy"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Processes and PID 1",
+            "Daemons and why logging out kills your app"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Foreground, not self-daemonising",
+            "Signals: how a process is asked to stop",
+            "Exit codes"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Restart policies",
+            "Lab: watch signals and exit codes (VM, free)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "sysd.systemd",
+      "branch": "sysd",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "🏛️",
+      "req": [
+        "sysd.processes"
+      ],
+      "mins": 6,
+      "chapter": 2,
+      "title": "systemd big picture",
+      "short": "Units, targets, dependencies",
+      "learn": [
+        "Name the unit types and what each is for",
+        "Know where unit files live and which wins",
+        "Separate requirement (Wants/Requires) from order (After)",
+        "Explain targets, enable symlinks and cgroups"
+      ],
+      "concepts": [
+        "Unit",
+        "Target",
+        "Wants vs After",
+        "/etc/systemd/system",
+        "cgroup"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What systemd replaced",
+            "Units and unit types",
+            "Where unit files live"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Anatomy of a unit file",
+            "Dependencies: requirement and order are separate",
+            "Targets and boot"
+          ],
+          "a": 5,
+          "b": 8
+        },
+        {
+          "t": [
+            "cgroups: no escaped processes",
+            "Lab: explore your system (VM, free)",
+            "Self-check"
+          ],
+          "a": 9,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "sysd.systemctl",
+      "branch": "sysd",
+      "n": 3,
+      "level": 2,
+      "col": 1,
+      "icon": "🎛️",
+      "req": [
+        "sysd.systemd"
+      ],
+      "mins": 6,
+      "chapter": 3,
+      "title": "systemctl day to day",
+      "short": "start, enable, status, edit",
+      "learn": [
+        "Tell now (start/stop) from boot (enable/disable)",
+        "Read systemctl status like a pro",
+        "Change units safely with drop-ins",
+        "Know when to daemon-reload, mask and revert"
+      ],
+      "concepts": [
+        "enable --now",
+        "status",
+        "daemon-reload",
+        "Drop-in override",
+        "mask"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Scenario",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Now vs at boot",
+            "Starting, stopping, restarting"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Reading the status",
+            "Listing things"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "daemon-reload",
+            "Changing a unit safely: drop-ins",
+            "Masking: disabled for good",
+            "Other things systemctl does"
+          ],
+          "a": 6,
+          "b": 10
+        },
+        {
+          "t": [
+            "Lab: drive a real service (VM, free)",
+            "Self-check"
+          ],
+          "a": 11,
+          "b": 14
+        }
+      ]
+    },
+    {
+      "id": "sysd.units",
+      "branch": "sysd",
+      "n": 4,
+      "level": 3,
+      "col": 1,
+      "icon": "📝",
+      "req": [
+        "sysd.systemctl"
+      ],
+      "mins": 6,
+      "chapter": 4,
+      "title": "Writing service units",
+      "short": "Type=, Restart=, env, users",
+      "learn": [
+        "Choose the right Type= (use exec)",
+        "Set user, directory and environment safely",
+        "Configure Restart= with delays and start limits",
+        "Write a complete unit for a FastAPI app"
+      ],
+      "concepts": [
+        "Type=exec",
+        "ExecStart",
+        "EnvironmentFile",
+        "Restart=on-failure",
+        "StartLimitBurst"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Fix the code",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Type=: when is the service \"started\"?",
+            "Exec lines",
+            "Who and where"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Restarting: Restart= and its brakes",
+            "A complete unit for a FastAPI app"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Instances: one file, many services",
+            "Lab: your first unit (VM, free)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "sysd.journald",
+      "branch": "sysd",
+      "n": 5,
+      "level": 4,
+      "col": 0,
+      "icon": "📜",
+      "req": [
+        "sysd.units"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Logs with journald",
+      "short": "journalctl filters and limits",
+      "learn": [
+        "Follow and filter one unit's logs",
+        "Filter by boot, time and priority",
+        "Make the journal persistent",
+        "Keep disk use and rate limits under control"
+      ],
+      "concepts": [
+        "journalctl -u -f",
+        "-b / --since",
+        "-p err",
+        "Persistent storage",
+        "Vacuum"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "How logs reach the journal",
+            "The journalctl flags you will use"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Priorities",
+            "Is the journal kept after a reboot?",
+            "Keeping disk use under control",
+            "Rate limiting and lost lines"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Who can read the journal",
+            "Shipping logs elsewhere",
+            "Lab: find a crash in the logs (VM, free)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "sysd.timers",
+      "branch": "sysd",
+      "n": 6,
+      "level": 4,
+      "col": 1,
+      "icon": "⏰",
+      "req": [
+        "sysd.units"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "Timers & sockets",
+      "short": "Cron replacement, activation",
+      "learn": [
+        "Write a timer and enable the right unit",
+        "Use OnCalendar, Persistent and random delays",
+        "Run one-off jobs with systemd-run",
+        "Know what socket and path activation give you"
+      ],
+      "concepts": [
+        "OnCalendar",
+        "Persistent=true",
+        "systemd-run",
+        "Socket activation",
+        "Path unit"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Design decision",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Timers: cron, with logs and dependencies",
+            "Timer options"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Timers vs cron",
+            "One-off and transient units: systemd-run",
+            "Socket activation"
+          ],
+          "a": 5,
+          "b": 8
+        },
+        {
+          "t": [
+            "Path units",
+            "Lab: a timer and a socket (VM, free)",
+            "Self-check"
+          ],
+          "a": 9,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "sysd.userd",
+      "branch": "sysd",
+      "n": 7,
+      "level": 4,
+      "col": 2,
+      "icon": "🍏",
+      "req": [
+        "sysd.units"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "User services & launchd",
+      "short": "--user, linger, macOS",
+      "learn": [
+        "Run services without root via systemctl --user",
+        "Keep them alive after logout with lingering",
+        "Write a launchd LaunchAgent for the Mac",
+        "Map plist keys to systemd options"
+      ],
+      "concepts": [
+        "systemctl --user",
+        "enable-linger",
+        "LaunchAgent",
+        "KeepAlive",
+        "launchctl kickstart"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Fill the code",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "systemd user services",
+            "Lingering: keep running after logout"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "launchd on macOS"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Windows, briefly",
+            "Lab: a user service, then launchd (VM and Mac, free)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "sysd.hardening",
+      "branch": "sysd",
+      "n": 8,
+      "level": 5,
+      "col": 1,
+      "icon": "🛡️",
+      "req": [
+        "sysd.journald",
+        "sysd.timers",
+        "sysd.userd"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Hardening & limits",
+      "short": "Sandboxing, memory, CPU",
+      "learn": [
+        "Score a unit with systemd-analyze security",
+        "Apply sandboxing settings step by step",
+        "Cap memory, CPU and tasks with cgroups",
+        "Debug permission errors the sandbox causes"
+      ],
+      "concepts": [
+        "ProtectSystem=strict",
+        "NoNewPrivileges",
+        "StateDirectory",
+        "MemoryMax",
+        "CPUQuota"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Fix the code",
+        "Threat-model it"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Start by measuring",
+            "Users and directories",
+            "Filesystem and privilege settings"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "A hardened block for a Python web app",
+            "Resource limits"
+          ],
+          "a": 5,
+          "b": 7
+        },
+        {
+          "t": [
+            "Slices: limits for a group",
+            "Lab: harden the demo and hit a limit (VM, free)",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "sysd.supervisor",
+      "branch": "sysd",
+      "n": 9,
+      "level": 6,
+      "col": 1,
+      "icon": "🦺",
+      "req": [
+        "sysd.hardening"
+      ],
+      "mins": 6,
+      "chapter": 9,
+      "title": "Supervisor",
+      "short": "supervisord and supervisorctl",
+      "learn": [
+        "Write a [program:x] section with sane options",
+        "Know the defaults: autorestart, startsecs, startretries",
+        "Read process states, BACKOFF and FATAL",
+        "Use reread + update, not restart, after edits"
+      ],
+      "concepts": [
+        "[program:x]",
+        "autorestart",
+        "startsecs",
+        "BACKOFF / FATAL",
+        "reread + update"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Install and layout",
+            "A program section"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The options that matter, with their defaults"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Process states",
+            "supervisorctl",
+            "Groups and event listeners"
+          ],
+          "a": 6,
+          "b": 10
+        },
+        {
+          "t": [
+            "The web UI and security",
+            "Lab: run the demo under Supervisor (VM, free)",
+            "Self-check"
+          ],
+          "a": 11,
+          "b": 14
+        }
+      ]
+    },
+    {
+      "id": "sysd.choosing",
+      "branch": "sysd",
+      "n": 10,
+      "level": 7,
+      "col": 0,
+      "icon": "⚖️",
+      "req": [
+        "sysd.supervisor"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Choosing a supervisor",
+      "short": "systemd vs Supervisor vs Docker",
+      "learn": [
+        "Pick systemd, Supervisor, containers or PM2",
+        "Handle PID 1 inside containers (tini)",
+        "Layer supervisors without double supervision",
+        "Add health checks, not just exit restarts"
+      ],
+      "concepts": [
+        "One process per container",
+        "tini / --init",
+        "Restart policies",
+        "Health check",
+        "Layering"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The options side by side",
+            "Choosing"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Why systemd usually wins on a server",
+            "Inside containers: PID 1 is special"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Layering: who supervises whom",
+            "Health checks, not just liveness",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "sysd.troubleshoot",
+      "branch": "sysd",
+      "n": 11,
+      "level": 7,
+      "col": 2,
+      "icon": "🩺",
+      "req": [
+        "sysd.supervisor"
+      ],
+      "mins": 6,
+      "chapter": 11,
+      "title": "Troubleshooting",
+      "short": "Exit codes, loops, FATAL",
+      "learn": [
+        "Follow the four-step diagnosis",
+        "Decode 203/EXEC, 200/CHDIR, 217/USER and more",
+        "Recover from start-limit-hit",
+        "Diagnose Supervisor BACKOFF and FATAL"
+      ],
+      "concepts": [
+        "systemctl status",
+        "journalctl -xe",
+        "203/EXEC",
+        "reset-failed",
+        "env -i reproduce"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Scenario",
+        "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The four steps (systemd)"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Common failures (systemd)"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "The four steps (Supervisor)",
+            "Questions that find the cause fast",
+            "Lab: break it five ways (VM, free)",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "sysd.capstone",
+      "branch": "sysd",
+      "n": 12,
+      "level": 8,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "sysd.choosing",
+        "sysd.troubleshoot"
+      ],
+      "mins": 7,
+      "chapter": 12,
+      "title": "Capstone: deploy LevelUp",
+      "short": "Real deploy + final quiz",
+      "learn": [
+        "Deploy LevelUp under a hardened systemd unit",
+        "Add a health-check timer",
+        "Prove crash, reboot and hang recovery",
+        "Compare with Supervisor and pass the final quiz"
+      ],
+      "concepts": [
+        "StateDirectory",
+        "Health timer",
+        "Crash test",
+        "Final quiz"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "The target",
+            "Step 1: install the app",
+            "Step 2: the unit"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Step 3: the health check",
+            "Step 4: prove it",
+            "Step 5: the same app under Supervisor"
+          ],
+          "a": 5,
+          "b": 9
+        },
+        {
+          "t": [
+            "Final quiz"
+          ],
+          "a": 10,
+          "b": 13
+        }
+      ]
+    },
+    {
+      "id": "cicd.intro",
+      "branch": "cicd",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🧭",
+      "req": [],
+      "mins": 12,
+      "chapter": 1,
+      "title": "What CI/CD is",
+      "short": "Two teams, one vocabulary, why ML differs",
+      "learn": [
+        "Explain CI, continuous delivery and continuous deployment",
+        "Follow one change through a pipeline, minute by minute",
+        "Say why ML needs code, data and model versions",
+        "Place each tool (Actions, Docker, ECS, MLflow) on the map"
+      ],
+      "concepts": [
+        "Continuous integration",
+        "Continuous delivery",
+        "Pipeline",
+        "Quality gate",
+        "Release candidate"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "A tale of two teams"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The vocabulary"
+          ],
+          "a": 4,
+          "b": 12
+        },
+        {
+          "t": [
+            "Why ML is different"
+          ],
+          "a": 13,
+          "b": 19
+        },
+        {
+          "t": [
+            "The map of this book"
+          ],
+          "a": 20,
+          "b": 23
+        }
+      ]
+    },
+    {
+      "id": "cicd.rebase",
+      "branch": "cicd",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🌿",
+      "req": [
+        "cicd.intro"
+      ],
+      "mins": 14,
+      "chapter": 2,
+      "title": "Merge & rebase",
+      "short": "Team workflow and clean history",
+      "learn": [
+        "Work with feature branches, PRs and a protected main",
+        "Choose between merge and rebase, and know the golden rule",
+        "Squash, reword and split commits with interactive rebase",
+        "Write Conventional Commits that tools can read"
+      ],
+      "concepts": [
+        "Feature branch",
+        "Rebase",
+        "Interactive rebase",
+        "--force-with-lease",
+        "Conventional Commits"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The team workflow"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Merge vs. rebase"
+          ],
+          "a": 3,
+          "b": 15
+        },
+        {
+          "t": [
+            "Interactive rebase: clean up before review"
+          ],
+          "a": 16,
+          "b": 23
+        },
+        {
+          "t": [
+            "Commit messages that machines can read"
+          ],
+          "a": 24,
+          "b": 28
+        }
+      ]
+    },
+    {
+      "id": "cicd.tests",
+      "branch": "cicd",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🧪",
+      "req": [
+        "cicd.intro"
+      ],
+      "mins": 13,
+      "chapter": 5,
+      "title": "Tests with pytest",
+      "short": "credit-api, uv and pytest from zero",
+      "learn": [
+        "Set up a uv project with a src/ layout and a lock file",
+        "Write tests with fixtures, parametrize and pytest.raises",
+        "Isolate external calls with monkeypatch and mocks",
+        "Decide what to test in an ML project, including behaviour tests"
+      ],
+      "concepts": [
+        "uv.lock",
+        "Fixture",
+        "Parametrize",
+        "Monkeypatch",
+        "Behavioural test"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The running example: credit-api",
+            "uv, the virtual environment and the lock file"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "pytest from zero",
+            "Fixtures: shared setup",
+            "Parametrize: one test, many cases",
+            "Reading a failure, and comparing floats"
+          ],
+          "a": 6,
+          "b": 13
+        },
+        {
+          "t": [
+            "Fixtures in depth: scope, teardown, and a trap",
+            "Isolating external calls: monkeypatch and mocks",
+            "Testing the API",
+            "What to test in an ML project"
+          ],
+          "a": 14,
+          "b": 20
+        },
+        {
+          "t": [
+            "Behavioural tests: properties of a good model"
+          ],
+          "a": 21,
+          "b": 26
+        }
+      ]
+    },
+    {
+      "id": "cicd.conflicts",
+      "branch": "cicd",
+      "n": 4,
+      "level": 2,
+      "col": 0,
+      "icon": "⚔️",
+      "req": [
+        "cicd.rebase"
+      ],
+      "mins": 11,
+      "chapter": 3,
+      "title": "Merge conflicts",
+      "short": "Read markers, resolve, abort, avoid",
+      "learn": [
+        "Read conflict markers and resolve them in VS Code or the terminal",
+        "Resolve conflicts commit by commit during a rebase",
+        "Abort or continue a merge or rebase safely",
+        "Recognise the common conflict types and avoid them"
+      ],
+      "concepts": [
+        "Conflict markers",
+        "Merge base",
+        "--abort / --continue",
+        "rerere",
+        "Lock file conflict"
+      ],
+      "exercises": [
+        "Fix the code",
+        "Scenario",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Merge conflicts in depth",
+            "Hands-on: create and resolve a conflict"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "A harder conflict: why the base matters"
+          ],
+          "a": 5,
+          "b": 7
+        },
+        {
+          "t": [
+            "Conflicts during a rebase"
+          ],
+          "a": 8,
+          "b": 12
+        },
+        {
+          "t": [
+            "A field guide to conflict types",
+            "Avoiding conflicts"
+          ],
+          "a": 13,
+          "b": 22
+        }
+      ]
+    },
+    {
+      "id": "cicd.firstci",
+      "branch": "cicd",
+      "n": 5,
+      "level": 2,
+      "col": 2,
+      "icon": "▶️",
+      "req": [
+        "cicd.tests"
+      ],
+      "mins": 10,
+      "chapter": 6,
+      "title": "First CI pipeline",
+      "short": "GitHub Actions, red runs, badge",
+      "learn": [
+        "Explain every line of a workflow file (on, jobs, steps, uses vs run)",
+        "Add permissions, concurrency, timeouts and caching",
+        "Read a red run and fix it",
+        "Show the status with a CI badge"
+      ],
+      "concepts": [
+        "Workflow",
+        "Job",
+        "Step",
+        "Runner",
+        "Action"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Your first GitHub Actions workflow"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Five more things you need in almost every workflow",
+            "Push it and watch it run"
+          ],
+          "a": 5,
+          "b": 10
+        },
+        {
+          "t": [
+            "A red run, and how to read it",
+            "A field guide to red runs"
+          ],
+          "a": 11,
+          "b": 15
+        },
+        {
+          "t": [
+            "The CI badge"
+          ],
+          "a": 16,
+          "b": 18
+        }
+      ]
+    },
+    {
+      "id": "cicd.recovery",
+      "branch": "cicd",
+      "n": 6,
+      "level": 3,
+      "col": 0,
+      "icon": "🛟",
+      "req": [
+        "cicd.conflicts"
+      ],
+      "mins": 13,
+      "chapter": 4,
+      "title": "Stash & recovery",
+      "short": "stash, worktree, reflog, bisect",
+      "learn": [
+        "Park unfinished work with git stash (and get it back)",
+        "Check out two branches at once with git worktree",
+        "Undo almost anything with reflog, reset, revert and cherry-pick",
+        "Find the commit that broke a test or a metric with git bisect"
+      ],
+      "concepts": [
+        "git stash",
+        "git worktree",
+        "reflog",
+        "reset vs revert",
+        "git bisect"
+      ],
+      "exercises": [
+        "Scenario",
+        "Match the terms",
+        "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "`git stash`: park unfinished work"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "`git worktree`: two branches checked out at once"
+          ],
+          "a": 5,
+          "b": 9
+        },
+        {
+          "t": [
+            "Recovery: undo almost anything"
+          ],
+          "a": 10,
+          "b": 24
+        }
+      ]
+    },
+    {
+      "id": "cicd.quality",
+      "branch": "cicd",
+      "n": 7,
+      "level": 3,
+      "col": 2,
+      "icon": "🧹",
+      "req": [
+        "cicd.firstci"
+      ],
+      "mins": 13,
+      "chapter": 7,
+      "title": "Lint, cache & matrix",
+      "short": "ruff, mypy, pre-commit, coverage",
+      "learn": [
+        "Lint, format and type-check with ruff and mypy",
+        "Run the same checks before every commit with pre-commit",
+        "Speed up CI with caching and test on a version matrix",
+        "Measure coverage and read the complete CI workflow"
+      ],
+      "concepts": [
+        "ruff",
+        "mypy",
+        "pre-commit",
+        "Matrix build",
+        "Coverage"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fill the code",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Introduction"
+          ],
+          "a": 0,
+          "b": 0
+        },
+        {
+          "t": [
+            "Linting, formatting and type checking"
+          ],
+          "a": 1,
+          "b": 13
+        },
+        {
+          "t": [
+            "Faster, broader, measured: cache, matrix, coverage"
+          ],
+          "a": 14,
+          "b": 21
+        },
+        {
+          "t": [
+            "The complete CI workflow"
+          ],
+          "a": 22,
+          "b": 24
+        }
+      ]
+    },
+    {
+      "id": "cicd.prs",
+      "branch": "cicd",
+      "n": 8,
+      "level": 4,
+      "col": 1,
+      "icon": "🛡️",
+      "req": [
+        "cicd.recovery",
+        "cicd.quality"
+      ],
+      "mins": 11,
+      "chapter": 8,
+      "title": "Protected PRs & secrets",
+      "short": "Rulesets, secrets, Dependabot, strategy",
+      "learn": [
+        "Make CI mandatory with branch rulesets and required checks",
+        "Store secrets and variables safely, and keep forks out of them",
+        "Keep dependencies fresh with Dependabot",
+        "Plan speed, cost and a testing strategy at scale"
+      ],
+      "concepts": [
+        "Branch ruleset",
+        "Required check",
+        "Secret vs variable",
+        "Dependabot",
+        "Test pyramid"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Design decision",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Branch protection and the PR workflow"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Secrets and variables"
+          ],
+          "a": 7,
+          "b": 15
+        },
+        {
+          "t": [
+            "Speed and cost"
+          ],
+          "a": 16,
+          "b": 17
+        },
+        {
+          "t": [
+            "Testing strategy at scale"
+          ],
+          "a": 18,
+          "b": 24
+        }
+      ]
+    },
+    {
+      "id": "cicd.docker",
+      "branch": "cicd",
+      "n": 9,
+      "level": 5,
+      "col": 1,
+      "icon": "🐳",
+      "req": [
+        "cicd.prs"
+      ],
+      "mins": 11,
+      "chapter": 9,
+      "title": "AWS setup & Docker",
+      "short": "Safe account, then the container",
+      "learn": [
+        "Set up an AWS account with MFA, IAM Identity Center and budget alarms",
+        "Write a multi-stage Dockerfile for the FastAPI app",
+        "Debug a container that will not start",
+        "Keep images small and builds cacheable"
+      ],
+      "concepts": [
+        "MFA",
+        "Budget alarm",
+        "Multi-stage build",
+        "Image layer",
+        "ECR"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fix the code",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Introduction"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "AWS account setup: security and cost first"
+          ],
+          "a": 2,
+          "b": 8
+        },
+        {
+          "t": [
+            "Docker for the app"
+          ],
+          "a": 9,
+          "b": 15
+        },
+        {
+          "t": [
+            "When the container does not work: a debugging toolkit"
+          ],
+          "a": 16,
+          "b": 20
+        }
+      ]
+    },
+    {
+      "id": "cicd.oidc",
+      "branch": "cicd",
+      "n": 10,
+      "level": 6,
+      "col": 1,
+      "icon": "🔑",
+      "req": [
+        "cicd.docker"
+      ],
+      "mins": 11,
+      "chapter": 10,
+      "title": "Keyless OIDC to AWS",
+      "short": "Trust policy, sub claim, roles",
+      "learn": [
+        "Let GitHub Actions reach AWS without stored keys",
+        "Read a trust policy line by line",
+        "Scope access with the sub claim and three roles",
+        "Choose a deployment target (ECS Express Mode, App Runner, Lambda)"
+      ],
+      "concepts": [
+        "OIDC",
+        "Trust policy",
+        "sub claim",
+        "IAM role",
+        "Blast radius"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Threat-model it",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Keyless authentication: GitHub OIDC → AWS",
+            "The trust policy, line by line",
+            "The `sub` claim decides everything"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "Three roles, three blast radii"
+          ],
+          "a": 6,
+          "b": 15
+        },
+        {
+          "t": [
+            "One-time setup",
+            "Choosing a deployment target"
+          ],
+          "a": 16,
+          "b": 19
+        },
+        {
+          "t": [
+            "What ECS Express Mode creates"
+          ],
+          "a": 20,
+          "b": 22
+        }
+      ]
+    },
+    {
+      "id": "cicd.deploy",
+      "branch": "cicd",
+      "n": 11,
+      "level": 7,
+      "col": 1,
+      "icon": "🚢",
+      "req": [
+        "cicd.oidc"
+      ],
+      "mins": 18,
+      "chapter": 11,
+      "title": "Deploy & roll back",
+      "short": "Delivery workflow, smoke test, cleanup",
+      "learn": [
+        "Write the deployment workflow from image build to ECS",
+        "Use environments, approval and versioning",
+        "Run smoke tests and roll back a bad release",
+        "Clean up so AWS stops charging"
+      ],
+      "concepts": [
+        "Environment",
+        "Manual approval",
+        "Smoke test",
+        "Rollback",
+        "Image tag"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The deployment workflow"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Environments, approval and versioning",
+            "Smoke tests and rollback"
+          ],
+          "a": 7,
+          "b": 11
+        },
+        {
+          "t": [
+            "What can go wrong during a deployment"
+          ],
+          "a": 12,
+          "b": 21
+        },
+        {
+          "t": [
+            "Cleanup: stop paying"
+          ],
+          "a": 22,
+          "b": 29
+        }
+      ]
+    },
+    {
+      "id": "cicd.gates",
+      "branch": "cicd",
+      "n": 12,
+      "level": 8,
+      "col": 0,
+      "icon": "🚦",
+      "req": [
+        "cicd.deploy"
+      ],
+      "mins": 11,
+      "chapter": 12,
+      "title": "Data & model gates",
+      "short": "Data contract and accuracy gate",
+      "learn": [
+        "Write a data contract and know it checks validity, not drift",
+        "Train in CI and gate on accuracy against a baseline",
+        "Choose the gate's tolerance from data",
+        "Gate on slices, not only the average"
+      ],
+      "concepts": [
+        "Data contract",
+        "Quality gate",
+        "Baseline",
+        "Tolerance",
+        "Slice metric"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Part A · Classic ML: data contract"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Contracts check **validity**, not **drift**"
+          ],
+          "a": 7,
+          "b": 8
+        },
+        {
+          "t": [
+            "Training in CI and the accuracy gate"
+          ],
+          "a": 9,
+          "b": 15
+        },
+        {
+          "t": [
+            "Worked example: choosing the tolerance from data",
+            "Gating on slices, not only the average"
+          ],
+          "a": 16,
+          "b": 22
+        }
+      ]
+    },
+    {
+      "id": "cicd.operate",
+      "branch": "cicd",
+      "n": 13,
+      "level": 8,
+      "col": 2,
+      "icon": "📟",
+      "req": [
+        "cicd.deploy"
+      ],
+      "mins": 15,
+      "chapter": 15,
+      "title": "Operate in production",
+      "short": "Logs, SLOs, game day, compliance",
+      "learn": [
+        "Write logs you can query and turn them into alarms",
+        "Set SLOs and use an error budget",
+        "Watch the model, not only the service, after each deploy",
+        "Run a game day, a postmortem and cost and compliance checks"
+      ],
+      "concepts": [
+        "Structured logs",
+        "SLO",
+        "Error budget",
+        "Runbook",
+        "Postmortem"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Why operating belongs to CI/CD",
+            "Logs you can query"
+          ],
+          "a": 0,
+          "b": 9
+        },
+        {
+          "t": [
+            "SLOs and error budgets",
+            "Watching the model, not only the service"
+          ],
+          "a": 10,
+          "b": 15
+        },
+        {
+          "t": [
+            "Game day: the release that passed every check",
+            "Runbooks and postmortems",
+            "Cost governance"
+          ],
+          "a": 16,
+          "b": 23
+        },
+        {
+          "t": [
+            "Compliance in a regulated German company"
+          ],
+          "a": 24,
+          "b": 30
+        }
+      ]
+    },
+    {
+      "id": "cicd.mlflow",
+      "branch": "cicd",
+      "n": 14,
+      "level": 9,
+      "col": 0,
+      "icon": "📒",
+      "req": [
+        "cicd.gates"
+      ],
+      "mins": 8,
+      "chapter": 13,
+      "title": "MLflow & registry",
+      "short": "Track runs, register, promote",
+      "learn": [
+        "Track experiments and artefacts with MLflow",
+        "Register models and promote them with aliases",
+        "Know which model is actually running",
+        "Decide when to retrain"
+      ],
+      "concepts": [
+        "Experiment run",
+        "Model registry",
+        "Alias",
+        "Lineage",
+        "Retraining"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Match the terms",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Experiment tracking and the model registry with MLflow"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Closing the loop: which model is actually running?"
+          ],
+          "a": 7,
+          "b": 11
+        },
+        {
+          "t": [
+            "When to retrain: a decision table"
+          ],
+          "a": 12,
+          "b": 16
+        }
+      ]
+    },
+    {
+      "id": "cicd.devops",
+      "branch": "cicd",
+      "n": 15,
+      "level": 9,
+      "col": 2,
+      "icon": "☸️",
+      "req": [
+        "cicd.operate"
+      ],
+      "mins": 13,
+      "chapter": 16,
+      "title": "DevOps overview",
+      "short": "K8s, GitOps, canary, supply chain",
+      "learn": [
+        "Place Kubernetes, Helm, GitOps and IaC next to what you built",
+        "Choose a release strategy: blue-green, canary, feature flags",
+        "Explain supply-chain security and DORA metrics",
+        "Turn the deploy script into Terraform (capstone)"
+      ],
+      "concepts": [
+        "GitOps",
+        "Canary",
+        "Terraform",
+        "SBOM",
+        "DORA metrics"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Running and shipping at scale"
+          ],
+          "a": 0,
+          "b": 7
+        },
+        {
+          "t": [
+            "Releasing safely"
+          ],
+          "a": 8,
+          "b": 16
+        },
+        {
+          "t": [
+            "Security, measurement, organisation"
+          ],
+          "a": 17,
+          "b": 23
+        },
+        {
+          "t": [
+            "Capstone: from shell script to Terraform"
+          ],
+          "a": 24,
+          "b": 27
+        }
+      ]
+    },
+    {
+      "id": "cicd.rag",
+      "branch": "cicd",
+      "n": 16,
+      "level": 10,
+      "col": 0,
+      "icon": "🧠",
+      "req": [
+        "cicd.mlflow"
+      ],
+      "mins": 14,
+      "chapter": 14,
+      "title": "Evaluating RAG",
+      "short": "Golden set, eval gate, LLM costs",
+      "learn": [
+        "Build a golden set for a RAG service",
+        "Gate releases on evaluation metrics",
+        "Set thresholds on small evaluation sets",
+        "Control LLM costs in CI"
+      ],
+      "concepts": [
+        "Golden set",
+        "Evaluation gate",
+        "Faithfulness",
+        "Threshold",
+        "Token budget"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Part B · LLM systems: the RAG service"
+          ],
+          "a": 0,
+          "b": 14
+        },
+        {
+          "t": [
+            "Controlling LLM costs in CI"
+          ],
+          "a": 15,
+          "b": 22
+        },
+        {
+          "t": [
+            "Operating ML pipelines over time"
+          ],
+          "a": 23,
+          "b": 25
+        }
+      ]
+    },
+    {
+      "id": "cicd.cheats",
+      "branch": "cicd",
+      "n": 17,
+      "level": 10,
+      "col": 2,
+      "icon": "📋",
+      "req": [
+        "cicd.devops"
+      ],
+      "mins": 10,
+      "chapter": 17,
+      "title": "Cheat sheets & fixes",
+      "short": "Git, Actions, Docker, AWS, glossary",
+      "learn": [
+        "Find the right Git, Actions, Docker or AWS command fast",
+        "Fix the common errors from the troubleshooting table",
+        "Use the German terms you will hear at work",
+        "Keep the sheets next to your keyboard"
+      ],
+      "concepts": [
+        "Cheat sheet",
+        "Troubleshooting",
+        "Glossary",
+        "Fachbegriffe"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Cheat sheet: Git",
+            "Cheat sheet: GitHub Actions"
+          ],
+          "a": 0,
+          "b": 8
+        },
+        {
+          "t": [
+            "Cheat sheet: Docker",
+            "Cheat sheet: AWS CLI used in this book"
+          ],
+          "a": 9,
+          "b": 17
+        },
+        {
+          "t": [
+            "Troubleshooting"
+          ],
+          "a": 18,
+          "b": 21
+        },
+        {
+          "t": [
+            "Glossary (English · Deutsch)"
+          ],
+          "a": 22,
+          "b": 25
+        }
+      ]
+    },
+    {
+      "id": "cicd.design",
+      "branch": "cicd",
+      "n": 18,
+      "level": 11,
+      "col": 1,
+      "icon": "🏗️",
+      "req": [
+        "cicd.rag",
+        "cicd.cheats"
+      ],
+      "mins": 12,
+      "chapter": 18,
+      "title": "System design",
+      "short": "A delivery platform for ten ML teams",
+      "learn": [
+        "Answer like a senior: context, options, decision, cost",
+        "Design a delivery platform for ten ML teams step by step",
+        "Name the risks and how you would measure the rollout",
+        "Explain your own pipeline in an interview"
+      ],
+      "concepts": [
+        "Golden path",
+        "Reusable workflow",
+        "Guardrails",
+        "Rollout plan",
+        "Trade-off"
+      ],
+      "exercises": [
+        "Design decision",
+        "Capstone review"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Introduction"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "What \"senior\" sounds like"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "System design: a delivery platform for ten ML teams"
+          ],
+          "a": 4,
+          "b": 13
+        },
+        {
+          "t": [
+            "Explaining your pipeline in an interview"
+          ],
+          "a": 14,
+          "b": 22
+        }
+      ]
+    },
+    {
+      "id": "cicd.interview",
+      "branch": "cicd",
+      "n": 19,
+      "level": 12,
+      "col": 1,
+      "icon": "🎤",
+      "req": [
+        "cicd.design"
+      ],
+      "mins": 10,
+      "chapter": 19,
+      "title": "Senior interview",
+      "short": "15 questions, your stories, evidence",
+      "learn": [
+        "Answer fifteen senior CI/CD questions from a skeleton",
+        "Tell what-if stories you actually lived",
+        "Turn your repositories into evidence (README, ADRs)",
+        "Prepare a demo, a blog post and CV lines"
+      ],
+      "concepts": [
+        "Model answer",
+        "STAR story",
+        "ADR",
+        "Portfolio"
+      ],
+      "exercises": [
+        "Scenario",
+        "Capstone review"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Fifteen senior questions, with model answers"
+          ],
+          "a": 0,
+          "b": 10
+        },
+        {
+          "t": [
+            "Your stories: what-ifs you actually lived"
+          ],
+          "a": 11,
+          "b": 12
+        },
+        {
+          "t": [
+            "Turn the repositories into evidence"
+          ],
+          "a": 13,
+          "b": 19
+        }
+      ]
+    },
+    {
+      "id": "cicd.boss",
+      "branch": "cicd",
+      "n": 20,
+      "level": 13,
+      "col": 1,
+      "icon": "🏆",
+      "req": [
+        "cicd.interview"
+      ],
+      "mins": 8,
+      "chapter": 20,
+      "title": "Boss: Exercise review",
+      "short": "All exercise solutions",
+      "learn": [
+        "Check your answers to every exercise in the book",
+        "Revisit the levels where your answer differed",
+        "Explain each solution out loud",
+        "Close the gaps before an interview"
+      ],
+      "concepts": [
+        "Rebase",
+        "Quality gate",
+        "OIDC",
+        "Rollback",
+        "Evaluation"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "Solutions to the exercises"
+          ],
+          "a": 0,
+          "b": 15
+        }
       ]
     }
   ]

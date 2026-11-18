@@ -76,7 +76,7 @@ h3{font-size:16px;margin:16px 0 6px}
 .node.done{background:#ffc800;box-shadow:0 6px 0 #e0a800;color:#fff}
 .node.cur{outline:6px solid rgba(88,167,0,.25);animation:pulse 1.6s infinite}
 @keyframes pulse{50%{outline-color:rgba(88,167,0,.05)}}
-.node .lbl{position:absolute;top:50%;transform:translateY(-50%);width:130px;font-size:12px;font-weight:700;color:var(--muted);line-height:1.2;text-align:left}
+.node .lbl{position:absolute;top:50%;transform:translateY(-50%);width:min(130px,34vw);font-size:12px;font-weight:700;color:var(--muted);line-height:1.2;text-align:left}
 .node .lbl.r{left:86px}.node .lbl.l{right:86px;text-align:right}
 .start-tip{position:absolute;top:-34px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--green);border:2px solid var(--line);border-radius:10px;padding:2px 10px;font-size:13px;font-weight:900;white-space:nowrap}
 
@@ -143,7 +143,7 @@ input.type:focus{border-color:var(--blue)}
 
 /* words list */
 .search{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px 12px;font-size:16px;background:var(--card);color:var(--ink);outline:none}
-.seg{display:flex;gap:6px;margin:10px 0;overflow-x:auto}
+.seg{display:flex;gap:6px;margin:10px 0;overflow-x:auto;max-width:100%}
 .seg button{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px;white-space:nowrap;cursor:pointer}
 .seg button.on{border-color:var(--green);color:var(--green)}
 .wl{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
@@ -520,6 +520,7 @@ body.theme-calm .feedback.ok h3{color:var(--green-d)}
 @media (prefers-color-scheme: dark){body.theme-calm .feedback.ok h3{color:var(--green-b)}body.theme-calm .pill.green{color:var(--green-b)}}
 /* path: flat circles in teal / slate-blue / terracotta, finished = soft amber */
 body.theme-calm .node{box-shadow:none;border:2px solid var(--line);background:var(--card);color:var(--muted);width:64px;height:64px}
+body.theme-calm .node .lbl.r{left:78px}body.theme-calm .node .lbl.l{right:78px} /* same gap as the 72px nodes */
 body.theme-calm .node.vocab.avail{background:var(--green);border-color:var(--green);box-shadow:none;color:#fff}
 body.theme-calm .node.grammar.avail{background:var(--blue);border-color:var(--blue);box-shadow:none;color:#fff}
 body.theme-calm .node.phrases.avail{background:var(--terra);border-color:var(--terra);box-shadow:none;color:#fff}
@@ -734,7 +735,14 @@ body.theme-sl .course.cur{box-shadow:0 0 0 1.5px var(--c),0 0 16px color-mix(in 
 body.theme-sl .coursechip{border-radius:3px;border:1px solid rgba(120,190,255,.5);background:rgba(10,20,40,.85)}
 body.theme-sl2 .coursechip{border-radius:999px}
 body.theme-calm .coursechip{border-width:1.5px}
-.userchip{white-space:nowrap;flex:none}.coursechip{flex:none;max-width:52%;overflow:hidden;text-overflow:ellipsis}
+/* top row: name and course chips shrink with "…" so the ⚡/💎 chip always fits on a phone */
+.userchip,.coursechip{white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden}.coursechip{max-width:52%;flex-shrink:4}
+.userchip .nm,.coursechip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* phones: the course chip is just the flag + ▾ (tap still switches course), so the name gets the room */
+@media (max-width:460px){.coursechip .nm{display:none}.coursechip{flex:none;max-width:none}}
+#syncst:empty{display:none} /* an empty status slot still took a gap */
+@media (max-width:430px){.gemchip{margin-left:0;padding:4px 7px;gap:2px}.gemchip b{font-size:15px}.gemchip .sep{margin:0 2px}.userchip{padding-right:7px;gap:4px}}
+.userchip>*:not(.nm),.gemchip,#syncst{flex:none}
 .brand{font-family:"Rajdhani",system-ui,sans-serif;font-weight:700;font-size:30px;letter-spacing:4px;margin-top:8px;background:linear-gradient(90deg,#4d96ff,#9a6dff,#ffb627);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* XP & Diamonds sheet: earn/lose rules */
 .xprules{border:1px solid var(--line,rgba(127,140,170,.25));border-radius:12px;overflow:hidden}
@@ -753,13 +761,34 @@ body.theme-sl .heropick .hp.cur,body.theme-sl3 .heropick .hp.cur{border-color:va
 .herochip{display:inline-flex;align-items:center;gap:10px;margin-top:10px;padding:6px 14px 6px 6px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
 .herochip .hero.sm{width:40px;height:46px}
 /* skill tree (Software Engineering) */
-.branches{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px 6px;scrollbar-width:none}
-.branches::-webkit-scrollbar{display:none}
-.branch{flex:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
-.branch .bi{font-size:16px}
-.branch.on{border-color:var(--c);box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
-.branch.soon{opacity:.6}
-.branch .tiny{opacity:.8;font-weight:600}
+.sec-h{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:800;margin:16px 2px 8px}
+.contcard{border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:16px;padding:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 24%,var(--card)),var(--card))}
+.contcard .ct-t{font-size:18px;font-weight:800;margin:2px 0}
+.contcard .btn{background:var(--c);border-color:var(--c);color:#0b1222}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.bcard{display:flex;flex-direction:column;gap:6px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.bcard:hover,.bcard:focus-visible{border-color:var(--c)}
+.bcard .bc-t{font-weight:800;font-size:15px;line-height:1.25}
+.hring{fill:none;stroke:var(--line);stroke-width:4}
+.hring.on{stroke-linecap:round}
+.soontags{display:flex;flex-wrap:wrap;gap:6px}
+.soontag{padding:5px 10px;border:1px dashed var(--line);border-radius:999px;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.backlink{display:inline-block;margin:0 0 4px;padding:4px 0;color:var(--muted)}
+.bpager{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.pgb{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:20px;line-height:1;cursor:pointer;flex:none}
+.pdots{flex:1;display:flex;justify-content:center;gap:6px}
+.pdots i{width:8px;height:8px;border-radius:5px;background:var(--line);transition:width .2s}
+.pdots i.on{width:22px}
+/* skill-tree Map/List switch (own class: sharing .seg broke the Words/Lessons filter bars) */
+.segt{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.segt button{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:5px 12px;cursor:pointer}
+.segt button.on{background:color-mix(in srgb,var(--c) 30%,var(--card));color:var(--ink)}
+.tspoke{stroke:var(--line);stroke-width:1.5;stroke-dasharray:3 5;opacity:.7}
+.tspoke.near{stroke:var(--c);opacity:.45}
+.tspoke.lit{stroke:var(--c);stroke-dasharray:none;opacity:.6}
+.tcore-c{fill:var(--card);stroke:var(--c);stroke-width:2}
+.tcore[role=button]{cursor:pointer;outline:none}
+.tcore:focus-visible .tcore-c{stroke:var(--ink)}
 .treebox{padding:6px 0 20px}
 .tedge{fill:none;stroke:var(--line);stroke-width:3;stroke-linecap:round}
 .tedge.lit{stroke:var(--c);opacity:.9}
@@ -772,6 +801,14 @@ body.theme-sl .heropick .hp.cur,body.theme-sl3 .heropick .hp.cur{border-color:va
 .tnode.boss .tc{stroke-dasharray:4 3}
 .tnode.boss.done .tc,.tnode.boss.open .tc{stroke-dasharray:none}
 .tcheck{fill:#57e3a0}
+.tseg{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round}
+.tseg.on{stroke:var(--c)}
+.tnode.locked .tseg{opacity:.6}
+.partlist{display:flex;flex-direction:column;gap:6px}
+.partrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.partrow:disabled{opacity:.55;cursor:default}
+.partrow .pn{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid var(--line)}
+.partrow.ok .pn{background:#57e3a0;border-color:#57e3a0;color:#0b1222}
 .tlabel{font:700 11px Rajdhani,system-ui,sans-serif;fill:var(--ink)}
 .tnode.locked .tlabel{fill:var(--muted)}
 .tnode:focus-visible .tc{stroke:var(--ink)}
@@ -781,8 +818,8 @@ body.theme-sl .heropick .hp.cur,body.theme-sl3 .heropick .hp.cur{border-color:va
 .chipx{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600}
 .chipx.dim{opacity:.7;border-style:dashed}
 .planned{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.7}
-body.theme-sl .branch,body.theme-sl3 .branch{background:rgba(10,20,40,.85);border-color:rgba(100,160,230,.35)}
-body.theme-sl .tnode .tc,body.theme-sl3 .tnode .tc{fill:#0b1430}
+body.theme-sl .bcard,body.theme-sl3 .bcard,body.theme-sl .pgb,body.theme-sl3 .pgb{background:rgba(10,20,40,.85);border-color:rgba(100,160,230,.35)}
+body.theme-sl .tnode .tc,body.theme-sl3 .tnode .tc,body.theme-sl .tcore-c,body.theme-sl3 .tcore-c{fill:#0b1430}
 body.theme-sl .tnode.done .tc,body.theme-sl3 .tnode.done .tc{fill:color-mix(in srgb,var(--c) 35%,#0b1430)}
 /* bug report button + box (alpha testing) */
 #bugbtn{position:fixed;right:0;top:58%;z-index:900;width:34px;height:40px;border:1px solid var(--line);border-right:none;border-radius:12px 0 0 12px;background:var(--card);font-size:18px;line-height:1;opacity:.6;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);padding:0}
@@ -812,6 +849,9 @@ body.theme-sl #bug-root .bug-box,body.theme-sl3 #bug-root .bug-box,body.theme-sl
 .rcard ul,.rcard ol{margin:8px 0;padding-left:22px}
 .rcard li{margin:6px 0}
 .rcard b{color:var(--ink)}
+.rcard .rfig{margin:12px 0}
+.rcard .rfig img{display:block;width:100%;height:auto;background:#fff;border-radius:10px;padding:8px;box-sizing:border-box}
+.rcard .rfig figcaption{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
 .rcard code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:color-mix(in srgb,var(--line) 55%,transparent);padding:1px 5px;border-radius:5px}
 .rcard pre.code{margin:12px 0;padding:12px;border-radius:12px;background:#0d1326;color:#d8e2ff;overflow-x:auto;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}
 .rcard pre.code code{background:none;padding:0;font-size:inherit;white-space:pre}
@@ -830,12 +870,78 @@ body.theme-sl #bug-root .bug-box,body.theme-sl3 #bug-root .bug-box,body.theme-sl
 .answer-box{margin-top:14px;padding:12px 14px;border:2px solid var(--green);border-radius:14px;text-align:center}
 .answer-box div{font-size:24px;font-weight:800;margin-top:2px}
 body.theme-sl .answer-box,body.theme-sl3 .answer-box{border-color:var(--accent);box-shadow:0 0 14px var(--accent-soft)}
-/* alpha fixes (11-15): clearer feedback tab */
-#bugbtn{width:42px;height:auto;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 3px;font-size:15px;opacity:.72}
-#bugbtn span{font-size:8px;font-weight:800;letter-spacing:.2px;text-transform:uppercase;line-height:1;opacity:.85}
 /* brighter, inviting primary CTA in the Hunter themes (was easy to mistake for disabled) */
 body.theme-sl .next-card .btn,body.theme-sl3 .next-card .btn{background:linear-gradient(180deg,#4aa6ff,#2f7fe6);color:#fff;border:1px solid #9fd0ff;box-shadow:0 0 18px rgba(79,179,255,.7);text-shadow:0 1px 2px rgba(0,30,80,.5);animation:ctapulse 2.6s ease-in-out infinite}
 @keyframes ctapulse{0%,100%{box-shadow:0 0 13px rgba(79,179,255,.55)}50%{box-shadow:0 0 26px rgba(79,179,255,.95)}}
 /* let "Key ideas" chips wrap instead of clipping */
 .chips{flex-wrap:wrap}
 .chipx{white-space:normal;max-width:100%}
+
+/* tap a German word in a question to see its meaning */
+.gw{border-bottom:1.5px dotted color-mix(in srgb,currentColor 55%,transparent);cursor:help}
+.gloss{position:absolute;z-index:1200;max-width:260px;padding:7px 11px;border-radius:10px;background:var(--ink);color:var(--card);font-size:15px;font-weight:700;line-height:1.3;box-shadow:0 4px 16px rgba(0,0,0,.35);pointer-events:none}
+
+/* =====================================================================
+   EUROZEIT THEME (body.theme-calm.theme-ez) – partner look, after knowledgecenter.eurozeitglobal.com:
+   white + cool grey sections, royal navy, bright green highlights, gold ratings, Urbanist.
+   Built on Calm (flat, light) and overrides colours/shape. Light only, like the partner site.
+   ===================================================================== */
+body.theme-ez{
+  --bg:#f1f2f8; --card:#fff; --ink:#1c1c1b; --muted:#5f6370; --line:#e2e5ef;
+  --green:#00339b; --green-d:#00267a; --green-l:#dfefff; --green-b:#3d6fe0;   /* "green" = the theme's primary (navy) */
+  --blue:#098ce9; --blue-l:#e2f2fd; --red:#df0000; --red-l:#fde6e6; --amber:#ffb606; --amber-l:#fff4d6;
+  --ok:#3ab500; --ok-d:#2c8a00; --ok-l:#e7f6dc;                                    /* real green: right answers, done */
+  --m:#00339b; --f:#ea3453; --n:#2c8a00; --pl:#5641cf; --terra:#3ab500;
+  --kv:#00339b; --kg:#098ce9; --kp:#3ab500;
+  --r:10px; --shadow:0 1px 2px rgba(0,30,90,.05),0 4px 14px rgba(0,30,90,.05);
+  color-scheme:light; background:var(--bg); color:var(--ink);
+  font-family:"Urbanist",system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;
+}
+html:has(body.theme-ez){background:#f1f2f8}
+body.theme-ez h1,body.theme-ez h2,body.theme-ez h3{font-family:inherit;font-weight:800;letter-spacing:-.2px;color:var(--ink)}
+body.theme-ez h1{font-size:26px}
+body.theme-ez .card{border-radius:10px;border:1px solid var(--line);box-shadow:var(--shadow)}
+body.theme-ez .sheet{border-radius:16px 16px 0 0}
+/* buttons: solid navy, small radius, like "Explore All Courses" / "Login" */
+body.theme-ez .btn{border-radius:6px;background:var(--green);color:#fff;font-weight:700;letter-spacing:.2px}
+body.theme-ez .btn:active{filter:brightness(1.15)}
+body.theme-ez .btn.blue{background:var(--blue)}
+body.theme-ez .btn.red{background:var(--red)}
+body.theme-ez .btn.ghost{background:#fff;border:1.5px solid var(--green);color:var(--green)}
+body.theme-ez .btn[disabled]{background:var(--line);color:var(--muted)}
+body.theme-ez .spk{border-radius:6px;background:var(--green)}
+body.theme-ez .spk.xl{border-radius:50%}
+body.theme-ez .link{color:var(--green);font-weight:700}
+/* next lesson: navy panel with a white button and gold accent */
+body.theme-ez .next-card{background:var(--green);border-radius:10px;border-bottom:4px solid var(--amber)}
+body.theme-ez .next-card .btn{background:#fff;color:var(--green)}
+body.theme-ez .next-card .muted{color:rgba(255,255,255,.82)}
+body.theme-ez #tabs{border-top:1px solid var(--line);box-shadow:0 -2px 12px rgba(0,30,90,.06)}
+body.theme-ez #tabs a{font-weight:700}
+body.theme-ez #tabs a.on{color:var(--green)}
+/* answers and success use the partner's bright green; choice/selection stays navy-blue */
+body.theme-ez .opt{border-radius:8px}
+body.theme-ez .opt.sel{border-color:var(--green);background:var(--green-l)}
+body.theme-ez .opt.right{border-color:var(--ok);background:var(--ok-l)}
+body.theme-ez .opt.wrong{border-color:var(--red);background:var(--red-l)}
+body.theme-ez .feedback.ok h3{color:var(--ok-d)}
+body.theme-ez .pill{border-radius:4px}
+body.theme-ez .pill.green{background:var(--ok-l);color:var(--ok-d)}
+body.theme-ez .part.ok .pn{background:var(--ok);border-color:var(--ok)}
+body.theme-ez .quest.ok .box{background:var(--ok-l);border-color:var(--ok);color:var(--ok-d)}
+body.theme-ez .bar>div{background:linear-gradient(90deg,var(--green),var(--blue))}
+body.theme-ez .ring{background:conic-gradient(var(--green) calc(var(--p)*1%),var(--line) 0)}
+/* path: navy / sky / green nodes, gold when done (like the rating badge) */
+body.theme-ez .node.done{background:var(--amber-l);border-color:var(--amber);color:#b57f00}
+body.theme-ez .node.cur{outline-color:color-mix(in srgb,var(--green),transparent 72%)}
+body.theme-ez .kdone,body.theme-ez .bitbadge{background:var(--amber);color:#3a2a00}
+body.theme-ez .sys-h{color:var(--muted);letter-spacing:1.2px}
+body.theme-ez .levelup{font-family:inherit;color:var(--green)}
+body.theme-ez .lead{color:var(--ok-d)}
+body.theme-ez .rank{border-radius:8px}
+body.theme-ez .rank.S{color:#d99a00}
+body.theme-ez .who button,body.theme-ez .course{border-radius:10px;border-width:1px;box-shadow:var(--shadow)}
+body.theme-ez .coursechip{border-width:1px;border-radius:6px}
+body.theme-ez .brand{font-family:"Urbanist",system-ui,sans-serif;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#00339b 0 55%,#3ab500 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+body.theme-ez .next-card .sys-h{color:rgba(255,255,255,.72)}
+body.theme-ez .feedback.ok{background:var(--ok-l)}

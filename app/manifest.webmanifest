@@ -1,6 +1,6 @@
 {
-  "name": "Rankwise",
-  "short_name": "Rankwise",
+  "name": "LevelUp",
+  "short_name": "LevelUp",
   "description": "Rank up in what you learn: German A1 today, more languages and subjects soon. Levels, ranks, quests and spaced-repetition reviews.",
   "start_url": "./#/today",
   "scope": "./",

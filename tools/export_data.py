@@ -1,12 +1,12 @@
 """Export the Iteration_v3 book sources into the app's content.json (+ an audio manifest).
 
-Run:  python3 tools/export_data.py
+Run:  uv run tools/export_data.py
 """
 import hashlib, html, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SRC = os.path.join(ROOT, "..", "Data", "Iteration_v3", "_source", "build")
+SRC = os.path.join(ROOT, "..", "German Learning", "legacy", "Data", "Iteration_v3", "_source", "build")
 OUT = os.path.join(ROOT, "app", "data")
 sys.path.insert(0, SRC)
 os.chdir(SRC)  # the build modules open files relative to their own folder

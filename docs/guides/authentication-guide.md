@@ -6,7 +6,7 @@ _Saved from the Claude document https://claude.ai/artifact/AP1nRHpLDy4WKjhsLFwYD
 
 This guide is for a developer who can build a web app and now has to decide how people log in, stay logged in, get back in after forgetting a password, and what each person may see. It assumes Python, HTTP, and the basics of salted hashing and session cookies, but no prior auth design experience.
 
-The running example is Rankwise, a plain-JavaScript progressive web app (PWA) served by FastAPI on a Mac over home Wi-Fi, with two learners, Taha and Batul, today and perhaps thousands of public users later. Most auth decisions differ between those two worlds; the guide shows how to reason about both. Each chapter ends with pitfalls, a decision guide and key takeaways; code is Python 3.10+, and anything labelled "the wrong way" is followed by the fix.
+The running example is LevelUp, a plain-JavaScript progressive web app (PWA) served by FastAPI on a Mac over home Wi-Fi, with two learners, Taha and Batul, today and perhaps thousands of public users later. Most auth decisions differ between those two worlds; the guide shows how to reason about both. Each chapter ends with pitfalls, a decision guide and key takeaways; code is Python 3.10+, and anything labelled "the wrong way" is followed by the fix.
 
 ### Reading map
 
@@ -22,7 +22,7 @@ The running example is Rankwise, a plain-JavaScript progressive web app (PWA) se
 | 8. Build vs buy | DIY versus Supabase, Firebase, Auth0, Clerk, Cognito, Keycloak, and a decision framework | 13 |
 | 9. What can go wrong | Over 20 failure scenarios and an incident response checklist | 15 |
 | 10. Scaling and operations | Cost model, capacity numbers, multi-server sessions, secret rotation, monitoring, GDPR, testing | 12 |
-| 11. Worked design: Rankwise | A two-phase design for the example app, with data model, endpoints and plan | 12 |
+| 11. Worked design: LevelUp | A two-phase design for the example app, with data model, endpoints and plan | 12 |
 | 12. Self-check, glossary and further reading | Questions with answers, 40+ terms, authoritative sources | 10 |
 
 Total: roughly two and a half to three hours at a steady pace.
@@ -35,7 +35,7 @@ Total: roughly two and a half to three hours at a steady pace.
 
 **"I am deciding whether to use a hosted provider."** Read chapter 1, chapter 8, then chapter 11's phase 2. Then chapters 4 and 7: a provider handles login, not your API's sessions and authorisation.
 
-**"I only care about Rankwise."** Read chapter 11 first and follow its cross-references.
+**"I only care about LevelUp."** Read chapter 11 first and follow its cross-references.
 
 ### What you will be able to do afterwards
 
@@ -112,7 +112,7 @@ A useful exercise for any design: walk an attacker through each step and ask "wh
 
 #### What are we protecting?
 
-List your assets. For Rankwise: each learner's progress, the ability to change it, the users list, and later email addresses and possibly payment data. Also list things that are not data: the server's availability, and your reputation.
+List your assets. For LevelUp: each learner's progress, the ability to change it, the users list, and later email addresses and possibly payment data. Also list things that are not data: the server's availability, and your reputation.
 
 Not all assets are equal. A family German-learning app's progress data is low sensitivity, but people reuse passwords, so the **password** a user types into your app may be the same as their email or bank password. That makes password handling high stakes even when the app's own data is not.
 
@@ -525,7 +525,7 @@ def pwned_count(password: str, timeout: float = 3.0) -> int | None:
             HIBP_URL.format(prefix),
             headers={
                 "Add-Padding": "true",          # hides response size from observers
-                "User-Agent": "rankwise-password-check",
+                "User-Agent": "levelup-password-check",
             },
             timeout=timeout,
         )
@@ -787,7 +787,7 @@ A **CAPTCHA** is a challenge meant to separate humans from bots. They annoy user
 
 | Store | Pros | Cons | Use when |
 |---|---|---|---|
-| Process memory (dict) | Zero setup, fastest | Lost on restart; not shared between processes or servers | One process, small app (Rankwise phase 1) |
+| Process memory (dict) | Zero setup, fastest | Lost on restart; not shared between processes or servers | One process, small app (LevelUp phase 1) |
 | SQLite or Postgres table | Survives restarts; shared across processes on one database | Extra write per attempt; needs cleanup of old rows | Few servers, modest traffic |
 | Redis | Fast, atomic increments, built-in expiry, shared across servers | Another service to run and secure | Multiple servers, real traffic |
 
@@ -1417,7 +1417,7 @@ Set-Cookie: __Host-session=Qm9vb...; Path=/; Max-Age=5184000; HttpOnly; Secure; 
 
 #### What "site" means for SameSite
 
-For SameSite, a **site** is the registrable domain plus scheme: `app.rankwise.example` and `api.rankwise.example` are the same site, while `rankwise.example` and `evil.example` are different sites. That is broader than an **origin** (scheme, host and port must all match). Keep this in mind: a vulnerable sibling subdomain counts as same-site.
+For SameSite, a **site** is the registrable domain plus scheme: `app.levelup.example` and `api.levelup.example` are the same site, while `levelup.example` and `evil.example` are different sites. That is broader than an **origin** (scheme, host and port must all match). Keep this in mind: a vulnerable sibling subdomain counts as same-site.
 
 #### SameSite defaults changed
 
@@ -1429,17 +1429,17 @@ A cookie whose name starts with `__Host-` is only accepted by the browser if it 
 
 #### Cookies on plain HTTP
 
-Browsers refuse to set `Secure` cookies from `http://` pages, with an exception for `localhost`. So an app served at `http://192.168.1.4:8766` cannot use `Secure` or `__Host-` cookies at all. That is one of several reasons (along with passwords crossing the Wi-Fi unencrypted) why chapter 11 adds local HTTPS for Rankwise.
+Browsers refuse to set `Secure` cookies from `http://` pages, with an exception for `localhost`. So an app served at `http://192.168.1.4:8766` cannot use `Secure` or `__Host-` cookies at all. That is one of several reasons (along with passwords crossing the Wi-Fi unencrypted) why chapter 11 adds local HTTPS for LevelUp.
 
 ### CSRF
 
 **Cross-site request forgery (CSRF)** is when a malicious site makes the victim's browser send a request to your site. The browser automatically attaches your site's cookies, so your server sees an authenticated request the user never intended.
 
 ```text
-1. Victim is logged in to rankwise.example (session cookie stored).
+1. Victim is logged in to levelup.example (session cookie stored).
 2. Victim visits evil.example, which contains:
-   <form action="https://rankwise.example/api/reset-progress" method="POST"> ... auto-submit
-3. Browser sends the POST to rankwise.example WITH the session cookie.
+   <form action="https://levelup.example/api/reset-progress" method="POST"> ... auto-submit
+3. Browser sends the POST to levelup.example WITH the session cookie.
 4. Server sees a valid session and resets the victim's progress.
 ```
 
@@ -1460,7 +1460,7 @@ Also remember older browsers and in-app web views may not honour SameSite. For a
 
 **Check the Origin or Fetch Metadata headers.** Browsers send an `Origin` header on cross-origin and on POST requests, and modern browsers send `Sec-Fetch-Site` (`same-origin`, `same-site`, `cross-site`, or `none`). Rejecting unsafe-method requests whose `Sec-Fetch-Site` is `cross-site`, or whose `Origin` is not yours, is simple and effective. OWASP's CSRF cheat sheet now describes Fetch Metadata as a solid primary defence for modern browsers.
 
-**Require a custom header on API calls.** Plain HTML forms cannot set custom headers, and a cross-origin `fetch` with a custom header triggers a CORS preflight that your server will refuse (as long as you do not enable permissive CORS). Requiring `X-Requested-With: rankwise` on every unsafe request is a cheap guard for JSON APIs.
+**Require a custom header on API calls.** Plain HTML forms cannot set custom headers, and a cross-origin `fetch` with a custom header triggers a CORS preflight that your server will refuse (as long as you do not enable permissive CORS). Requiring `X-Requested-With: levelup` on every unsafe request is a cheap guard for JSON APIs.
 
 **Synchronizer token pattern.** The server generates a random CSRF token per session, stores it with the session, and embeds it in pages or sends it to the frontend. Every unsafe request must include it (in a header or form field), and the server compares it with the stored copy. An attacker's site cannot read it.
 
@@ -1473,7 +1473,7 @@ A small middleware that combines Fetch Metadata, Origin checking and a custom he
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-ALLOWED_ORIGINS = {"https://rankwise.example"}
+ALLOWED_ORIGINS = {"https://levelup.example"}
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 def install_csrf_guard(app: FastAPI) -> None:
@@ -1487,12 +1487,12 @@ def install_csrf_guard(app: FastAPI) -> None:
             if origin is not None and origin not in ALLOWED_ORIGINS:
                 return JSONResponse({"detail": "Bad origin."}, 403)
             # Custom header: HTML forms cannot send it; cross-origin fetch needs CORS.
-            if request.headers.get("x-requested-with") != "rankwise":
+            if request.headers.get("x-requested-with") != "levelup":
                 return JSONResponse({"detail": "Missing CSRF header."}, 403)
         return await call_next(request)
 ```
 
-The frontend adds `headers: {"X-Requested-With": "rankwise"}` to every `fetch`. Exempt nothing by accident: if you need an endpoint that external services POST to (a webhook), authenticate it a different way and mount it outside this guard deliberately.
+The frontend adds `headers: {"X-Requested-With": "levelup"}` to every `fetch`. Exempt nothing by accident: if you need an endpoint that external services POST to (a webhook), authenticate it a different way and mount it outside this guard deliberately.
 
 ### XSS and where to keep tokens
 
@@ -1520,7 +1520,7 @@ A JWT is three base64url-encoded parts separated by dots: `header.payload.signat
 
 ```text
 Header:   {"alg": "HS256", "typ": "JWT", "kid": "2026-11"}
-Payload:  {"iss": "https://rankwise.example", "aud": "rankwise-api", "sub": "42",
+Payload:  {"iss": "https://levelup.example", "aud": "levelup-api", "sub": "42",
            "iat": 1763200000, "exp": 1763200900, "jti": "q3Jk...", "role": "learner"}
 Signature: HMAC-SHA256(base64url(header) + "." + base64url(payload), key)
 ```
@@ -1586,7 +1586,7 @@ import time
 import jwt
 import security as sec
 
-ISSUER, AUDIENCE = "https://rankwise.example", "rankwise-api"
+ISSUER, AUDIENCE = "https://levelup.example", "levelup-api"
 ACCESS_TTL = 10 * 60                 # 10 minutes
 REFRESH_TTL = 30 * 24 * 3600         # family lifetime
 # Keys keyed by ID so they can rotate (chapter 10). 32+ random bytes each.
@@ -1742,7 +1742,7 @@ An **opaque token** is a random string with no meaning on its own, like a sessio
 
 | Situation | Recommended pattern | Why |
 |---|---|---|
-| One backend, browser frontend on the same site (Rankwise) | Server-side session in HttpOnly cookie | Simplest, instant revocation, no token in JS |
+| One backend, browser frontend on the same site (LevelUp) | Server-side session in HttpOnly cookie | Simplest, instant revocation, no token in JS |
 | Native mobile app talking to your API | Opaque or JWT access token plus rotating refresh token, stored in the OS keychain | No cookie jar to rely on; secure storage exists |
 | Many microservices verifying users | Short JWT access tokens (asymmetric), refresh at a central auth service | Services verify without calling auth on every request |
 | Third parties calling your API | OAuth 2.0 access tokens (often JWT) with scopes | Standard, delegable, revocable at the issuer |
@@ -1900,7 +1900,7 @@ from mailer import send_email
 from ratelimit import SlidingWindowLimiter
 
 router = APIRouter()
-BASE_URL = os.environ.get("BASE_URL", "https://rankwise.example")  # never from Host header
+BASE_URL = os.environ.get("BASE_URL", "https://levelup.example")  # never from Host header
 RESET_TTL = 30 * 60
 per_ip = SlidingWindowLimiter(10, 3600)
 per_email = SlidingWindowLimiter(3, 3600)
@@ -1928,7 +1928,7 @@ def reset_request(body: ResetRequestIn, request: Request, tasks: BackgroundTasks
                " VALUES (?, ?, ?, ?)", (sec.token_hash(token), row["id"], t, t + RESET_TTL))
     db.commit()
     link = f"{BASE_URL}/reset#token={token}"   # fragment: never sent to servers or Referer
-    tasks.add_task(send_email, row["email"], "Reset your Rankwise password",
+    tasks.add_task(send_email, row["email"], "Reset your LevelUp password",
                    f"Someone asked to reset your password.\n\nOpen this link within 30 "
                    f"minutes:\n{link}\n\nIf this was not you, ignore this email.")
     audit(db, "reset_requested", row["id"], ip)
@@ -1963,7 +1963,7 @@ def reset_confirm(body: ResetConfirmIn, request: Request, tasks: BackgroundTasks
     db.execute("DELETE FROM password_resets WHERE user_id = ? AND token_hash != ?",
                (row["id"], th))                                             # other links die
     db.commit()
-    tasks.add_task(send_email, row["email"], "Your Rankwise password was changed",
+    tasks.add_task(send_email, row["email"], "Your LevelUp password was changed",
                    "Your password was just changed. If this was not you, reset it now "
                    "and contact us.")
     audit(db, "reset_completed", row["id"], ip)
@@ -2072,7 +2072,7 @@ Rules for doing it safely:
 
 ### Recovery when there is no email
 
-On a home LAN app with no email sending (Rankwise phase 1), the email-based flow is unavailable. Options, from simplest:
+On a home LAN app with no email sending (LevelUp phase 1), the email-based flow is unavailable. Options, from simplest:
 
 | Option | How it works | Fits when |
 |---|---|---|
@@ -2162,21 +2162,21 @@ Using plain OAuth for login (for example, calling a profile API with an access t
 
 #### Roles
 
-| Role | Meaning | In "Sign in with Google" for Rankwise |
+| Role | Meaning | In "Sign in with Google" for LevelUp |
 |---|---|---|
 | Resource owner | The user | Batul |
-| Client (relying party in OIDC) | The app that wants access or identity | Rankwise server |
+| Client (relying party in OIDC) | The app that wants access or identity | LevelUp server |
 | Authorization server (OpenID provider) | Authenticates the user and issues tokens | Google's accounts service |
 | Resource server | The API holding the data | Google's userinfo API (rarely needed with OIDC) |
 
-A **confidential client** can keep a secret (a server-side app like Rankwise's FastAPI backend). A **public client** cannot (a pure browser app or mobile app, where any secret would be extractable).
+A **confidential client** can keep a secret (a server-side app like LevelUp's FastAPI backend). A **public client** cannot (a pure browser app or mobile app, where any secret would be extractable).
 
 #### The authorization code flow with PKCE, step by step
 
 The **authorization code flow** is the recommended flow for every kind of client today. **PKCE** (Proof Key for Code Exchange, RFC 7636, pronounced "pixie") adds a one-time secret that binds the start and end of the flow together. It was originally for public clients, but current guidance (RFC 9700, the OAuth 2.0 Security Best Current Practice published in 2025, and the OAuth 2.1 draft) recommends it for all clients.
 
 ```text
-Browser                    Rankwise server                  Google
+Browser                    LevelUp server                  Google
   | click "Sign in with Google"                                |
   |------------------------->|                                 |
   |                          | create state, nonce,            |
@@ -2189,7 +2189,7 @@ Browser                    Rankwise server                  Google
   |<-------------------------|                                 |
   |---------------------------------------------------------->|
   |                 user logs in at Google, consents           |
-  |  302 to https://rankwise.example/auth/google/callback?code=C&state=S
+  |  302 to https://levelup.example/auth/google/callback?code=C&state=S
   |<----------------------------------------------------------|
   |------------------------->|                                 |
   |                          | check state == saved state      |
@@ -2202,7 +2202,7 @@ Browser                    Rankwise server                  Google
   |                          |   (Google JWKS), iss, aud, exp, |
   |                          |   nonce == saved nonce          |
   |                          | find or create local user,      |
-  |                          | create Rankwise session         |
+  |                          | create LevelUp session         |
   |  Set-Cookie: __Host-session=...                            |
   |<-------------------------|                                 |
 ```
@@ -2238,7 +2238,7 @@ A library such as Authlib does all of this for you, which is the main reason to 
 
 The classic bug: "If a Google login arrives with an email matching an existing account, log into that account." Problems:
 
-- Some providers let users set an unverified email. An attacker creates a provider account claiming Taha's address, signs in with it, and gets Taha's Rankwise account. Always check the `email_verified` claim is true, and be cautious even then with providers that are not authoritative for that email domain.
+- Some providers let users set an unverified email. An attacker creates a provider account claiming Taha's address, signs in with it, and gets Taha's LevelUp account. Always check the `email_verified` claim is true, and be cautious even then with providers that are not authoritative for that email domain.
 - The reverse attack: an attacker signs up on your site with a password using the victim's email (unverified), then later the victim signs in with Google and gets linked to an account the attacker also has the password for. Fix: only allow password sign-up accounts to be linked after their email is verified, or drop the password when linking an unverified account.
 
 Safe linking rules:
@@ -2274,7 +2274,7 @@ oauth.register(
     client_kwargs={"scope": "openid email profile",
                    "code_challenge_method": "S256"},   # enable PKCE
 )
-BASE_URL = os.environ.get("BASE_URL", "https://rankwise.example")
+BASE_URL = os.environ.get("BASE_URL", "https://levelup.example")
 
 @app.get("/auth/google/start")
 async def google_start(request: Request):
@@ -2334,7 +2334,7 @@ def find_or_link_user(provider: str, sub: str, email: str | None, email_verified
 
 `create_user_without_password`, `create_app_session`, `connect` and `normalize_email` are the helpers from chapters 3 and 4. If an unverified local account with the same email exists, `create_user_without_password` will hit the unique constraint: handle that by asking the user to log in to the existing account and link from settings.
 
-Google's console requires you to register the exact redirect URI and, for production, a verified domain. Google sign-in does not work for an app reached only by a private IP address, because redirect URIs must be `localhost` or a real domain; this matters for Rankwise phase 1.
+Google's console requires you to register the exact redirect URI and, for production, a verified domain. Google sign-in does not work for an app reached only by a private IP address, because redirect URIs must be `localhost` or a real domain; this matters for LevelUp phase 1.
 
 ### Passkeys and WebAuthn
 
@@ -2383,9 +2383,9 @@ from webauthn.helpers.structs import (AuthenticatorSelectionCriteria,
                                       PublicKeyCredentialDescriptor,
                                       ResidentKeyRequirement, UserVerificationRequirement)
 
-RP_ID = "rankwise.example"            # a registrable domain, never an IP address
-RP_NAME = "Rankwise"
-ORIGIN = "https://rankwise.example"   # must be HTTPS (localhost is the only exception)
+RP_ID = "levelup.example"            # a registrable domain, never an IP address
+RP_NAME = "LevelUp"
+ORIGIN = "https://levelup.example"   # must be HTTPS (localhost is the only exception)
 
 def start_registration(session: dict, user_handle: bytes, username: str,
                        existing_cred_ids: list[bytes]) -> str:
@@ -2479,7 +2479,7 @@ import qrcode
 
 def start_enrolment(username: str) -> tuple[str, str, bytes]:
     secret = pyotp.random_base32()     # store encrypted, mark as "pending" until confirmed
-    uri = pyotp.TOTP(secret).provisioning_uri(name=username, issuer_name="Rankwise")
+    uri = pyotp.TOTP(secret).provisioning_uri(name=username, issuer_name="LevelUp")
     img = qrcode.make(uri)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
@@ -3096,13 +3096,13 @@ Social logins migrate more easily (users sign in with Google again, and you matc
 
 #### Family app on a Mac over Wi-Fi
 
-Rankwise today: two learners, one server on a home network, no internet requirement, no email.
+LevelUp today: two learners, one server on a home network, no internet requirement, no email.
 
 Hosted providers need internet access, a domain, and redirect URIs that are not private IPs; they add dependencies for no benefit. Build it yourself: Argon2id passwords or PINs, server-side sessions in SQLite, simple in-memory rate limiting, an admin reset by the parent. The entire auth layer is a few hundred lines that you fully understand. Chapter 11 has the detailed design.
 
 #### Public freemium app with 10,000 users
 
-Rankwise hosted publicly, mostly free users, a small paid tier, one developer.
+LevelUp hosted publicly, mostly free users, a small paid tier, one developer.
 
 Here the attack surface changes: bots, credential stuffing, email deliverability, password reset at volume, Google sign-in expectations. A hosted provider removes most of that work. Supabase Auth fits a FastAPI plus Postgres stack and keeps password hashes in your database, so the exit cost is low. At 10,000 MAU, check the current free and paid tier limits: a provider's free tier may or may not cover you, and the paid tier is usually modest at this size.
 
@@ -3571,7 +3571,7 @@ Test each building block and each rule:
 
 #### Integration tests
 
-Use FastAPI's `TestClient` against a temporary database (set `AUTH_DB` to a temporary file, like Rankwise's rule of testing on a scratch data directory):
+Use FastAPI's `TestClient` against a temporary database (set `AUTH_DB` to a temporary file, like LevelUp's rule of testing on a scratch data directory):
 
 ```python
 # test_auth_flow.py  (pip install pytest httpx)
@@ -3664,7 +3664,7 @@ The **OWASP Application Security Verification Standard (ASVS)** is a catalogue o
 - Use OWASP ASVS and a short security test checklist to turn "secure enough" into verifiable items.
 
 
-## 11. Worked design: Rankwise
+## 11. Worked design: LevelUp
 
 This chapter applies the whole guide to one real app. It is written as a design document you could hand to someone else: current state, threat model, phase 1 design for the home network, phase 2 options for public hosting, the data model, the endpoint list, an implementation plan, and the risks to watch.
 
@@ -3707,7 +3707,7 @@ In the language of chapter 7, every `{uid}` route is an IDOR by design: anyone o
 
 ```text
 Android phone (Chrome PWA)
-   |  HTTPS  https://rankwise.home.arpa:8766   (mkcert certificate, trusted on each phone)
+   |  HTTPS  https://levelup.home.arpa:8766   (mkcert certificate, trusted on each phone)
    v
 FastAPI on the Mac
    |-- /auth/*          login, logout, PIN or password change, admin reset
@@ -3738,10 +3738,10 @@ Progress stays in JSON files. Only identity, sessions and audit events move to S
 **mkcert** creates a private certificate authority (CA) on your Mac and issues certificates trusted by any device that trusts that CA.
 
 1. Install mkcert (`brew install mkcert`) and run `mkcert -install` to create and trust the local CA on the Mac.
-2. Choose a hostname. The `.home.arpa` suffix is reserved for home networks (RFC 8375). Issue a certificate for both the name and the IP: `mkcert rankwise.home.arpa 192.168.1.4`.
-3. Make the name resolve on the phones. Either add a DNS entry on the home router pointing `rankwise.home.arpa` to `192.168.1.4`, or use the IP address directly (the certificate includes it).
+2. Choose a hostname. The `.home.arpa` suffix is reserved for home networks (RFC 8375). Issue a certificate for both the name and the IP: `mkcert levelup.home.arpa 192.168.1.4`.
+3. Make the name resolve on the phones. Either add a DNS entry on the home router pointing `levelup.home.arpa` to `192.168.1.4`, or use the IP address directly (the certificate includes it).
 4. Copy the CA certificate (`mkcert -CAROOT` shows its folder; the file is `rootCA.pem`) to each Android phone and install it in Settings under encryption and credentials, as a CA certificate. Chrome on Android generally trusts user-installed CAs for websites; verify on each device, as Android versions differ.
-5. Run uvicorn with the certificate: `uvicorn main:app --host 0.0.0.0 --port 8766 --ssl-certfile rankwise.home.arpa+1.pem --ssl-keyfile rankwise.home.arpa+1-key.pem`.
+5. Run uvicorn with the certificate: `uvicorn main:app --host 0.0.0.0 --port 8766 --ssl-certfile levelup.home.arpa+1.pem --ssl-keyfile levelup.home.arpa+1-key.pem`.
 6. Give the Mac a fixed IP (a DHCP reservation on the router) so the address and certificate stay valid.
 
 Keep the mkcert CA private key (`rootCA-key.pem`) safe: anyone who has it can create certificates trusted by your phones for any website. Do not copy it to the phones; only the public `rootCA.pem` goes there.
@@ -3751,7 +3751,7 @@ Alternatives worth knowing:
 - **A real domain with a DNS-validated certificate.** If you own a domain, point a subdomain at `192.168.1.4` and obtain a Let's Encrypt certificate with a DNS-01 challenge. Phones trust it with no CA installation. Note that this publishes your private IP in public DNS (harmless, but visible), and some routers block DNS answers that point to private addresses ("DNS rebinding protection").
 - **Tailscale.** A private mesh VPN; `tailscale cert` issues certificates for your machine's tailnet name. It also lets learners use the app away from home without exposing the server to the internet.
 
-HTTPS has an extra benefit for a PWA: service workers, offline caching and installability all require a secure context. Passkeys, too, require HTTPS and a hostname rather than an IP (chapter 6), so using `rankwise.home.arpa` keeps that door open.
+HTTPS has an extra benefit for a PWA: service workers, offline caching and installability all require a secure context. Passkeys, too, require HTTPS and a hostname rather than an IP (chapter 6), so using `levelup.home.arpa` keeps that door open.
 
 #### Data model
 
@@ -3825,7 +3825,7 @@ Two changes deserve emphasis. `GET /api/states` currently returns everyone's ful
 The ownership dependency is the heart of the change:
 
 ```python
-# rankwise_auth.py - the pieces that wrap the existing endpoints
+# levelup_auth.py - the pieces that wrap the existing endpoints
 import re
 from fastapi import Depends, HTTPException
 from sessions import require_user          # chapter 4, reading accounts instead of users
@@ -3851,7 +3851,7 @@ def editable_uid(uid: str, user=Depends(require_user)) -> str:
 
 Existing handlers change only their signature: `def get_state(uid: str = Depends(viewable_uid), c: str = CourseQ)` instead of taking `uid` from the path directly. The rest of their logic, including `user_ok`, the stale-write check and backups, stays as it is.
 
-On the client, `fetch` calls add `credentials: "same-origin"` (the default for same-origin requests) and the CSRF header `X-Requested-With: rankwise`. A 401 response sends the user to the login screen. Nothing is stored in localStorage except non-secret preferences.
+On the client, `fetch` calls add `credentials: "same-origin"` (the default for same-origin requests) and the CSRF header `X-Requested-With: levelup`. A 401 response sends the user to the login screen. Nothing is stored in localStorage except non-secret preferences.
 
 #### Migrating the existing users
 
@@ -3939,7 +3939,7 @@ Migration from phase 1 in either option: phase 1 hashes are Argon2id, and both a
 
 ### Key takeaways
 
-- Rankwise's real phase 1 risk is that every `{uid}` route trusts the client; sessions plus a policy dependency fix it with small changes to existing handlers.
+- LevelUp's real phase 1 risk is that every `{uid}` route trusts the client; sessions plus a policy dependency fix it with small changes to existing handlers.
 - Local HTTPS with mkcert is a prerequisite: it protects typed passwords on Wi-Fi and enables `Secure` cookies, service workers and later passkeys.
 - Admin-issued one-time codes and a command-line reset match the household trust model and replace email for recovery.
 - Replace the all-states endpoint with a minimal comparison summary, and hide operational details in health and docs.
@@ -4031,7 +4031,7 @@ Try to answer each question before reading the answer. If you get one wrong, rer
 | What is the realistic capacity threat for a login endpoint? | Attack traffic exhausting CPU and memory through hashing; fix with rate limits before hashing and a concurrency cap. |
 | How do key IDs make JWT key rotation smooth? | Verifiers hold several keys selected by `kid`, so you can add a new signing key, wait for old tokens to expire, then remove the old one. |
 | What is the GDPR deadline for reporting a notifiable breach to the regulator? | 72 hours from becoming aware of it (this is not legal advice). |
-| What single change removes Rankwise's largest read-IDOR? | Replacing the all-learners states endpoint with a minimal comparison summary and adding ownership checks to every `{uid}` route. |
+| What single change removes LevelUp's largest read-IDOR? | Replacing the all-learners states endpoint with a minimal comparison summary and adding ownership checks to every `{uid}` route. |
 
 ### Glossary
 

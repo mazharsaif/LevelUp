@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="190" viewBox="0 0 660 190">
+<defs><marker id="m1565c0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/></marker></defs>
+<defs><marker id="m2e7d32" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
+<defs><marker id="m757575" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker></defs>
+<rect x="8" y="70" width="90" height="50" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="1.4"/>
+<text x="53.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#546e7a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Commit</text>
+<text x="53.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">git push</text>
+<rect x="116" y="70" width="90" height="50" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="161.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Build</text>
+<text x="161.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">install deps</text>
+<path d="M99,95 L114,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="224" y="70" width="90" height="50" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="269.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Test</text>
+<text x="269.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">lint · pytest</text>
+<path d="M207,95 L222,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="332" y="70" width="90" height="50" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="377.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#00796b" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Package</text>
+<text x="377.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">Docker image</text>
+<path d="M315,95 L330,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="440" y="70" width="90" height="50" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.4"/>
+<text x="485.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#1565c0" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Staging</text>
+<text x="485.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">auto deploy</text>
+<path d="M423,95 L438,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="548" y="70" width="90" height="50" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.4"/>
+<text x="593.0" y="88.8" font-family="Avenir Next" font-size="11.5" fill="#1565c0" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Production</text>
+<text x="593.0" y="102.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">deploy</text>
+<path d="M531,95 L546,95" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<path d="M8,58 L8,48 L422,48 L422,58" fill="none" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="215.0" y="36.0" font-family="Avenir Next" font-size="10.5" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Continuous Integration (CI): every change is built and tested automatically</text>
+<path d="M440,132 L440,142 L638,142 L638,132" fill="none" stroke="#1565c0" stroke-width="1.4"/>
+<text x="539.0" y="156.0" font-family="Avenir Next" font-size="10" fill="#1565c0" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Continuous Delivery: prod = 1 click</text>
+<text x="539.0" y="172.0" font-family="Avenir Next" font-size="10" fill="#1565c0" text-anchor="middle" font-weight="normal" dominant-baseline="middle">Continuous Deployment: prod = automatic</text>
+<text x="8" y="158.8" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="start" font-weight="normal" font-style="italic" dominant-baseline="middle">A pipeline = an automated sequence of stages;</text>
+<text x="8" y="171.2" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="start" font-weight="normal" font-style="italic" dominant-baseline="middle">if any stage fails, the later ones do not run.</text>
+</svg>

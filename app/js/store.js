@@ -109,6 +109,7 @@ export const blank = () => ({
   gemLog: [],     // {d, n, why}
   bits: {},       // path item id -> [date per finished bit]
   tree: {},       // skill-tree courses: node id -> date learned
+  parts: {},      // skill-tree courses: node id -> {part index -> date finished}
   say: {},        // phrase (German) -> times produced correctly in "Say it in German"
 });
 function normalize(st) {

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="200" viewBox="0 0 660 200">
+<defs><marker id="m2e7d32" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
+<defs><marker id="m546e7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#546e7a"/></marker></defs>
+<path d="M20,140 L640,140" fill="none" stroke="#546e7a" stroke-width="3"/>
+<path d="M120,140 L180,70 L430,70" fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+<rect x="596" y="157" width="35.4" height="18" rx="9" fill="#546e7a"/>
+<text x="613.7" y="166.5" font-family="Menlo" font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">main</text>
+<circle cx="50" cy="140" r="13" fill="#546e7a" stroke="#546e7a" stroke-width="1.6"/>
+<text x="50" y="140.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">A</text>
+<circle cx="120" cy="140" r="13" fill="#546e7a" stroke="#546e7a" stroke-width="1.6"/>
+<text x="120" y="140.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">B</text>
+<circle cx="560" cy="140" r="13" fill="#546e7a" stroke="#546e7a" stroke-width="1.6"/>
+<text x="560" y="140.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">M</text>
+<circle cx="200" cy="70" r="13" fill="#2e7d32" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="200" y="70.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">C</text>
+<circle cx="280" cy="70" r="13" fill="#2e7d32" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="280" y="70.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D</text>
+<circle cx="360" cy="70" r="13" fill="#2e7d32" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="360" y="70.5" font-family="Avenir Next" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">E</text>
+<path d="M430,70 L546,131" fill="none" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#m2e7d32)"/>
+<rect x="330" y="29" width="147.6" height="18" rx="9" fill="#2e7d32"/>
+<text x="403.8" y="38.5" font-family="Menlo" font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="bold" dominant-baseline="middle">feature/add-age-check</text>
+<rect x="392" y="150" width="150" height="40" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="467.0" y="164.4" font-family="Avenir Next" font-size="10.5" fill="#00796b" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Pull request</text>
+<text x="467.0" y="176.5" font-family="Avenir Next" font-size="9.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">CI green + 1 review</text>
+<text x="80" y="30.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">1. branch off main</text>
+<text x="80" y="46.0" font-family="Avenir Next" font-size="10.5" fill="#212121" text-anchor="start" font-weight="normal" dominant-baseline="middle">2. small commits</text>
+<text x="470" y="104.0" font-family="Avenir Next" font-size="10.5" fill="#00796b" text-anchor="end" font-weight="normal" dominant-baseline="middle">3. open PR → CI runs</text>
+<text x="560" y="112.0" font-family="Avenir Next" font-size="10.5" fill="#546e7a" text-anchor="middle" font-weight="normal" dominant-baseline="middle">4. merge</text>
+<text x="26" y="173.8" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="start" font-weight="normal" font-style="italic" dominant-baseline="middle">main is protected: nobody pushes to it</text>
+<text x="26" y="186.2" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="start" font-weight="normal" font-style="italic" dominant-baseline="middle">directly; every change arrives through a PR.</text>
+</svg>

@@ -1,4 +1,4 @@
-# Rankwise – mobile learning app (German A1 first)
+# LevelUp – mobile learning app (German A1 first)
 
 A small, installable web app (PWA) for mobile Chrome built from the Iteration_v3 books
 (`Data/Iteration_v3/_source`): 821 words in the books' 63 daily batches, 20 grammar chapters
@@ -32,17 +32,17 @@ tools/
 
 ## Rebuild after changing the books
 ```sh
-python3 tools/export_data.py
-tools/.venv/bin/python tools/fetch_audio.py      # only fetches clips that are missing
+uv run tools/export_data.py
+uv run tools/fetch_audio.py      # only fetches clips that are missing
 ```
-(First time: `python3 -m venv tools/.venv && tools/.venv/bin/pip install edge-tts`.)
+One uv environment for everything: Python 3.9 for now (Apple's, which the firewall allows; 3.13 tested and ready), `pyproject.toml` + `uv.lock` in the repo root, env in `.venv/` (`uv sync` recreates it).
 
 ## Run
 ```sh
-/usr/bin/python3 server.py
+cd server_fastapi && uv run main.py      # live server, port 8766 (old stdlib one: uv run server.py → 8765)
 ```
-Open http://localhost:8765 on the Mac, or `http://<mac-ip>:8765` on a phone on the same Wi-Fi.
-Use Apple's `/usr/bin/python3`. The firewall on this Mac blocks incoming connections for Homebrew's Python.
+Open http://localhost:8766 on the Mac, or `http://<mac-ip>:8766` on a phone on the same Wi-Fi.
+To move to 3.13: `echo 3.13 > .python-version && uv sync`, then allow `~/.local/share/uv/python/cpython-3.13-macos-aarch64-none/bin/python3.13` in System Settings › Network › Firewall, or phones can't connect.
 Over plain-HTTP Wi-Fi the browser can't install the app or cache audio for offline use (both need HTTPS). Saving progress works without HTTPS.
 
 ## Later / to-do

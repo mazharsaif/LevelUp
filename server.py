@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Deutsch A1 server: serves app/ and stores each learner's progress on this Mac.
 
-Run:  /usr/bin/python3 server.py            (port 8765, reachable on your Wi-Fi)
+Run:  uv run server.py            (port 8765, reachable on your Wi-Fi; Python from the repo uv env)
 Progress files: progress/<user>.json  ·  one backup per user per day in progress/backups/
-Uses only the Python standard library (works with macOS's built-in /usr/bin/python3).
+Uses only the Python standard library.
 """
 import json, os, re, shutil, sys, time
 from datetime import date

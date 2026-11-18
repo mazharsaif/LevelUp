@@ -42,7 +42,7 @@ function route() {
   if (!USER || !S) return whoView();
   if (!syncHero()) return heroPickView();
   if (!picked()) return courseView();
-  if (courseInfo(COURSE).type === "tree") return treeView(name0(h));
+  if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (!S.setup) return setupView();
   const [, name, arg] = h.split("/");
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
@@ -94,7 +94,7 @@ function markDone(it, date = today()) {
 // ------------------------------------------------------------------ today
 function topBar() {
   const g = goalFor(), x = xpToday(), p = Math.min(100, Math.round(100 * x / g));
-  return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} ${esc(C.course.title)} ▾</button>
+  return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button>
     <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span>${gemChip()}</div>${playerBar()}<div class="top classic-only">
     <div class="ring" id="xpring" style="--p:${p};cursor:pointer"><div>${x}<br><span class="tiny muted">/${g} XP</span></div></div>
     <div class="grow"><div style="font-weight:800;font-size:18px">${x >= g ? "Daily goal done ✅" : "Today's goal"}</div>
@@ -298,7 +298,7 @@ function progressView() {
     <div class="hbar"><div style="width:${100 * val / max}%;background:${color}"></div></div></div>`;
   const projTxt = pc.actual >= 99.9 ? "Done 🎓" : pc.projected ? fmtDate(pc.projected, { day: "numeric", month: "short", year: "numeric" }) : "—";
   const late = pc.projected && pc.projected > S.settings.targetDate;
-  view().innerHTML = `<div class="row"><h1 class="grow">Progress</h1><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+  view().innerHTML = `<div class="row"><h1 class="grow">Progress</h1><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
   ${statusWindow(pr, pc, r)}
   <div class="card" style="display:flex;gap:16px;align-items:center">
     <div class="ring big" style="--p:${pr.total}"><div>${pr.total.toFixed(0)}%<small>of A1</small></div></div>
@@ -347,7 +347,7 @@ function progressView() {
 // ------------------------------------------------------------------ settings
 function settingsView() {
   const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
-  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
   <div class="card"><div class="sys-h">Goal & pace</div><div style="font-weight:800">🎯 Goal & pace</div>
     <label class="f">Target completion date (A1 reached)</label><input type="date" id="tg" value="${S.settings.targetDate}" min="${addDays(today(), 7)}">
     <p class="muted small" style="margin:6px 0 0">${daysLeft > 0 ? `${daysLeft} days left` : "Target date has passed"} · ${p.nWeeks} weeks planned (Mon–Sun). Changing the date re-spreads all lessons across the weeks.</p>
@@ -359,7 +359,7 @@ function settingsView() {
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
     <button class="link" id="xph">How is XP measured?</button></div>
   <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
-    <label class="f">Theme</label><select id="th"><option value="system" ${S.settings.theme === "system" || !S.settings.theme ? "selected" : ""}>⚔️ Hunter System</option><option value="system3" ${S.settings.theme === "system3" ? "selected" : ""}>🛡️ Hunter Mid</option><option value="system2" ${S.settings.theme === "system2" ? "selected" : ""}>🗡️ Hunter Simple</option><option value="calm" ${S.settings.theme === "calm" ? "selected" : ""}>🌿 Calm</option><option value="classic" ${S.settings.theme === "classic" ? "selected" : ""}>🟢 Classic</option></select>
+    <label class="f">Theme</label><select id="th"><option value="system" ${S.settings.theme === "system" || !S.settings.theme ? "selected" : ""}>⚔️ Hunter System</option><option value="system3" ${S.settings.theme === "system3" ? "selected" : ""}>🛡️ Hunter Mid</option><option value="system2" ${S.settings.theme === "system2" ? "selected" : ""}>🗡️ Hunter Simple</option><option value="calm" ${S.settings.theme === "calm" ? "selected" : ""}>🌿 Calm</option><option value="ez" ${S.settings.theme === "ez" ? "selected" : ""}>🎓 Eurozeit</option><option value="classic" ${S.settings.theme === "classic" ? "selected" : ""}>🟢 Classic</option></select>
     <label class="f">Hero</label><select id="hero">${Object.entries(HERO_STYLES).map(([k, n]) => `<option value="${k}" ${heroStyle() === k ? "selected" : ""}>${k === "f" ? "🗡️" : "⚔️"} ${n}</option>`).join("")}</select>
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
@@ -368,7 +368,7 @@ function settingsView() {
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
-    <p class="muted small">Progress is saved on your Mac (A1-App/progress/${esc(USER)}.json, with a daily backup). You can also export a copy here.</p>
+    <p class="muted small">Progress is saved on your Mac (LevelUp/progress/${esc(USER)}.json, with a daily backup). You can also export a copy here.</p>
     <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
     <input type="file" id="imf" accept="application/json" hidden>
     <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset ${esc(userInfo(USER).name)}'s progress…</button></div>
@@ -403,7 +403,7 @@ function settingsView() {
   v.querySelector("#imf").onchange = async e => {
     try { importState(await e.target.files[0].text()); toast("Backup restored"); settingsView(); } catch (err) { toast("Could not read that file"); }
   };
-  v.querySelector("#reset").onclick = () => sheet(`<h2 style="margin-top:0">Reset ${esc(userInfo(USER).name)}'s progress?</h2><p class="muted">All of ${esc(userInfo(USER).name)}'s lessons, words, XP and streak will be deleted (yesterday's backup stays in A1-App/progress/backups). Export a backup first if unsure.</p>
+  v.querySelector("#reset").onclick = () => sheet(`<h2 style="margin-top:0">Reset ${esc(userInfo(USER).name)}'s progress?</h2><p class="muted">All of ${esc(userInfo(USER).name)}'s lessons, words, XP and streak will be deleted (yesterday's backup stays in LevelUp/progress/backups). Export a backup first if unsure.</p>
     <button class="btn red" id="yes">Delete all progress</button><button class="btn ghost" id="no">Cancel</button>`, el => {
     el.querySelector("#no").onclick = closeSheet;
     el.querySelector("#yes").onclick = () => { resetAll(); closeSheet(); location.hash = "#/today"; route(); };
@@ -440,7 +440,7 @@ function courseView() {
   const groups = {};
   COURSES.forEach(c => (groups[c.group || "Courses"] = groups[c.group || "Courses"] || []).push(c));
   const sm = S && S.setup ? summary(S) : null;
-  view().innerHTML = `<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button></div>
+  view().innerHTML = `<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
     <div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Select a path</div><h1>What do you want to study?</h1>
     <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p>
     <button class="herochip" id="hc">${heroHTML(sm ? sm.lv : 1, "sm")}<span>Your hero: <b>${HERO_STYLES[heroStyle()]}</b></span><span class="muted small">Change ›</span></button></div>
@@ -461,63 +461,176 @@ function courseView() {
 }
 
 // ------------------------------------------------------------------ skill-tree courses (Software Engineering)
-const name0 = h => h.split("/")[1];
 let treeBranch = null;
 const treeNodes = b => (C.content.nodes || []).filter(n => n.branch === b);
 const nodeDone = id => !!(S.tree || {})[id];
 const nodeOpen = n => n.req.every(nodeDone);
-function treeView() {
+// A long skill is split into 3-4 parts (built by tools/build_se_content.py at section boundaries).
+// Progress per part lives in S.parts[nodeId][partIndex] = date; a skill is learned when every part is done.
+const nodeParts = n => (n.parts && n.parts.length ? n.parts : null);
+const partDone = (n, k) => nodeDone(n.id) || !!((S.parts || {})[n.id] || {})[k];
+const partsDoneCount = n => { const P = nodeParts(n); return P ? P.filter((_, k) => partDone(n, k)).length : (nodeDone(n.id) ? 1 : 0); };
+const nextPart = n => { const P = nodeParts(n); if (!P) return null; const k = P.findIndex((_, j) => !partDone(n, j)); return k < 0 ? 0 : k; };
+// Course home (#/home): "Continue" card + a grid of open branches + coming-soon tags.
+// Branch view (#/branch/<id>): the skills orbit the branch (map) or run top-down (path); ‹ › arrows / swipe change branch.
+const openBranches = () => [...C.content.branches].filter(b => b.status === "open").sort((a, b) => a.order - b.order);
+const nodeFrac = n => { const P = nodeParts(n); return nodeDone(n.id) ? 1 : P ? partsDoneCount(n) / P.length : 0; };
+const branchFrac = b => { const ns = treeNodes(b.id); return ns.length ? ns.reduce((a, n) => a + nodeFrac(n), 0) / ns.length : 0; };
+const nextNode = b => treeNodes(b.id).sort((x, y) => x.n - y.n).find(n => !nodeDone(n.id) && nodeOpen(n));
+let pendingRead = null;                                        // node to open in the reader once its branch view is drawn
+const treeLayout = () => { try { return localStorage.getItem("a1.treeLayout") || "map"; } catch { return "map"; } };
+function continueTarget() {
+  const lr = S.lastRead && C.content.nodes.find(n => n.id === S.lastRead.id);
+  if (lr) {
+    const br = C.content.branches.find(b => b.id === lr.branch);
+    if (br && br.status === "open") { const n = !nodeDone(lr.id) && nodeOpen(lr) ? lr : nextNode(br); if (n) return { br, n, fresh: false }; }
+  }
+  const brs = openBranches(), started = brs.filter(b => branchFrac(b) > 0 && nextNode(b));
+  const br = started[0] || brs.find(b => nextNode(b));
+  return br ? { br, n: nextNode(br), fresh: !started.length } : null;
+}
+function ringSVG(frac, color, icon, s = 46) {
+  const r = s / 2 - 4, Cc = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" aria-hidden="true"><circle cx="${s / 2}" cy="${s / 2}" r="${r}" class="hring"/>
+    <circle cx="${s / 2}" cy="${s / 2}" r="${r}" class="hring on" style="stroke:${color}" stroke-dasharray="${(Cc * frac).toFixed(1)} ${Cc.toFixed(1)}" transform="rotate(-90 ${s / 2} ${s / 2})"/>
+    <text x="50%" y="${s / 2 + 6}" text-anchor="middle" font-size="${s * 0.38}">${icon}</text></svg>`;
+}
+const topRow = () => `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button>
+  <button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button><span class="grow"></span>
+  <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>`;
+function seHome() {
+  document.body.classList.add("in-lesson");
+  S.tree = S.tree || {};
+  const T = C.content, brs = openBranches(), soon = [...T.branches].filter(b => b.status !== "open").sort((a, b) => a.order - b.order);
+  const all = brs.flatMap(b => treeNodes(b.id)), done = all.filter(n => nodeDone(n.id)).length, ct = continueTarget();
+  let cont = "";
+  if (ct) {
+    const { br, n } = ct, lbl = readLabel(n, "open").replace(/^📖 /, "");
+    cont = `<div class="contcard" style="--c:${br.color}"><div class="tiny" style="opacity:.85">${ct.fresh ? "Start here" : "Continue"} · ${br.icon} ${esc(br.title)}</div>
+      <div class="ct-t">Skill ${n.n} · ${esc(n.title)}</div><div class="tiny muted">${esc(lbl)} · about ${n.mins} min</div>
+      <button class="btn" id="cont" style="margin:10px 0 0">${ct.fresh || /^Start/.test(lbl) ? "Start" : "Continue"}</button></div>`;
+  } else if (brs.length) cont = `<div class="contcard" style="--c:#57e3a0"><div class="ct-t">👑 Every open branch is complete</div><div class="tiny muted">New branches are on the way.</div></div>`;
+  view().innerHTML = topRow() + `<div style="margin:2px 2px 10px"><div style="font-size:21px;font-weight:800">${esc(T.title)}</div>
+      <div class="muted small">${brs.length} branches open · ${done} of ${all.length} skills learned</div></div>${cont}
+    <div class="sec-h">Your branches</div>
+    <div class="bgrid">${brs.map(b => { const ns = treeNodes(b.id), d = ns.filter(n => nodeDone(n.id)).length, nx = nextNode(b);
+      return `<button class="bcard" data-b="${b.id}" style="--c:${b.color}" aria-label="${esc(b.title)}: ${d} of ${ns.length} skills"><div class="row" style="justify-content:space-between">${ringSVG(branchFrac(b), b.color, b.icon)}<span class="tiny muted">${d}/${ns.length}</span></div>
+        <div class="bc-t">${esc(b.title)}</div><div class="tiny muted">${nx ? `Next: ${esc(nx.title)}` : d === ns.length ? "👑 Complete" : ""}</div></button>`; }).join("")}</div>
+    ${soon.length ? `<div class="sec-h">Coming soon</div><div class="soontags">${soon.map(b => `<button class="soontag" data-s="${b.id}">${b.icon} ${esc(b.title)}</button>`).join("")}</div>` : ""}`;
+  wireTop();
+  view().querySelectorAll(".bcard").forEach(b => (b.onclick = () => (location.hash = "#/branch/" + b.dataset.b)));
+  view().querySelectorAll(".soontag").forEach(b => (b.onclick = () => { const s = T.branches.find(x => x.id === b.dataset.s);
+    sheet(`<div style="font-size:20px;font-weight:800">${s.icon} ${esc(s.title)}</div><p class="muted small" style="margin:4px 0 0">Coming soon. Planned skills:</p>
+      <ol class="planned">${(s.planned || []).map(p => `<li>${esc(p)}</li>`).join("")}</ol><button class="btn ghost" id="close">Close</button>`, el => (el.querySelector("#close").onclick = closeSheet)); }));
+  const cb = view().querySelector("#cont");
+  if (cb) cb.onclick = () => { pendingRead = ct.n.id; location.hash = "#/branch/" + ct.br.id; };
+  window.scrollTo(0, 0);
+}
+function treeView(id) {
   document.body.classList.add("in-lesson");                 // full screen: language tabs don't apply here
   S.tree = S.tree || {};
-  const T = C.content, branches = [...T.branches].sort((a, b) => a.order - b.order);
-  if (!treeBranch || !branches.some(b => b.id === treeBranch)) treeBranch = (branches.find(b => b.status === "open") || branches[0]).id;
-  const br = branches.find(b => b.id === treeBranch), nodes = treeNodes(br.id), done = nodes.filter(n => nodeDone(n.id)).length;
-  view().innerHTML = `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}${esc(userInfo(USER).name)} ▾</button>
-      <button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} ${esc(C.course.title)} ▾</button><span class="grow"></span>
-      <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>
-    <div class="card"><div class="sys-h">Skill tree</div><div style="font-size:21px;font-weight:800">${esc(T.title)}</div>
-      <div class="muted small">Pick a branch. Each skill unlocks the ones below it.</div></div>
-    <div class="branches">${branches.map(b => `<button class="branch ${b.id === br.id ? "on" : ""} ${b.status !== "open" ? "soon" : ""}" data-b="${b.id}" style="--c:${b.color}">
-      <span class="bi">${b.icon}</span><span>${esc(b.title)}</span>${b.status !== "open" ? `<span class="tiny">Soon</span>` : ""}</button>`).join("")}</div>
-    ${br.status === "open" ? `<div class="card" style="--c:${br.color}"><div class="row"><div class="grow"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div>
+  const T = C.content, brs = openBranches();
+  if (id && brs.some(b => b.id === id)) treeBranch = id;
+  if (!treeBranch || !brs.some(b => b.id === treeBranch)) return seHome();
+  const i = brs.findIndex(b => b.id === treeBranch), br = brs[i], nodes = treeNodes(br.id), done = nodes.filter(n => nodeDone(n.id)).length;
+  const prev = brs[(i + brs.length - 1) % brs.length], next = brs[(i + 1) % brs.length], lay = treeLayout();
+  view().innerHTML = topRow() + `<button class="link backlink" id="home">‹ All branches</button>
+    ${brs.length > 1 ? `<div class="bpager"><button class="pgb" id="pv" aria-label="Previous branch: ${esc(prev.title)}">‹</button>
+      <div class="pdots">${brs.map((b, k) => `<i class="${k === i ? "on" : ""}" style="${k === i ? `background:${b.color}` : ""}"></i>`).join("")}</div>
+      <button class="pgb" id="nx" aria-label="Next branch: ${esc(next.title)}">›</button></div>` : ""}
+    <div class="card" style="--c:${br.color}"><div class="row"><div class="grow"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div>
         <div class="muted small">${done} of ${nodes.length} skills learned · about ${nodes.reduce((a, n) => a + n.mins, 0)} min of reading</div></div>
         ${br.intro != null ? `<button class="btn ghost sm" id="intro" style="width:auto;margin:0">📖 About</button>` : ""}</div>
         <div class="hbar" style="margin-top:8px"><div style="width:${100 * done / nodes.length}%;background:${br.color}"></div></div>
+        <div class="row" style="margin-top:8px;gap:8px"><div class="segt" role="group" aria-label="Layout"><button data-l="map" class="${lay === "map" ? "on" : ""}">◎ Map</button><button data-l="path" class="${lay === "path" ? "on" : ""}">↓ Path</button></div><span class="grow"></span></div>
         ${br.reading ? `<div class="tiny muted dlbar" id="dlbar"></div>` : ""}</div>
-      <div class="treebox">${treeSVG(nodes, br.color)}</div>`
-    : `<div class="card"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div><p class="muted small">Coming soon. Planned skills:</p>
-        <ol class="planned">${(br.planned || []).map(p => `<li>${esc(p)}</li>`).join("")}</ol></div>`}`;
+      <div class="treebox" id="tbox">${lay === "map" ? treeOrbit(nodes, br) : treeSVG(nodes, br.color)}</div>
+      ${brs.length > 1 ? `<div class="tiny muted" style="text-align:center">‹ ${esc(prev.title)} · swipe · ${esc(next.title)} ›</div>` : ""}`;
   wireTop();
-  view().querySelectorAll(".branch").forEach(b => (b.onclick = () => { treeBranch = b.dataset.b; treeView(); }));
-  view().querySelectorAll(".tnode").forEach(g => (g.onclick = () => nodeSheet(g.dataset.id)));
+  const go = b => location.replace("#/branch/" + b.id);
+  view().querySelector("#home").onclick = () => (location.hash = "#/home");
+  const pv = view().querySelector("#pv"), nx = view().querySelector("#nx");
+  if (pv) { pv.onclick = () => go(prev); nx.onclick = () => go(next); }
+  view().querySelectorAll(".segt button").forEach(b => (b.onclick = () => { try { localStorage.setItem("a1.treeLayout", b.dataset.l); } catch { /* private mode */ } treeView(); }));
+  view().querySelectorAll(".tnode").forEach(g => {
+    g.onclick = () => nodeSheet(g.dataset.id);
+    g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); nodeSheet(g.dataset.id); } };
+  });
+  const core = view().querySelector(".tcore"); if (core && br.intro != null) core.onclick = () => openReader(br, null);
   const ib = view().querySelector("#intro"); if (ib) ib.onclick = () => openReader(br, null);
-  if (br.status === "open") fillDownloads(br);
-  const on = view().querySelector(".branch.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+  if (br.reading) fillDownloads(br);
+  const tb = view().querySelector("#tbox"); let x0 = null, y0 = null;     // swipe the map/path sideways = next branch
+  if (brs.length > 1) {
+    tb.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    tb.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) go(dx < 0 ? next : prev); });
+  }
   window.scrollTo(0, 0);
+  if (pendingRead) { const n = nodes.find(x => x.id === pendingRead); pendingRead = null; if (n) openReader(br, n); }
 }
-const wrapT = t => { const w = t.split(" "), out = [""]; w.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > 15) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out.slice(0, 2); };
-const wrapN = t => wrapT(t).length;
+const wrapT = (t, w = 15) => { const ws = t.split(" "), out = [""]; ws.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > w) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out.slice(0, w < 15 ? 3 : 2); };
+const wrapN = (t, w) => wrapT(t, w).length;
+// one skill bubble: circle, part ring, icon/lock, check, and its label (lab = {x, y, anchor} for the first line)
+function nodeG(n, x, y, color, lab) {
+  const st = nodeDone(n.id) ? "done" : nodeOpen(n) ? "open" : "locked", r = n.boss ? 30 : 26, P = nodeParts(n);
+  let ring = "";
+  if (P && P.length > 1) {                         // one arc per part, filled when that part is done
+    const R = r + 6, gap = 14, seg = 360 / P.length, pt = a => [x + R * Math.cos(a * Math.PI / 180), y + R * Math.sin(a * Math.PI / 180)];
+    ring = P.map((_, k) => {
+      const a0 = -90 + k * seg + gap / 2, a1 = -90 + (k + 1) * seg - gap / 2, [sx, sy] = pt(a0), [ex, ey] = pt(a1);
+      return `<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${R},${R} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${ex.toFixed(1)},${ey.toFixed(1)}" class="tseg ${partDone(n, k) ? "on" : ""}"/>`;
+    }).join("");
+  }
+  return `<g class="tnode ${st} ${n.boss ? "boss" : ""}" data-id="${n.id}" style="--c:${color}" tabindex="0" role="button" aria-label="${esc(n.title)} (${st})">
+    ${st === "open" ? `<circle cx="${x}" cy="${y}" r="${r + 12}" class="tring"/>` : ""}
+    <circle cx="${x}" cy="${y}" r="${r}" class="tc"/>${ring}
+    <text x="${x}" y="${y + 7}" text-anchor="middle" font-size="22">${st === "locked" ? "🔒" : n.icon}</text>
+    ${st === "done" ? `<circle cx="${x + 19}" cy="${y - 19}" r="8" class="tcheck"/><text x="${x + 19}" y="${y - 15.5}" text-anchor="middle" font-size="10" fill="#0b1222" font-weight="900">✓</text>` : ""}
+    ${wrapT(n.title, lab.w).map((l, k) => `<text x="${lab.x}" y="${lab.y + k * 13}" text-anchor="${lab.anchor}" class="tlabel">${esc(l)}</text>`).join("")}</g>`;
+}
 function treeSVG(nodes, color) {
-  const W = 340, top = 40, gapY = 104, X = c => [62, 170, 278][c], Y = l => top + l * gapY;
+  const W = 340, top = 44, gapY = 116, X = c => [62, 170, 278][c], Y = l => top + l * gapY;
   const maxL = Math.max(...nodes.map(n => n.level)), H = Y(maxL) + 70;
   const by = Object.fromEntries(nodes.map(n => [n.id, n]));
   let edges = "", body = "";
   for (const n of nodes) for (const r of n.req) {
     const p = by[r]; if (!p) continue;
-    const x1 = X(p.col), y1 = Y(p.level) + 27 + (wrapN(p.title) * 13) + 8, x2 = X(n.col), y2 = Y(n.level) - 27, my = (y1 + y2) / 2;
+    const x1 = X(p.col), y1 = Y(p.level) + 36 + (wrapN(p.title) * 13) + 6, x2 = X(n.col), y2 = Y(n.level) - 38, my = (y1 + y2) / 2;
     edges += `<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" class="tedge ${nodeDone(r) ? "lit" : ""}" style="--c:${color}"/>`;
   }
-  const wrap = wrapT;
-  for (const n of nodes) {
-    const st = nodeDone(n.id) ? "done" : nodeOpen(n) ? "open" : "locked", x = X(n.col), y = Y(n.level);
-    body += `<g class="tnode ${st} ${n.boss ? "boss" : ""}" data-id="${n.id}" style="--c:${color}" tabindex="0" role="button" aria-label="${esc(n.title)} (${st})">
-      <circle cx="${x}" cy="${y}" r="${n.boss ? 30 : 26}" class="tc"/>
-      ${st === "open" ? `<circle cx="${x}" cy="${y}" r="${n.boss ? 36 : 32}" class="tring"/>` : ""}
-      <text x="${x}" y="${y + 7}" text-anchor="middle" font-size="22">${st === "locked" ? "🔒" : n.icon}</text>
-      ${st === "done" ? `<circle cx="${x + 19}" cy="${y - 19}" r="8" class="tcheck"/><text x="${x + 19}" y="${y - 15.5}" text-anchor="middle" font-size="10" fill="#0b1222" font-weight="900">✓</text>` : ""}
-      ${wrap(n.title).map((l, i) => `<text x="${x}" y="${y + 44 + i * 13}" text-anchor="middle" class="tlabel">${esc(l)}</text>`).join("")}</g>`;
-  }
+  for (const n of nodes) body += nodeG(n, X(n.col), Y(n.level), color, { x: X(n.col), y: Y(n.level) + 51, anchor: "middle" });
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:420px;display:block;margin:0 auto">${edges}${body}</svg>`;
+}
+// Map layout: the skills orbit the branch on a tall oval, in skill order, clockwise from the top.
+// Spokes join each skill to the branch core; exact prerequisite links are shown in Path view.
+function treeOrbit(nodes, br) {
+  const ns = [...nodes].sort((a, b) => a.n - b.n), N = ns.length, color = br.color;
+  const W = 380, cx = 190, a = 84, gap = 86, padT = 84, padB = 70;
+  const per = b => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+  let b = 150; while (per(b) < N * gap) b += 5;
+  const cy = padT + b, H = cy + b + padB;
+  const S2 = 720, pts = [], cum = [0];                        // sample the oval so skills sit at equal distances
+  for (let k = 0; k <= S2; k++) { const t = -Math.PI / 2 + 2 * Math.PI * k / S2; pts.push([cx + a * Math.cos(t), cy + b * Math.sin(t)]); if (k) cum.push(cum[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1])); }
+  const L = cum[S2], at = s => { let k = cum.findIndex(c => c >= s); if (k < 0) k = S2; return pts[k]; };
+  const pos = Object.fromEntries(ns.map((n, k) => [n.id, at(L * k / N)]));
+  // the orbit track joins skill k to skill k+1 (an open ring: the last skill ends it)
+  const trackAt = (s0, s1) => { const k0 = cum.findIndex(c => c >= s0), k1 = cum.findIndex(c => c >= s1); return pts.slice(k0, k1 + 1).map(([x, y], j) => `${j ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(""); };
+  let spokes = "", body = "", track = "";
+  for (let k = 0; k < N - 1; k++) track += `<path d="${trackAt(L * k / N + 34, L * (k + 1) / N - 34)}" class="tedge ${nodeDone(ns[k].id) ? "lit" : ""}" style="--c:${color}"/>`;
+  for (const n of ns) {
+    const [x, y] = pos[n.id], st = nodeDone(n.id) ? "lit" : nodeOpen(n) ? "near" : "";
+    spokes += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="tspoke ${st}" style="--c:${color}"/>`;
+    const off = x - cx, side = Math.abs(off) >= 30, lines = wrapN(n.title, side ? 12 : 15), r = n.boss ? 30 : 26;   // side labels wrap narrower so they fit the screen
+    const lab = Math.abs(off) < 30 ? (y < cy ? { x, y: y - r - 14 - (lines - 1) * 13, anchor: "middle" } : { x, y: y + r + 22, anchor: "middle" })
+      : { x: off < 0 ? x - r - 10 : x + r + 10, y: y + 4 - (lines - 1) * 6.5, anchor: off < 0 ? "end" : "start", w: 12 };
+    body += nodeG(n, +x.toFixed(1), +y.toFixed(1), color, lab);
+  }
+  const done = ns.filter(n => nodeDone(n.id)).length, fr = branchFrac(br), R = 32, Cc = 2 * Math.PI * (R + 6);
+  const core = `<g class="tcore" ${br.intro != null ? `role="button" tabindex="0" aria-label="About ${esc(br.title)}"` : ""} style="--c:${color}">
+    <circle cx="${cx}" cy="${cy}" r="${R + 6}" class="hring"/><circle cx="${cx}" cy="${cy}" r="${R + 6}" class="hring on" style="stroke:${color}" stroke-dasharray="${(Cc * fr).toFixed(1)} ${Cc.toFixed(1)}" transform="rotate(-90 ${cx} ${cy})"/>
+    <circle cx="${cx}" cy="${cy}" r="${R}" class="tcore-c"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" font-size="22">${br.icon}</text>
+    <text x="${cx}" y="${cy + 18}" text-anchor="middle" class="tlabel">${done} / ${N}</text></g>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:440px;display:block;margin:0 auto">${spokes}${track}${core}${body}</svg>`;
 }
 function nodeSheet(id) {
   const n = C.content.nodes.find(x => x.id === id), T = C.content, st = nodeDone(id) ? "done" : nodeOpen(n) ? "open" : "locked";
@@ -529,6 +642,10 @@ function nodeSheet(id) {
     ${st === "locked" ? `<div class="note" style="margin-top:10px">🔒 Unlocks after: <b>${need.map(esc).join(", ")}</b></div>` : ""}
     <div style="font-weight:800;margin:14px 0 4px">What you'll learn</div><ul class="small" style="margin:0;padding-left:18px">${n.learn.map(l => `<li>${esc(l)}</li>`).join("")}</ul>
     <div style="font-weight:800;margin:12px 0 6px">Key ideas</div><div class="chips">${n.concepts.map(c => `<span class="chipx">${esc(c)}</span>`).join("")}</div>
+    ${nodeParts(n) ? `<div style="font-weight:800;margin:14px 0 6px">Parts <span class="tiny muted">${partsDoneCount(n)} of ${nodeParts(n).length} done · do them in any order</span></div>
+      <div class="partlist">${nodeParts(n).map((p, k) => `<button class="partrow ${partDone(n, k) ? "ok" : ""}" data-p="${k}" ${st === "locked" ? "disabled" : ""}>
+        <span class="pn">${partDone(n, k) ? "✓" : k + 1}</span><span class="grow"><b>${esc(p.t[0])}</b>${p.t.length > 1 ? `<span class="tiny muted"> · ${esc(p.t.slice(1).join(" · "))}</span>` : ""}</span>
+        <span class="tiny muted">${p.b - p.a + 1} cards</span></button>`).join("")}</div>` : ""}
     <div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div><div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>
     ${st !== "locked" ? `<button class="btn" id="read" style="margin-top:14px">${readLabel(n, st)}</button><div class="tiny muted" id="dlst" style="text-align:center;margin-top:4px"></div>` : ""}
     ${st === "done" ? `<div class="note" style="margin-top:8px">✅ Learned on ${fmtDate(S.tree[id])}</div>${dependents.length ? "" : `<button class="link" id="undo">Undo</button>`}` : ""}
@@ -541,8 +658,9 @@ function nodeSheet(id) {
     }).catch(() => {});
     const R0 = el.querySelector("#read");
     if (R0) R0.onclick = () => { closeSheet(); openReader(C.content.branches.find(b => b.id === n.branch), n); };
+    if (st !== "locked") el.querySelectorAll(".partrow").forEach(b => (b.onclick = () => { closeSheet(); openReader(brN, n, +b.dataset.p); }));
     const U = el.querySelector("#undo");
-    if (U) U.onclick = () => { delete S.tree[id]; save(); closeSheet(); treeView(); };
+    if (U) U.onclick = () => { delete S.tree[id]; if (S.parts) delete S.parts[id]; save(); closeSheet(); treeView(); };
   });
 }
 
@@ -584,37 +702,54 @@ async function fillDownloads(br) {
   if (r) r.onclick = async () => { const cache = await caches.open(CONTENT_CACHE); for (const c of chs) await cache.delete(new URL(chapterUrl(br, c), location.href).href, { ignoreSearch: true }); Object.keys(readingCache).forEach(k => k.startsWith(br.reading) && delete readingCache[k]); fillDownloads(br); toast("Downloads removed"); };
 }
 function readLabel(n, st) {
-  const pos = (S.read || {})[n.id];
+  const pos = (S.read || {})[n.id], P = nodeParts(n);
   if (st === "done") return "📖 Read again";
+  if (P) {
+    const k = nextPart(n), p = P[k], inside = pos != null && pos > p.a && pos <= p.b;
+    return inside ? `📖 Continue part ${k + 1} (card ${pos - p.a + 1} of ${p.b - p.a + 1})` : `📖 Start part ${k + 1} of ${P.length}`;
+  }
   return pos ? `📖 Continue reading (card ${pos + 1})` : "📖 Start reading";
 }
-async function openReader(br, node) {
+async function openReader(br, node, partIdx) {
   let ch = null;
   if (br.reading) { try { ch = await loadChapter(br, node ? node.chapter : br.intro); } catch { ch = null; } }
   if (!ch) { toast(navigator.onLine ? "Reading material for this skill isn't available yet." : "Can't reach the Mac to download this skill. Try again on home Wi-Fi."); return; }
-  S.read = S.read || {};
+  S.read = S.read || {}; S.parts = S.parts || {};
   const key = node ? node.id : br.id + ".intro";
-  let i = Math.min(S.read[key] || 0, ch.cards.length - 1);
-  if (node && nodeDone(node.id) && i >= ch.cards.length - 1) i = 0;           // re-reading a finished skill starts over
+  if (node) S.lastRead = { id: node.id, at: Date.now() };
+  // which part: the chapter file's own split wins (it was built with these exact cards)
+  const parts = node ? ((ch.parts && ch.parts.length ? ch.parts : nodeParts(node)) || null) : null;
+  const k = parts ? (partIdx != null ? partIdx : (nodeDone(node.id) ? 0 : nextPart({ ...node, parts }))) : null;
+  const A = parts ? parts[k].a : 0, B = parts ? Math.min(parts[k].b, ch.cards.length - 1) : ch.cards.length - 1;
+  let i = S.read[key] || 0;
+  if (i < A || i > B) i = A;
+  if (node && (nodeDone(node.id) || (parts && partDone(node, k))) && i >= B) i = A;   // re-reading something finished starts over
   document.body.classList.add("in-lesson");
   const T = C.content;
   const draw = () => {
-    const c = ch.cards[i], last = i === ch.cards.length - 1, pct = Math.round(100 * (i + 1) / ch.cards.length);
-    const finishLabel = node && !nodeDone(node.id) && nodeOpen(node) ? `Finish · +${T.xpPerSkill} XP` : "Done";
-    view().innerHTML = `<div class="lesson-top"><button class="x" id="rx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i + 1} / ${ch.cards.length}</span></div>
+    const c = ch.cards[i], last = i === B, pct = Math.round(100 * (i - A + 1) / (B - A + 1));
+    const counting = node && !nodeDone(node.id) && nodeOpen(node);
+    const othersDone = parts ? parts.every((_, j) => j === k || partDone(node, j)) : true;
+    const finishLabel = !counting ? "Done" : !parts || othersDone ? `Finish · +${T.xpPerSkill} XP` : partDone(node, k) ? "Done" : `Finish part ${k + 1} of ${parts.length}`;
+    view().innerHTML = `<div class="lesson-top"><button class="x" id="rx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i - A + 1} / ${B - A + 1}</span></div>
       <div class="reader" id="rd">
-        <div class="r-eyebrow">${node ? `${node.icon} ${esc(node.title)}` : `${br.icon} ${esc(br.title)}`}</div>
+        <div class="r-eyebrow">${node ? `${node.icon} ${esc(node.title)}${parts ? ` · Part ${k + 1} of ${parts.length}` : ""}` : `${br.icon} ${esc(br.title)}`}</div>
         <div class="q-title r-sec">${esc(c.s)}</div>${c.sub ? `<div class="r-sub">${esc(c.sub)}</div>` : ""}
         <div class="rcard">${c.html}</div></div>
-      <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="rb" ${i === 0 ? "disabled" : ""} style="margin:0">‹ Back</button>
+      <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="rb" ${i === A ? "disabled" : ""} style="margin:0">‹ Back</button>
         <button class="btn grow" id="rn" style="margin:0">${last ? finishLabel : "Next ›"}</button></div></div>`;
     window.scrollTo(0, 0);
     view().querySelector("#rx").onclick = () => { treeView(); };
-    view().querySelector("#rb").onclick = () => { if (i > 0) { i--; S.read[key] = i; save(); draw(); } };
+    view().querySelector("#rb").onclick = () => { if (i > A) { i--; S.read[key] = i; save(); draw(); } };
     view().querySelector("#rn").onclick = () => {
       if (!last) { i++; S.read[key] = i; save(); draw(); return; }
-      S.read[key] = 0;
-      if (node && !nodeDone(node.id) && nodeOpen(node)) {
+      if (parts && counting) {
+        (S.parts[node.id] = S.parts[node.id] || {})[k] = S.parts[node.id][k] || today();
+        const nk = parts.findIndex((_, j) => !partDone(node, j));
+        S.read[key] = nk < 0 ? 0 : parts[nk].a;                     // the next undone part starts where it begins
+        if (nk >= 0) { save(); toast(`✓ Part ${k + 1} of ${parts.length} done · ${parts.length - partsDoneCount({ ...node, parts })} to go`); treeView(); nodeSheet(node.id); return; }
+      } else S.read[key] = 0;
+      if (counting) {
         S.tree[node.id] = today(); addXP(T.xpPerSkill);
         const left = treeNodes(node.branch).filter(x => !nodeDone(x.id)).length;
         toast(left ? `${node.icon} ${node.title} learned! +${T.xpPerSkill} XP` : `👑 Branch complete! You mastered ${br.title}`);
@@ -666,10 +801,11 @@ function applyTheme() {
   document.body.classList.toggle("theme-sl", t === "system" || t === "system2" || t === "system3");
   document.body.classList.toggle("theme-sl2", t === "system2");
   document.body.classList.toggle("theme-sl3", t === "system3");
-  document.body.classList.toggle("theme-calm", t === "calm");
+  document.body.classList.toggle("theme-calm", t === "calm" || t === "ez"); // Eurozeit builds on Calm
+  document.body.classList.toggle("theme-ez", t === "ez");
   applyAura(S && S.setup && courseInfo(COURSE).type !== "tree" ? level(progress().total).lv : 1);
   const m = document.querySelector('meta[name="theme-color"]');
-  if (m) m.content = t === "system" || t === "system2" || t === "system3" ? "#0a0f1a" : t === "calm" ? "#f6f3ee" : "#58a700";
+  if (m) m.content = t === "system" || t === "system2" || t === "system3" ? "#0a0f1a" : t === "calm" ? "#f6f3ee" : t === "ez" ? "#ffffff" : "#58a700";
 }
 const RANK_TITLE = { E: "E-Rank Hunter", D: "D-Rank Hunter", C: "C-Rank Hunter", B: "B-Rank Hunter", A: "A-Rank Hunter", S: "S-Rank Hunter" };
 function playerBar() {
@@ -708,7 +844,7 @@ function statusWindow(pr, pc, r) {
   return `<div class="card sl-only"><div class="sys-h">Status</div>
     ${heroHTML(L.lv, "big")}<div class="hero-cap">Form: <b>${form(stageFor(L.lv)).name}</b> (${esc(form(stageFor(L.lv)).de)}) · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
     <div class="row" style="margin-bottom:10px"><div class="rank ${rk.r}" style="width:58px;height:58px;font-size:32px">${rk.r}</div>
-      <div class="grow"><div style="font-size:22px;font-weight:700;letter-spacing:1px">${esc(userInfo(USER).name.toUpperCase())}</div>
+      <div class="grow" style="min-width:0"><div style="font-size:22px;font-weight:700;letter-spacing:1px;overflow-wrap:anywhere">${esc(userInfo(USER).name.toUpperCase())}</div>
       <div class="muted small">Title: ${RANK_TITLE[rk.r]}${rk.next ? ` · ${rk.next}-Rank at ${rk.nextAt}% of A1` : " · highest rank"}</div></div>
       <div style="text-align:right"><div class="lv">Level</div><div style="font-size:34px;font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:14px">/${A1_LEVEL}</span>`}</div></div></div>
     <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
@@ -881,7 +1017,7 @@ function wireTop() {
 }
 async function whoView() {
   document.body.classList.add("in-lesson");
-  view().innerHTML = `<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">Rankwise</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
+  view().innerHTML = `<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
     <div class="who">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}<div class="grow"><div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
       <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:24px;color:var(--muted)">›</span></button>`).join("")}</div>`;
   view().querySelectorAll(".who button").forEach(b => (b.onclick = async () => {

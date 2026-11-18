@@ -1,6 +1,6 @@
 """Download German pronunciation audio for every word, example and phrase (Microsoft neural TTS via edge-tts).
 
-Run:  tools/.venv/bin/python tools/fetch_audio.py [--voice de-DE-KatjaNeural]
+Run:  uv run tools/fetch_audio.py [--voice de-DE-KatjaNeural]
 Skips files that already exist, so it is safe to re-run after a network hiccup.
 """
 import asyncio, json, os, sys

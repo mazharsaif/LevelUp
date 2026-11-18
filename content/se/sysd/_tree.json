@@ -1,0 +1,370 @@
+{
+  "branch": {
+    "id": "sysd",
+    "title": "systemd & Supervisor",
+    "icon": "🧰",
+    "color": "#F4A6C6"
+  },
+  "nodes": [
+    {
+      "key": "processes",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🧬",
+      "chapter": 1,
+      "title": "Processes & signals",
+      "short": "PID 1, signals, exit codes",
+      "learn": [
+        "Explain PID 1, parents and daemons",
+        "Stop processes with SIGTERM then SIGKILL",
+        "Read exit codes, including 128 + signal",
+        "Compare restart policies across supervisors"
+      ],
+      "concepts": [
+        "PID 1",
+        "SIGTERM / SIGKILL",
+        "Exit status",
+        "Foreground process",
+        "Restart policy"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "systemd",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "processes"
+      ],
+      "icon": "🏛️",
+      "chapter": 2,
+      "title": "systemd big picture",
+      "short": "Units, targets, dependencies",
+      "learn": [
+        "Name the unit types and what each is for",
+        "Know where unit files live and which wins",
+        "Separate requirement (Wants/Requires) from order (After)",
+        "Explain targets, enable symlinks and cgroups"
+      ],
+      "concepts": [
+        "Unit",
+        "Target",
+        "Wants vs After",
+        "/etc/systemd/system",
+        "cgroup"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Spot the bug",
+        "Concept check"
+      ]
+    },
+    {
+      "key": "systemctl",
+      "level": 2,
+      "col": 1,
+      "req": [
+        "systemd"
+      ],
+      "icon": "🎛️",
+      "chapter": 3,
+      "title": "systemctl day to day",
+      "short": "start, enable, status, edit",
+      "learn": [
+        "Tell now (start/stop) from boot (enable/disable)",
+        "Read systemctl status like a pro",
+        "Change units safely with drop-ins",
+        "Know when to daemon-reload, mask and revert"
+      ],
+      "concepts": [
+        "enable --now",
+        "status",
+        "daemon-reload",
+        "Drop-in override",
+        "mask"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Scenario",
+        "Spot the bug"
+      ]
+    },
+    {
+      "key": "units",
+      "level": 3,
+      "col": 1,
+      "req": [
+        "systemctl"
+      ],
+      "icon": "📝",
+      "chapter": 4,
+      "title": "Writing service units",
+      "short": "Type=, Restart=, env, users",
+      "learn": [
+        "Choose the right Type= (use exec)",
+        "Set user, directory and environment safely",
+        "Configure Restart= with delays and start limits",
+        "Write a complete unit for a FastAPI app"
+      ],
+      "concepts": [
+        "Type=exec",
+        "ExecStart",
+        "EnvironmentFile",
+        "Restart=on-failure",
+        "StartLimitBurst"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Fix the code",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "journald",
+      "level": 4,
+      "col": 0,
+      "req": [
+        "units"
+      ],
+      "icon": "📜",
+      "chapter": 5,
+      "title": "Logs with journald",
+      "short": "journalctl filters and limits",
+      "learn": [
+        "Follow and filter one unit's logs",
+        "Filter by boot, time and priority",
+        "Make the journal persistent",
+        "Keep disk use and rate limits under control"
+      ],
+      "concepts": [
+        "journalctl -u -f",
+        "-b / --since",
+        "-p err",
+        "Persistent storage",
+        "Vacuum"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Scenario",
+        "Concept check"
+      ]
+    },
+    {
+      "key": "timers",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "units"
+      ],
+      "icon": "⏰",
+      "chapter": 6,
+      "title": "Timers & sockets",
+      "short": "Cron replacement, activation",
+      "learn": [
+        "Write a timer and enable the right unit",
+        "Use OnCalendar, Persistent and random delays",
+        "Run one-off jobs with systemd-run",
+        "Know what socket and path activation give you"
+      ],
+      "concepts": [
+        "OnCalendar",
+        "Persistent=true",
+        "systemd-run",
+        "Socket activation",
+        "Path unit"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Design decision",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "userd",
+      "level": 4,
+      "col": 2,
+      "req": [
+        "units"
+      ],
+      "icon": "🍏",
+      "chapter": 8,
+      "title": "User services & launchd",
+      "short": "--user, linger, macOS",
+      "learn": [
+        "Run services without root via systemctl --user",
+        "Keep them alive after logout with lingering",
+        "Write a launchd LaunchAgent for the Mac",
+        "Map plist keys to systemd options"
+      ],
+      "concepts": [
+        "systemctl --user",
+        "enable-linger",
+        "LaunchAgent",
+        "KeepAlive",
+        "launchctl kickstart"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Fill the code",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "hardening",
+      "level": 5,
+      "col": 1,
+      "req": [
+        "journald",
+        "timers",
+        "userd"
+      ],
+      "icon": "🛡️",
+      "chapter": 7,
+      "title": "Hardening & limits",
+      "short": "Sandboxing, memory, CPU",
+      "learn": [
+        "Score a unit with systemd-analyze security",
+        "Apply sandboxing settings step by step",
+        "Cap memory, CPU and tasks with cgroups",
+        "Debug permission errors the sandbox causes"
+      ],
+      "concepts": [
+        "ProtectSystem=strict",
+        "NoNewPrivileges",
+        "StateDirectory",
+        "MemoryMax",
+        "CPUQuota"
+      ],
+      "exercises": [
+        "Attack ↔ defence",
+        "Fix the code",
+        "Threat-model it"
+      ]
+    },
+    {
+      "key": "supervisor",
+      "level": 6,
+      "col": 1,
+      "req": [
+        "hardening"
+      ],
+      "icon": "🦺",
+      "chapter": 9,
+      "title": "Supervisor",
+      "short": "supervisord and supervisorctl",
+      "learn": [
+        "Write a [program:x] section with sane options",
+        "Know the defaults: autorestart, startsecs, startretries",
+        "Read process states, BACKOFF and FATAL",
+        "Use reread + update, not restart, after edits"
+      ],
+      "concepts": [
+        "[program:x]",
+        "autorestart",
+        "startsecs",
+        "BACKOFF / FATAL",
+        "reread + update"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Order the flow"
+      ]
+    },
+    {
+      "key": "choosing",
+      "level": 7,
+      "col": 0,
+      "req": [
+        "supervisor"
+      ],
+      "icon": "⚖️",
+      "chapter": 10,
+      "title": "Choosing a supervisor",
+      "short": "systemd vs Supervisor vs Docker",
+      "learn": [
+        "Pick systemd, Supervisor, containers or PM2",
+        "Handle PID 1 inside containers (tini)",
+        "Layer supervisors without double supervision",
+        "Add health checks, not just exit restarts"
+      ],
+      "concepts": [
+        "One process per container",
+        "tini / --init",
+        "Restart policies",
+        "Health check",
+        "Layering"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "troubleshoot",
+      "level": 7,
+      "col": 2,
+      "req": [
+        "supervisor"
+      ],
+      "icon": "🩺",
+      "chapter": 11,
+      "title": "Troubleshooting",
+      "short": "Exit codes, loops, FATAL",
+      "learn": [
+        "Follow the four-step diagnosis",
+        "Decode 203/EXEC, 200/CHDIR, 217/USER and more",
+        "Recover from start-limit-hit",
+        "Diagnose Supervisor BACKOFF and FATAL"
+      ],
+      "concepts": [
+        "systemctl status",
+        "journalctl -xe",
+        "203/EXEC",
+        "reset-failed",
+        "env -i reproduce"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Scenario",
+        "Fix the code"
+      ]
+    },
+    {
+      "key": "capstone",
+      "level": 8,
+      "col": 1,
+      "req": [
+        "choosing",
+        "troubleshoot"
+      ],
+      "icon": "👑",
+      "chapter": 12,
+      "boss": true,
+      "title": "Capstone: deploy LevelUp",
+      "short": "Real deploy + final quiz",
+      "learn": [
+        "Deploy LevelUp under a hardened systemd unit",
+        "Add a health-check timer",
+        "Prove crash, reboot and hang recovery",
+        "Compare with Supervisor and pass the final quiz"
+      ],
+      "concepts": [
+        "StateDirectory",
+        "Health timer",
+        "Crash test",
+        "Final quiz"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ]
+    }
+  ]
+}

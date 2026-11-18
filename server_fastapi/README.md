@@ -1,19 +1,18 @@
-# Rankwise – FastAPI server
+# LevelUp – FastAPI server
 
 A drop-in replacement for `../server.py` (that one is untouched and still works).
 It serves the same `../app`, uses the same API and reads and writes the same `../progress` files, so the phones behave exactly the same.
 
 ## Run (uv)
 ```bash
-cd A1-App/server_fastapi
+cd LevelUp/server_fastapi
 uv run main.py            # http://<mac-ip>:8766   (API docs: /docs)
 uv run main.py 8765       # use the old port instead (stop server.py first)
 A1_DATA=/tmp/a1test uv run main.py 8899      # test server with scratch data
 uv run uvicorn main:app --host 0.0.0.0 --port 8766 --reload   # dev: restarts when you edit main.py
 ```
-`uv` creates `.venv` on first run from `pyproject.toml` / `uv.lock`.
-It's pinned to Python 3.9 (`.python-version`), so uv uses Apple's `/usr/bin/python3`, which the Mac firewall already allows.
-If you move it to a newer Python and phones can't connect, allow that Python in System Settings › Network › Firewall.
+It uses the repo's single uv project: Python 3.9 for now (`../.python-version`; Apple's `/usr/bin/python3`, which the Mac firewall allows), `../pyproject.toml` / `../uv.lock`, env in `../.venv` (created on first `uv run`, or `uv sync`).
+3.13 is tested and ready: `echo 3.13 > ../.python-version && uv sync`, then allow `~/.local/share/uv/python/cpython-3.13-macos-aarch64-none/bin/python3.13` in the Mac firewall (System Settings › Network › Firewall), or phones can't connect.
 
 ## Same as server.py
 - `GET /api/users`, `GET /api/states?c=`, `GET /api/state/{id}?c=` and `PUT /api/state/{id}?c=`, with the same JSON shapes.

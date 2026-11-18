@@ -1,9 +1,10 @@
-"""Rankwise FastAPI server: a drop-in replacement for ../server.py.
+"""LevelUp FastAPI server: a drop-in replacement for ../server.py.
 
 Same app, same API, same progress files; the phone sees no difference.
 FastAPI extras: interactive API docs (/docs), validated inputs, per-learner write locks,
 gzip, smarter caching, health/backup endpoints, and request timing in the log.
 
+Python 3.9 for now (3.13-ready; see ../.python-version), uv project in the repo root (../pyproject.toml, env ../.venv).
 Run (from this folder):   uv run main.py            -> port 8766
                            uv run main.py 8899       -> any port
 Test data:                 A1_DATA=<tmpdir> uv run main.py 8899
@@ -17,7 +18,7 @@ import sys
 import threading
 import time
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Optional
 
 from fastapi import FastAPI, Path, Query, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -26,7 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)  # A1-App/
+ROOT = os.path.dirname(HERE)  # LevelUp/
 APP = os.path.join(ROOT, "app")
 DATA = os.environ.get("A1_DATA") or os.path.join(ROOT, "progress")  # same files as server.py
 BACKUPS = os.path.join(DATA, "backups")
@@ -48,7 +49,7 @@ def ensure_dirs():
             json.dump(DEFAULT_USERS, f, indent=1)
 
 
-def users() -> List[dict]:
+def users() -> list[dict]:
     ensure_dirs()
     with open(USERS_FILE) as f:
         return json.load(f)
@@ -76,7 +77,7 @@ def read_state(uid: str, course: str = DEFAULT_COURSE) -> Optional[dict]:
 
 # One lock per learner+course: the "is it stale?" check and the write happen together,
 # so two phones saving at the same moment can't overwrite each other.
-_locks: Dict[str, threading.Lock] = {}
+_locks: dict[str, threading.Lock] = {}
 _locks_guard = threading.Lock()
 
 
@@ -132,9 +133,9 @@ class Backup(BaseModel):
 
 # ---------- app ----------
 app = FastAPI(
-    title="Rankwise API",
+    title="LevelUp API",
     version="1.0.0",
-    description="Progress sync for the Rankwise learning app. Same API as the original stdlib server.",
+    description="Progress sync for the LevelUp learning app. Same API as the original stdlib server.",
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)  # content.json and JS shrink a lot over Wi-Fi
 # Let the same app opened from another local server (e.g. the old one on :8765) send bug reports here.
@@ -165,13 +166,13 @@ async def cache_and_log(request: Request, call_next):
 CourseQ = Query(DEFAULT_COURSE, pattern=COURSE_RE, description="Course id, e.g. de-a1")
 
 
-@app.get("/api/users", response_model=List[User], response_model_exclude_none=True, tags=["learners"])
+@app.get("/api/users", response_model=list[User], response_model_exclude_none=True, tags=["learners"])
 def get_users():
     """All learner profiles."""
     return users()
 
 
-@app.get("/api/states", response_model=Dict[str, Optional[dict]], tags=["progress"])
+@app.get("/api/states", response_model=dict[str, Optional[dict]], tags=["progress"])
 def get_states(c: str = CourseQ):
     """Every learner's progress for one course (used by the Party comparison)."""
     return {u["id"]: read_state(u["id"], c) for u in users()}
@@ -228,7 +229,7 @@ def health():
     return {"ok": True, "uptime_s": int(time.time() - STARTED), "data_dir": DATA, "users": len(users()), "version": app.version}
 
 
-@app.get("/api/backups/{uid}", response_model=List[Backup], responses={404: {"model": ErrorOut}}, tags=["backups"])
+@app.get("/api/backups/{uid}", response_model=list[Backup], responses={404: {"model": ErrorOut}}, tags=["backups"])
 def list_backups(uid: str = Path(...), c: str = CourseQ):
     """Daily backups for a learner and course, newest first."""
     if not user_ok(uid):
@@ -257,7 +258,7 @@ def get_backup(uid: str = Path(...), day: str = Path(..., pattern=r"^\d{4}-\d{2}
 
 # ---------- bug reports (alpha testing) ----------
 BUGS = os.path.join(DATA, "bugs")
-_bug_hits: Dict[str, List[float]] = {}
+_bug_hits: dict[str, list[float]] = {}
 
 
 class BugIn(BaseModel):
@@ -303,7 +304,7 @@ async def report_bug(request: Request, bug: BugIn):
     return {"ok": True, "id": bid}
 
 
-@app.get("/api/bugs", response_model=List[BugSummary], tags=["bugs"])
+@app.get("/api/bugs", response_model=list[BugSummary], tags=["bugs"])
 def list_bugs(limit: int = Query(100, ge=1, le=1000)):
     """Newest bug reports first (summary only; full snapshot is in progress/bugs/<id>.json)."""
     if not os.path.isdir(BUGS):
@@ -334,5 +335,5 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
-    print(f"Rankwise (FastAPI) on http://localhost:{port}  ·  API docs /docs  ·  progress in {DATA}", flush=True)
+    print(f"LevelUp (FastAPI) on http://localhost:{port}  ·  API docs /docs  ·  progress in {DATA}", flush=True)
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")

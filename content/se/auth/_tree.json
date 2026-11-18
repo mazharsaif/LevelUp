@@ -1,0 +1,367 @@
+{
+  "branch": {
+    "id": "auth",
+    "title": "Authentication & Security",
+    "icon": "🔐",
+    "color": "#B48CFF"
+  },
+  "nodes": [
+    {
+      "key": "model",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🧭",
+      "chapter": 1,
+      "title": "The mental model",
+      "short": "Identity, authn, authz",
+      "learn": [
+        "Tell identity, authentication, sessions, authorisation and recovery apart",
+        "Online vs offline attacks",
+        "Never trust the client",
+        "Defence in depth, least privilege, fail closed"
+      ],
+      "concepts": [
+        "Identity vs identifier",
+        "MFA",
+        "Trust boundary",
+        "Threat model",
+        "Fail closed"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Myth or fact",
+        "Threat-model it"
+      ]
+    },
+    {
+      "key": "passwords",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "model"
+      ],
+      "icon": "🧂",
+      "chapter": 2,
+      "title": "Storing passwords",
+      "short": "Argon2id, salts, peppers",
+      "learn": [
+        "Why plaintext, encryption and SHA-256 are wrong",
+        "Salts, peppers and memory-hard hashing",
+        "Choosing Argon2id parameters and rehashing on login",
+        "Modern NIST password policy and breach checks"
+      ],
+      "concepts": [
+        "Argon2id",
+        "Salt",
+        "Pepper",
+        "PHC string",
+        "k-anonymity"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "login",
+      "level": 2,
+      "col": 1,
+      "req": [
+        "passwords"
+      ],
+      "icon": "🚪",
+      "chapter": 3,
+      "title": "The login flow",
+      "short": "Sign-up, login, rate limits",
+      "learn": [
+        "Users table and identifier normalisation",
+        "User enumeration and the dummy hash",
+        "Layered rate limiting without lockout DoS",
+        "What to log and never log"
+      ],
+      "concepts": [
+        "Enumeration",
+        "Dummy hash",
+        "Sliding window",
+        "Credential stuffing",
+        "Audit log"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario judgement",
+        "Fix the code"
+      ]
+    },
+    {
+      "key": "sessions",
+      "level": 3,
+      "col": 1,
+      "req": [
+        "login"
+      ],
+      "icon": "🍪",
+      "chapter": 4,
+      "title": "Sessions & tokens",
+      "short": "Cookies, CSRF, JWT",
+      "learn": [
+        "Server-side sessions, timeouts and rotation",
+        "Cookie flags: HttpOnly, Secure, SameSite, __Host-",
+        "CSRF and XSS, and where tokens should live",
+        "JWT, refresh rotation and reuse detection"
+      ],
+      "concepts": [
+        "Session fixation",
+        "SameSite",
+        "CSRF",
+        "JWT",
+        "Refresh rotation"
+      ],
+      "exercises": [
+        "Concept check",
+        "Attack ↔ defence",
+        "Spot the bug",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "recovery",
+      "level": 4,
+      "col": 0,
+      "req": [
+        "sessions"
+      ],
+      "icon": "🔑",
+      "chapter": 5,
+      "title": "Account recovery",
+      "short": "Reset tokens, codes",
+      "learn": [
+        "The reset-token flow done right",
+        "Email verification and magic links",
+        "Recovery codes and admin resets",
+        "Email as the master key, social engineering"
+      ],
+      "concepts": [
+        "Reset token",
+        "Host header injection",
+        "Recovery codes",
+        "SPF/DKIM/DMARC"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario judgement",
+        "Spot the bug",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "methods",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "sessions"
+      ],
+      "icon": "🪪",
+      "chapter": 6,
+      "title": "Other ways to log in",
+      "short": "OAuth, passkeys, TOTP",
+      "learn": [
+        "OAuth 2.0 vs OpenID Connect",
+        "Authorization code flow with PKCE, state and nonce",
+        "Passkeys and WebAuthn",
+        "TOTP, SMS and family PINs"
+      ],
+      "concepts": [
+        "OIDC",
+        "PKCE",
+        "Passkey",
+        "TOTP",
+        "Account linking"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Match the terms",
+        "Scenario judgement",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "authz",
+      "level": 4,
+      "col": 2,
+      "req": [
+        "sessions"
+      ],
+      "icon": "🛡️",
+      "chapter": 7,
+      "title": "Authorisation",
+      "short": "IDOR, roles, RLS",
+      "learn": [
+        "Ownership checks and IDOR",
+        "RBAC vs ABAC vs ReBAC",
+        "Central policy functions and FastAPI dependencies",
+        "Row-level security"
+      ],
+      "concepts": [
+        "IDOR",
+        "Mass assignment",
+        "RBAC",
+        "Policy function",
+        "RLS"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fix the code",
+        "Concept check",
+        "Capstone review"
+      ]
+    },
+    {
+      "key": "buy",
+      "level": 5,
+      "col": 1,
+      "req": [
+        "recovery",
+        "methods",
+        "authz"
+      ],
+      "icon": "⚖️",
+      "chapter": 8,
+      "title": "Build vs buy",
+      "short": "DIY vs providers",
+      "learn": [
+        "What 'auth' really includes",
+        "Supabase, Firebase, Auth0, Clerk, Cognito, Keycloak",
+        "Lock-in and hash export",
+        "A decision framework by conditions"
+      ],
+      "concepts": [
+        "MAU pricing",
+        "Hash export",
+        "Lazy migration",
+        "SSO"
+      ],
+      "exercises": [
+        "Design decision",
+        "Concept check",
+        "Scenario judgement"
+      ]
+    },
+    {
+      "key": "wrong",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "buy"
+      ],
+      "icon": "🔥",
+      "chapter": 9,
+      "title": "What can go wrong",
+      "short": "24 failure scenarios",
+      "learn": [
+        "Leaks, stolen sessions, weak recovery",
+        "How you'd notice each failure",
+        "Prevention and response",
+        "Incident response checklist"
+      ],
+      "concepts": [
+        "Detection",
+        "Rotation",
+        "Revocation",
+        "Incident response"
+      ],
+      "exercises": [
+        "Scenario judgement",
+        "Order the flow",
+        "Attack ↔ defence"
+      ]
+    },
+    {
+      "key": "ops",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "buy"
+      ],
+      "icon": "📊",
+      "chapter": 10,
+      "title": "Scaling & operations",
+      "short": "Capacity, keys, GDPR",
+      "learn": [
+        "The cost model of auth",
+        "Hashing concurrency limits",
+        "Key rotation with kid and JWKS",
+        "Monitoring, privacy law and testing"
+      ],
+      "concepts": [
+        "Semaphore",
+        "JWKS",
+        "72-hour notice",
+        "OWASP ASVS"
+      ],
+      "exercises": [
+        "Concept check",
+        "Design decision",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "capstone",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "wrong",
+        "ops"
+      ],
+      "icon": "🏛️",
+      "chapter": 11,
+      "title": "Capstone: LevelUp auth",
+      "short": "Design the real thing",
+      "learn": [
+        "Threat-model a real app",
+        "Phase 1 design for the home network",
+        "Migrating existing users",
+        "Phase 2 options for public hosting"
+      ],
+      "concepts": [
+        "mkcert",
+        "Policy dependency",
+        "Migration plan",
+        "Minimal endpoints"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Threat-model it",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 8,
+      "col": 1,
+      "req": [
+        "capstone"
+      ],
+      "icon": "👑",
+      "chapter": 12,
+      "title": "Boss: Security review",
+      "short": "Mixed final challenge",
+      "learn": [
+        "All 43 self-check questions",
+        "Mixed exercises from every node",
+        "Timed, no hints"
+      ],
+      "concepts": [
+        "Everything"
+      ],
+      "exercises": [
+        "Mixed review (all types)"
+      ],
+      "boss": true
+    }
+  ]
+}

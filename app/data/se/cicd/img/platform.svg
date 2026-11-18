@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="330" viewBox="0 0 660 330">
+<defs><marker id="m757575" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker></defs>
+<defs><marker id="m827717" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#827717"/></marker></defs>
+<rect x="10" y="22" width="120" height="62" rx="6" fill="#f9fbe7" stroke="#827717" stroke-width="1.4"/>
+<rect x="15" y="27" width="120" height="62" rx="6" fill="#f9fbe7" stroke="#827717" stroke-width="1.4"/>
+<rect x="20" y="32" width="120" height="62" rx="6" fill="#f9fbe7" stroke="#827717" stroke-width="1.4"/>
+<rect x="20" y="32" width="120" height="62" rx="6" fill="#f9fbe7" stroke="#827717" stroke-width="1.4"/>
+<text x="80.0" y="51.2" font-family="Avenir Next" font-size="11" fill="#827717" text-anchor="middle" font-weight="bold" dominant-baseline="middle">team repo ×10</text>
+<text x="80.0" y="63.9" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">from the golden-</text>
+<text x="80.0" y="75.7" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">path template</text>
+<path d="M142,63 L182,63" fill="none" stroke="#827717" stroke-width="1.5" marker-end="url(#m827717)"/>
+<rect x="146.0" y="46.0" width="32.0" height="14.0" fill="#ffffff" fill-opacity="0.9"/>
+<text x="162.0" y="53.0" font-family="Avenir Next" font-size="10" fill="#827717" text-anchor="middle" font-weight="normal" dominant-baseline="middle">calls</text>
+<rect x="184" y="14" width="466" height="98" rx="6" fill="#f9fbe7" stroke="#827717" stroke-width="1.4"/>
+<text x="417.0" y="44.4" font-family="Avenir Next" font-size="11.5" fill="#827717" text-anchor="middle" font-weight="bold" dominant-baseline="middle">platform repo · reusable workflows @v3</text>
+<text x="417.0" y="57.7" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">lint · test · data contract · train · gate</text>
+<text x="417.0" y="70.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">build · scan · SBOM · sign by digest</text>
+<text x="417.0" y="82.5" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">org rulesets: required ci-ok · SHA-pinned actions</text>
+<path d="M417,114 L417,160" fill="none" stroke="#827717" stroke-width="1.5" marker-end="url(#m827717)"/>
+<text x="425" y="137.0" font-family="Avenir Next" font-size="10" fill="#827717" text-anchor="start" font-weight="normal" dominant-baseline="middle">OIDC: one role per environment and team</text>
+<rect x="20" y="162" width="195" height="58" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="117.5" y="184.8" font-family="Avenir Next" font-size="11.5" fill="#00796b" text-anchor="middle" font-weight="bold" dominant-baseline="middle">dev account</text>
+<text x="117.5" y="198.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">free for teams</text>
+<path d="M117,222 L117,262" fill="none" stroke="#757575" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m757575)"/>
+<rect x="235" y="162" width="195" height="58" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.4"/>
+<text x="332.5" y="184.8" font-family="Avenir Next" font-size="11.5" fill="#1565c0" text-anchor="middle" font-weight="bold" dominant-baseline="middle">staging account</text>
+<text x="332.5" y="198.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">deploy from main only</text>
+<path d="M332,222 L332,262" fill="none" stroke="#757575" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m757575)"/>
+<rect x="450" y="162" width="195" height="58" rx="6" fill="#fce4ec" stroke="#ad1457" stroke-width="1.4"/>
+<text x="547.5" y="184.8" font-family="Avenir Next" font-size="11.5" fill="#ad1457" text-anchor="middle" font-weight="bold" dominant-baseline="middle">production account</text>
+<text x="547.5" y="198.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">approval · verify signature</text>
+<path d="M547,222 L547,262" fill="none" stroke="#757575" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m757575)"/>
+<path d="M117,162 L117,150 L632,150 L632,162" fill="none" stroke="#757575" stroke-width="1.2"/>
+<rect x="20" y="264" width="625" height="52" rx="6" fill="#f5f5f5" stroke="#757575" stroke-width="1.4"/>
+<text x="332.5" y="283.8" font-family="Avenir Next" font-size="11.5" fill="#757575" text-anchor="middle" font-weight="bold" dominant-baseline="middle">shared services</text>
+<text x="332.5" y="297.1" font-family="Avenir Next" font-size="10.0" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">MLflow registry · ECR · logs and dashboards · cost tags (team, service, env)</text>
+</svg>

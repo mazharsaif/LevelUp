@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="230" viewBox="0 0 660 230">
+<defs><marker id="mc62828" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker></defs>
+<defs><marker id="m2e7d32" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e7d32"/></marker></defs>
+<defs><marker id="m757575" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker></defs>
+<rect x="10" y="20" width="110" height="50" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="1.4"/>
+<text x="65.0" y="39.1" font-family="Avenir Next" font-size="11" fill="#546e7a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Code</text>
+<text x="65.0" y="51.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">git commit</text>
+<path d="M122,45 L168,110" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="10" y="86" width="110" height="50" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="1.4"/>
+<text x="65.0" y="105.1" font-family="Avenir Next" font-size="11" fill="#00796b" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Data</text>
+<text x="65.0" y="117.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">DVC / snapshot</text>
+<path d="M122,111 L168,110" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="10" y="152" width="110" height="50" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="65.0" y="171.1" font-family="Avenir Next" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Config</text>
+<text x="65.0" y="183.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">hyper-params</text>
+<path d="M122,177 L168,110" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="170" y="85" width="100" height="50" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="220.0" y="104.1" font-family="Avenir Next" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Train</text>
+<text x="220.0" y="116.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">sample in CI</text>
+<path d="M272,110 L300,110" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<rect x="302" y="85" width="90" height="50" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="347.0" y="104.1" font-family="Avenir Next" font-size="11" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Evaluate</text>
+<text x="347.0" y="116.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">test metrics</text>
+<path d="M394,110 L418,110" fill="none" stroke="#757575" stroke-width="1.5" marker-end="url(#m757575)"/>
+<polygon points="470,75.0 522.0,110 470,145.0 418.0,110" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.4"/>
+<text x="470" y="103.5" font-family="Avenir Next" font-size="10.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Gate:</text>
+<text x="470" y="116.5" font-family="Avenir Next" font-size="10.5" fill="#6a1b9a" text-anchor="middle" font-weight="bold" dominant-baseline="middle">good enough?</text>
+<path d="M522,110 L548,110" fill="none" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#m2e7d32)"/>
+<rect x="521.6" y="94.0" width="26.8" height="14.0" fill="#ffffff" fill-opacity="0.9"/>
+<text x="535.0" y="101.0" font-family="Avenir Next" font-size="10" fill="#2e7d32" text-anchor="middle" font-weight="normal" dominant-baseline="middle">pass</text>
+<rect x="550" y="85" width="102" height="50" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="601.0" y="104.1" font-family="Avenir Next" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold" dominant-baseline="middle">Register</text>
+<text x="601.0" y="116.8" font-family="Avenir Next" font-size="9.5" fill="#212121" text-anchor="middle" font-weight="normal" dominant-baseline="middle">+ deploy</text>
+<path d="M470,145 L470,190 L220,190 L220,137" fill="none" stroke="#c62828" stroke-width="1.5" marker-end="url(#mc62828)"/>
+<text x="345" y="202.0" font-family="Avenir Next" font-size="10" fill="#c62828" text-anchor="middle" font-weight="normal" dominant-baseline="middle">fail → red build, nothing ships; fix data, code or config and try again</text>
+<text x="330" y="222.0" font-family="Avenir Next" font-size="10" fill="#757575" text-anchor="middle" font-weight="normal" font-style="italic" dominant-baseline="middle">In ML, three things change: code, data and configuration. All three must be versioned and tested.</text>
+</svg>
