@@ -8,7 +8,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 
 ## Run
 - **One uv env for everything** (from 11-16): repo-root `pyproject.toml` / `uv.lock` / `.python-version`, env `.venv/` (`uv sync`). Deps: fastapi, uvicorn, edge-tts. **Pinned to 3.9 (Apple's) for now**; 3.13 tested OK, switch = `echo 3.13 > .python-version && uv sync` + firewall.
-- **Live server = FastAPI on 8766** (`cd LevelUp/server_fastapi && uv run main.py 8766`). The old `server.py` (8765, `uv run server.py`) is kept but no longer run.
+- **Live server = FastAPI on 8766** (`cd LevelUp/server_fastapi && nohup uv run main.py 8766 >> ~/Library/Logs/levelup-server.log 2>&1 &`). The old `server.py` (8765, `uv run server.py`) is kept but no longer run.
   On 3.13 the Mac firewall must allow `~/.local/share/uv/python/cpython-3.13-macos-aarch64-none/bin/python3.13`, else phones can't connect (Apple's 3.9 is already allowed).
 - **FastAPI alternative** (same app/API/files, plus docs, gzip, locks, backups API): `cd server_fastapi && uv run main.py` → port 8766 (`/docs`). See `server_fastapi/README.md`.
 - Test server with scratch data (never touch real progress): `A1_DATA=<tmpdir> uv run server.py 8899`.
