@@ -484,5 +484,7 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
-    print(f"LevelUp (FastAPI) on http://localhost:{port}  ·  API docs /docs  ·  progress in {DATA}", flush=True)
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
+    # behind Caddy on the droplet: LEVELUP_HOST=127.0.0.1, so only the HTTPS proxy can reach the app
+    host = os.environ.get("LEVELUP_HOST", "0.0.0.0")
+    print(f"LevelUp (FastAPI) on http://{host}:{port}  ·  API docs /docs  ·  progress in {DATA}", flush=True)
+    uvicorn.run(app, host=host, port=port, log_level="warning", proxy_headers=True, forwarded_allow_ips="127.0.0.1")

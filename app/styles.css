@@ -963,3 +963,15 @@ body.theme-ez .feedback.ok{background:var(--ok-l)}
 .authtabs button{flex:1;padding:9px 12px;font-size:15px}
 .authform input{width:100%;box-sizing:border-box}
 .authform .btn{margin-top:10px}
+/* Words: sort menu + collapsible topic sections */
+.wtools{gap:8px;margin:8px 0 4px;align-items:center}
+.wtools .wsort{width:auto;padding:6px 10px;font-size:14px}
+.wgrp{border:1px solid var(--line);border-radius:var(--r);background:var(--card);margin-bottom:8px;overflow:hidden}
+.wgrp>summary{display:flex;align-items:center;gap:8px;padding:12px 14px;font-weight:800;cursor:pointer;list-style:none}
+.wgrp>summary::-webkit-details-marker{display:none}
+.wgrp>summary::before{content:"›";display:inline-block;transition:transform .15s;color:var(--muted);font-size:18px}
+.wgrp[open]>summary::before{transform:rotate(90deg)}
+.wgrp[open]>summary{border-bottom:1px solid var(--line)}
+/* 🎤 Speak it */
+.speakcard{display:flex;align-items:center;gap:12px}
+.speakcard .de{font-size:22px;font-weight:800;line-height:1.3}

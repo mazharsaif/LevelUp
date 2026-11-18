@@ -1,8 +1,8 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, AUTH, checkAuth, login, signup, changePassword, logout } from "./store.js";
-import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson } from "./lesson.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout } from "./store.js";
+import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable } from "./lesson.js";
 import { play } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
@@ -322,14 +322,39 @@ function grammarView(id) {
 }
 
 // ------------------------------------------------------------------ words
-let wf = { q: "", f: "all" };
+// Words: grouped by topic in collapsible sections, or one sorted list (feedback 11-18)
+let wf = { q: "", f: "all", sort: lsGet("a1.wordSort") || "topic" };
+function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } }
+const WORD_SORTS = [["topic", "By topic"], ["recent", "Newest learned"], ["weak", "Needs practice"], ["strong", "Strongest"], ["due", "Due soonest"], ["az", "A–Z"]];
+const openTopics = () => new Set(JSON.parse(lsGet("a1.wordsOpen") || "[]"));
+const topicName = t => String(t || "Other").replace(/^A\d*\.\s*/, "");
+// "die (Kredit-)Karte" → "kredit-karte", "(ein)hundert" → "einhundert": alphabetical by the word itself
+const azKey = de => de.replace(/^(der|die|das)\s+/i, "").replace(/[()]/g, "").toLowerCase();
+function sortWords(list) {
+  const s = id => S.words[id], far = "9999";
+  const by = {
+    recent: (a, b) => (s(b.id)?.since || "") .localeCompare(s(a.id)?.since || "") || (s(b.id) ? 1 : 0) - (s(a.id) ? 1 : 0),
+    weak: (a, b) => (s(a.id) ? health(s(a.id)) : 2) - (s(b.id) ? health(s(b.id)) : 2) || (s(b.id)?.lapses || 0) - (s(a.id)?.lapses || 0),
+    strong: (a, b) => (s(b.id)?.ivl ?? -1) - (s(a.id)?.ivl ?? -1),
+    due: (a, b) => (s(a.id)?.due || far).localeCompare(s(b.id)?.due || far),
+    az: (a, b) => azKey(a.de).localeCompare(azKey(b.de), "de"),
+  }[wf.sort];
+  return by ? [...list].sort(by) : list;
+}
 function wordsView() {
   const r = retention();
   view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} learned · ${r.mastered} mastered</p>
     <input class="search" id="q" placeholder="Search German or English…" value="${esc(wf.q)}">
     <div class="seg" id="seg">${[["all", "All"], ["due", "Due"], ["learning", "Learning"], ["known", "Known"], ["mastered", "Mastered"], ["new", "New"], ["core", "★ Core"]]
       .map(([k, l]) => `<button data-f="${k}" class="${wf.f === k ? "on" : ""}">${l}</button>`).join("")}</div>
+    <div class="row wtools"><label class="small muted" for="ws">Sort</label><select id="ws" class="wsort">${WORD_SORTS.map(([v, l]) => `<option value="${v}" ${wf.sort === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <span class="grow"></span><button class="link small" id="wx" hidden></button></div>
     <div class="wl" id="wl"></div>`;
+  const cls = { new: "", learning: "l", known: "k", mastered: "m" };
+  const row = w => `<div class="wrow" data-id="${w.id}">
+      <span class="dot ${cls[wordStatus(w.id)]}"></span><div class="t"><div>${esc(w.de)}</div><div>${esc(w.en)}</div></div>
+      <button class="spk sm" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button></div>`;
   const draw = () => {
     const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());
     const list = C.content.words.filter(w => {
@@ -339,16 +364,34 @@ function wordsView() {
       if (wf.f === "core") return w.core;
       return wordStatus(w.id) === wf.f;
     });
-    const cls = { new: "", learning: "l", known: "k", mastered: "m" };
-    view().querySelector("#wl").innerHTML = list.length ? list.slice(0, 300).map(w => `<div class="wrow" data-id="${w.id}">
-      <span class="dot ${cls[wordStatus(w.id)]}"></span><div class="t"><div>${esc(w.de)}</div><div>${esc(w.en)}</div></div>
-      <button class="spk sm" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button></div>`).join("") +
-      (list.length > 300 ? `<div class="wrow muted small">…${list.length - 300} more – search to narrow down</div>` : "")
-      : `<div class="wrow muted">No words here yet.</div>`;
-    wireSpeakers(view().querySelector("#wl"));
-    view().querySelectorAll(".wrow[data-id]").forEach(r => (r.onclick = () => wordSheet(C.word[r.dataset.id])));
+    const wl = view().querySelector("#wl"), wx = view().querySelector("#wx");
+    const grouped = wf.sort === "topic" && !q;
+    wx.hidden = !grouped;
+    if (!list.length) wl.innerHTML = `<div class="wrow muted">No words here yet.</div>`;
+    else if (grouped) {
+      const groups = new Map();
+      list.forEach(w => { const t = topicName(w.topic); if (!groups.has(t)) groups.set(t, []); groups.get(t).push(w); });
+      const open = openTopics();
+      wl.innerHTML = [...groups].map(([t, ws]) => { const n = ws.filter(w => S.words[w.id]).length;
+        return `<details class="wgrp" data-t="${esc(t)}" ${open.has(t) ? "open" : ""}><summary><span class="grow">${esc(t)}</span>
+          <span class="tiny muted">${n}/${ws.length} learned</span></summary>${ws.map(row).join("")}</details>`; }).join("");
+      const allOpen = [...groups.keys()].every(t => open.has(t));
+      wx.textContent = allOpen ? "Collapse all" : "Expand all";
+      wx.onclick = () => { lsSet("a1.wordsOpen", JSON.stringify(allOpen ? [] : [...groups.keys()])); draw(); };
+      wl.querySelectorAll("details.wgrp").forEach(d => (d.ontoggle = () => {
+        const s = openTopics(); d.open ? s.add(d.dataset.t) : s.delete(d.dataset.t); lsSet("a1.wordsOpen", JSON.stringify([...s]));
+        wx.textContent = [...groups.keys()].every(t => s.has(t)) ? "Collapse all" : "Expand all";
+      }));
+    } else {
+      const sorted = sortWords(list);
+      wl.innerHTML = sorted.slice(0, 300).map(row).join("") +
+        (sorted.length > 300 ? `<div class="wrow muted small">…${sorted.length - 300} more – search to narrow down</div>` : "");
+    }
+    wireSpeakers(wl);
+    wl.querySelectorAll(".wrow[data-id]").forEach(r => (r.onclick = () => wordSheet(C.word[r.dataset.id])));
   };
   view().querySelector("#q").oninput = e => { wf.q = e.target.value; draw(); };
+  view().querySelector("#ws").onchange = e => { wf.sort = e.target.value; lsSet("a1.wordSort", wf.sort); draw(); };
   view().querySelectorAll("#seg button").forEach(b => (b.onclick = () => { wf.f = b.dataset.f; wordsView(); }));
   draw();
 }
@@ -472,7 +515,9 @@ function settingsView() {
     <label class="f">Hero</label><select id="hero">${Object.entries(HERO_STYLES).map(([k, n]) => `<option value="${k}" ${heroStyle() === k ? "selected" : ""}>${k === "f" ? "🗡️" : "⚔️"} ${n}</option>`).join("")}</select>
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
-    <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label></div>
+    <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label>
+    ${speakAvailable() ? `<label class="toggle">🎤 Speaking practice in phrase lessons <input type="checkbox" id="spk" ${S.settings.speak !== false ? "checked" : ""}></label>
+    <p class="muted small" style="margin:4px 0 0">Uses the microphone; Chrome sends the audio to Google to recognise it. Optional, never costs XP.</p>` : ""}</div>
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
@@ -506,6 +551,7 @@ function settingsView() {
   v.querySelector("#hi").onchange = e => setS("hindi", e.target.checked);
   v.querySelector("#ap").onchange = e => setS("autoplay", e.target.checked);
   v.querySelector("#snd").onchange = e => setS("sound", e.target.checked);
+  const spk = v.querySelector("#spk"); if (spk) spk.onchange = e => setS("speak", e.target.checked);
   v.querySelector("#dl").onclick = downloadAudio;
   v.querySelector("#ex").onclick = () => {
     const a = document.createElement("a");

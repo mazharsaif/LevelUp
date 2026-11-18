@@ -219,7 +219,7 @@ export const blank = () => ({
   created: today(),
   updated: 0,
   setup: false,
-  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system", quest: true },
+  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system", quest: true, speak: true },
   words: {},   // id -> {box, due, r, w}
   done: {},    // path item id -> {date, score}
   log: [],     // {d, id, xp}

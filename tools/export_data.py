@@ -196,6 +196,33 @@ for g in grammar:
     g["q"] = ch1_questions() if g["num"] == 1 else [or_question(q) for q in g["q"] if not q["a"].startswith("(your own")]
 
 # ------------------------------------------------------------------ phrases
+def split_alternatives(de: str, en: str) -> list[tuple[str, str]]:
+    """One item per phrase, so a lesson asks for one at a time (tester feedback 11-18).
+
+    "Bitte. / Danke." + "Please. / Thanks."   -> paired one to one
+    "Bitte schön. / Gern geschehen." + "You're welcome."   -> both get the one meaning
+    "Danke, gut. Und Ihnen? / Und dir?"   -> kept: the second part is only a fragment
+    """
+    des = [x.strip() for x in de.split(" / ")]
+    if len(des) < 2 or not all(map(_whole_phrase, des)):
+        return [(de, en)]  # "Ich bin verheiratet / ledig." swaps one word inside a sentence: keep it whole
+    if de in SAME_MEANING:
+        return [(x, en) for x in des]
+    ens = [x.strip() for x in en.split(" / ")]
+    if len(ens) == len(des) and all(e[:1].isupper() for e in ens):
+        return list(zip(des, ens))
+    return [(x, en) for x in des] if len(ens) == 1 else [(de, en)]
+
+
+# alternatives that all carry the whole English meaning, rather than one part each
+SAME_MEANING = {"Entschuldigung! / Entschuldigen Sie!"}
+
+
+def _whole_phrase(x: str) -> bool:
+    """Starts like a sentence, ends like one, and is a single sentence ("Danke, gut. Und Ihnen?" is two)."""
+    return (x[:1].isupper() or x[:1].isdigit()) and x[-1:] in ".!?…" and not re.search(r"[.!?] \S", x)
+
+
 phrases = []
 for n, sec in enumerate(P.SECTIONS):
     title, groups = sec[0], sec[1]
@@ -203,8 +230,8 @@ for n, sec in enumerate(P.SECTIONS):
     items = []
     for g, its in groups:
         for de, en in its:
-            d = strip_tags(de)
-            items.append(dict(de=d, en=strip_tags(en), grp=g or None, a=say(d)))
+            for d, e in split_alternatives(strip_tags(de), strip_tags(en)):
+                items.append(dict(de=d, en=e, grp=g or None, a=say(d)))
     phrases.append(dict(id=f"p{n}", title=title, tip=strip_tags(tip), items=[{k: v for k, v in i.items() if v} for i in items]))
 
 # ------------------------------------------------------------------ path (lesson order, follows the 84-day roadmap)

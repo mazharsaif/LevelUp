@@ -115,6 +115,8 @@ write_files:
       User=mazhar
       WorkingDirectory=/home/mazhar/LevelUp/server_fastapi
       Environment=A1_DATA=/home/mazhar/levelup-data
+      # only Caddy (HTTPS) can reach the app; nothing listens on a public app port
+      Environment=LEVELUP_HOST=127.0.0.1
       ExecStart=/home/mazhar/.local/bin/uv run main.py 8000
       Restart=always
       RestartSec=5
@@ -123,11 +125,10 @@ write_files:
       WantedBy=multi-user.target
 
 runcmd:
-  # firewall: SSH, HTTP/HTTPS (Caddy), app ports 8000-8100
+  # firewall: SSH and HTTP/HTTPS (Caddy) only; apps listen on 127.0.0.1 behind Caddy
   - ufw allow OpenSSH
   - ufw allow 80/tcp
   - ufw allow 443/tcp
-  - ufw allow 8000:8100/tcp
   - ufw --force enable
   # daily automatic security updates
   - dpkg-reconfigure -f noninteractive unattended-upgrades

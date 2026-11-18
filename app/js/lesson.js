@@ -51,7 +51,9 @@ function answerVariants(a) {
 
 // "hello / good day (polite)" → {"hello", "good day"}; used so no wrong option is secretly also right
 const _tok = new Map();
-const SYN = { bye: "goodbye", hi: "hello", hey: "hello", thanks: "thank you", "many thanks": "thank you", cheers: "thank you", ok: "okay", sorry: "sorry" };
+// replies that mean the same thing are never offered as each other's wrong option (feedback 11-18: "You're welcome" vs "No problem")
+const SYN = { bye: "goodbye", hi: "hello", hey: "hello", thanks: "thank you", "many thanks": "thank you", cheers: "thank you", ok: "okay", sorry: "sorry",
+  "youre welcome": "no problem", "no worries": "no problem", "my pleasure": "no problem" };
 export function meanings(en) {
   if (_tok.has(en)) return _tok.get(en);
   const t = new Set(String(en).toLowerCase().replace(/\([^)]*\)/g, " ").split(/[;,/]|\bor\b/)
@@ -330,7 +332,7 @@ function render() {
   lb.classList.add("arming"); setTimeout(() => lb.classList.remove("arming"), 450);
   window.scrollTo(0, 0);
   if (s.w) R.words.add(s.w.id);
-  ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say }[s.t])(s, lb);
+  ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
 }
 
 function confirmQuit() {
@@ -387,6 +389,51 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
 }
 
 const COMBO = { 3: "🔥 3 in a row – nice!", 5: "🔥 5 in a row – you're on fire!", 8: "⚡ 8 in a row – unstoppable!", 12: "🌟 12 in a row – are you secretly German?", 20: "🚀 20 in a row – legendary focus!" };
+
+// ---------- 🎤 Speak it: optional pronunciation practice (Chrome Web Speech API, de-DE) ----------
+// Lenient on purpose: it checks the words it heard, not the sounds. Never counts toward accuracy; +1 XP when understood.
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+export const speakAvailable = () => !!SpeechRec && window.isSecureContext;
+export const speakOn = () => speakAvailable() && S && S.settings.speak !== false;
+export const speakable = p => !!p && !/[…()]/.test(p.de) && p.de.length <= 70;
+const words = t => norm(t).replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
+// share of the target's words that were heard (in any order), best over the recogniser's alternatives
+function heardScore(alts, target) {
+  const want = words(target);
+  return Math.max(0, ...alts.map(a => { const got = new Set(words(a)); return want.filter(x => got.has(x)).length / (want.length || 1); }));
+}
+const MIC_ERRORS = { "not-allowed": "Microphone blocked: allow it for this site in the browser settings.", "service-not-allowed": "Microphone blocked: allow it for this site in the browser settings.",
+  "no-speech": "I didn't hear anything. Tap and speak again.", "audio-capture": "No microphone found.", network: "Speech recognition needs an internet connection." };
+function speak(s, lb) {
+  lb.innerHTML = `<div class="q-title">🎤 Say it out loud</div><div class="muted" style="margin-bottom:10px">${esc(s.p.en)}</div>
+    <div class="card speakcard"><button class="spk" data-a="${s.p.a || ""}" data-t="${esc(s.p.de)}">🔊</button><div class="de">${esc(s.p.de)}</div></div>
+    <p class="small" id="heard" aria-live="polite">Listen first if you like, then tap the microphone and say it.</p>`;
+  wireSpeakers(lb);
+  if (S.settings.autoplay) play(s.p.a, s.p.de);
+  const f = foot(`<button class="btn" id="mic">🎤 Tap and speak</button><button class="btn ghost" id="skip">Skip</button>`);
+  const mic = f.querySelector("#mic"), heard = lb.querySelector("#heard");
+  let tries = 0, rec = null;
+  f.querySelector("#skip").onclick = () => { if (rec) rec.abort(); next(); };
+  mic.onclick = () => {
+    rec = new SpeechRec();
+    rec.lang = "de-DE"; rec.interimResults = false; rec.maxAlternatives = 5;
+    mic.disabled = true; mic.textContent = "Listening…";
+    rec.onresult = e => {
+      const alts = [...e.results[0]].map(a => a.transcript), score = heardScore(alts, s.p.de);
+      heard.innerHTML = `Heard: <b>${esc(alts[0] || "…")}</b>`;
+      tries++;
+      if (score >= 0.7) {
+        if (!s.paid) { s.paid = true; addXP(1); }
+        blip(true);
+        f.innerHTML = `<div class="feedback ok" style="position:static"><h3>Verstanden! 🎉</h3><p>+1 XP for speaking.</p><button class="btn" id="go">Continue</button></div>`;
+        f.querySelector("#go").onclick = next;
+      } else heard.innerHTML += `<br><span class="muted">${tries < 2 ? "Close! Listen once more and try again." : "Good effort. Try again, or skip: there's no penalty."}</span>`;
+    };
+    rec.onerror = e => { heard.textContent = MIC_ERRORS[e.error] || "Couldn't listen just now. Try again or skip."; };
+    rec.onend = () => { rec = null; if (mic.isConnected) { mic.disabled = false; mic.textContent = tries ? "🎤 Try again" : "🎤 Tap and speak"; } };
+    try { rec.start(); } catch { mic.disabled = false; }
+  };
+}
 
 // ---------- step renderers ----------
 function intro(s, lb) {
@@ -877,8 +924,11 @@ export function startPhrases(sec, item, bit = 0) {
   const q = (p, listen) => ({ t: "read", p, listen: listen && !!p.a, title: listen ? "What does this mean?" : "How do you say this in German?", others: others(p) });
   const steps = [];
   const repeat = !!(item && (S.done[item.id] || ((S.bits || {})[item.id] || [])[bit])); // this part was finished before
+  // 🎤 speaking practice for up to 2 phrases per part (optional; skipped when the mic or the setting is off)
+  const toSpeak = new Set(speakOn() ? shuffle(items.filter(speakable)).slice(0, 2) : []);
   items.forEach((p, i) => {
     steps.push({ t: "flip", p, sec: sec.title });
+    if (toSpeak.has(p)) steps.push({ t: "speak", p, key: "speak:" + p.de });
     steps.push(q(p, false));
     if (i >= 1) steps.push(q(items[Math.floor(Math.random() * i)], true));
   });
