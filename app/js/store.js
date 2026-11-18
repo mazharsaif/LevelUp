@@ -158,6 +158,8 @@ export const userInfo = id => USERS.find(u => u.id === id) || { id, name: id, co
 export async function loadUsers() {
   try {
     const r = await fetch("api/users", { cache: "no-store" });
+    if (r.status === 401) { USERS = []; return USERS; } // accounts are on and nobody is logged in
+    if (!r.ok) throw new Error(r.status);
     USERS = await r.json();
     ls.set("a1.users", JSON.stringify(USERS));
   } catch {
@@ -168,6 +170,43 @@ export async function loadUsers() {
   USER = USERS.some(x => x.id === u) ? u : null;
   return USERS;
 }
+
+// ---------- accounts ----------
+// AUTH: "on" = the server has logins (FastAPI with auth.py); "off" = an older server without them
+// (server.py, or the FastAPI server before a restart): the app then shows the old player picker.
+export let AUTH = ls.get("a1.auth") || "on";
+export async function checkAuth() {
+  try {
+    const r = await fetch("api/auth/me", { cache: "no-store" });
+    if (r.ok) { const u = await r.json(); AUTH = "on"; ls.set("a1.user", u.id); }
+    else if (r.status === 401) { AUTH = "on"; ls.del("a1.user"); }
+    else AUTH = "off"; // 404: no accounts on this server
+    ls.set("a1.auth", AUTH);
+    return AUTH;
+  } catch { return AUTH; } // offline: keep the last known user (cached in localStorage) so the app still works
+}
+const errText = async r => {
+  try { const j = await r.json(); if (typeof j.error === "string") return j.error; if (Array.isArray(j.detail)) return j.detail.map(d => d.msg).join("; "); } catch { /* not JSON */ }
+  return `Server error (${r.status})`;
+};
+async function authPost(path, body) {
+  try {
+    const r = await fetch("api/auth/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    return r.ok ? { ok: true, user: await r.json() } : { ok: false, error: await errText(r) };
+  } catch { return { ok: false, error: "No connection to the server" }; }
+}
+export const login = (username, password) => authPost("login", { username, password });
+export const signup = (username, name, password) => authPost("signup", { username, name, password });
+export const changePassword = (old, nw) => authPost("password", { old, new: nw });
+export async function logout() {
+  const u = USER;
+  if (S && USER && SYNC.pending) { clearTimeout(timer); await push(); } // save before the session ends
+  signOut();
+  try { await fetch("api/auth/logout", { method: "POST" }); } catch { /* offline: the cookie stays until it expires */ }
+  // forget this learner's cached progress on this device
+  try { Object.keys(localStorage).filter(k => k === `a1.state.${u}` || k.startsWith(`a1.state.${u}@`)).forEach(k => localStorage.removeItem(k)); } catch { /* storage blocked */ }
+}
+const authLost = () => window.dispatchEvent(new Event("a1:auth"));
 export async function fetchAllStates() {
   try { const r = await fetch("api/states" + cq(), { cache: "no-store" }); return await r.json(); }
   catch { const o = {}; USERS.forEach(u => (o[u.id] = u.id === USER ? S : JSON.parse(ls.get(cacheKey(u.id)) || "null"))); return o; }
@@ -252,6 +291,7 @@ export async function push() {
   const u = USER, body = JSON.stringify(S);
   try {
     const r = await fetch(`api/state/${u}` + cq(), { method: "PUT", headers: { "Content-Type": "application/json" }, body });
+    if (r.status === 401 || r.status === 403) { SYNC.pending = true; authLost(); return; } // kept locally; saved after the next login
     const j = await r.json();
     if (r.status === 409 && j.state && u === USER) { // a newer copy exists (other device) – take it
       S = normalize(j.state); ls.set(cacheKey(u), JSON.stringify(S));

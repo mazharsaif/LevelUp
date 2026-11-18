@@ -1,7 +1,7 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, AUTH, checkAuth, login, signup, changePassword, logout } from "./store.js";
 import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson } from "./lesson.js";
 import { play } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -77,7 +77,7 @@ function setupView() {
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
   </div>
   <button class="btn" id="go">Start learning</button>`;
-  view().querySelector("#sw").onclick = () => { signOut(); route(); };
+  view().querySelector("#sw").onclick = () => { if (AUTH === "on") return doLogout(); signOut(); route(); };
   view().querySelector("#go").onclick = () => {
     S.settings.targetDate = view().querySelector("#tg").value || S.settings.targetDate;
     S.settings.startDate = view().querySelector("#sd").value || S.settings.startDate;
@@ -189,7 +189,7 @@ function freeToday() {
       <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
       <div class="muted small">${partLabel(it) || "A suggestion – or pick any skill"}</div>
       <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button>
-      <button class="btn ghost" id="all">🧩 Pick a skill</button></div>`
+      <button class="btn ghost" id="all">🧩 Pick a skill</button><button class="link" id="ord" style="display:block;margin:6px auto 0">↓ See the recommended order</button></div>`
     : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
@@ -197,18 +197,39 @@ function freeToday() {
       <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div></div>` : ""}
   <p class="small muted" style="text-align:center">Quest Mode is off – no daily goal, quests or penalties. <a href="#/settings" class="link" style="padding:0">Change</a></p>`;
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
-  const ab = view().querySelector("#all"); if (ab) ab.onclick = () => (location.hash = "#/path");
+  const ab = view().querySelector("#all"); if (ab) ab.onclick = () => { try { localStorage.setItem("a1.freeLayout", "skills"); } catch { /* ignore */ } location.hash = "#/path"; };
+  const ob = view().querySelector("#ord"); if (ob) ob.onclick = () => { try { localStorage.setItem("a1.freeLayout", "order"); } catch { /* ignore */ } location.hash = "#/path"; };
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
   levelWatch();
   wireTop();
 }
+const freeLayout = () => { try { return localStorage.getItem("a1.freeLayout") || "skills"; } catch { return "skills"; } };
+const layoutSwitch = cur => `<div class="segt" role="group" aria-label="Layout" style="margin:4px 0 10px;--c:var(--green)"><button data-fl="skills" class="${cur === "skills" ? "on" : ""}">🧩 Skills</button><button data-fl="order" class="${cur === "order" ? "on" : ""}">↓ Recommended order</button></div>`;
+const wireLayout = () => view().querySelectorAll("[data-fl]").forEach(b => (b.onclick = () => { try { localStorage.setItem("a1.freeLayout", b.dataset.fl); } catch { /* ignore */ } pathView(); }));
+// the suggested lesson sequence, without weeks, pace or goals
+function orderView() {
+  const nx = nextItem(), P = C.content.path, done = P.filter(i => S.done[i.id]).length;
+  let k = 0;
+  view().innerHTML = `<h1>Skills</h1>${layoutSwitch("order")}<p class="muted small">The suggested order of lessons, mixed so topics don't repeat back to back. ${done}/${P.length} done · tap any lesson.</p>
+    <div class="nodes">${P.map(i => {
+      const off = Math.round(Math.sin(k++ * 0.95) * 64), d = !!S.done[i.id], cur = nx && nx.id === i.id, side = off > 0 ? "l" : "r";
+      return `<button class="node ${i.kind} ${d ? "done" : "avail"} ${cur ? "cur" : ""}" data-id="${i.id}" style="transform:translateX(${off}px)">
+        ${cur ? `<span class="start-tip">${bitsDone(i) ? `${bitsDone(i)}/${bitCount(i)}` : "NEXT"}</span>` : ""}<span class="nglyph">${d ? "✓" : GLYPH[i.kind]}</span>
+        ${!d && !cur && bitsDone(i) ? `<span class="bitbadge">${bitsDone(i)}/${bitCount(i)}</span>` : ""}
+        <span class="lbl ${side}">${esc(i.kind === "vocab" ? `${i.n}. ${i.title}` : i.title)}</span></button>`; }).join("")}</div>`;
+  wireLayout();
+  view().querySelectorAll(".node").forEach(b => (b.onclick = () => itemSheet(C.item[b.dataset.id], orderView)));
+  const c = view().querySelector(".node.cur"); if (c) setTimeout(() => c.scrollIntoView({ block: "center" }), 30);
+}
 function skillMapView() {
+  if (freeLayout() === "order") return orderView();
   const groups = skillGroups(), all = groups.flatMap(g => g[2]);
-  view().innerHTML = `<h1>Skills</h1><p class="muted small">Pick any skill and go at your own pace. Each ring fills as you finish its parts.</p>` +
+  view().innerHTML = `<h1>Skills</h1>${layoutSwitch("skills")}<p class="muted small">Pick any skill and go at your own pace. Each ring fills as you finish its parts.</p>` +
     groups.map(([kind, label, sks]) => { const d = sks.filter(sk => skillFrac(sk) >= 1).length;
       return `<div class="sk-sec"><div class="sys-h">${label} · ${d}/${sks.length}</div><div class="skgrid">${sks.map(sk => { const U = skillUnits(sk), n = U.filter(unitDone).length;
         return `<button class="sktile ${n >= U.length ? "done" : ""}" data-s="${esc(sk.key)}">${ringSVG(U.length ? n / U.length : 0, KCOL[kind], n >= U.length ? "✓" : GLYPH[kind], 54)}
           <span class="skt">${esc(sk.title)}</span><span class="tiny muted">${n}/${U.length} parts</span></button>`; }).join("")}</div></div>`; }).join("");
+  wireLayout();
   view().querySelectorAll(".sktile").forEach(b => (b.onclick = () => skillSheet(all.find(sk => sk.key === b.dataset.s))));
 }
 function skillSheet(sk) {
@@ -253,7 +274,7 @@ function itemSheet(it, refresh = pathView) {
   if (it.kind === "vocab") body = `<div class="chips">${it.words.map(id => `<span class="chip">${esc(C.word[id].de)}</span>`).join("")}</div>`;
   if (it.kind === "grammar") { const g = grammarOf(it), P = gPart(it); body = `${P ? `<p class="small"><b>Part ${it.part + 1} of ${it.of}</b> · ${P.q.length ? `${P.q.length} question${P.q.length > 1 ? "s" : ""}` : "short read"}</p>` : ""}<p class="small muted">${esc(g.intro).slice(0, 220)}…</p><p class="small">🎬 ${esc(g.watch)}</p>`; }
   if (it.kind === "phrases") body = `<p class="small muted">${C.phrases[it.id].items.length} phrases</p>`;
-  sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
+  sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}${questMode() ? ` · WEEK ${weekOf(it)}` : ""}</div>
     <h2 style="margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</h2>${body}
     ${d ? `<p class="small"><span class="pill green">✓ Done ${fmtDate(d.date)}${d.score != null ? ` · ${d.score}%` : ""}</span></p>` : ""}
     ${bitCount(it) > 1 ? `<div class="parts">${bitsOf(it).map((b, k) => { const ok = d || (S.bits[it.id] || [])[k];
@@ -447,7 +468,7 @@ function settingsView() {
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
     <button class="link" id="xph">How is XP measured?</button></div>
   <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
-    <label class="f">Theme</label><select id="th"><option value="system" ${S.settings.theme === "system" || !S.settings.theme ? "selected" : ""}>⚔️ Hunter System</option><option value="system3" ${S.settings.theme === "system3" ? "selected" : ""}>🛡️ Hunter Mid</option><option value="system2" ${S.settings.theme === "system2" ? "selected" : ""}>🗡️ Hunter Simple</option><option value="calm" ${S.settings.theme === "calm" ? "selected" : ""}>🌿 Calm</option><option value="ez" ${S.settings.theme === "ez" ? "selected" : ""}>🎓 Eurozeit</option><option value="classic" ${S.settings.theme === "classic" ? "selected" : ""}>🟢 Classic</option></select>
+    <label class="f">Theme</label><select id="th">${themeOptions(S.settings.theme || "system")}</select>
     <label class="f">Hero</label><select id="hero">${Object.entries(HERO_STYLES).map(([k, n]) => `<option value="${k}" ${heroStyle() === k ? "selected" : ""}>${k === "f" ? "🗡️" : "⚔️"} ${n}</option>`).join("")}</select>
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
@@ -456,15 +477,18 @@ function settingsView() {
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
-    <p class="muted small">Progress is saved on your Mac (LevelUp/progress/${esc(USER)}.json, with a daily backup). You can also export a copy here.</p>
+    <p class="muted small">Progress is saved on the LevelUp server, with a daily backup. You can also export a copy here.</p>
     <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
     <input type="file" id="imf" accept="application/json" hidden>
     <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset ${esc(userInfo(USER).name)}'s progress…</button></div>
-  <div class="card"><div class="sys-h">Profile</div><div class="row"><div class="grow"><b>Learner</b><div class="muted small">${esc(userInfo(USER).name)}</div></div>
-    <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`;
+  ${AUTH === "on" ? `<div class="card"><div class="sys-h">Account</div><div class="row"><div class="grow"><b>${esc(userInfo(USER).name)}</b><div class="muted small">Logged in as ${esc(USER)}</div></div>
+    <button class="btn ghost sm" id="cpw">Change password</button></div><button class="btn" id="lout" style="margin-top:14px">Log out</button></div>`
+    : `<div class="card"><div class="sys-h">Profile</div><div class="row"><div class="grow"><b>Learner</b><div class="muted small">${esc(userInfo(USER).name)}</div></div>
+    <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`}`;
   const v = view();
   wireTop();
-  v.querySelector("#swu").onclick = userSheet;
+  if (AUTH === "on") { v.querySelector("#cpw").onclick = passwordSheet; v.querySelector("#lout").onclick = doLogout; }
+  else v.querySelector("#swu").onclick = userSheet;
   v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
   const setS = (k, val) => { S.settings[k] = val; save(); };
   v.querySelector("#tg").onchange = e => {
@@ -896,6 +920,19 @@ function applyTheme() {
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.content = t === "system" || t === "system2" || t === "system3" ? "#0a0f1a" : t === "calm" ? "#f6f3ee" : t === "ez" ? "#ffffff" : "#58a700";
 }
+const THEMES = [["system", "⚔️ Hunter System"], ["system3", "🛡️ Hunter Mid"], ["system2", "🗡️ Hunter Simple"], ["calm", "🌿 Calm"], ["ez", "🎓 Eurozeit"], ["classic", "🟢 Classic"]];
+const themeOptions = cur => THEMES.map(([v, l]) => `<option value="${v}" ${cur === v ? "selected" : ""}>${l}</option>`).join("");
+const deviceTheme = () => { try { return localStorage.getItem("a1.theme") || "system"; } catch { return "system"; } };
+// theme for screens without a learner (login / player picker); a learner's own theme applies after login
+function themeSheet() {
+  sheet(`<h2 style="margin-top:0">⚙️ Settings</h2><label class="f">Theme</label><select id="dth">${themeOptions(deviceTheme())}</select>
+    <p class="muted small" style="margin:6px 0 12px">Used on this screen. After you log in, your own theme from Settings applies.</p>
+    <button class="btn" id="ok">Done</button>`, el => {
+    el.querySelector("#dth").onchange = e => { try { localStorage.setItem("a1.theme", e.target.value); } catch { /* ignore */ } applyTheme(); };
+    el.querySelector("#ok").onclick = closeSheet;
+  });
+}
+const gearBtn = () => `<button class="gear" id="gear" aria-label="Settings">⚙️</button>`;
 const RANK_TITLE = { E: "E-Rank Hunter", D: "D-Rank Hunter", C: "C-Rank Hunter", B: "B-Rank Hunter", A: "A-Rank Hunter", S: "S-Rank Hunter" };
 function playerBar() {
   const L = level(progress().total), rk = rank(progress().total);
@@ -1104,11 +1141,45 @@ function wireTop() {
   const xr = view().querySelector("#xpring");
   if (xr) xr.onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
 }
-async function whoView() {
+let authTab = "login";
+function loginView(msg = "") {
   document.body.classList.add("in-lesson");
-  view().innerHTML = `<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
+  const up = authTab === "signup";
+  view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:5vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div>
+    <h1>${up ? "Create your account" : "Welcome back"}</h1></div>
+    <div class="segt authtabs" role="tablist"><button data-t="login" class="${up ? "" : "on"}">Log in</button><button data-t="signup" class="${up ? "on" : ""}">Sign up</button></div>
+    <form class="card authform" id="af" autocomplete="on">
+      ${up ? `<label class="f" for="an">Your name</label><input id="an" name="name" autocomplete="name" maxlength="40" required>` : ""}
+      <label class="f" for="au">Username</label><input id="au" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32" required>
+      <label class="f" for="ap">Password</label><input id="ap" name="password" type="password" autocomplete="${up ? "new-password" : "current-password"}" minlength="${up ? 6 : 1}" required>
+      ${up ? `<p class="muted small" style="margin:6px 0 0">Username: 3–32 letters, digits, - or _. Password: at least 6 characters.</p>` : ""}
+      <p class="small" id="aerr" style="color:var(--red);min-height:1.2em;margin:8px 0 0">${esc(msg)}</p>
+      <button class="btn" id="ago" type="submit">${up ? "Create account" : "Log in"}</button>
+    </form>`;
+  window.scrollTo(0, 0); // e.g. after logging out from the bottom of Settings
+  view().querySelector("#gear").onclick = themeSheet;
+  view().querySelectorAll(".authtabs button").forEach(b => (b.onclick = () => { authTab = b.dataset.t; loginView(); }));
+  const f = view().querySelector("#af"), er = view().querySelector("#aerr"), go = view().querySelector("#ago");
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const u = f.querySelector("#au").value.trim(), pw = f.querySelector("#ap").value, nm = up ? f.querySelector("#an").value.trim() : "";
+    if (up && !/^[A-Za-z0-9_-]{3,32}$/.test(u)) { er.textContent = "Username: 3–32 letters, digits, - or _"; return; }
+    go.disabled = true; er.textContent = "";
+    const r = up ? await signup(u, nm, pw) : await login(u, pw);
+    go.disabled = false;
+    if (!r.ok) { er.textContent = r.error; return; }
+    await loadUsers(); await switchUser(r.user.id); unpick(); document.body.classList.remove("in-lesson");
+    toast(up ? `Willkommen, ${r.user.name}!` : `Hallo ${r.user.name}!`);
+    if (location.hash !== "#/today") location.hash = "#/today"; else route();
+  };
+}
+async function whoView() {
+  if (AUTH === "on") return loginView();
+  document.body.classList.add("in-lesson");
+  view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
     <div class="who">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}<div class="grow"><div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
       <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:24px;color:var(--muted)">›</span></button>`).join("")}</div>`;
+  view().querySelector("#gear").onclick = themeSheet;
   view().querySelectorAll(".who button").forEach(b => (b.onclick = async () => {
     b.disabled = true; await switchUser(b.dataset.u); unpick(); document.body.classList.remove("in-lesson");
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
@@ -1120,7 +1191,28 @@ async function whoView() {
     if (el) el.textContent = sm ? `Lv ${sm.lv} · ${sm.rank}-Rank · 🔥 ${sm.streak} · ${sm.pct.toFixed(0)}% of A1` : "New – tap to start";
   }
 }
+async function doLogout() { closeSheet(); await logout(); unpick(); toast("Logged out"); location.hash = "#/today"; route(); }
+function passwordSheet() {
+  sheet(`<h2 style="margin-top:0">Change password</h2><form id="pf"><label class="f" for="po">Current password</label><input id="po" type="password" autocomplete="current-password" required>
+    <label class="f" for="pn">New password</label><input id="pn" type="password" autocomplete="new-password" minlength="6" required>
+    <p class="small" id="perr" style="color:var(--red);min-height:1.2em;margin:8px 0 0"></p><button class="btn" type="submit">Change password</button>
+    <button class="btn ghost" type="button" id="pc">Cancel</button></form>`, el => {
+    el.querySelector("#pc").onclick = closeSheet;
+    el.querySelector("#pf").onsubmit = async e => {
+      e.preventDefault();
+      const r = await changePassword(el.querySelector("#po").value, el.querySelector("#pn").value);
+      if (!r.ok) { el.querySelector("#perr").textContent = r.error; return; }
+      closeSheet(); toast("Password changed · other devices logged out");
+    };
+  });
+}
 function userSheet() {
+  if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
+      <div class="grow"><div style="font-size:18px;font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
+    <button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
+    el.querySelector("#pw").onclick = passwordSheet;
+    el.querySelector("#lo").onclick = doLogout;
+  });
   sheet(`<h2 style="margin-top:0">Switch learner</h2><div class="who" style="margin-top:8px">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}
     <div class="grow"><div style="font-size:18px;font-weight:800">${esc(u.name)}</div><div class="muted small">${u.id === USER ? "Current" : "Tap to switch"}</div></div>
     ${u.id === USER ? "✓" : "›"}</button>`).join("")}</div>`, el => {
@@ -1162,6 +1254,7 @@ async function fillCompare() {
   applyTheme();
   loadAvatars();
   await loadCourses();
+  await checkAuth();
   await loadUsers();
   const startCourse = (USER && lastCourse(USER)) || COURSE;
   setCourse(courseInfo(startCourse).status === "ready" ? startCourse : COURSE);
@@ -1169,6 +1262,10 @@ async function fillCompare() {
   if (USER) await switchUser(USER);
   window.addEventListener("hashchange", route);
   window.addEventListener("a1:state-replaced", () => { if (!inLesson()) route(); });
+  window.addEventListener("a1:auth", async () => { // session expired or revoked: progress stays cached on this device
+    if (inLesson()) return;
+    if (await checkAuth() === "on" && !localStorage.getItem("a1.user")) { signOut(); toast("Please log in again"); route(); }
+  });
   window.addEventListener("a1:sync", () => { const e = document.getElementById("syncst"); if (e) e.textContent = syncText(); });
   document.addEventListener("visibilitychange", async () => {
     if (document.visibilityState === "visible" && !inLesson() && await refreshFromServer()) route();

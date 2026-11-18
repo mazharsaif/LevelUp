@@ -118,15 +118,10 @@
       "title": "Networking & HTTPS",
       "icon": "🔏",
       "color": "#6FD0FF",
-      "status": "soon",
+      "status": "open",
       "order": 5,
-      "planned": [
-        "How HTTPS and certificates work",
-        "Certificate authorities, Let's Encrypt & mkcert",
-        "DNS, domains & local names (.home.arpa)",
-        "VPNs, WireGuard & Tailscale",
-        "Local network vs public hosting"
-      ]
+      "reading": "data/se/net/",
+      "intro": 0
     },
     {
       "id": "awsml",
@@ -4178,6 +4173,903 @@
           ],
           "a": 0,
           "b": 15
+        }
+      ]
+    },
+    {
+      "id": "net.layers",
+      "branch": "net",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🧅",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Internet layers",
+      "short": "Packets, IPs, NAT, routing",
+      "learn": [
+        "Name the four TCP/IP layers and the job of each",
+        "Read IPv4, IPv6 and CIDR notation",
+        "Explain private ranges, loopback and NAT",
+        "Describe how routers move a packet hop by hop"
+      ],
+      "concepts": [
+        "Packet",
+        "IP address",
+        "CIDR",
+        "NAT",
+        "Loopback"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Packets and layers"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "IP addresses",
+            "NAT: many devices, one public address"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Routing",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "net.tcp",
+      "branch": "net",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🔌",
+      "req": [
+        "net.layers"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "TCP, UDP & ports",
+      "short": "Handshakes, ports, firewalls",
+      "learn": [
+        "Walk through the TCP three-way handshake",
+        "Choose between TCP and UDP for a job",
+        "Pick safe port numbers for new apps",
+        "Tell 'refused' from 'timed out'"
+      ],
+      "concepts": [
+        "Three-way handshake",
+        "Port",
+        "Ephemeral range",
+        "Head-of-line blocking",
+        "Listening address"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Ports and sockets"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "TCP: reliable, ordered, connection-based",
+            "UDP: fast, fire and forget"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Firewalls and listening",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 6,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "net.dns",
+      "branch": "net",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "📖",
+      "req": [
+        "net.layers"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "How DNS works",
+      "short": "Resolvers, delegation, TTL",
+      "learn": [
+        "Trace a lookup from stub resolver to authoritative server",
+        "Explain why record changes take time",
+        "Query DNS directly with dig",
+        "Know what DNSSEC, DoH and DoT protect"
+      ],
+      "concepts": [
+        "Recursive resolver",
+        "Authoritative server",
+        "Delegation",
+        "TTL",
+        "Negative caching"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Myth or fact",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Names are read right to left"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "One lookup, step by step",
+            "Caching and TTL"
+          ],
+          "a": 3,
+          "b": 6
+        },
+        {
+          "t": [
+            "Asking DNS yourself",
+            "Security in brief",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 7,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.http",
+      "branch": "net",
+      "n": 4,
+      "level": 2,
+      "col": 0,
+      "icon": "📨",
+      "req": [
+        "net.tcp"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "HTTP basics",
+      "short": "Requests, methods, status codes",
+      "learn": [
+        "Read a raw HTTP request and response",
+        "Pick the right method and know which are idempotent",
+        "Diagnose by status code, including 502 vs 504",
+        "Trace what a browser does with a URL"
+      ],
+      "concepts": [
+        "Method",
+        "Status code",
+        "Host header",
+        "Idempotent",
+        "Cookie"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "A request and a response",
+            "Methods"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Status codes",
+            "Headers that matter"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Stateless, with cookies on top",
+            "What happens when you type a URL",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 7,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.domains",
+      "branch": "net",
+      "n": 5,
+      "level": 2,
+      "col": 2,
+      "icon": "🏷️",
+      "req": [
+        "net.dns"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Domains & records",
+      "short": "Registrars, A, CNAME, CAA",
+      "learn": [
+        "Separate registry, registrar and DNS host",
+        "Write A, AAAA, CNAME, TXT and CAA records",
+        "Explain why the apex can't be a CNAME",
+        "Plan one subdomain per app"
+      ],
+      "concepts": [
+        "Registrar",
+        "A record",
+        "CNAME",
+        "Apex",
+        "Wildcard"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Registry, registrar, DNS host"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The records you will actually use",
+            "Apex, subdomains and wildcards"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "How this domain is set up",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 8,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.http2",
+      "branch": "net",
+      "n": 6,
+      "level": 3,
+      "col": 0,
+      "icon": "🚀",
+      "req": [
+        "net.http"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "HTTP/2, HTTP/3 & caching",
+      "short": "Multiplexing, QUIC, Cache-Control",
+      "learn": [
+        "Compare HTTP/1.1, HTTP/2 and HTTP/3",
+        "Explain what QUIC fixes",
+        "Set Cache-Control for HTML, APIs and assets",
+        "Explain why service workers need HTTPS"
+      ],
+      "concepts": [
+        "Multiplexing",
+        "QUIC",
+        "Cache-Control",
+        "ETag / 304",
+        "Service worker"
+      ],
+      "exercises": [
+        "Myth or fact",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Why the versions changed"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "QUIC in one section",
+            "Caching: freshness and validation"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Service workers and CDNs",
+            "Compression",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 6,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "net.crypto",
+      "branch": "net",
+      "n": 7,
+      "level": 3,
+      "col": 1,
+      "icon": "🔑",
+      "req": [
+        "net.http"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Crypto building blocks",
+      "short": "Keys, hashes, signatures",
+      "learn": [
+        "Tell symmetric from asymmetric encryption",
+        "Explain what hashes and signatures prove",
+        "Describe Diffie-Hellman key exchange",
+        "Explain forward secrecy"
+      ],
+      "concepts": [
+        "AES-GCM",
+        "Public / private key",
+        "SHA-256",
+        "Signature",
+        "ECDHE"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Concept check",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Symmetric encryption: one shared key",
+            "Asymmetric keys: a public and a private half"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Hashes: fingerprints",
+            "Signatures: proving who wrote it"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Key exchange and forward secrecy",
+            "How the pieces fit",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 6,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.tls",
+      "branch": "net",
+      "n": 8,
+      "level": 4,
+      "col": 1,
+      "icon": "🤝",
+      "req": [
+        "net.crypto"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "The TLS handshake",
+      "short": "TLS 1.3, SNI, ALPN, 0-RTT",
+      "learn": [
+        "Walk through the TLS 1.3 handshake",
+        "Explain SNI and ALPN",
+        "Know when 0-RTT is unsafe",
+        "Say what TLS hides and what it doesn't"
+      ],
+      "concepts": [
+        "ClientHello",
+        "CertificateVerify",
+        "SNI",
+        "ALPN",
+        "0-RTT"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Attack ↔ defence",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "SSL, TLS and the versions"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The TLS 1.3 handshake, step by step"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "SNI and ALPN",
+            "Resumption and 0-RTT",
+            "What TLS hides and what it doesn't",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 5,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.certs",
+      "branch": "net",
+      "n": 9,
+      "level": 5,
+      "col": 1,
+      "icon": "📜",
+      "req": [
+        "net.tls"
+      ],
+      "mins": 5,
+      "chapter": 9,
+      "title": "Certificates & trust",
+      "short": "X.509, chains, CT, expiry",
+      "learn": [
+        "Read a certificate's SAN, issuer and dates",
+        "Follow a chain of trust to a root",
+        "Use Certificate Transparency and CAA",
+        "Explain shrinking certificate lifetimes"
+      ],
+      "concepts": [
+        "X.509",
+        "SAN",
+        "Intermediate CA",
+        "Certificate Transparency",
+        "CAA"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What's inside a certificate"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The chain of trust",
+            "How a CA decides you own the name",
+            "Watching the CAs: transparency and CAA"
+          ],
+          "a": 3,
+          "b": 6
+        },
+        {
+          "t": [
+            "Expiry, renewal and revocation",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 7,
+          "b": 10
+        }
+      ]
+    },
+    {
+      "id": "net.acme",
+      "branch": "net",
+      "n": 10,
+      "level": 6,
+      "col": 1,
+      "icon": "🔐",
+      "req": [
+        "net.certs"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Let's Encrypt & ACME",
+      "short": "Challenges, renewal, limits",
+      "learn": [
+        "Walk through an ACME order",
+        "Choose HTTP-01, DNS-01 or TLS-ALPN-01",
+        "Keep renewal automatic, with ARI",
+        "Stay inside rate limits using staging"
+      ],
+      "concepts": [
+        "ACME",
+        "HTTP-01",
+        "DNS-01",
+        "ARI",
+        "Rate limit"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The ACME flow"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The three challenge types",
+            "Renewal"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Rate limits and staging",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 6,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "net.proxy",
+      "branch": "net",
+      "n": 11,
+      "level": 7,
+      "col": 0,
+      "icon": "🛡️",
+      "req": [
+        "net.acme",
+        "net.http2"
+      ],
+      "mins": 5,
+      "chapter": 11,
+      "title": "Reverse proxies",
+      "short": "Caddy, HSTS, headers",
+      "learn": [
+        "Explain TLS termination and forwarded headers",
+        "Compare Caddy and nginx",
+        "Set up redirects and HSTS safely",
+        "Close the side door to app ports"
+      ],
+      "concepts": [
+        "TLS termination",
+        "Reverse proxy",
+        "HSTS",
+        "Security headers",
+        "Mixed content"
+      ],
+      "exercises": [
+        "Fix the code",
+        "Attack ↔ defence",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "TLS termination",
+            "Caddy and nginx"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Redirects and HSTS",
+            "Security headers"
+          ],
+          "a": 5,
+          "b": 8
+        },
+        {
+          "t": [
+            "Mixed content and the last mile",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 9,
+          "b": 11
+        }
+      ]
+    },
+    {
+      "id": "net.cloudflare",
+      "branch": "net",
+      "n": 12,
+      "level": 7,
+      "col": 2,
+      "icon": "☁️",
+      "req": [
+        "net.acme",
+        "net.domains"
+      ],
+      "mins": 5,
+      "chapter": 12,
+      "title": "Cloudflare & CDNs",
+      "short": "Proxy, SSL modes, origins",
+      "learn": [
+        "Tell proxied from DNS-only records",
+        "Pick the right SSL/TLS mode",
+        "Explain the Flexible redirect loop",
+        "Protect the origin server"
+      ],
+      "concepts": [
+        "Orange cloud",
+        "Full (strict)",
+        "Flexible",
+        "Origin",
+        "Cloudflare Tunnel"
+      ],
+      "exercises": [
+        "Scenario",
+        "Spot the bug",
+        "Threat-model it"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Proxied or DNS only",
+            "The two halves of a proxied request"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "SSL/TLS modes",
+            "Certificates and Let's Encrypt behind the proxy"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Protecting the origin",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "net.e2e",
+      "branch": "net",
+      "n": 13,
+      "level": 8,
+      "col": 1,
+      "icon": "🌐",
+      "req": [
+        "net.proxy",
+        "net.cloudflare"
+      ],
+      "mins": 5,
+      "chapter": 13,
+      "title": "Domain end to end",
+      "short": "Lab: an app on HTTPS",
+      "learn": [
+        "Point a domain at a server",
+        "Install Caddy and get a certificate",
+        "Verify HTTPS from outside",
+        "Add the next app in minutes"
+      ],
+      "concepts": [
+        "A record",
+        "Caddyfile",
+        "ufw",
+        "Verification",
+        "Hardening"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Step 1: The server side",
+            "Step 2: DNS"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Step 3: Caddy and the certificate",
+            "Step 4: Verify from outside"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Step 5: Harden and make it repeatable",
+            "Adding the next app",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 5,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "net.debug",
+      "branch": "net",
+      "n": 14,
+      "level": 9,
+      "col": 1,
+      "icon": "🔍",
+      "req": [
+        "net.e2e"
+      ],
+      "mins": 5,
+      "chapter": 14,
+      "title": "Debugging toolkit",
+      "short": "dig, curl, openssl, ss",
+      "learn": [
+        "Debug layer by layer from DNS up",
+        "Use curl --resolve to test origins",
+        "Read openssl s_client output",
+        "Map error messages to their layer"
+      ],
+      "concepts": [
+        "dig",
+        "curl -v",
+        "openssl s_client",
+        "ss -tlnp",
+        "502 / 504"
+      ],
+      "exercises": [
+        "Scenario",
+        "Match the terms",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Work up the layers",
+            "dig: DNS"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "curl: HTTP and more",
+            "openssl s_client: TLS and certificates",
+            "On the server"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Errors and what they mean",
+            "Self-check",
+            "Answers"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "net.capstone",
+      "branch": "net",
+      "n": 15,
+      "level": 10,
+      "col": 1,
+      "icon": "🏆",
+      "req": [
+        "net.debug"
+      ],
+      "mins": 5,
+      "chapter": 15,
+      "title": "Capstone review",
+      "short": "One request, every layer",
+      "learn": [
+        "Trace one HTTPS request through every layer",
+        "Explain the proxied path through Cloudflare",
+        "Answer the practice quiz unaided",
+        "Connect each failure to its layer"
+      ],
+      "concepts": [
+        "End-to-end trace",
+        "Layers",
+        "Trust chain",
+        "Proxy path",
+        "Failure modes"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "One request, end to end"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Practice quiz"
+          ],
+          "a": 4,
+          "b": 4
+        },
+        {
+          "t": [
+            "Answers"
+          ],
+          "a": 5,
+          "b": 6
         }
       ]
     }

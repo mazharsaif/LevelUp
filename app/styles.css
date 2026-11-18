@@ -165,7 +165,7 @@ input.type:focus{border-color:var(--blue)}
 .stat-grid .tile{text-align:left;padding:10px 12px}
 .stat-grid .tile b{font-size:20px}
 label.f{display:block;margin:10px 0 4px;font-size:14px;font-weight:700}
-input[type=date],input[type=number],select{width:100%;border:2px solid var(--line);border-radius:10px;padding:10px;font-size:16px;background:var(--card);color:var(--ink)}
+input[type=date],input[type=number],select,.authform input,#pf input{width:100%;border:2px solid var(--line);border-radius:10px;padding:10px;font-size:16px;background:var(--card);color:var(--ink)}
 .toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:15px}
 .toggle input{width:22px;height:22px}
 
@@ -956,3 +956,10 @@ body.theme-ez .coursechip{border-width:1px;border-radius:6px}
 body.theme-ez .brand{font-family:"Urbanist",system-ui,sans-serif;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#00339b 0 55%,#3ab500 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
 body.theme-ez .next-card .sys-h{color:rgba(255,255,255,.72)}
 body.theme-ez .feedback.ok{background:var(--ok-l)}
+/* settings gear on the login / player screen */
+.gear{position:fixed;top:calc(12px + env(safe-area-inset-top));right:max(12px,calc(50% - 268px));z-index:5;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:20px;cursor:pointer;display:grid;place-items:center}
+/* login / sign-up */
+.authtabs{--c:var(--green);display:flex;width:100%;margin:14px 0 10px}
+.authtabs button{flex:1;padding:9px 12px;font-size:15px}
+.authform input{width:100%;box-sizing:border-box}
+.authform .btn{margin-top:10px}

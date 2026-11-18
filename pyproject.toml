@@ -2,7 +2,7 @@
 name = "levelup"
 version = "1.0.0"
 description = "LevelUp learning app: FastAPI server (server_fastapi/) and content/audio tools (tools/)"
-requires-python = ">=3.9"   # pinned to 3.9 in .python-version for now; 3.13 tested OK
+requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",

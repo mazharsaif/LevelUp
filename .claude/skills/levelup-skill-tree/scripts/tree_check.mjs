@@ -82,10 +82,10 @@ if (st[first.id] !== "done") fails.push(`${first.id} not marked done after finis
 for (const n of nodes.filter(n => n.req.length && n.req.every(r => r === first.id))) if (st[n.id] !== "open") fails.push(`${n.id} should unlock after ${first.id}`);
 await pg.screenshot({ path: `${OUT}/5_after_finish.png`, fullPage: true });
 // layout toggle (map <-> path) keeps every node; pager moves to another branch and back
-await click('.seg button[data-l="path"]'); await wait(300);
+await click('.segt button[data-l="path"]'); await wait(300);
 if (Object.keys(await states()).length !== nodes.length) fails.push("path layout lost nodes");
 await pg.screenshot({ path: `${OUT}/5b_path.png`, fullPage: true });
-await click('.seg button[data-l="map"]'); await wait(300);
+await click('.segt button[data-l="map"]'); await wait(300);
 if (openIds.length > 1) { await click("#nx"); await wait(400); const h = await pg.evaluate(() => location.hash); if (h === `#/branch/${branch}`) fails.push("next-branch arrow did not move"); await click("#pv"); await wait(400); }
 if ((await pg.evaluate(() => location.hash)) !== `#/branch/${branch}`) fails.push("prev arrow did not come back to the branch");
 if (br.intro != null) { await click("#intro"); await wait(500); await pg.screenshot({ path: `${OUT}/6_about.png` }); if (!(await pg.$("#rn"))) fails.push("About did not open the reader"); }

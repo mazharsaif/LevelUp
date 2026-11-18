@@ -4,7 +4,7 @@ Same app, same API, same progress files; the phone sees no difference.
 FastAPI extras: interactive API docs (/docs), validated inputs, per-learner write locks,
 gzip, smarter caching, health/backup endpoints, and request timing in the log.
 
-Python 3.9 for now (3.13-ready; see ../.python-version), uv project in the repo root (../pyproject.toml, env ../.venv).
+Python 3.13 (see ../.python-version), uv project in the repo root (../pyproject.toml, env ../.venv).
 Run (from this folder):   uv run main.py            -> port 8766
                            uv run main.py 8899       -> any port
 Test data:                 A1_DATA=<tmpdir> uv run main.py 8899
@@ -18,9 +18,10 @@ import sys
 import threading
 import time
 from datetime import date
-from typing import Optional
 
+import auth
 from fastapi import FastAPI, Path, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -42,7 +43,7 @@ COURSE_RE = r"^[a-z0-9_-]{1,40}$"
 
 
 # ---------- storage (identical file layout to server.py) ----------
-def ensure_dirs():
+def ensure_dirs() -> None:
     os.makedirs(BACKUPS, exist_ok=True)
     if not os.path.exists(USERS_FILE):
         with open(USERS_FILE, "w") as f:
@@ -67,7 +68,7 @@ def state_path(uid: str, course: str = DEFAULT_COURSE) -> str:
     return os.path.join(DATA, tag_of(uid, course) + ".json")
 
 
-def read_state(uid: str, course: str = DEFAULT_COURSE) -> Optional[dict]:
+def read_state(uid: str, course: str = DEFAULT_COURSE) -> dict | None:
     try:
         with open(state_path(uid, course)) as f:
             return json.load(f)
@@ -95,11 +96,11 @@ class User(BaseModel):
     id: str
     name: str
     color: str
-    demo: Optional[bool] = None
+    demo: bool | None = None
 
 
 class StateEnvelope(BaseModel):
-    state: Optional[dict]
+    state: dict | None
 
 
 class SaveOk(BaseModel):
@@ -139,7 +140,6 @@ app = FastAPI(
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)  # content.json and JS shrink a lot over Wi-Fi
 # Let the same app opened from another local server (e.g. the old one on :8765) send bug reports here.
-from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(CORSMiddleware, allow_origin_regex=r"^http://(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|127\.0\.0\.1)(:\d+)?$",
                    allow_methods=["POST"], allow_headers=["Content-Type"])
 
@@ -166,21 +166,157 @@ async def cache_and_log(request: Request, call_next):
 CourseQ = Query(DEFAULT_COURSE, pattern=COURSE_RE, description="Course id, e.g. de-a1")
 
 
+# ---------- accounts (see auth.py) ----------
+COLORS = ["#1c7cd6", "#ce4fa0", "#2f9e6b", "#e8590c", "#7048e8", "#0c8599", "#d6336c", "#5c940d", "#f08c00", "#495057"]
+
+
+def me(request: Request) -> str | None:
+    uid = auth.session_uid(DATA, request.cookies.get(auth.COOKIE))
+    return uid if uid and user_ok(uid) else None
+
+
+def is_https(request: Request) -> bool:
+    return request.url.scheme == "https" or request.headers.get("x-forwarded-proto", "").startswith("https")
+
+
+def client_ip(request: Request) -> str:
+    return request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "?")
+
+
+def logged_in(request: Request, uid: str) -> JSONResponse:
+    """Response that starts a session for uid (cookie) and returns the profile."""
+    token = auth.new_session(DATA, uid)
+    u = next(x for x in users() if x["id"] == uid)
+    r = JSONResponse({k: u[k] for k in ("id", "name", "color")})
+    r.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_DAYS * 86400, httponly=True, samesite="lax",
+                 secure=is_https(request), path="/")
+    return r
+
+
+def need(request: Request, uid: str | None = None) -> JSONResponse | None:
+    """None when allowed; otherwise the 401/403 response to return."""
+    who = me(request)
+    if not who:
+        return err("login required", 401)
+    if uid is not None and uid != who:
+        return err("not your account", 403)
+    return None
+
+
+class LoginIn(BaseModel):
+    username: str = Field(..., min_length=1, max_length=64)
+    password: str = Field(..., min_length=1, max_length=200)
+
+
+class SignupIn(BaseModel):
+    username: str = Field(..., pattern=r"^[A-Za-z0-9_-]{3,32}$", description="3-32 letters, digits, _ or -")
+    name: str = Field(..., min_length=1, max_length=40)
+    password: str = Field(..., min_length=auth.MIN_PASSWORD, max_length=200)
+
+
+class PasswordIn(BaseModel):
+    old: str = Field(..., min_length=1, max_length=200)
+    new: str = Field(..., min_length=auth.MIN_PASSWORD, max_length=200)
+
+
+_signups: dict[str, list[float]] = {}
+
+
+@app.get("/api/auth/me", response_model=User, responses={401: {"model": ErrorOut}}, tags=["accounts"])
+def auth_me(request: Request):
+    """The logged-in learner, or 401."""
+    uid = me(request)
+    if not uid:
+        return err("not logged in", 401)
+    return next(u for u in users() if u["id"] == uid)
+
+
+@app.post("/api/auth/login", response_model=User, tags=["accounts"],
+          responses={401: {"model": ErrorOut}, 429: {"model": ErrorOut}})
+def auth_login(request: Request, body: LoginIn):
+    """Check username + password; on success set the session cookie."""
+    uid, ip = body.username.strip().lower(), client_ip(request)
+    if auth.throttled(ip, uid):
+        return err("too many attempts, wait 15 minutes", 429)
+    if not (user_ok(uid) and auth.check_password(DATA, uid, body.password)):
+        auth.note_failure(ip, uid)
+        return err("wrong username or password", 401)
+    auth.clear_failures(uid)
+    return logged_in(request, uid)
+
+
+@app.post("/api/auth/signup", response_model=User, tags=["accounts"],
+          responses={409: {"model": ErrorOut}, 429: {"model": ErrorOut}})
+def auth_signup(request: Request, body: SignupIn):
+    """Create a learner with a password and log them in."""
+    ip, now = client_ip(request), time.time()
+    hits = [t for t in _signups.get(ip, []) if now - t < 3600]
+    if len(hits) >= 5:
+        return err("too many sign-ups from here, try later", 429)
+    uid, name = body.username.lower(), body.name.strip()
+    if not name:
+        return err("name required", 400)
+    with lock_for("__users__"):
+        us = users()
+        if any(u["id"] == uid for u in us) or auth.has_password(DATA, uid):
+            return err("that username is taken", 409)
+        used = {u.get("color") for u in us}
+        color = next((c for c in COLORS if c not in used), COLORS[len(us) % len(COLORS)])
+        us.append({"id": uid, "name": name, "color": color})
+        tmp = USERS_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(us, f, indent=1, ensure_ascii=False)
+        os.replace(tmp, USERS_FILE)
+        auth.set_password(DATA, uid, body.password)
+    _signups[ip] = hits + [now]
+    print(f"SIGNUP {uid} ({name}) from {ip}", file=sys.stderr, flush=True)
+    return logged_in(request, uid)
+
+
+@app.post("/api/auth/logout", tags=["accounts"])
+def auth_logout(request: Request):
+    """End this device's session."""
+    auth.end_session(DATA, request.cookies.get(auth.COOKIE))
+    r = JSONResponse({"ok": True})
+    r.delete_cookie(auth.COOKIE, path="/")
+    return r
+
+
+@app.post("/api/auth/password", responses={401: {"model": ErrorOut}, 403: {"model": ErrorOut}}, tags=["accounts"])
+def auth_password(request: Request, body: PasswordIn):
+    """Change your password (logs out your other devices)."""
+    uid = me(request)
+    if not uid:
+        return err("login required", 401)
+    if not auth.check_password(DATA, uid, body.old):
+        auth.note_failure(client_ip(request), uid)
+        return err("current password is wrong", 403)
+    auth.set_password(DATA, uid, body.new)
+    auth.end_other_sessions(DATA, uid, request.cookies.get(auth.COOKIE))
+    return {"ok": True}
+
+
 @app.get("/api/users", response_model=list[User], response_model_exclude_none=True, tags=["learners"])
-def get_users():
-    """All learner profiles."""
-    return users()
+def get_users(request: Request):
+    """All learner profiles (login required)."""
+    return need(request) or users()
 
 
-@app.get("/api/states", response_model=dict[str, Optional[dict]], tags=["progress"])
-def get_states(c: str = CourseQ):
-    """Every learner's progress for one course (used by the Party comparison)."""
+@app.get("/api/states", response_model=dict[str, dict | None], tags=["progress"])
+def get_states(request: Request, c: str = CourseQ):
+    """Every learner's progress for one course (used by the Party comparison; login required)."""
+    denied = need(request)
+    if denied:
+        return denied
     return {u["id"]: read_state(u["id"], c) for u in users()}
 
 
 @app.get("/api/state/{uid}", response_model=StateEnvelope, responses={404: {"model": ErrorOut}}, tags=["progress"])
-def get_state(uid: str = Path(...), c: str = CourseQ):
-    """One learner's progress (null if they haven't started this course)."""
+def get_state(request: Request, uid: str = Path(...), c: str = CourseQ):
+    """Your progress (null if you haven't started this course)."""
+    denied = need(request, uid)
+    if denied:
+        return denied
     if not user_ok(uid):
         return err("unknown user", 404)
     return {"state": read_state(uid, c)}
@@ -194,7 +330,10 @@ def get_state(uid: str = Path(...), c: str = CourseQ):
     tags=["progress"],
 )
 async def put_state(request: Request, uid: str = Path(...), c: str = CourseQ):
-    """Save progress. Rejects stale writes (409) and keeps one backup per learner per day."""
+    """Save your progress. Rejects stale writes (409) and keeps one backup per learner per day."""
+    denied = need(request, uid)
+    if denied:
+        return denied
     if not user_ok(uid):
         return err("unknown user", 404)
     if int(request.headers.get("content-length") or 0) > MAX_BODY:
@@ -230,8 +369,11 @@ def health():
 
 
 @app.get("/api/backups/{uid}", response_model=list[Backup], responses={404: {"model": ErrorOut}}, tags=["backups"])
-def list_backups(uid: str = Path(...), c: str = CourseQ):
-    """Daily backups for a learner and course, newest first."""
+def list_backups(request: Request, uid: str = Path(...), c: str = CourseQ):
+    """Your daily backups for a course, newest first."""
+    denied = need(request, uid)
+    if denied:
+        return denied
     if not user_ok(uid):
         return err("unknown user", 404)
     ensure_dirs()
@@ -245,8 +387,11 @@ def list_backups(uid: str = Path(...), c: str = CourseQ):
 
 
 @app.get("/api/backups/{uid}/{day}", responses={404: {"model": ErrorOut}}, tags=["backups"])
-def get_backup(uid: str = Path(...), day: str = Path(..., pattern=r"^\d{4}-\d{2}-\d{2}$"), c: str = CourseQ):
+def get_backup(request: Request, uid: str = Path(...), day: str = Path(..., pattern=r"^\d{4}-\d{2}-\d{2}$"), c: str = CourseQ):
     """Download one day's backup (JSON). Import it in the app's Settings to restore."""
+    denied = need(request, uid)
+    if denied:
+        return denied
     if not user_ok(uid):
         return err("unknown user", 404)
     name = f"{tag_of(uid, c)}-{day}.json"
@@ -264,7 +409,8 @@ _bug_hits: dict[str, list[float]] = {}
 class BugIn(BaseModel):
     text: str = Field(..., min_length=1, max_length=4000)
     category: str = Field("bug", pattern=r"^(bug|content|idea)$")
-    ctx: dict = Field(default_factory=dict, description="Screen snapshot: page, url, user, course, lesson step, screen text/HTML, errors")
+    ctx: dict = Field(default_factory=dict,
+                      description="Screen snapshot: page, url, user, course, lesson step, screen text/HTML, errors")
 
 
 class BugSaved(BaseModel):
@@ -276,8 +422,8 @@ class BugSummary(BaseModel):
     id: str
     received: str
     category: str
-    user: Optional[str]
-    page: Optional[str]
+    user: str | None
+    page: str | None
     text: str
 
 
@@ -305,8 +451,11 @@ async def report_bug(request: Request, bug: BugIn):
 
 
 @app.get("/api/bugs", response_model=list[BugSummary], tags=["bugs"])
-def list_bugs(limit: int = Query(100, ge=1, le=1000)):
-    """Newest bug reports first (summary only; full snapshot is in progress/bugs/<id>.json)."""
+def list_bugs(request: Request, limit: int = Query(100, ge=1, le=1000)):
+    """Newest bug reports first (summary only; full snapshot is in progress/bugs/<id>.json). Login required."""
+    denied = need(request)
+    if denied:
+        return denied
     if not os.path.isdir(BUGS):
         return []
     out = []
