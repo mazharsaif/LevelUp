@@ -1,23 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22185c"/><stop offset=".55" stop-color="#121945"/><stop offset="1" stop-color="#070a1c"/></linearGradient>
-    <radialGradient id="halo" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="#7b5cff" stop-opacity=".45"/><stop offset="1" stop-color="#7b5cff" stop-opacity="0"/></radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1b8"/><stop offset="1" stop-color="#ffb627"/></linearGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="112" fill="url(#halo)"/>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <g filter="url(#soft)" opacity=".75">
-      <path d="M150,392 L256,320 L362,392" stroke="#3d8bff" stroke-width="48"/>
-      <path d="M150,296 L256,224 L362,296" stroke="#8a5cff" stroke-width="48"/>
-      <path d="M150,200 L256,128 L362,200" stroke="#ffb627" stroke-width="48"/>
-    </g>
-    <path d="M150,392 L256,320 L362,392" stroke="#4d96ff" stroke-width="44"/>
-    <path d="M150,296 L256,224 L362,296" stroke="#9a6dff" stroke-width="44"/>
-    <path d="M150,200 L256,128 L362,200" stroke="url(#gold)" stroke-width="44"/>
-  </g>
-  <g transform="translate(256 74)">
-    <path d="M0,-26 L6,-6 L26,0 L6,6 L0,26 L-6,6 L-26,0 L-6,-6 Z" fill="#ffffff"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22185c"/><stop offset=".55" stop-color="#121945"/><stop offset="1" stop-color="#070a1c"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7b5cff" stop-opacity=".5"/><stop offset="1" stop-color="#7b5cff" stop-opacity="0"/></radialGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1b8"/><stop offset="1" stop-color="#ffb627"/></linearGradient>
+<linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd35c"/><stop offset=".5" stop-color="#9a6dff"/><stop offset="1" stop-color="#4d96ff"/></linearGradient>
+<linearGradient id="hexf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2378"/><stop offset="1" stop-color="#141a4d"/></linearGradient>
+<filter id="soft" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/><rect width="512" height="512" rx="112" fill="url(#halo)"/>
+<circle cx="256" cy="256" r="168" fill="none" stroke="#ffffff" stroke-opacity=".1" stroke-width="22"/>
+<circle cx="256" cy="256" r="168" fill="none" stroke="url(#ring)" stroke-width="22" stroke-linecap="round" stroke-dasharray="845 2000" transform="rotate(-90 256 256)"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M186,339 L256,293 L326,339" stroke="#3d8bff" stroke-width="34" filter="url(#soft)" opacity=".7"/><path d="M186,339 L256,293 L326,339" stroke="#4d96ff" stroke-width="30"/>
+<path d="M186,279 L256,233 L326,279" stroke="#8a5cff" stroke-width="34" filter="url(#soft)" opacity=".7"/><path d="M186,279 L256,233 L326,279" stroke="#9a6dff" stroke-width="30"/>
+<path d="M186,219 L256,173 L326,219" stroke="#ffb627" stroke-width="34" filter="url(#soft)" opacity=".7"/><path d="M186,219 L256,173 L326,219" stroke="url(#gold)" stroke-width="30"/>
+</g>
+<circle cx="96.4" cy="203.6" r="26" fill="#fff" opacity=".3" filter="url(#soft)"/>
+<path fill="#fff" d="M96.4,173.6 L105.4,194.6 L126.4,203.6 L105.4,212.6 L96.4,233.6 L87.4,212.6 L66.4,203.6 L87.4,194.6 Z"/>
 </svg>

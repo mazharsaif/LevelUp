@@ -48,7 +48,8 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Hero choice**: Hunter (`m`) or Huntress (`f`, long hair, flared battle-dress, star clip, feminine German form names via `form(i)`). Picked once after login (`heroPickView`), changeable on the course picker chip and in Settings. Stored in `settings.hero` + `localStorage a1.hero.<user>` (copied into other courses).
 - **Hero**: original "Quill Sentinel" (faceted figure, quill-staff, rune circle) with 6 forms by rank: Novice/Initiate/Adept/Seeker/Vanguard/Sovereign, each with a German name and meaning (shown when the form evolves).
 
-## State (2026-11-16)
+## State (2026-11-18)
+- App icon = progress-ring design (chevrons inside an 80 % ring, star at its tip), all art inside the maskable safe zone so round launchers don't clip it. Sources `app/icons/icon.svg` (rounded) + `icon-maskable.svg` (full bleed); PNGs rendered with headless Chrome at 512 px, then `sips` down to 192/180 (Chrome can't screenshot windows under ~500 px wide).
 - Feedback fixed (4 reports → status fixed): Fill-the-gap English line same size as German; tap a German word in Fill-the-gap / Complete-the-sentence to see its meaning (`glossOf()` in lesson.js: word list + FORMS for ist/den/zum…, simple ending stripping, Ihr*/Sie mid-sentence = formal); Herzlich willkommen = "A warm (hearty) welcome!" + new phrase "Willkommen!" (source edits in legacy/Data …/build/phrases.py, work/v1_entries.json, work/sup2.txt; audio fetched).
 - Folder renamed A1-App → **LevelUp**; Data/Job Hunting/learning/linkedin_jobs moved to `../legacy/` (export_data.py now reads `../legacy/Data`); `legacy/` in .gitignore. Live FastAPI must be restarted from the new path.
 - CI/CD for ML branch (20 skills) + builder: images (`![cap](img/x.svg)`) and code inside bold; map side labels wrap to 3 lines. All 5 open branches pass tree_check on 8899; SW v11.
@@ -87,6 +88,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - Service worker cache name `a1-shell-vN` in `app/sw.js`: bump it when shell files change (only matters over HTTPS).
 
 ## Changelog (newest first, one line per session)
+- 11-18: new app icon (progress ring, circle-safe; picked from 4 options https://claude.ai/artifact/E6mHhZZ5epmLyB8Q9EQvLj). SW shell v16.
 - 11-18: renamed the app **Rankwise → LevelUp** everywhere (UI, manifest, server, docs, guides' example names, skill `levelup-skill-tree`, uv project); older changelog lines keep the old name. SW shell v15.
 - 11-17: no sideways scrolling on phones (checked 360/412/560 px × 6 themes × 6 screens): top row name chip ends in … and course chip is flag-only under 460 px, compact ⚡/💎 chip under 430 px; Words/Lessons filter bars scroll again (tree Map/Path switch renamed `.seg` → `.segt`, it had overridden them); long names wrap on Progress; Calm/Eurozeit path labels fit. SW shell v14.
 - 11-17: 🎓 Eurozeit theme (partner look after knowledgecenter.eurozeitglobal.com: navy #00339b, green #3ab500, gold #ffb606, grey #f1f2f8, Urbanist font; light only; built on Calm). SW shell v13.
