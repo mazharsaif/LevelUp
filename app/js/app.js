@@ -2,8 +2,8 @@ import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COUR
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
   importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest } from "./store.js";
-import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable } from "./lesson.js";
-import { play } from "./audio.js";
+import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable } from "./lesson.js";
+import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
 
@@ -34,6 +34,7 @@ const closeSheet = () => (sheetRoot().innerHTML = "");
 // ------------------------------------------------------------------ routing
 function route() {
   closeSheet();
+  stopAudio();
   const h = location.hash || "#/today";
   if (h === "#/lesson") { if (inLesson()) return; location.replace("#/today"); return; }
   if (inLesson()) abortLesson();
@@ -78,9 +79,9 @@ function setupView() {
     <div class="row" style="align-items:center;gap:10px"><input type="date" id="tg" value="${tgt}" min="${addDays(today(), 1)}" style="flex:1"><b id="tgd" class="small" style="white-space:nowrap">${daysText(tgt)}</b></div>
     <p class="muted small" style="margin:6px 0 0">Your pace counts from today (${fmtDate(today())}).</p>
     <label class="f">Daily goal</label>
-    <select id="dg">${[["auto", "Auto – reach A1 by my target date (recommended)"], [30, "Casual · 30 XP"], [50, "Regular · 50 XP"], [80, "Serious · 80 XP"], [120, "Intense · 120 XP"]]
+    <select id="dg">${[["auto", "Auto – reach A1 by my target date (recommended)"], [10, "Casual · 10 XP"], [20, "Regular · 20 XP"], [30, "Serious · 30 XP"], [45, "Intense · 45 XP"]]
       .map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
-    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
+    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one new word learned.</b> Each finished part adds +2 (+1 if perfect) and a whole lesson +5. Reviews give a little (+1 per 5 words recalled) and forgetting costs XP. 20 XP ≈ one new lesson a day.</p>
   </div>
   <button class="btn" id="go">Start learning</button>`;
   view().querySelector("#sw").onclick = () => { if (isGuest()) { leaveGuest(); return route(); } if (AUTH === "on") return doLogout(); signOut(); route(); };
@@ -310,7 +311,7 @@ function grammarView(id) {
     ${P.t.startsWith(g.title) ? "" : `<p class="small muted" style="margin-top:4px">${esc(g.title)}</p>`}` : ""}
   ${first ? `<p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>` : ""}
   <div class="gram">${P ? P.html : g.body + (g.after || "")}</div>
-  ${last ? `<h2>Examples</h2>${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
+  ${last ? `${g.ex.length ? "<h2>Examples</h2>" : ""}${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
     <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
   ${g.mist.length ? `<h2>Common mistakes</h2><div class="mist">${g.mist.map(m => `<div><span style="color:var(--red)">✗ ${esc(m.wrong)}</span><br>
     <span style="color:var(--green);font-weight:700">✓ ${esc(m.right)}</span><br><span class="muted">${esc(m.why)}</span></div>`).join("")}</div>` : ""}` : ""}
@@ -322,8 +323,8 @@ function grammarView(id) {
   view().querySelector("#back").onclick = () => (location.hash = "#/path");
   view().querySelector("#prac").onclick = () => {
     if (nq) return startGrammarPractice(g, it);
-    const first = !S.done[id]; completeItem(id, null, first ? 5 : 0); if (first) addXP(5);
-    toast(first ? "Part done · +5 XP" : "Already done"); location.hash = questMode() || !nextPart ? "#/path" : "#/grammar/" + nextPart.id;
+    const first = !S.done[id], xp = grammarXP(g, it, null); addXP(xp);
+    toast(first ? `Part done · +${xp} XP` : `Read again · +${xp} XP`); location.hash = questMode() || !nextPart ? "#/path" : "#/grammar/" + nextPart.id;
   };
   const np = view().querySelector("#np"); if (np) np.onclick = () => (location.hash = "#/grammar/" + nextPart.id);
 }
@@ -513,9 +514,9 @@ function settingsView() {
     <label class="f">Pace counted from</label><input type="date" id="sd" value="${S.settings.startDate}">
     <label class="f">Daily goal</label>
     <select id="gm"><option value="auto" ${S.settings.goalMode !== "manual" ? "selected" : ""}>Auto – reach A1 by the target date (recommended)</option><option value="manual" ${S.settings.goalMode === "manual" ? "selected" : ""}>Manual – my own fixed goal</option></select>
-    ${S.settings.goalMode === "manual" ? `<label class="f">My daily goal (XP)</label><input type="number" id="dg" min="10" step="10" value="${S.settings.dailyGoal}">`
+    ${S.settings.goalMode === "manual" ? `<label class="f">My daily goal (XP)</label><input type="number" id="dg" min="5" step="5" value="${S.settings.dailyGoal}">`
       : `<div class="note" style="margin-top:8px">Today's goal: <b>${goalFor()} XP</b> · about ${remainingXP()} XP of lessons left over ${Math.max(1, daysBetween(today(), S.settings.targetDate) + 1)} days, plus daily reviews. It is set each morning and goes up if you fall behind, down if you get ahead.</div>`}
-    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
+    <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one new word learned.</b> Each finished part adds +2 (+1 if perfect) and a whole lesson +5. Reviews give a little (+1 per 5 words recalled) and forgetting costs XP. 20 XP ≈ one new lesson a day.</p>
     <button class="link" id="xph">How is XP measured?</button></div>
   <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
     <label class="f">Theme</label><select id="th">${themeOptions(S.settings.theme || "system")}</select>
@@ -556,7 +557,7 @@ function settingsView() {
     setS("targetDate", t); toast(`Target set to ${fmtDate(t, { day: "numeric", month: "long", year: "numeric" })}`); settingsView();
   };
   v.querySelector("#sd").onchange = e => { if (e.target.value && e.target.value < S.settings.targetDate) { setS("startDate", e.target.value); settingsView(); } else { toast("Start must be before the target"); e.target.value = S.settings.startDate; } };
-  const dg = v.querySelector("#dg"); if (dg) dg.onchange = e => setS("dailyGoal", Math.max(10, +e.target.value || 50));
+  const dg = v.querySelector("#dg"); if (dg) dg.onchange = e => setS("dailyGoal", Math.max(5, +e.target.value || 20));
   v.querySelector("#gm").onchange = e => { setS("goalMode", e.target.value); if (e.target.value === "manual" && !S.settings.dailyGoal) setS("dailyGoal", goalFor()); settingsView(); };
   v.querySelector("#qm").onchange = e => { setS("quest", e.target.checked); if (e.target.checked) S.penChecked = addDays(today(), -1), save(); toast(e.target.checked ? "Quest Mode on" : "Quest Mode off – skill map"); route(); };
   v.querySelector("#th").onchange = e => { setS("theme", e.target.value); applyTheme(); settingsView(); };
@@ -862,7 +863,7 @@ async function fillDownloads(br) {
   const el = view().querySelector("#dlbar"); if (!el || !br.reading) return;
   let idx; try { idx = await loadIndex(br); } catch { el.textContent = ""; return; }
   const chs = Object.keys(idx.chapters), total = chs.reduce((a, c) => a + idx.chapters[c].bytes, 0);
-  if (!canDownload()) { el.innerHTML = `📖 Reading loads from the Mac when you open a skill (${kb(total)} in total). Offline downloads need HTTPS.`; return; }
+  if (!canDownload()) { el.innerHTML = `📖 Reading loads from the server when you open a skill (${kb(total)} in total). Offline downloads need HTTPS.`; return; }
   const have = [];
   for (const c of chs) if (await isDownloaded(br, c)) have.push(c);
   const size = have.reduce((a, c) => a + idx.chapters[c].bytes, 0);
@@ -884,7 +885,7 @@ function readLabel(n, st) {
 async function openReader(br, node, partIdx) {
   let ch = null;
   if (br.reading) { try { ch = await loadChapter(br, node ? node.chapter : br.intro); } catch { ch = null; } }
-  if (!ch) { toast(navigator.onLine ? "Reading material for this skill isn't available yet." : "Can't reach the Mac to download this skill. Try again on home Wi-Fi."); return; }
+  if (!ch) { toast(navigator.onLine ? "Reading material for this skill isn't available yet." : "No connection, so this skill can't download right now. Try again when you're online."); return; }
   S.read = S.read || {}; S.parts = S.parts || {};
   const key = node ? node.id : br.id + ".intro";
   if (node) S.lastRead = { id: node.id, at: Date.now() };
@@ -1119,7 +1120,7 @@ function treasureSheet() {
     <div class="small muted">Today: <b style="color:var(--ink)">${xt} / ${g} XP</b> daily goal</div>
     <div class="hbar" style="margin:4px 0"><div style="width:${Math.min(100, 100 * xt / g)}%;background:var(--blue, #4fb3ff)"></div></div>
     <div class="small muted">Last 7 days: <b style="color:var(--ink)">${wk} XP</b> · 🔥 ${st}-day streak</div>
-    <div class="small muted" style="margin:4px 0 8px">1 XP ≈ one answer you get right. Finishing lessons and reviews adds more.</div>
+    <div class="small muted" style="margin:4px 0 8px">1 XP ≈ one new word learned. Finishing parts and lessons adds a bonus; reviews add a little.</div>
     <button class="btn ghost sm" id="xpmore" style="margin-top:4px">How XP works ›</button>
     <div style="font-weight:800;margin:16px 0 4px">💎 Diamonds</div>
     ${box.length ? `<div style="font-weight:800;margin-bottom:6px">🎁 Unopened gift boxes</div>
@@ -1138,15 +1139,17 @@ function treasureSheet() {
 
 // ------------------------------------------------------------------ XP explainer
 const XP_HELP = `<h2 style="margin-top:0">⚡ How XP works</h2>
-  <p><b>1 XP ≈ one thing you got right.</b> Each finished lesson also gives a 10 XP bonus.</p>
-  <table class="cmp"><tr><td>🔤 Vocabulary part (4 words)</td><td><b>4</b> + 1 per correct answer <span class="tiny muted">(max 16)</span> · <b>+10</b> when the whole lesson is done</td></tr>
-  <tr><td>📐 Grammar practice</td><td><b>10</b> + 2 per correct answer</td></tr>
-  <tr><td>💬 Phrases part (≈5 phrases)</td><td><b>4</b> + 1 per correct answer <span class="tiny muted">(max 16)</span> · <b>+10</b> when the topic is done</td></tr>
-  <tr><td>🔁 Review</td><td>+1 per Good/Easy · 0 per Hard · <b style="color:var(--red)">−1 per Again</b><br>+5 bonus at ≥80 % recalled · <b style="color:var(--red)">−5</b> below 50 %</td></tr>
-  <tr><td>⛔ Missed review day</td><td><b style="color:var(--red)">−10 XP</b> (+1 per 10 overdue words, max −30)</td></tr></table>
-  <p class="small">Retried questions and a quit lesson give no XP. Repeating a finished lesson earns XP again, but doesn't raise your A1 %.</p>
-  <p class="small"><b>Daily goal</b> = the XP you aim for each day (a typical new lesson + a review ≈ 50 XP).
-  <b>Streak</b> = days in a row with at least 1 XP. XP is added per day to your progress file on the Mac, which also feeds the Me &amp; Batul comparison.</p>
+  <p><b>Learning something new earns the most.</b> 1 XP per new word or phrase, plus bonuses for finishing parts and lessons. Reviews earn a little; forgetting costs XP.</p>
+  <table class="cmp"><tr><td>🔤 New word / 💬 new phrase</td><td><b>+1</b> each (first time, when the part is passed)</td></tr>
+  <tr><td>✅ Part finished</td><td><b>+2</b> · <b>+1</b> more if every first answer was right</td></tr>
+  <tr><td>🏁 Whole lesson / phrase topic done</td><td><b>+5</b> bonus</td></tr>
+  <tr><td>📐 Grammar part</td><td><b>+3</b> (+1 if perfect) · <b>+5</b> when the chapter is done</td></tr>
+  <tr><td>🔁 Review</td><td><b>+1 per 5 words</b> recalled · 0 for Hard · <b style="color:var(--red)">−1 per 2 forgotten</b> · +1 at ≥80 % recalled</td></tr>
+  <tr><td>⛔ Missed review day</td><td><b style="color:var(--red)">−3 XP</b> (−1 more per 10 overdue words, max −10)</td></tr>
+  <tr><td>🎤 Phrase spoken correctly</td><td><b>+1</b></td></tr></table>
+  <p class="small">Repeating a part you already finished gives +1. A failed part (under 60 % right) gives +1 for the effort. A quit lesson gives nothing.</p>
+  <p class="small"><b>Daily goal</b> = the XP you aim for each day (one new lesson ≈ 20 XP).
+  <b>Streak</b> = days in a row with at least 1 XP. XP is added per day to your progress on the server, which also feeds the Party comparison.</p>
   <p class="small"><b>💎 Diamonds</b>: +${QUEST_GEMS} for clearing all three daily quests. Streak milestones (7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365 days) give a gift box – tap it to open: Common 15–30 💎, Rare 40–80, Epic 100–180, Legendary 250–400.</p>
   <p class="small muted">XP measures effort. Your A1 % measures how much of the course you've covered.</p>
   <p class="small"><b>Level</b> follows your A1 %, not XP: level 1 at the start, <b>level 100 = A1 reached</b>: every lesson done and remembered (about one level per lesson). After that you keep levelling: every ${POST_A1_XP} XP from reviews and practice adds another level (101, 102 …). Your hunter rank (E → S) and the purple aura grow with it.</p>
@@ -1189,7 +1192,7 @@ function avatar(id, sm) {
   return `<span class="av ${sm ? "sm" : ""}" style="background:${u.color}">${esc(u.name[0].toUpperCase())}</span>`;
 }
 function syncText() {
-  if (SYNC.pending && !SYNC.online) return "⚠️ Mac not reachable – saved on phone, will sync";
+  if (SYNC.pending && !SYNC.online) return "⚠️ No connection – progress saved on this phone, it will sync when you're back online";
   if (SYNC.pending) return "Saving…";
   return SYNC.online ? "" : "⚠️ Offline";
 }
@@ -1399,6 +1402,7 @@ async function fillCompare() {
 }
 
 // ------------------------------------------------------------------ boot
+["gesturestart", "gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false })); // iOS pinch
 (async function boot() {
   installBugButton();   // first, so it works even if loading fails
   applyTheme();
@@ -1408,7 +1412,7 @@ async function fillCompare() {
   await loadUsers();
   const startCourse = (USER && lastCourse(USER)) || COURSE;
   setCourse(courseInfo(startCourse).status === "ready" ? startCourse : COURSE);
-  try { await loadContent(); } catch (e) { view().innerHTML = `<div class="loading">Could not load lessons. Is the Mac's server running? Then reload.</div>`; return; }
+  try { await loadContent(); } catch (e) { view().innerHTML = `<div class="loading">Could not load lessons. Check your internet connection, then reload.</div>`; return; }
   if (USER) await switchUser(USER);
   window.addEventListener("hashchange", route);
   window.addEventListener("a1:state-replaced", () => { if (!inLesson()) route(); });

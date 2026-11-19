@@ -41,6 +41,20 @@ export function play(aid, fallbackText) {
   });
 }
 
+// Stop whatever is playing (moving to the next exercise, leaving a lesson). Bumping the token also cancels
+// clips scheduled with playSoon() and any late speech fallback from the old clip.
+export function stopAudio() {
+  token++;
+  player.pause();
+  player.onerror = null;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+// play after a short delay, unless the learner has moved on by then
+export function playSoon(aid, fallbackText, ms = 250) {
+  const my = token;
+  setTimeout(() => { if (my === token) play(aid, fallbackText); }, ms);
+}
+
 // little UI sounds made with WebAudio (no files needed)
 let ctx = null;
 export function blip(ok) {

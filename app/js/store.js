@@ -104,7 +104,7 @@ const topicsOf = it => it.kind === "vocab" ? it.title.split(" · ").map(t => "v:
 function spreadPath(path) {
   const left = [...path], out = [];
   const clash = it => {
-    const T = topicsOf(it), gap = it.kind === "grammar" ? GAP_G : GAP;
+    const T = topicsOf(it), gap = it.kind === "grammar" ? ((C.grammar[it.gid || it.id] || {}).gap || GAP_G) : GAP; // a chapter can ask for more room (Ch 1 pronunciation)
     return out.slice(-gap).some(o => topicsOf(o).some(t => T.includes(t)));
   };
   while (left.length) {
@@ -243,7 +243,7 @@ export const blank = () => ({
   created: today(),
   updated: 0,
   setup: false,
-  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 50, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system", quest: true, speak: true },
+  settings: { startDate: "2026-11-09", targetDate: "2027-01-31", dailyGoal: 20, goalMode: "auto", hindi: true, autoplay: true, sound: true, theme: "system", quest: true, speak: true, xp2: true },
   words: {},   // id -> {box, due, r, w}
   done: {},    // path item id -> {date, score}
   log: [],     // {d, id, xp}
@@ -265,8 +265,11 @@ export const blank = () => ({
 function normalize(st) {
   const b = blank();
   st = st || b;
+  const oldXP = !(st.settings || {}).xp2; // saved before XP scheme 2
   st.settings = { ...b.settings, ...(st.settings || {}) };
   for (const k of Object.keys(b)) if (st[k] === undefined) st[k] = b[k];
+  // XP scheme 2 has ~2.5× smaller numbers: scale an old manual daily goal once
+  if (oldXP && st.settings.goalMode === "manual") st.settings.dailyGoal = Math.max(10, Math.round(st.settings.dailyGoal * 0.4));
   // grammar chapters finished before they were split into parts: every part counts as done
   for (const [gid, ids] of Object.entries(C.gparts || {})) if (st.done[gid]) ids.forEach(id => { if (!st.done[id]) st.done[id] = { ...st.done[gid] }; });
   return st;
@@ -366,7 +369,9 @@ export function addPenalty(n, why, d = today()) {
   save();
 }
 // A day counts as missed when words were due that day and no review was done.
-export const MISSED_DAY_XP = 10;
+export const MISSED_DAY_XP = 3;
+// XP scheme 2 (11-19): learning pays, reviews pay a little, forgetting costs. See XP_HELP in app.js.
+export const XPR = { newItem: 1, part: 2, perfect: 1, lesson: 5, grammarPart: 3, repeat: 1, failed: 1, recall: 0.2, forgot: -0.5, reviewBonus: 1 };
 export const questMode = (st = S) => !st || !st.settings || st.settings.quest !== false;
 export function checkMissed() {
   if (!S || !S.setup) return 0;
@@ -378,7 +383,7 @@ export function checkMissed() {
     if (S.reviews[d]) continue;
     const overdue = Object.values(S.words).filter(w => w.due <= d && (!w.last || w.last < d)).length;
     if (overdue > 0) {
-      const n = Math.min(30, MISSED_DAY_XP + Math.floor(overdue / 10));
+      const n = Math.min(10, MISSED_DAY_XP + Math.floor(overdue / 10));
       addPenalty(n, `Missed reviews (${overdue} words were due)`, d); lost += n;
     }
   }
@@ -652,30 +657,31 @@ export const weekOf = it => weekPlan().of[it.id];
 export const thisWeek = () => { const p = weekPlan(), t = today(); const w = p.weeks.find(x => x.from <= t && t <= x.to); return w ? w.n : (t < p.weeks[0].from ? 0 : p.nWeeks + 1); };
 
 // ---------- dynamic daily XP goal: what it takes to reach A1 (level 100, incl. S-rank) by the target date ----------
-const PART_XP = 14, LESSON_BONUS = 10;
+const PART_XP = XPR.part + XPR.perfect / 2, LESSON_BONUS = XPR.lesson; // + 1 XP per new word/phrase (below)
 export function remainingXP(st = S) {
   let xp = 0;
   for (const it of C.content.path) {
     if (st.done[it.id]) continue;
-    if (it.kind === "grammar") { const P = gPart(it), nq = P ? P.q.length : grammarOf(it).q.length || 6; xp += (P ? 5 : 10) + Math.round(2 * 0.8 * nq); continue; }
-    const left = bitCount(it) - bitsDone(it, st);
-    xp += left * PART_XP + LESSON_BONUS;
+    if (it.kind === "grammar") { xp += XPR.grammarPart + XPR.perfect / 2 + (!it.gid || it.part === it.of - 1 ? XPR.lesson : 0); continue; }
+    const B = bitsOf(it), b = (st.bits || {})[it.id] || [];
+    B.forEach((ids, k) => { if (!b[k]) xp += PART_XP + ids.length * XPR.newItem; });
+    xp += LESSON_BONUS;
   }
   return xp;
 }
 export function autoGoal(st = S) {
   const days = Math.max(1, daysBetween(today(), st.settings.targetDate) + 1); // today counts
   const learned = Object.keys(st.words || {}).length;
-  const reviewAllowance = Math.min(30, 5 + Math.round(learned * 0.04)); // daily reviews grow with what you know
+  const reviewAllowance = Math.min(6, 1 + Math.round(learned * 0.006)); // review XP is small (+0.2 per word recalled)
   const raw = remainingXP(st) / days + reviewAllowance;
-  return Math.max(20, Math.min(300, Math.round(raw / 5) * 5));
+  return Math.max(10, Math.min(100, Math.round(raw)));
 }
 // Goal for today: manual setting, or the auto goal frozen once per day (so finishing a lesson doesn't move it).
 export function goalFor(st = S) {
   if (st.settings.goalMode === "manual") return st.settings.dailyGoal || 50;
   const t = today();
-  if (!st.goalDay || st.goalDay.d !== t || st.goalDay.target !== st.settings.targetDate) {
-    st.goalDay = { d: t, v: autoGoal(st), target: st.settings.targetDate };
+  if (!st.goalDay || st.goalDay.d !== t || st.goalDay.target !== st.settings.targetDate || st.goalDay.s !== 2) {
+    st.goalDay = { d: t, v: autoGoal(st), target: st.settings.targetDate, s: 2 };
     if (st === S) save();
   }
   return st.goalDay.v;

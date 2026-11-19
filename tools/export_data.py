@@ -195,6 +195,95 @@ def or_question(q):
 for g in grammar:
     g["q"] = ch1_questions() if g["num"] == 1 else [or_question(q) for q in g["q"] if not q["a"].startswith("(your own")]
 
+# ---- Ch 1 (pronunciation) in small bites (feedback 11-19: "too much to read in one sitting") ----
+# 7 short parts, each a few sounds with 🔊 examples and its own questions. The app spreads the parts out
+# (g["gap"] = other lessons between two parts), so you learn a few sounds, do some words, then come back.
+def _ex(de, hint):
+    return (f'<div class="ex"><button class="spk sm" data-a="{say(de) or ""}" data-t="{html.escape(de)}">🔊</button>'
+            f'<div class="t"><div>{html.escape(de)}</div><div class="muted small">{hint}</div></div></div>')
+
+def _rows(rows, head):
+    th = "".join(f"<th>{h}</th>" for h in head)
+    return "<table><thead><tr>" + th + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows) + "</tbody></table>"
+
+def _letters(pairs):
+    return _rows([(f"<b>{l}</b>", n, f'<span class="hi">{h}</span>') for l, n, h in pairs], ["Letter", "Name (say)", "Hindi"])
+
+def ch1_parts():
+    Q = lambda q, a, opts, note, **kw: dict(q=q, a=a, opts=opts, note=note, **kw)
+    parts = [
+        ("Letter names: the A – E – I trap",
+         '<div class="box warn"><b>The letter-name trap</b><br>It is a triangle, not a simple swap: German <b>I</b> is said “ee” '
+         '(like English E), German <b>E</b> is said “ay” (like English A), and German <b>A</b> is said “aa”.</div>'
+         '<p>You will need this to spell your name: TAHA = tay – aa – haa – aa.</p>'
+         + _ex("Wie schreibt man das?", "How do you spell that?") + _ex("Mein Name ist Taha: T – A – H – A.", "tay – aa – haa – aa"),
+         [Q("The German letter E is said …", "ay", ["ay", "ee", "eye", "aa"], "E = “ay”, like the English letter A."),
+          Q("The German letter I is said …", "ee", ["ee", "eye", "ay", "aa"], "I = “ee”, like the English letter E."),
+          Q("How do you spell TAHA in German?", "tay – aa – haa – aa", ["tay – aa – haa – aa", "tee – ay – aitch – ay", "tay – ay – haa – ay"], "A = “aa”, H = “haa”, T = “tay”.")]),
+        ("The alphabet: A to M",
+         "<p>Most letter names are close to English. Watch the ones in bold.</p>" + _letters([
+            ("A", "aa", "आ"), ("B", "bay", "बे"), ("C", "<b>tsay</b>", "त्से"), ("D", "day", "डे"), ("E", "<b>ay</b>", "ए"), ("F", "ef", "एफ़"),
+            ("G", "<b>gay</b>", "गे"), ("H", "haa", "हा"), ("I", "<b>ee</b>", "ई"), ("J", "<b>yot</b>", "यॉट"), ("K", "kaa", "का"), ("L", "el", "एल"), ("M", "em", "एम")]),
+         [Q("The letter J is said …", "yot", ["yot", "jay", "jee", "hot"], "J = “yot”, like the y in “yes”."),
+          Q("The letter G is said …", "gay", ["gay", "jee", "gee", "jay"], "G = “gay”, always a hard g."),
+          Q("The letter C is said …", "tsay", ["tsay", "see", "kay", "say"], "C = “tsay”.")]),
+        ("The alphabet: N to Z and Ä Ö Ü ß",
+         _letters([("N", "en", "एन"), ("O", "oh", "ओ"), ("P", "pay", "पे"), ("Q", "koo", "कू"), ("R", "air (throat r)", "एअ(र)"), ("S", "es", "एस"),
+                   ("T", "tay", "टे"), ("U", "oo", "ऊ"), ("V", "<b>fow</b>", "फ़ाउ"), ("W", "<b>vay</b>", "वे"), ("X", "iks", "इक्स"),
+                   ("Y", "üp-si-lon", "ई°प-सि-लॉन"), ("Z", "<b>tset</b>", "त्सेट")])
+         + "<p>Four extra letters:</p>" + _letters([("Ä", "a-umlaut (like e in “bed”)", "ए / ऐ"), ("Ö", "o-umlaut", "ए° (lips round)"),
+                                                    ("Ü", "u-umlaut", "ई° (lips round)"), ("ß", "ess-tset (sharp s)", "एस-त्सेट")]),
+         [Q("The letter V is said …", "fow", ["fow", "vee", "vay", "oo"], "V = “fow”."),
+          Q("The letter W is said …", "vay", ["vay", "double-u", "fow", "way"], "W = “vay”."),
+          Q("The letter Z is said …", "tset", ["tset", "zed", "zee", "set"], "Z = “tset”.")]),
+        ("Four consonants: w, v, z, j",
+         "<p>These four letters sound different from English, and they are everywhere.</p>"
+         + _rows([("<b>w</b>", "like English <b>v</b>"), ("<b>v</b>", "like English <b>f</b> (foreign words: November, Vase)"),
+                  ("<b>z / tz</b>", "<b>ts</b>, as in “cats”"), ("<b>j</b>", "like English <b>y</b> (foreign words: Job, Jeans)")], ["Spelling", "Sound"])
+         + _ex("Wasser", "VAS-ser · water") + _ex("vier", "FEE-uh · four") + _ex("zehn", "TSAYN · ten") + _ex("ja", "YAA · yes"),
+         [Q("German w sounds like English …", "v", ["v", "w", "f", "u"], "Wasser = VAS-ser."),
+          Q("German v (as in vier, Vater) usually sounds like English …", "f", ["f", "v", "w", "b"], "vier = FEE-uh."),
+          Q("German z (as in zehn, Zug) sounds like …", "ts", ["ts", "z", "s", "dz"], "zehn = TSAYN."),
+          Q("German j (as in ja, Jahr) sounds like English …", "y", ["y", "j", "h", "g"], "ja = YAA.")]),
+        ("Vowel pairs: ei, ie, eu",
+         "<p>Two vowels together make one sound. Say the <b>second</b> letter: ei → “eye”, ie → “ee”.</p>"
+         + _rows([("<b>ei / ai</b>", "“eye”", "drei, nein, Mai"), ("<b>ie</b>", "long “ee”", "vier, Bier, sieben"),
+                  ("<b>eu / äu</b>", "“oy”", "neu, heute, Häuser")], ["Spelling", "Sound", "Examples"])
+         + _ex("drei", "DRAI · three") + _ex("Bier", "BEE-uh · beer") + _ex("heute", "HOY-tuh · today"),
+         [Q("Which word has the “eye” sound (ei)?", "drei", ["drei", "vier"], "ei = “eye”, ie = long “ee”."),
+          Q("eu in heute sounds like …", "oy", ["oy", "yoo", "eh-oo", "oo"], "heute = HOY-tuh."),
+          Q("Listen. Which word is it?", "nein", ["nein", "nie"], "nein = NAIN (eye sound), nie = NEE.", audio=say("nein"), say="nein")]),
+        ("sch, st / sp and the two ch sounds",
+         _rows([("<b>sch</b>", "sh", "Schule, Tisch"), ("<b>st / sp</b> at the start", "sht / shp", "Straße, sprechen"),
+                ("<b>ch</b> after a, o, u, au", "throat sound (kh, ख़)", "Buch, acht, auch"),
+                ("<b>ch</b> after e, i, ä, ö, ü; -ig", "soft, like the h in “huge” (hy, ह्य). Never k!", "ich, nicht, zwanzig")], ["Spelling", "Sound", "Examples"])
+         + _ex("Schule", "SHOO-luh · school") + _ex("Straße", "SHTRAA-suh · street") + _ex("Buch", "BOOKH · book") + _ex("ich", "IHY · I"),
+         [Q("Which word has the throat ch (kh / ख़)?", "Buch", ["Buch", "ich"], "ch after a, o, u, au is the throat sound."),
+          Q("The ch in ich and nicht sounds like …", "the h in “huge”", ["the h in “huge”", "k", "sh", "tch"], "Soft ch: never a k."),
+          Q("Straße starts with the sound …", "sht", ["sht", "st", "s", "tsh"], "st / sp at the start = sht / shp.")]),
+        ("r, -er and quiet endings",
+         _rows([("<b>-er</b> at the end", "not an r: a soft “uh”", "Vater = FAA-tuh, vier = FEE-uh"),
+                ("<b>r</b> at the start of a syllable", "throat r (soft gargle), never rolled", "rot, Reis"),
+                ("<b>b / d / g</b> at the end", "p / t / k", "halb, Kind, Tag"),
+                ("<b>h</b> after a vowel", "silent, makes the vowel long", "Bahn, Uhr, zehn"),
+                ("<b>ß / ss</b>", "sharp s", "Straße, essen")], ["Spelling", "Sound", "Examples"])
+         + _ex("Vater", "FAA-tuh · father") + _ex("Tag", "TAAK · day") + _ex("Bahn", "BAAN · train"),
+         [Q("Vater ends with …", "a soft “uh”", ["a soft “uh”", "a clear “er”", "“a”", "a rolled r"], "-er at the end = “uh”: FAA-tuh."),
+          Q("Tag ends with the sound …", "k", ["k", "g", "kh", "h"], "b / d / g at the end sound like p / t / k."),
+          Q("In Bahn, the h is …", "silent, the a is long", ["silent, the a is long", "said like English h", "said like ch"], "h after a vowel is silent.")]),
+    ]
+    qs, out = [], []
+    for t, body, pq in parts:
+        out.append(dict(t=t, html=body, q=list(range(len(qs), len(qs) + len(pq)))))
+        qs += pq
+    return out, qs
+
+for g in grammar:
+    if g["num"] == 1:
+        g["parts"], g["q"] = ch1_parts()
+        g["gap"] = 4          # at least 4 other lessons between two pronunciation parts
+        g["ex"] = []          # the spelling examples now live in part 1
+
 # ------------------------------------------------------------------ phrases
 def split_alternatives(de: str, en: str) -> list[tuple[str, str]]:
     """One item per phrase, so a lesson asks for one at a time (tester feedback 11-18).

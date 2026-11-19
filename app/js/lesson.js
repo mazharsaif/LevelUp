@@ -1,6 +1,6 @@
 // Exercise engine: vocab lessons, reviews, grammar practice, phrase sections.
-import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor } from "./store.js";
-import { play, blip } from "./audio.js";
+import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR } from "./store.js";
+import { play, blip, stopAudio, playSoon } from "./audio.js";
 import { heroHTML, applyAura, auraName, STAGES, stageFor, form } from "./hero.js";
 
 // ---------- tiny helpers ----------
@@ -306,7 +306,7 @@ export function runLesson({ title, steps, kind, onFinish }) {
         retried: new Set(), firstTry: {}, grades: [0, 0, 0, 0, 0], combo: 0, best: 0, words: new Set(), kind, onFinish, t0: Date.now() };
   render();
 }
-export function abortLesson() { R = null; document.body.classList.remove("in-lesson"); }
+export function abortLesson() { stopAudio(); R = null; document.body.classList.remove("in-lesson"); }
 export const inLesson = () => !!R;
 // Snapshot of the current exercise for bug reports (no answers needed, just what was on screen).
 export function lessonDebug() {
@@ -323,6 +323,7 @@ function header() {
 
 function render() {
   if (!R) return;
+  stopAudio(); // the previous exercise's clip must not carry over
   const s = R.steps[R.i];
   if (!s) return finish();
   const v = view();
@@ -478,7 +479,7 @@ function listen(s, lb) {
   const opts = shuffle([w, ...distractors(w, "de")]);
   lb.innerHTML = `<div class="q-title">What do you hear?</div><button class="spk xl" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button>`;
   wireSpeakers(lb);
-  setTimeout(() => play(w.a, w.de), 250);
+  playSoon(w.a, w.de);
   options(lb, opts.map(o => esc(o.de)), opts.indexOf(w), ok => answered(s, ok, { correctHTML: `${esc(w.de)} = ${esc(w.en)}`, note: ok ? w.en : "" }));
 }
 
@@ -618,7 +619,7 @@ function gmc(s, lb) {
   lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:19px;font-weight:700">${esc(q.q)}</div></div>
     ${q.audio ? `<button class="spk xl" data-a="${q.audio}" data-t="${esc(q.say || "")}">🔊</button>` : ""}`;
   wireSpeakers(lb);
-  if (q.audio) setTimeout(() => play(q.audio, q.say), 250);
+  if (q.audio) playSoon(q.audio, q.say);
   options(lb, opts.map(o => esc(o)), opts.indexOf(q.a), ok => answered(s, ok, { correctHTML: esc(q.a), note: q.note || "" }), q.opts.every(o => o.length <= 2) ? "g2" : "");
 }
 
@@ -648,7 +649,7 @@ function read(s, lb) {
   const opts = shuffle([s.p, ...s.others]);
   if (s.listen) {
     lb.insertAdjacentHTML("beforeend", `<button class="spk xl" data-a="${s.p.a || ""}" data-t="${esc(s.p.de)}">🔊</button>`);
-    wireSpeakers(lb); setTimeout(() => play(s.p.a, s.p.de), 250);
+    wireSpeakers(lb); playSoon(s.p.a, s.p.de);
     options(lb, opts.map(o => esc(o.en)), opts.indexOf(s.p), ok => { answered({ ...s, key: s.p.de }, ok, { correctHTML: esc(s.p.en) }); });
   } else {
     lb.insertAdjacentHTML("beforeend", `<div class="prompt"><div class="big" style="font-size:21px">${esc(s.p.en)}</div></div>`);
@@ -870,8 +871,14 @@ function cheerFor(acc, perfect) {
 // ---------- public starters ----------
 // A lesson part only counts (A1 %, level, words entering reviews) when at least this share of first answers was right.
 export const PASS_ACC = 60;
+// XP for a finished part (scheme 2, 11-19): +1 per new word/phrase, +2 per part, +1 if every first answer was right,
+// +5 when the whole lesson is done. A part finished before gives +1 only.
+function partXP(fresh, acc, repeat, lessonDone) {
+  if (repeat) return XPR.repeat;
+  return fresh * XPR.newItem + XPR.part + (acc >= 100 ? XPR.perfect : 0) + (lessonDone ? XPR.lesson : 0);
+}
 function failedPart(r, acc, retry) {
-  const xp = Math.min(12, r.right);              // effort still earns a little XP, but no completion
+  const xp = XPR.failed;                         // effort still earns a little XP, but no completion
   if (xp > 0) addXP(xp);
   r.failed = true; r.retry = retry;
   return xp;
@@ -882,10 +889,12 @@ export function startVocab(item, bit = 0) {
     title: `Lesson ${item.n}: ${item.title}`, kind: "vocab", steps: vocabBitSteps(item, bit),
     onFinish: (r, acc) => {
       if (acc < PASS_ACC && !S.done[item.id]) return failedPart(r, acc, () => startVocab(item, bit));
-      bitsOf(item)[bit].forEach(id => learnWord(id));
-      let xp = 4 + Math.min(12, r.right);
-      const done = completeBit(item, bit, acc, xp);
-      if (done) xp += 10; // whole lesson finished
+      const ids = bitsOf(item)[bit], repeat = !!(S.done[item.id] || ((S.bits || {})[item.id] || [])[bit]);
+      const fresh = ids.filter(id => !S.words[id]).length;
+      ids.forEach(id => learnWord(id));
+      const done = completeBit(item, bit, acc, 0);
+      const xp = partXP(fresh, acc, repeat, done);
+      S.log.at(-1).xp = xp;
       addXP(xp);
       r.bitOf = [bit + 1, n]; r.lessonDone = done;
       const nx = bit + 1 < n && !S.done[item.id] ? bit + 1 : null;
@@ -900,8 +909,8 @@ export function startReview(ids) {
     onFinish: (r) => {
       const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy || 1;
       const rate = (hard + good + easy) / n;
-      // +1 per Good/Easy, 0 for Hard, −1 per Again; +5 bonus at ≥80 % recalled, −5 below 50 %
-      let xp = good + easy - again + (rate >= 0.8 ? 5 : rate < 0.5 ? -5 : 0);
+      // recalling earns a little (+0.2 per Good/Easy), forgetting costs more (−0.5 per Again), +1 at ≥80 % recalled; rounded once
+      const xp = Math.round(XPR.recall * (good + easy) + XPR.forgot * again + (rate >= 0.8 ? XPR.reviewBonus : 0));
       const d = today(); S.reviews[d] = (S.reviews[d] || 0) + ids.length;
       if (xp >= 0) addXP(xp); else addPenalty(-xp, `Low review score (${Math.round(rate * 100)}% recalled)`);
       r.recallRate = Math.round(rate * 100);
@@ -909,12 +918,22 @@ export function startReview(ids) {
     },
   });
 }
+// grammar part: +3 (+1 if perfect), +5 when it completes the chapter; a part done before gives +1. Records the part as done.
+export function grammarXP(g, item, acc) {
+  if (!item) return XPR.repeat;
+  if (S.done[item.id]) { completeItem(item.id, acc, XPR.repeat); return XPR.repeat; }
+  completeItem(item.id, acc, 0);
+  const ids = C.gparts[g.id] || [item.id], chapter = ids.every(id => S.done[id]);
+  const xp = XPR.grammarPart + (acc != null && acc >= 100 ? XPR.perfect : 0) + (chapter ? XPR.lesson : 0);
+  S.log.at(-1).xp = xp; save();
+  return xp;
+}
 export function startGrammarPractice(g, item) {
   const P = item && item.gid ? g.parts[item.part] : null, idx = P ? P.q : g.q.map((_, i) => i); // a part asks only its own questions
   const qs = idx.map((qi, i) => { const q = g.q[qi]; return { t: q.opts ? "gmc" : "gq", q, n: i + 1, of: idx.length }; });
   runLesson({
     title: P ? item.title : `Ch ${g.num}: ${g.title}`, kind: "grammar", steps: qs,
-    onFinish: (r, acc) => { const xp = (P ? 5 : 10) + 2 * r.right; addXP(xp); if (item) completeItem(item.id, acc, xp); return xp; },
+    onFinish: (r, acc) => { const xp = grammarXP(g, item, acc); addXP(xp); return xp; },
   });
 }
 // Phrases, one bit (≈5 phrases) at a time: card → quick check → next card … → mixed quiz
@@ -948,9 +967,9 @@ export function startPhrases(sec, item, bit = 0) {
       S.say = S.say || {};
       for (const [k, ok] of Object.entries(r.say || {})) S.say[k] = ok ? (S.say[k] || 0) + 1 : Math.max(0, (S.say[k] || 0) - 1);
       if (item && acc < PASS_ACC && !S.done[item.id]) return failedPart(r, acc, () => startPhrases(sec, item, bit));
-      let xp = 4 + Math.min(12, r.right);
-      const done = item ? completeBit(item, bit, acc, xp) : false;
-      if (done) xp += 10;
+      const done = item ? completeBit(item, bit, acc, 0) : false;
+      const xp = item ? partXP(repeat ? 0 : items.length, acc, repeat, done) : XPR.repeat; // free practice outside the path
+      if (item) S.log.at(-1).xp = xp;
       addXP(xp);
       r.bitOf = [bit + 1, n]; r.lessonDone = done;
       if (item && bit + 1 < n && !S.done[item.id]) r.nextBit = () => startPhrases(sec, item, bit + 1);
