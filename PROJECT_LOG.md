@@ -116,7 +116,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
-- 11-19: all 10 open feedback reports fixed (JWT chapters: cookies, IP spoofing, signing, simpler encoding; intro page, guest mode, forgot password, 90-day login note, theme on course picker, no hero chip); SW v20. Not deployed yet; mark reports fixed on the droplet after deploy.
+- 11-19: all 10 open feedback reports fixed (JWT chapters: cookies, IP spoofing, signing, simpler encoding; intro page, guest mode, forgot password, 90-day login note, theme on course picker, no hero chip); SW v20. Deployed (cf0b85a), reports marked fixed. Project skill `.claude/skills/deploy` = pre-flight, push, ssh-add, `levelup-deploy`, verify.
 - 11-19: testing master password (`LU_MASTER_PASSWORD` env, auth.py `_master_ok`); fetched 10 open feedback reports.
 - 11-18/19 summary: GitHub repo + droplet + domain/HTTPS + Caddy, Quest Mode, grammar parts, Networking track, accounts, Python 3.13, feedback fixes, Speak it, Mac server retired (details in State and Decisions).
 - 11-19: feedback fixes (single-phrase items, synonym distractors, Words topics + sort), 🎤 Speak it, app bound to loopback + ports 8000–8100 closed, Mac server stopped.

@@ -38,7 +38,8 @@ If push is rejected (remote ahead): `git pull --rebase origin main`, re-run the 
 The droplet's `git pull` uses the forwarded agent (`ForwardAgent yes` is set for `levelup-droplet` in `~/.ssh/config`).
 
 ```bash
-ssh-add -l 2>/dev/null | grep -q id_ed25519_personal || ssh-add --apple-use-keychain ~/.ssh/id_ed25519_personal
+ssh-add -T ~/.ssh/id_ed25519_personal.pub 2>/dev/null || ssh-add --apple-use-keychain ~/.ssh/id_ed25519_personal
+# (ssh-add -l shows the key comment, not the file name, so don't grep it for the path)
 ```
 
 If `ssh-add` asks for a passphrase and fails non-interactively, ask the user to run
