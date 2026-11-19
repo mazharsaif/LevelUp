@@ -220,6 +220,7 @@ class PasswordIn(BaseModel):
 
 
 _signups: dict[str, list[float]] = {}
+RESERVED = {"guest", "admin", "anon"}  # "guest" = the app's offline guest mode
 
 
 @app.get("/api/auth/me", response_model=User, responses={401: {"model": ErrorOut}}, tags=["accounts"])
@@ -258,7 +259,7 @@ def auth_signup(request: Request, body: SignupIn):
         return err("name required", 400)
     with lock_for("__users__"):
         us = users()
-        if any(u["id"] == uid for u in us) or auth.has_password(DATA, uid):
+        if uid in RESERVED or any(u["id"] == uid for u in us) or auth.has_password(DATA, uid):
             return err("that username is taken", 409)
         used = {u.get("color") for u in us}
         color = next((c for c in COLORS if c not in used), COLORS[len(us) % len(COLORS)])

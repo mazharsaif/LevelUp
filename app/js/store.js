@@ -153,12 +153,35 @@ const LEGACY = "a1.state.v1";
 export let USERS = [];
 export let USER = null; // current user id
 export let SYNC = { online: true, pending: false, last: null };
-export const userInfo = id => USERS.find(u => u.id === id) || { id, name: id, color: "#888" };
+export const userInfo = id => USERS.find(u => u.id === id) || (id === GUEST ? { id, name: "Guest", color: "#868e96" } : { id, name: id, color: "#888" });
+
+// ---------- guest mode ----------
+// A guest tries the app without an account: progress lives only in this browser (localStorage, user id "guest"),
+// nothing is sent to the server. Signing up copies the guest's progress into the new account.
+export const GUEST = "guest";
+export const isGuest = () => USER === GUEST;
+export const hasGuestData = () => { try { return Object.keys(localStorage).some(k => k === `a1.state.${GUEST}` || k.startsWith(`a1.state.${GUEST}@`)); } catch { return false; } };
+export function startGuest() { ls.set("a1.guest", "1"); ls.set("a1.user", GUEST); USER = GUEST; }
+export function leaveGuest() { ls.del("a1.guest"); signOut(); } // progress stays on the phone: "Try as guest" resumes it
+// after sign-up: move every guest course (and hero/course choice) to the new account; switchUser then uploads it
+export function claimGuest(uid) {
+  try {
+    for (const k of Object.keys(localStorage)) {
+      const m = k.match(/^a1\.(state|hero|course)\.guest(@.*)?$/);
+      if (!m) continue;
+      let v = localStorage.getItem(k);
+      if (m[1] === "state") { const st = JSON.parse(v); st.updated = Date.now(); v = JSON.stringify(st); }
+      localStorage.setItem(`a1.${m[1]}.${uid}${m[2] || ""}`, v);
+      localStorage.removeItem(k);
+    }
+  } catch { /* storage blocked */ }
+  ls.del("a1.guest");
+}
 
 export async function loadUsers() {
   try {
     const r = await fetch("api/users", { cache: "no-store" });
-    if (r.status === 401) { USERS = []; return USERS; } // accounts are on and nobody is logged in
+    if (r.status === 401) { USERS = []; USER = ls.get("a1.guest") && ls.get("a1.user") === GUEST ? GUEST : null; return USERS; } // nobody logged in (maybe a guest)
     if (!r.ok) throw new Error(r.status);
     USERS = await r.json();
     ls.set("a1.users", JSON.stringify(USERS));
@@ -167,7 +190,7 @@ export async function loadUsers() {
     SYNC.online = false;
   }
   const u = ls.get("a1.user");
-  USER = USERS.some(x => x.id === u) ? u : null;
+  USER = USERS.some(x => x.id === u) || (u === GUEST && ls.get("a1.guest")) ? u : null;
   return USERS;
 }
 
@@ -179,7 +202,7 @@ export async function checkAuth() {
   try {
     const r = await fetch("api/auth/me", { cache: "no-store" });
     if (r.ok) { const u = await r.json(); AUTH = "on"; ls.set("a1.user", u.id); }
-    else if (r.status === 401) { AUTH = "on"; ls.del("a1.user"); }
+    else if (r.status === 401) { AUTH = "on"; if (ls.get("a1.guest")) ls.set("a1.user", GUEST); else ls.del("a1.user"); }
     else AUTH = "off"; // 404: no accounts on this server
     ls.set("a1.auth", AUTH);
     return AUTH;
@@ -208,6 +231,7 @@ export async function logout() {
 }
 const authLost = () => window.dispatchEvent(new Event("a1:auth"));
 export async function fetchAllStates() {
+  if (isGuest()) return { [GUEST]: S };
   try { const r = await fetch("api/states" + cq(), { cache: "no-store" }); return await r.json(); }
   catch { const o = {}; USERS.forEach(u => (o[u.id] = u.id === USER ? S : JSON.parse(ls.get(cacheKey(u.id)) || "null"))); return o; }
 }
@@ -254,6 +278,7 @@ export async function switchUser(id) {
   USER = id; ls.set("a1.user", id);
   let local = JSON.parse(ls.get(cacheKey(id)) || "null");
   let server = null;
+  if (id === GUEST) { S = normalize(local); ls.set(cacheKey(id), JSON.stringify(S)); checkMissed(); return S; } // guest: this phone only
   try {
     const r = await fetch(`api/state/${id}` + cq(), { cache: "no-store" });
     server = (await r.json()).state; SYNC.online = true;
@@ -282,12 +307,13 @@ export function save() {
   if (!S || !USER) return;
   S.updated = Date.now();
   ls.set(cacheKey(USER), JSON.stringify(S));
+  if (isGuest()) return;
   SYNC.pending = true;
   clearTimeout(timer);
   timer = setTimeout(push, 600);
 }
 export async function push() {
-  if (!S || !USER) return;
+  if (!S || !USER || isGuest()) return;
   const u = USER, body = JSON.stringify(S);
   try {
     const r = await fetch(`api/state/${u}` + cq(), { method: "PUT", headers: { "Content-Type": "application/json" }, body });
@@ -304,6 +330,7 @@ export async function push() {
 // pull newer data saved from another device (called when the app comes back to the foreground)
 export async function refreshFromServer() {
   if (!USER) return false;
+  if (isGuest()) return checkMissed();
   if (SYNC.pending) { await push(); return false; }
   try {
     const r = await fetch(`api/state/${USER}` + cq(), { cache: "no-store" });

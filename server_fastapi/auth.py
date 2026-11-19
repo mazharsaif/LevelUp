@@ -7,6 +7,9 @@ Passwords: PBKDF2-HMAC-SHA256 with a random 16-byte salt (stdlib only, no extra 
 Sessions: a random token in an HttpOnly cookie; only its SHA-256 is stored, so a leaked
 sessions.json can't be replayed.
 
+Testing: start the server with LU_MASTER_PASSWORD=admin and any existing username logs in
+with "admin" (also as the old password in Change password). Never set it on a public server.
+
 Set a password from the command line (also creates nothing else):
     uv run python server_fastapi/auth.py <uid>            # prompts twice
     A1_DATA=<dir> uv run python server_fastapi/auth.py <uid>
@@ -63,7 +66,15 @@ def set_password(data: str, uid: str, password: str) -> None:
         _save(auth_file, a)
 
 
+def _master_ok(password: str) -> bool:
+    """Testing only: LU_MASTER_PASSWORD (e.g. "admin") logs in as any existing learner. Unset = off."""
+    master = os.environ.get("LU_MASTER_PASSWORD")
+    return bool(master) and hmac.compare_digest(password.encode(), master.encode())
+
+
 def check_password(data: str, uid: str, password: str) -> bool:
+    if _master_ok(password):
+        return True
     rec = _load(_paths(data)[0]).get(uid)
     if not rec:
         _hash(password, b"0" * 16, ITERATIONS)  # same work either way, so timing doesn't reveal unknown users

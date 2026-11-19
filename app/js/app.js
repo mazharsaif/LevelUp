@@ -1,7 +1,7 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest } from "./store.js";
 import { esc, wordCard, wireSpeakers, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable } from "./lesson.js";
 import { play } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -77,7 +77,7 @@ function setupView() {
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one correct answer.</b> A lesson part (4 words) gives up to 16 XP, plus 10 when you finish the whole lesson; a review gives +1 per word you recall. 50 XP ≈ one full lesson (3 parts) + a short review a day.</p>
   </div>
   <button class="btn" id="go">Start learning</button>`;
-  view().querySelector("#sw").onclick = () => { if (AUTH === "on") return doLogout(); signOut(); route(); };
+  view().querySelector("#sw").onclick = () => { if (isGuest()) { leaveGuest(); return route(); } if (AUTH === "on") return doLogout(); signOut(); route(); };
   view().querySelector("#go").onclick = () => {
     S.settings.targetDate = view().querySelector("#tg").value || S.settings.targetDate;
     S.settings.startDate = view().querySelector("#sd").value || S.settings.startDate;
@@ -522,17 +522,20 @@ function settingsView() {
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
-    <p class="muted small">Progress is saved on the LevelUp server, with a daily backup. You can also export a copy here.</p>
+    <p class="muted small">${isGuest() ? "Guest progress is saved only on this phone. Create an account (above) to save it on the server, or export a copy here." : "Progress is saved on the LevelUp server, with a daily backup. You can also export a copy here."}</p>
     <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
     <input type="file" id="imf" accept="application/json" hidden>
     <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset ${esc(userInfo(USER).name)}'s progress…</button></div>
-  ${AUTH === "on" ? `<div class="card"><div class="sys-h">Account</div><div class="row"><div class="grow"><b>${esc(userInfo(USER).name)}</b><div class="muted small">Logged in as ${esc(USER)}</div></div>
+  ${isGuest() ? `<div class="card"><div class="sys-h">Account</div>${GUEST_NOTE}<button class="btn" id="gsu">Create free account</button>
+    <button class="btn ghost" id="glv" style="margin-top:8px">Leave guest mode</button></div>`
+    : AUTH === "on" ? `<div class="card"><div class="sys-h">Account</div><div class="row"><div class="grow"><b>${esc(userInfo(USER).name)}</b><div class="muted small">Logged in as ${esc(USER)}</div></div>
     <button class="btn ghost sm" id="cpw">Change password</button></div><button class="btn" id="lout" style="margin-top:14px">Log out</button></div>`
     : `<div class="card"><div class="sys-h">Profile</div><div class="row"><div class="grow"><b>Learner</b><div class="muted small">${esc(userInfo(USER).name)}</div></div>
     <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`}`;
   const v = view();
   wireTop();
-  if (AUTH === "on") { v.querySelector("#cpw").onclick = passwordSheet; v.querySelector("#lout").onclick = doLogout; }
+  if (isGuest()) { v.querySelector("#gsu").onclick = guestSignup; v.querySelector("#glv").onclick = doLeaveGuest; }
+  else if (AUTH === "on") { v.querySelector("#cpw").onclick = passwordSheet; v.querySelector("#lout").onclick = doLogout; }
   else v.querySelector("#swu").onclick = userSheet;
   v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
   const setS = (k, val) => { S.settings[k] = val; save(); };
@@ -599,10 +602,9 @@ function courseView() {
   const groups = {};
   COURSES.forEach(c => (groups[c.group || "Courses"] = groups[c.group || "Courses"] || []).push(c));
   const sm = S && S.setup ? summary(S) : null;
-  view().innerHTML = `<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
+  view().innerHTML = `${gearBtn()}<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
     <div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Select a path</div><h1>What do you want to study?</h1>
-    <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p>
-    <button class="herochip" id="hc">${heroHTML(sm ? sm.lv : 1, "sm")}<span>Your hero: <b>${HERO_STYLES[heroStyle()]}</b></span><span class="muted small">Change ›</span></button></div>
+    <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p></div>
     ${Object.entries(groups).map(([g, cs]) => `<h3>${esc(g)}</h3><div class="courses">${cs.map(c => {
       const here = sm && c.id === COURSE;
       return `<button class="course ${c.status !== "ready" ? "soon" : ""} ${c.id === COURSE ? "cur" : ""}" data-c="${c.id}" ${c.status !== "ready" ? "disabled" : ""} style="--c:${c.color || "#5aa9ff"}">
@@ -616,7 +618,7 @@ function courseView() {
     markPicked(); document.body.classList.remove("in-lesson");
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
   }));
-  view().querySelector("#hc").onclick = () => heroPickView(true);
+  view().querySelector("#gear").onclick = themeSheet;
 }
 
 // ------------------------------------------------------------------ skill-tree courses (Software Engineering)
@@ -971,10 +973,14 @@ const themeOptions = cur => THEMES.map(([v, l]) => `<option value="${v}" ${cur =
 const deviceTheme = () => { try { return localStorage.getItem("a1.theme") || "system"; } catch { return "system"; } };
 // theme for screens without a learner (login / player picker); a learner's own theme applies after login
 function themeSheet() {
-  sheet(`<h2 style="margin-top:0">⚙️ Settings</h2><label class="f">Theme</label><select id="dth">${themeOptions(deviceTheme())}</select>
-    <p class="muted small" style="margin:6px 0 12px">Used on this screen. After you log in, your own theme from Settings applies.</p>
+  const mine = !!(S && USER); // logged in (course picker): change the learner's own theme
+  sheet(`<h2 style="margin-top:0">⚙️ Settings</h2><label class="f">Theme</label><select id="dth">${themeOptions(mine ? S.settings.theme : deviceTheme())}</select>
+    <p class="muted small" style="margin:6px 0 12px">${mine ? "Your theme. You can also change it later in Settings." : "Used on this screen. After you log in, your own theme from Settings applies."}</p>
     <button class="btn" id="ok">Done</button>`, el => {
-    el.querySelector("#dth").onchange = e => { try { localStorage.setItem("a1.theme", e.target.value); } catch { /* ignore */ } applyTheme(); };
+    el.querySelector("#dth").onchange = e => {
+      if (mine) { S.settings.theme = e.target.value; save(); } else try { localStorage.setItem("a1.theme", e.target.value); } catch { /* ignore */ }
+      applyTheme();
+    };
     el.querySelector("#ok").onclick = closeSheet;
   });
 }
@@ -1201,25 +1207,39 @@ function loginView(msg = "") {
       ${up ? `<p class="muted small" style="margin:6px 0 0">Username: 3–32 letters, digits, - or _. Password: at least 6 characters.</p>` : ""}
       <p class="small" id="aerr" style="color:var(--red);min-height:1.2em;margin:8px 0 0">${esc(msg)}</p>
       <button class="btn" id="ago" type="submit">${up ? "Create account" : "Log in"}</button>
-    </form>`;
+      ${up ? "" : `<button class="link small" type="button" id="afp" style="display:block;margin:8px auto 0">Forgot password?</button>`}
+      <p class="muted small" style="margin:10px 0 0;text-align:center">${up && isGuest() ? "Your guest progress moves into the new account." : "You stay logged in on this phone for 90 days, even after closing the app."}</p>
+    </form>
+    ${isGuest() ? `<button class="btn ghost" id="agb">‹ Back to the app (guest)</button>` : `<button class="btn ghost" id="agt">${hasGuestData() ? "Continue as guest" : "Try it first as a guest"}</button>
+    <p class="muted small" style="text-align:center;margin:6px 0 0">No account needed. Progress stays on this phone; sign up later to keep it.</p>`}
+    <button class="link" id="aint" style="display:block;margin:14px auto 0">What is LevelUp?</button>`;
   window.scrollTo(0, 0); // e.g. after logging out from the bottom of Settings
   view().querySelector("#gear").onclick = themeSheet;
   view().querySelectorAll(".authtabs button").forEach(b => (b.onclick = () => { authTab = b.dataset.t; loginView(); }));
+  const q = id => view().querySelector(id);
+  if (q("#afp")) q("#afp").onclick = () => forgotSheet(q("#au").value.trim());
+  if (q("#agt")) q("#agt").onclick = enterGuest;
+  if (q("#agb")) q("#agb").onclick = () => { document.body.classList.remove("in-lesson"); route(); };
+  q("#aint").onclick = () => introView();
   const f = view().querySelector("#af"), er = view().querySelector("#aerr"), go = view().querySelector("#ago");
   f.onsubmit = async e => {
     e.preventDefault();
     const u = f.querySelector("#au").value.trim(), pw = f.querySelector("#ap").value, nm = up ? f.querySelector("#an").value.trim() : "";
     if (up && !/^[A-Za-z0-9_-]{3,32}$/.test(u)) { er.textContent = "Username: 3–32 letters, digits, - or _"; return; }
     go.disabled = true; er.textContent = "";
+    const wasGuest = isGuest();
     const r = up ? await signup(u, nm, pw) : await login(u, pw);
     go.disabled = false;
     if (!r.ok) { er.textContent = r.error; return; }
+    if (wasGuest && up) claimGuest(r.user.id); // keep what they learned as a guest
+    else if (wasGuest) leaveGuest();
     await loadUsers(); await switchUser(r.user.id); unpick(); document.body.classList.remove("in-lesson");
     toast(up ? `Willkommen, ${r.user.name}!` : `Hallo ${r.user.name}!`);
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
   };
 }
 async function whoView() {
+  if (!seenIntro()) return introView();
   if (AUTH === "on") return loginView();
   document.body.classList.add("in-lesson");
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
@@ -1237,6 +1257,64 @@ async function whoView() {
     if (el) el.textContent = sm ? `Lv ${sm.lv} · ${sm.rank}-Rank · 🔥 ${sm.streak} · ${sm.pct.toFixed(0)}% of A1` : "New – tap to start";
   }
 }
+// ------------------------------------------------------------------ intro, guest mode, forgot password
+const seenIntro = () => { try { return !!localStorage.getItem("a1.introSeen"); } catch { return true; } };
+function introView() {
+  try { localStorage.setItem("a1.introSeen", "1"); } catch { /* ignore */ }
+  document.body.classList.add("in-lesson");
+  const f = (icon, t, d) => `<div class="row" style="align-items:flex-start;gap:12px;margin:12px 0"><span style="font-size:26px;line-height:1">${icon}</span><div class="grow"><b>${t}</b><div class="muted small">${d}</div></div></div>`;
+  view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:4vh"><img src="icons/icon.svg" alt="" width="72" height="72" style="border-radius:18px"><div class="brand">LevelUp</div>
+    <h1>Level up in languages and skills</h1><p class="muted">Short daily lessons that turn into real knowledge, one level at a time.</p></div>
+    <div class="card">
+      ${f("📚", "Courses", "German A1 today (821 words, 20 grammar chapters, everyday phrases) and a Software Engineering skill tree. More languages and subjects are coming.")}
+      ${f("🧠", "Spaced repetition", "Every word comes back for review just before you would forget it. Words you know well return less often, hard ones more often.")}
+      ${f("🎯", "Targets that fit you", "Pick a finish date and the app sets your daily goal. Choose Quest Mode (levels, ranks, streaks, diamonds, daily quests) or a plain mode with just the lessons.")}
+      ${f("🔊", "Hear and speak", "Native-style audio for every word and phrase, and optional speaking practice.")}
+      ${f("📈", "See your progress", "Level, rank and pace show if you're on track. Your progress is saved to your account and works on any device.")}
+    </div>
+    <button class="btn" id="ia">Create free account</button><button class="btn ghost" id="il" style="margin-top:8px">I have an account</button>
+    <button class="link" id="ig" style="display:block;margin:12px auto 0">${hasGuestData() ? "Continue as guest" : "Just try it as a guest"}</button>`;
+  window.scrollTo(0, 0);
+  view().querySelector("#gear").onclick = themeSheet;
+  view().querySelector("#ia").onclick = () => { authTab = "signup"; loginView(); };
+  view().querySelector("#il").onclick = () => { authTab = "login"; loginView(); };
+  view().querySelector("#ig").onclick = enterGuest;
+}
+const GUEST_NOTE = `<div style="font-weight:800">👋 You're trying LevelUp as a guest</div>
+  <p class="muted small">Your progress is saved only on this phone. Create a free account to keep it, back it up and use it on other devices: everything you've done so far moves into the account.</p>`;
+async function enterGuest() {
+  startGuest(); await switchUser(USER); unpick(); document.body.classList.remove("in-lesson");
+  toast("Guest mode: progress stays on this phone");
+  if (location.hash !== "#/today") location.hash = "#/today"; else route();
+}
+function guestSignup() { closeSheet(); authTab = "signup"; loginView(); }
+function doLeaveGuest() {
+  sheet(`<h2 style="margin-top:0">Leave guest mode?</h2><p class="muted">Your guest progress stays on this phone. Tap "Continue as guest" on the login screen to pick it up again.</p>
+    <button class="btn" id="ly">Leave guest mode</button><button class="btn ghost" id="ln">Cancel</button>`, el => {
+    el.querySelector("#ln").onclick = closeSheet;
+    el.querySelector("#ly").onclick = () => { closeSheet(); leaveGuest(); unpick(); authTab = "login"; location.hash = "#/today"; route(); };
+  });
+}
+// No e-mail is stored, so a reset is a request to the admin (saved with the feedback reports); the admin sets a new password.
+function forgotSheet(user = "") {
+  sheet(`<h2 style="margin-top:0">Forgot password?</h2><p class="muted small">Send a reset request. The admin will set a new password for you and tell you what it is.</p>
+    <form id="ff"><label class="f" for="fu">Username</label><input id="fu" autocapitalize="none" spellcheck="false" maxlength="32" required value="${esc(user)}">
+    <label class="f" for="fc">How can we reach you? (optional)</label><input id="fc" maxlength="120" placeholder="e.g. phone number or WhatsApp">
+    <p class="small" id="ferr" style="color:var(--red);min-height:1.2em;margin:8px 0 0"></p><button class="btn" type="submit">Send request</button>
+    <button class="btn ghost" type="button" id="fx">Cancel</button></form>`, el => {
+    el.querySelector("#fx").onclick = closeSheet;
+    el.querySelector("#ff").onsubmit = async e => {
+      e.preventDefault();
+      const u = el.querySelector("#fu").value.trim(), c = el.querySelector("#fc").value.trim();
+      try {
+        const r = await fetch("api/bugs", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: "bug", text: `Password reset request for "${u}"${c ? `. Contact: ${c}` : ""}`, ctx: { page: "forgot password", user: "anon", resetFor: u } }) });
+        if (!r.ok) throw new Error(r.status);
+        closeSheet(); toast("Request sent. You'll get a new password soon.");
+      } catch { el.querySelector("#ferr").textContent = "Couldn't send. Check your connection and try again."; }
+    };
+  });
+}
 async function doLogout() { closeSheet(); await logout(); unpick(); toast("Logged out"); location.hash = "#/today"; route(); }
 function passwordSheet() {
   sheet(`<h2 style="margin-top:0">Change password</h2><form id="pf"><label class="f" for="po">Current password</label><input id="po" type="password" autocomplete="current-password" required>
@@ -1253,6 +1331,12 @@ function passwordSheet() {
   });
 }
 function userSheet() {
+  if (isGuest()) return sheet(`<h2 style="margin-top:0">Account</h2>${GUEST_NOTE}<button class="btn" id="gsu">Create free account</button>
+    <button class="btn ghost" id="gli">I have an account</button><button class="link" id="glv" style="display:block;margin:10px auto 0">Leave guest mode</button>`, el => {
+    el.querySelector("#gsu").onclick = guestSignup;
+    el.querySelector("#gli").onclick = () => { closeSheet(); authTab = "login"; loginView(); };
+    el.querySelector("#glv").onclick = doLeaveGuest;
+  });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:18px;font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
     <button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {

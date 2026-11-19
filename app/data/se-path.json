@@ -1870,19 +1870,25 @@
         },
         {
           "t": [
-            "Sessions vs tokens: two ways to remember who logged in",
-            "Bearer tokens"
+            "Sessions vs tokens: two ways to remember who logged in"
           ],
           "a": 4,
-          "b": 7
+          "b": 8
         },
         {
           "t": [
-            "What we have today, and why it's weak",
+            "Bearer tokens",
+            "What we have today, and why it's weak"
+          ],
+          "a": 9,
+          "b": 12
+        },
+        {
+          "t": [
             "And the IP allowlist?"
           ],
-          "a": 8,
-          "b": 11
+          "a": 13,
+          "b": 16
         }
       ]
     },
@@ -1925,31 +1931,31 @@
             "Encryption: hiding the content"
           ],
           "a": 0,
-          "b": 3
+          "b": 6
         },
         {
           "t": [
             "Hashing: a fingerprint of the data",
-            "Signing: proof of who wrote it and that nobody changed it",
-            "The comparison in one table"
+            "Signing: proof of who wrote it and that nobody changed it"
           ],
-          "a": 4,
-          "b": 7
+          "a": 7,
+          "b": 12
         },
         {
           "t": [
+            "The comparison in one table",
             "Symmetric vs asymmetric keys"
           ],
-          "a": 8,
-          "b": 11
+          "a": 13,
+          "b": 17
         },
         {
           "t": [
             "How an RSA signature works, intuitively",
             "Why not just check a hash?"
           ],
-          "a": 12,
-          "b": 16
+          "a": 18,
+          "b": 22
         }
       ]
     },
