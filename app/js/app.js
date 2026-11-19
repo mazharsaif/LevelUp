@@ -1,8 +1,8 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest } from "./store.js";
-import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable } from "./lesson.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday } from "./store.js";
+import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
@@ -28,11 +28,36 @@ function sheet(html, wire) {
   const bg = sheetRoot().querySelector(".sheet-bg");
   bg.onclick = e => { if (e.target === bg) closeSheet(); };
   wire && wire(sheetRoot().querySelector(".sheet"));
+  if (!(window.history.state && window.history.state.sheet)) window.history.pushState({ sheet: 1 }, "", location.hash); // Android back closes the sheet
 }
-const closeSheet = () => (sheetRoot().innerHTML = "");
+const closeSheet = () => {
+  sheetRoot().innerHTML = "";
+  if (window.history.state && window.history.state.sheet) window.history.replaceState({ dead: 1 }, "", location.hash); // its history entry is skipped on back
+};
+// ---------- Android back gesture ----------
+// Back closes an open sheet, skips entries of sheets already closed, asks before quitting a lesson (in route()),
+// and on the first page asks for a second back before the app closes instead of dropping to the home screen.
+let exitArmed = 0;
+function onPopState(e) {
+  const st = e.state || {};
+  if (sheetRoot().innerHTML && !st.sheet) { sheetRoot().innerHTML = ""; if (!st.base) return; }
+  if (st.dead) { window.history.back(); return; }
+  if (st.base) {
+    if (Date.now() - exitArmed < 2500) { window.history.back(); return; } // second back: leave the app
+    exitArmed = Date.now();
+    window.history.pushState({ guard: 1 }, "", location.hash);
+    toast("Swipe back again to close LevelUp");
+  }
+}
+function armBack() {
+  if (window.history.state && (window.history.state.base || window.history.state.guard)) return;
+  window.history.replaceState({ base: 1 }, "", location.hash || "#/today");
+  window.history.pushState({ guard: 1 }, "", location.hash || "#/today");
+}
 
 // ------------------------------------------------------------------ routing
 function route() {
+  if (inLesson() && location.hash !== "#/lesson") { window.history.pushState(null, "", "#/lesson"); confirmQuit(); return; } // back gesture mid-lesson
   closeSheet();
   stopAudio();
   const h = location.hash || "#/today";
@@ -79,8 +104,8 @@ function setupView() {
     <div class="row" style="align-items:center;gap:10px"><input type="date" id="tg" value="${tgt}" min="${addDays(today(), 1)}" style="flex:1"><b id="tgd" class="small" style="white-space:nowrap">${daysText(tgt)}</b></div>
     <p class="muted small" style="margin:6px 0 0">Your pace counts from today (${fmtDate(today())}).</p>
     <label class="f">Daily goal</label>
-    <select id="dg">${[["auto", "Auto – reach A1 by my target date (recommended)"], [10, "Casual · 10 XP"], [20, "Regular · 20 XP"], [30, "Serious · 30 XP"], [45, "Intense · 45 XP"]]
-      .map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+    <div class="choices" id="dg" role="radiogroup">${[["auto", "Auto", "Recommended · sets the goal so you reach A1 by your date"], [10, "Casual", "10 XP a day"], [20, "Regular", "20 XP a day"], [30, "Serious", "30 XP a day"], [45, "Intense", "45 XP a day"]]
+      .map(([v, l, d], i) => `<label class="choice"><input type="radio" name="dg" value="${v}" ${i ? "" : "checked"}><span><b>${l}</b><small>${d}</small></span></label>`).join("")}</div>
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one new word learned.</b> Each finished part adds +2 (+1 if perfect) and a whole lesson +5. Reviews give a little (+1 per 5 words recalled) and forgetting costs XP. 20 XP ≈ one new lesson a day.</p>
   </div>
   <button class="btn" id="go">Start learning</button>`;
@@ -89,7 +114,7 @@ function setupView() {
   view().querySelector("#go").onclick = () => {
     S.settings.targetDate = view().querySelector("#tg").value || tgt;
     S.settings.startDate = today();
-    const gv = view().querySelector("#dg").value;
+    const gv = view().querySelector("#dg input:checked")?.value || "auto";
     if (gv === "auto") S.settings.goalMode = "auto"; else { S.settings.goalMode = "manual"; S.settings.dailyGoal = +gv; }
     if (S.settings.targetDate <= today()) return toast("Pick a target date in the future");
     S.setup = true; save(); document.body.classList.remove("in-lesson"); location.hash = "#/today"; route();
@@ -310,7 +335,7 @@ function grammarView(id) {
   ${P ? `<div class="gparts">${Array.from({ length: it.of }, (_, k) => `<span class="${S.done[`${g.id}.${k + 1}`] ? "ok" : ""} ${k === it.part ? "cur" : ""}"></span>`).join("")}</div>
     ${P.t.startsWith(g.title) ? "" : `<p class="small muted" style="margin-top:4px">${esc(g.title)}</p>`}` : ""}
   ${first ? `<p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>` : ""}
-  <div class="gram">${P ? P.html : g.body + (g.after || "")}</div>
+  <div class="gram">${personalize(P ? P.html : g.body + (g.after || ""))}</div>
   ${last ? `${g.ex.length ? "<h2>Examples</h2>" : ""}${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
     <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
   ${g.mist.length ? `<h2>Common mistakes</h2><div class="mist">${g.mist.map(m => `<div><span style="color:var(--red)">✗ ${esc(m.wrong)}</span><br>
@@ -513,7 +538,7 @@ function settingsView() {
     <p class="muted small" style="margin:6px 0 0">${daysLeft > 0 ? `${daysLeft} days left` : "Target date has passed"} · ${p.nWeeks} weeks planned (Mon–Sun). Changing the date re-spreads all lessons across the weeks.</p>
     <label class="f">Pace counted from</label><input type="date" id="sd" value="${S.settings.startDate}">
     <label class="f">Daily goal</label>
-    <select id="gm"><option value="auto" ${S.settings.goalMode !== "manual" ? "selected" : ""}>Auto – reach A1 by the target date (recommended)</option><option value="manual" ${S.settings.goalMode === "manual" ? "selected" : ""}>Manual – my own fixed goal</option></select>
+    <select id="gm"><option value="auto" ${S.settings.goalMode !== "manual" ? "selected" : ""}>Auto (recommended)</option><option value="manual" ${S.settings.goalMode === "manual" ? "selected" : ""}>Manual – my own goal</option></select>
     ${S.settings.goalMode === "manual" ? `<label class="f">My daily goal (XP)</label><input type="number" id="dg" min="5" step="5" value="${S.settings.dailyGoal}">`
       : `<div class="note" style="margin-top:8px">Today's goal: <b>${goalFor()} XP</b> · about ${remainingXP()} XP of lessons left over ${Math.max(1, daysBetween(today(), S.settings.targetDate) + 1)} days, plus daily reviews. It is set each morning and goes up if you fall behind, down if you get ahead.</div>`}
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one new word learned.</b> Each finished part adds +2 (+1 if perfect) and a whole lesson +5. Reviews give a little (+1 per 5 words recalled) and forgetting costs XP. 20 XP ≈ one new lesson a day.</p>
@@ -1007,11 +1032,11 @@ function playerBar() {
 }
 function questStatus(due) {
   const t = today(), g = goalFor(), x = xpToday();
-  const newToday = (S.log || []).filter(l => l.d === t).length; // any finished part / lesson today
+  const newToday = partsToday(), pg = partsGoal(); // new lesson parts today vs what the target date needs
   const revDone = S.reviews[t] || 0, revGoal = Math.min(20, due.length + revDone);
   const q = [
     { ok: x >= g, txt: `Earn ${g} XP`, v: `${x}/${g}` },
-    { ok: newToday >= 1, txt: "Clear 1 lesson part", v: `${Math.min(newToday, 1)}/1` },
+    { ok: newToday >= pg, txt: `Clear ${pg} lesson part${pg > 1 ? "s" : ""}`, v: `${Math.min(newToday, pg)}/${pg}` },
     { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Review all ${revGoal} words to remember` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
   ];
   return { q, all: q.every(i => i.ok), x };
@@ -1415,6 +1440,8 @@ async function fillCompare() {
   try { await loadContent(); } catch (e) { view().innerHTML = `<div class="loading">Could not load lessons. Check your internet connection, then reload.</div>`; return; }
   if (USER) await switchUser(USER);
   window.addEventListener("hashchange", route);
+  window.addEventListener("popstate", onPopState);
+  armBack();
   window.addEventListener("a1:state-replaced", () => { if (!inLesson()) route(); });
   window.addEventListener("a1:auth", async () => { // session expired or revoked: progress stays cached on this device
     if (inLesson()) return;

@@ -656,6 +656,42 @@ export function weekPlan(st = S) {
 export const weekOf = it => weekPlan().of[it.id];
 export const thisWeek = () => { const p = weekPlan(), t = today(); const w = p.weeks.find(x => x.from <= t && t <= x.to); return w ? w.n : (t < p.weeks[0].from ? 0 : p.nWeeks + 1); };
 
+// ---------- the learner's own name in lessons (spelling practice) ----------
+const DE_LETTER = { A: "aa", B: "bay", C: "tsay", D: "day", E: "ay", F: "ef", G: "gay", H: "haa", I: "ee", J: "yot", K: "kaa", L: "el", M: "em", N: "en", O: "oh",
+  P: "pay", Q: "koo", R: "air", S: "es", T: "tay", U: "oo", V: "fow", W: "vay", X: "iks", Y: "üp-si-lon", Z: "tset", "Ä": "a-umlaut", "Ö": "o-umlaut", "Ü": "u-umlaut", "ß": "ess-tset" };
+const EN_LETTER = { A: "ay", B: "bee", C: "see", D: "dee", E: "ee", F: "ef", G: "jee", H: "aitch", I: "eye", J: "jay", K: "kay", L: "el", M: "em", N: "en", O: "oh",
+  P: "pee", Q: "kyoo", R: "ar", S: "es", T: "tee", U: "yoo", V: "vee", W: "double-u", X: "ex", Y: "why", Z: "zed" };
+// First name in capitals, letters only (ANNA if it has no Latin letters). Max 10 letters so the options stay readable.
+export function myName() {
+  const u = USER && USER !== GUEST ? userInfo(USER) : null;
+  const n = [...String((u && u.name) || "").trim().split(/\s+/)[0].toUpperCase()].filter(ch => DE_LETTER[ch]).join("");
+  return n.length >= 2 && n.length <= 10 ? n : "ANNA";
+}
+const spellWith = (name, f) => [...name].map(f).join(" – ");
+export const spellDE = name => spellWith(name, ch => DE_LETTER[ch] || ch);
+// "How do you spell <your name>?" with distractors built from the classic traps
+export function nameSpellQuestion() {
+  const n = myName(), right = spellDE(n);
+  const vowelTrap = { A: "ay", E: "ee", I: "eye" }, consTrap = { J: "jay", G: "jee", V: "vee", W: "double-u", Z: "zed", C: "see", Y: "why" }, triangle = { A: "ee", E: "aa", I: "ay" };
+  const cands = [
+    spellWith(n, ch => vowelTrap[ch] || DE_LETTER[ch] || ch),
+    spellWith(n, ch => EN_LETTER[ch] || DE_LETTER[ch] || ch),
+    spellWith(n, ch => consTrap[ch] || DE_LETTER[ch] || ch),
+    spellWith(n, ch => triangle[ch] || DE_LETTER[ch] || ch),
+    spellWith(n, (ch, i) => (i === 0 ? EN_LETTER[ch] : null) || DE_LETTER[ch] || ch),
+  ];
+  const opts = [right];
+  for (const c of cands) if (!opts.includes(c) && opts.length < 4) opts.push(c);
+  const note = [...new Set(n)].map(ch => `${ch} = “${DE_LETTER[ch] || ch}”`).join(", ");
+  return { q: `How do you spell ${n} in German?`, a: right, opts, note: note + "." };
+}
+// {{NAME}} / {{Name}} / {{NAME_SAY}} in lesson text become the learner's own name
+export function personalize(html) {
+  if (!html || !html.includes("{{")) return html;
+  const n = myName(), nice = n[0] + n.slice(1).toLowerCase();
+  return html.replaceAll("{{NAME}}", n).replaceAll("{{Name}}", nice).replaceAll("{{NAME_SAY}}", spellDE(n));
+}
+
 // ---------- dynamic daily XP goal: what it takes to reach A1 (level 100, incl. S-rank) by the target date ----------
 const PART_XP = XPR.part + XPR.perfect / 2, LESSON_BONUS = XPR.lesson; // + 1 XP per new word/phrase (below)
 export function remainingXP(st = S) {
@@ -685,6 +721,38 @@ export function goalFor(st = S) {
     if (st === S) save();
   }
   return st.goalDay.v;
+}
+
+// Lesson parts still to do (a grammar part, phrase part or vocab part each count 1)
+export function remainingParts(st = S) {
+  let n = 0;
+  for (const it of C.content.path) {
+    if (st.done[it.id]) continue;
+    if (it.kind === "grammar") { n++; continue; }
+    const b = (st.bits || {})[it.id] || [];
+    n += bitsOf(it).filter((_, k) => !b[k]).length;
+  }
+  return n;
+}
+// How many lesson parts a day keep you on track for the target date (1–8, frozen once per day)
+export function partsGoal(st = S) {
+  goalFor(st);
+  if (st.goalDay.p == null) {
+    const days = Math.max(1, daysBetween(today(), st.settings.targetDate) + 1);
+    st.goalDay.p = Math.max(1, Math.min(8, Math.ceil(remainingParts(st) / days)));
+    if (st === S) save();
+  }
+  return st.goalDay.p;
+}
+// Lesson parts finished for the first time today
+export function partsToday(st = S) {
+  const t = today();
+  let n = 0;
+  for (const it of C.content.path) {
+    if (it.kind === "grammar") { if (st.done[it.id] && st.done[it.id].date === t) n++; continue; }
+    n += ((st.bits || {})[it.id] || []).filter(d => d === t).length;
+  }
+  return n;
 }
 
 export const nextItem = () => C.content.path.find(i => !S.done[i.id]);

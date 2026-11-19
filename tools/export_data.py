@@ -215,11 +215,14 @@ def ch1_parts():
         ("Letter names: the A – E – I trap",
          '<div class="box warn"><b>The letter-name trap</b><br>It is a triangle, not a simple swap: German <b>I</b> is said “ee” '
          '(like English E), German <b>E</b> is said “ay” (like English A), and German <b>A</b> is said “aa”.</div>'
-         '<p>You will need this to spell your name: TAHA = tay – aa – haa – aa.</p>'
-         + _ex("Wie schreibt man das?", "How do you spell that?") + _ex("Mein Name ist Taha: T – A – H – A.", "tay – aa – haa – aa"),
+         '<p>You will need this to spell your name. Example: LEA = el – ay – aa (the E is “ay”, the A is “aa”).</p>'
+         + _ex("Wie schreibt man das?", "How do you spell that?") + _ex("Mein Name ist Lea: L – E – A.", "el – ay – aa")
+         + '<div class="box"><b>Your turn, {{Name}}:</b> say your name letter by letter out loud – {{NAME}}. '
+           'Use the triangle above for every A, E and I. The practice will check it.</div>',
          [Q("The German letter E is said …", "ay", ["ay", "ee", "eye", "aa"], "E = “ay”, like the English letter A."),
           Q("The German letter I is said …", "ee", ["ee", "eye", "ay", "aa"], "I = “ee”, like the English letter E."),
-          Q("How do you spell TAHA in German?", "tay – aa – haa – aa", ["tay – aa – haa – aa", "tee – ay – aitch – ay", "tay – ay – haa – ay"], "A = “aa”, H = “haa”, T = “tay”.")]),
+          # built in the app from the learner's own name (store.js nameSpellQuestion); TAHA is only the fallback text
+          Q("How do you spell TAHA in German?", "tay – aa – haa – aa", ["tay – aa – haa – aa", "tee – ay – aitch – ay", "tay – ay – haa – ay"], "A = “aa”, H = “haa”, T = “tay”.", myName=True)]),
         ("The alphabet: A to M",
          "<p>Most letter names are close to English. Watch the ones in bold.</p>" + _letters([
             ("A", "aa", "आ"), ("B", "bay", "बे"), ("C", "<b>tsay</b>", "त्से"), ("D", "day", "डे"), ("E", "<b>ay</b>", "ए"), ("F", "ef", "एफ़"),

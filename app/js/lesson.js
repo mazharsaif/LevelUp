@@ -1,5 +1,5 @@
 // Exercise engine: vocab lessons, reviews, grammar practice, phrase sections.
-import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR } from "./store.js";
+import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR, nameSpellQuestion } from "./store.js";
 import { play, blip, stopAudio, playSoon } from "./audio.js";
 import { heroHTML, applyAura, auraName, STAGES, stageFor, form } from "./hero.js";
 
@@ -170,6 +170,10 @@ function tokenIs(tok, w) {
   const stem = c.replace(/(en|er|e|n)$/, "");
   return stem.length >= 3 && t.length >= 3 && (t.startsWith(stem) && t.length - stem.length <= 3);
 }
+// The English to translate: own look (tagged, lighter) so it isn't confused with the title or the German
+function enPrompt(en, hint = "") {
+  return `<div class="en-prompt"><span class="en-tag">English</span><div class="en-text">${esc(en)}</div>${hint ? `<div class="muted small" style="margin-top:6px">${hint}</div>` : ""}</div>`;
+}
 // Build the sentence: only words the learner knows (this part's words + already learned ones) become tiles;
 // everything else is pre-filled so they are never asked to place words they haven't met.
 function buildFor(w, pool) {
@@ -336,7 +340,7 @@ function render() {
   ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
 }
 
-function confirmQuit() {
+export function confirmQuit() {
   const root = document.getElementById("sheet-root");
   root.innerHTML = `<div class="sheet-bg"><div class="sheet"><h2 style="margin-top:0">Quit this lesson?</h2>
     <p class="muted">Your answers in this lesson won't be saved.</p>
@@ -406,7 +410,7 @@ function heardScore(alts, target) {
 const MIC_ERRORS = { "not-allowed": "Microphone blocked: allow it for this site in the browser settings.", "service-not-allowed": "Microphone blocked: allow it for this site in the browser settings.",
   "no-speech": "I didn't hear anything. Tap and speak again.", "audio-capture": "No microphone found.", network: "Speech recognition needs an internet connection." };
 function speak(s, lb) {
-  lb.innerHTML = `<div class="q-title">🎤 Say it out loud</div><div class="muted" style="margin-bottom:10px">${esc(s.p.en)}</div>
+  lb.innerHTML = `<div class="q-title">🎤 Say it out loud</div>${enPrompt(s.p.en)}
     <div class="card speakcard"><button class="spk" data-a="${s.p.a || ""}" data-t="${esc(s.p.de)}">🔊</button><div class="de">${esc(s.p.de)}</div></div>
     <p class="small" id="heard" aria-live="polite">Listen first if you like, then tap the microphone and say it.</p>`;
   wireSpeakers(lb);
@@ -469,7 +473,7 @@ function mc(s, lb) {
     if (S.settings.autoplay) play(w.a, w.de);
     options(lb, opts.map(o => esc(o.en)), ci, ok => answered(s, ok, { correctHTML: esc(w.en) }));
   } else {
-    lb.innerHTML = `<div class="q-title">Choose the German</div><div class="prompt"><div class="big">${esc(w.en)}</div></div>`;
+    lb.innerHTML = `<div class="q-title">Choose the German</div>${enPrompt(w.en)}`;
     options(lb, opts.map(o => esc(o.de)), ci, ok => answered(s, ok, { correctHTML: esc(w.de) }));
   }
 }
@@ -494,7 +498,7 @@ function gender(s, lb) {
 
 function type(s, lb) {
   const w = s.w;
-  lb.innerHTML = `<div class="q-title">Write this in German</div><div class="prompt"><div class="big">${esc(w.en)}</div></div>
+  lb.innerHTML = `<div class="q-title">Write this in German</div>${enPrompt(w.en)}
     <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${w.g ? "with der / die / das" : "Type in German"}">
     <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`;
   const inp = lb.querySelector("#inp");
@@ -569,7 +573,7 @@ function recall(s, lb) {
     ? `<div class="q-title">What does this German word mean? <span class="muted small">(think of it, then check)</span></div>
        <div class="prompt"><button class="spk" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button><div class="big">${deHTML(w)}</div></div>`
     : `<div class="q-title">${s.dir === "type" ? "Type the German" : "Recall the German"} ${w.g ? '<span class="muted small">(with der / die / das)</span>' : ""}</div>
-       <div class="prompt"><div class="big">${esc(w.en)}</div></div>`;
+       ${enPrompt(w.en)}`;
   lb.innerHTML = promptHTML + (s.dir === "type" ? `<input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type in German">
     <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>` :
     `<p class="muted small r-hint" style="text-align:center;margin-top:30px">Say the answer out loud or in your head first – that's what makes it stick.</p>`);
@@ -652,7 +656,7 @@ function read(s, lb) {
     wireSpeakers(lb); playSoon(s.p.a, s.p.de);
     options(lb, opts.map(o => esc(o.en)), opts.indexOf(s.p), ok => { answered({ ...s, key: s.p.de }, ok, { correctHTML: esc(s.p.en) }); });
   } else {
-    lb.insertAdjacentHTML("beforeend", `<div class="prompt"><div class="big" style="font-size:21px">${esc(s.p.en)}</div></div>`);
+    lb.insertAdjacentHTML("beforeend", enPrompt(s.p.en));
     options(lb, opts.map(o => esc(o.de)), opts.indexOf(s.p), ok => { answered({ ...s, key: s.p.de }, ok, { correctHTML: esc(s.p.de) }); play(s.p.a, s.p.de); });
   }
 }
@@ -712,7 +716,7 @@ function wireGloss(root) {
 // Build the sentence: pre-filled words stay in place; tap tiles to fill the blanks in order
 function build(s, lb) {
   lb.innerHTML = `<div class="q-title">Complete the sentence</div>
-    <div class="prompt"><div class="big" style="font-size:20px">${esc(s.ex.en)}</div></div>
+    ${enPrompt(s.ex.en)}
     <div class="answer-line" id="ans">${s.slots.map((x, i) => x.blank ? `<span class="slot" data-k="${i}"></span>` : `<span class="fixed">${glossTok(x.tok, i === 0)}</span>`).join("")}</div>
     <div class="tiles-bank" id="bank">${s.tiles.map((t, i) => `<button class="tile-w" data-i="${i}">${esc(t)}</button>`).join("")}</div>`;
   wireGloss(lb.querySelector("#ans"));
@@ -743,7 +747,7 @@ function build(s, lb) {
 function say(s, lb) {
   const hint = [s.ctx, s.note].filter(Boolean).map(esc).join(" · ");
   lb.innerHTML = `<div class="q-title">Say it in German</div>
-    <div class="prompt"><div class="big" style="font-size:21px">${esc(s.en)}</div>${hint ? `<div class="muted small" style="margin-top:6px">${hint}</div>` : ""}</div>
+    ${enPrompt(s.en, hint)}
     ${s.mode === "tiles"
       ? `<div class="answer-line" id="ans"></div><div class="tiles-bank" id="bank">${s.tiles.map((t, i) => `<button class="tile-w" data-i="${i}">${esc(t)}</button>`).join("")}</div>`
       : `<div class="muted small" style="margin-bottom:6px">Type the whole sentence</div>
@@ -930,7 +934,7 @@ export function grammarXP(g, item, acc) {
 }
 export function startGrammarPractice(g, item) {
   const P = item && item.gid ? g.parts[item.part] : null, idx = P ? P.q : g.q.map((_, i) => i); // a part asks only its own questions
-  const qs = idx.map((qi, i) => { const q = g.q[qi]; return { t: q.opts ? "gmc" : "gq", q, n: i + 1, of: idx.length }; });
+  const qs = idx.map((qi, i) => { const q = g.q[qi].myName ? { ...g.q[qi], ...nameSpellQuestion() } : g.q[qi]; return { t: q.opts ? "gmc" : "gq", q, n: i + 1, of: idx.length }; });
   runLesson({
     title: P ? item.title : `Ch ${g.num}: ${g.title}`, kind: "grammar", steps: qs,
     onFinish: (r, acc) => { const xp = grammarXP(g, item, acc); addXP(xp); return xp; },

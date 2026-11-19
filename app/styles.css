@@ -93,6 +93,18 @@ h3{font-size:16px;margin:16px 0 6px}
 .bar{flex:1;height:16px;background:var(--line);border-radius:999px;overflow:hidden}
 .bar>div{height:100%;background:var(--green);border-radius:999px;transition:width .3s;box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
 .q-title{font-size:20px;font-weight:800;margin:4px 0 16px}
+/* in exercises the title is an instruction label, the English a tagged box, the German stays big and bold */
+.lesson-body>.q-title{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin:2px 0 12px}
+.lesson-body>.q-title .muted{text-transform:none;letter-spacing:0;font-weight:600}
+.en-prompt{background:var(--blue-l);border-left:4px solid var(--blue);border-radius:10px;padding:10px 14px 12px;margin-bottom:20px}
+.en-tag{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.en-text{font-size:20px;font-weight:500;font-style:italic;line-height:1.35}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{display:flex;align-items:flex-start;gap:10px;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);cursor:pointer}
+.choice:has(input:checked){border-color:var(--blue);background:var(--blue-l)}
+.choice input{margin:3px 0 0;accent-color:var(--blue);flex:none}
+.choice span{display:flex;flex-direction:column;min-width:0}
+.choice small{color:var(--muted);font-size:13px;line-height:1.3}
 .prompt{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .prompt .big{font-size:26px;font-weight:800}
 .spk{flex:none;width:52px;height:52px;border-radius:14px;border:0;background:var(--blue);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 0 #125ca3}
