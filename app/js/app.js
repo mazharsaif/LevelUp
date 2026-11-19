@@ -64,13 +64,19 @@ const chaptersDone = () => C.content.grammar.filter(g => chapterDone(g.id)).leng
 const partLabel = it => { const n = bitCount(it), d = bitsDone(it); return n > 1 ? `Part ${Math.min(d + 1, n)} of ${n}` : ""; };
 
 // ------------------------------------------------------------------ setup
+// pace always counts from the day you start; default finish = 3 months later
+const in3Months = () => { const d = parse(today()); d.setMonth(d.getMonth() + 3); return fmtISO(d); };
+const fmtISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const daysText = to => { const n = daysBetween(today(), to); return n > 0 ? `${n} day${n === 1 ? "" : "s"}` : "pick a future date"; };
 function setupView() {
   document.body.classList.add("in-lesson"); // hides the tab bar until setup is done
+  const tgt = in3Months();
   view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>Willkommen, ${esc(userInfo(USER).name)}! 👋</h1>
   <p class="muted">${esc(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
   <div class="card">
-    <label class="f">When do you want to finish A1?</label><input type="date" id="tg" value="${S.settings.targetDate}">
-    <label class="f">Count your pace from</label><input type="date" id="sd" value="${S.settings.startDate}">
+    <label class="f">When do you want to finish A1?</label>
+    <div class="row" style="align-items:center;gap:10px"><input type="date" id="tg" value="${tgt}" min="${addDays(today(), 1)}" style="flex:1"><b id="tgd" class="small" style="white-space:nowrap">${daysText(tgt)}</b></div>
+    <p class="muted small" style="margin:6px 0 0">Your pace counts from today (${fmtDate(today())}).</p>
     <label class="f">Daily goal</label>
     <select id="dg">${[["auto", "Auto – reach A1 by my target date (recommended)"], [30, "Casual · 30 XP"], [50, "Regular · 50 XP"], [80, "Serious · 80 XP"], [120, "Intense · 120 XP"]]
       .map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
@@ -78,9 +84,10 @@ function setupView() {
   </div>
   <button class="btn" id="go">Start learning</button>`;
   view().querySelector("#sw").onclick = () => { if (isGuest()) { leaveGuest(); return route(); } if (AUTH === "on") return doLogout(); signOut(); route(); };
+  view().querySelector("#tg").oninput = e => (view().querySelector("#tgd").textContent = e.target.value ? daysText(e.target.value) : "");
   view().querySelector("#go").onclick = () => {
-    S.settings.targetDate = view().querySelector("#tg").value || S.settings.targetDate;
-    S.settings.startDate = view().querySelector("#sd").value || S.settings.startDate;
+    S.settings.targetDate = view().querySelector("#tg").value || tgt;
+    S.settings.startDate = today();
     const gv = view().querySelector("#dg").value;
     if (gv === "auto") S.settings.goalMode = "auto"; else { S.settings.goalMode = "manual"; S.settings.dailyGoal = +gv; }
     if (S.settings.targetDate <= today()) return toast("Pick a target date in the future");
@@ -521,6 +528,8 @@ function settingsView() {
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
+  <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
+    <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
     <p class="muted small">${isGuest() ? "Guest progress is saved only on this phone. Create an account (above) to save it on the server, or export a copy here." : "Progress is saved on the LevelUp server, with a daily backup. You can also export a copy here."}</p>
     <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
@@ -534,6 +543,7 @@ function settingsView() {
     <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`}`;
   const v = view();
   wireTop();
+  v.querySelector("#inv").onclick = shareApp;
   if (isGuest()) { v.querySelector("#gsu").onclick = guestSignup; v.querySelector("#glv").onclick = doLeaveGuest; }
   else if (AUTH === "on") { v.querySelector("#cpw").onclick = passwordSheet; v.querySelector("#lout").onclick = doLogout; }
   else v.querySelector("#swu").onclick = userSheet;
@@ -1315,6 +1325,15 @@ function forgotSheet(user = "") {
     };
   });
 }
+// Share / invite: the phone's share sheet (WhatsApp, SMS, …) when available, else copy the link.
+async function shareApp() {
+  const url = location.origin + location.pathname.replace(/index\.html$/, "");
+  const text = "I'm levelling up with LevelUp: short daily lessons, spaced repetition and quests. Join me!";
+  try { if (navigator.share) { await navigator.share({ title: "LevelUp", text, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Invite link copied"); }
+  catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">
+    <button class="btn" id="ok" style="margin-top:12px">Done</button>`, el => { el.querySelector("#invu").onfocus = e => e.target.select(); el.querySelector("#ok").onclick = closeSheet; }); }
+}
 async function doLogout() { closeSheet(); await logout(); unpick(); toast("Logged out"); location.hash = "#/today"; route(); }
 function passwordSheet() {
   sheet(`<h2 style="margin-top:0">Change password</h2><form id="pf"><label class="f" for="po">Current password</label><input id="po" type="password" autocomplete="current-password" required>
@@ -1339,7 +1358,8 @@ function userSheet() {
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:18px;font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
+    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
+    el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
   });
