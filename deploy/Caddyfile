@@ -23,6 +23,13 @@ dev.level-up.com.de {
 	reverse_proxy 127.0.0.1:8000
 }
 
+# LevelUp for the Android app (the APK opens this address) and the APK download.
+# Same app and data as dev for now; the APK is tied to this name, so keep it stable.
+app.level-up.com.de {
+	import common
+	reverse_proxy 127.0.0.1:8000
+}
+
 # Main domain: sends visitors to dev until the main copy exists
 level-up.com.de {
 	import common

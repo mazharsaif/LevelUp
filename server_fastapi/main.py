@@ -476,6 +476,22 @@ def api_404(rest: str):
     return err("not found", 404)
 
 
+# Android app (TWA): Digital Asset Links proves app.level-up.com.de belongs to the APK, so it opens without a URL bar.
+@app.get("/.well-known/assetlinks.json", include_in_schema=False)
+def assetlinks():
+    return FileResponse(os.path.join(APP, ".well-known", "assetlinks.json"), media_type="application/json")
+
+
+# The sideloadable APK (built locally by tools/android/build_apk.sh, committed in app/download/).
+@app.get("/download/levelup.apk", include_in_schema=False)
+def apk():
+    path = os.path.join(APP, "download", "levelup.apk")
+    if not os.path.isfile(path):
+        return err("no APK built yet", 404)
+    return FileResponse(path, media_type="application/vnd.android.package-archive", filename="LevelUp.apk",
+                        headers={"Cache-Control": "no-cache"})
+
+
 # The app itself (index.html, JS, CSS, audio). Mounted last so /api and /docs win.
 app.mount("/", StaticFiles(directory=APP, html=True), name="app")
 

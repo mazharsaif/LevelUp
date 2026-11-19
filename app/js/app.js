@@ -159,7 +159,7 @@ function paceCard(pc) {
 function todayView() {
   if (!questMode()) return freeToday();
   const it = nextItem(), due = dueWords();
-  view().innerHTML = topBar() + `
+  view().innerHTML = topBar() + apkBanner() + `
   ${dailyQuest(due)}
   ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
@@ -216,7 +216,7 @@ function unitLabel(u) {
 }
 function freeToday() {
   const it = nextItem(), due = dueWords();
-  view().innerHTML = topBar() + `
+  view().innerHTML = topBar() + apkBanner() + `
   ${it ? `<div class="card next-card"><div class="sys-h">Up next</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}</div>
       <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
@@ -554,6 +554,8 @@ function settingsView() {
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
+  ${offerApk() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 Android app</div>
+    <p class="muted small">Install LevelUp as an app: full screen, own icon, same account and progress.</p>${apkBtn("btn")}</div>` : ""}
   <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
     <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
@@ -1222,6 +1224,7 @@ function syncText() {
   return SYNC.online ? "" : "⚠️ Offline";
 }
 function wireTop() {
+  wireApk();
   const uc = view().querySelector("#uc");
   if (uc) uc.onclick = userSheet;
   const gm = view().querySelector("#gem");
@@ -1250,7 +1253,8 @@ function loginView(msg = "") {
     </form>
     ${isGuest() ? `<button class="btn ghost" id="agb">‹ Back to the app (guest)</button>` : `<button class="btn ghost" id="agt">${hasGuestData() ? "Continue as guest" : "Try it first as a guest"}</button>
     <p class="muted small" style="text-align:center;margin:6px 0 0">No account needed. Progress stays on this phone; sign up later to keep it.</p>`}
-    <button class="link" id="aint" style="display:block;margin:14px auto 0">What is LevelUp?</button>`;
+    <button class="link" id="aint" style="display:block;margin:14px auto 0">What is LevelUp?</button>
+    ${apkBtn("btn ghost", "margin-top:14px")}`;
   window.scrollTo(0, 0); // e.g. after logging out from the bottom of Settings
   view().querySelector("#gear").onclick = themeSheet;
   view().querySelectorAll(".authtabs button").forEach(b => (b.onclick = () => { authTab = b.dataset.t; loginView(); }));
@@ -1259,6 +1263,7 @@ function loginView(msg = "") {
   if (q("#agt")) q("#agt").onclick = enterGuest;
   if (q("#agb")) q("#agb").onclick = () => { document.body.classList.remove("in-lesson"); route(); };
   q("#aint").onclick = () => introView();
+  wireApk();
   const f = view().querySelector("#af"), er = view().querySelector("#aerr"), go = view().querySelector("#ago");
   f.onsubmit = async e => {
     e.preventDefault();
@@ -1311,12 +1316,14 @@ function introView() {
       ${f("📈", "See your progress", "Level, rank and pace show if you're on track. Your progress is saved to your account and works on any device.")}
     </div>
     <button class="btn" id="ia">Create free account</button><button class="btn ghost" id="il" style="margin-top:8px">I have an account</button>
-    <button class="link" id="ig" style="display:block;margin:12px auto 0">${hasGuestData() ? "Continue as guest" : "Just try it as a guest"}</button>`;
+    <button class="link" id="ig" style="display:block;margin:12px auto 0">${hasGuestData() ? "Continue as guest" : "Just try it as a guest"}</button>
+    ${apkBtn("btn ghost", "margin-top:14px")}`;
   window.scrollTo(0, 0);
   view().querySelector("#gear").onclick = themeSheet;
   view().querySelector("#ia").onclick = () => { authTab = "signup"; loginView(); };
   view().querySelector("#il").onclick = () => { authTab = "login"; loginView(); };
   view().querySelector("#ig").onclick = enterGuest;
+  wireApk();
 }
 const GUEST_NOTE = `<div style="font-weight:800">👋 You're trying LevelUp as a guest</div>
   <p class="muted small">Your progress is saved only on this phone. Create a free account to keep it, back it up and use it on other devices: everything you've done so far moves into the account.</p>`;
@@ -1354,6 +1361,44 @@ function forgotSheet(user = "") {
   });
 }
 // Share / invite: the phone's share sheet (WhatsApp, SMS, …) when available, else copy the link.
+// ------------------------------------------------------------------ Android app (APK download for browser visitors)
+// Inside the APK the start URL carries ?src=apk (and the first page has an android-app:// referrer): no download offer there.
+const IN_APK = (() => {
+  const hit = /[?&]src=apk\b/.test(location.search) || document.referrer.startsWith("android-app://");
+  try { if (hit) sessionStorage.setItem("a1.apk", "1"); return hit || sessionStorage.getItem("a1.apk") === "1"; } catch { return hit; }
+})();
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+const standaloneApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const offerApk = () => !IN_APK && !IS_IOS && !standaloneApp();
+const APK_URL = "download/levelup.apk";
+const apkBtn = (cls = "btn ghost", style = "") => offerApk() ? `<button class="${cls}" type="button" data-apk style="${style}">📱 Download the Android app</button>` : "";
+const apkHidden = () => { try { return !!localStorage.getItem("a1.apkHide"); } catch { return false; } };
+const apkBanner = () => offerApk() && IS_ANDROID && !apkHidden() ? `<div class="card row" id="apkb" style="gap:10px;align-items:center;padding:10px 12px">
+  <span style="font-size:24px">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Full screen, own icon, opens straight into your lessons.</div></div>
+  <button class="btn sm" type="button" data-apk style="width:auto;margin:0">Get it</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>` : "";
+function wireApk(root = view()) {
+  root.querySelectorAll("[data-apk]").forEach(b => (b.onclick = apkSheet));
+  const x = root.querySelector("#apkx");
+  if (x) x.onclick = () => { try { localStorage.setItem("a1.apkHide", "1"); } catch { /* ignore */ } root.querySelector("#apkb")?.remove(); toast("You can still get the app in Settings"); };
+}
+function apkSheet() {
+  const appUrl = "https://app.level-up.com.de";
+  sheet(`<h2 style="margin-top:0">📱 LevelUp for Android</h2>
+    ${IS_ANDROID ? "" : `<p class="note">This is an Android app. Open <b>${appUrl}</b> on your Android phone to install it there (or download it here and copy it over).</p>`}
+    <ol class="small" style="padding-left:20px;line-height:1.5">
+      <li>Tap <b>Download</b>. Chrome may warn that the file could be harmful: tap <b>Download anyway</b>. (It's only the LevelUp app, not from the Play Store yet.)</li>
+      <li>Open the downloaded <b>LevelUp.apk</b>. Android asks to allow <b>Install unknown apps</b> for Chrome: turn it on, go back, tap <b>Install</b>.</li>
+      <li>If Play Protect asks to scan the app, let it, then tap <b>Install anyway</b>.</li>
+      <li>Open LevelUp from your home screen and log in once. Your progress is the same as on the website.</li>
+    </ol>
+    <p class="muted small">Needs Android 7 or newer and Chrome. Updates to lessons arrive by themselves, no reinstall needed.</p>
+    <a class="btn" href="${APK_URL}" download="LevelUp.apk" id="apkdl" style="display:block;text-align:center;text-decoration:none">Download (about 3 MB)</a>
+    <button class="btn ghost" type="button" id="apkc">Close</button>`, el => {
+    el.querySelector("#apkc").onclick = closeSheet;
+    el.querySelector("#apkdl").onclick = () => setTimeout(() => toast("Downloading… open it from your notifications"), 300);
+  });
+}
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
   const text = "I'm levelling up with LevelUp: short daily lessons, spaced repetition and quests. Join me!";

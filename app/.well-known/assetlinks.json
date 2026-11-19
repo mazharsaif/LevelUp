@@ -1,0 +1,4 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {"namespace": "android_app", "package_name": "de.com.levelup.app", "sha256_cert_fingerprints": ["3A:52:B2:8C:6B:12:9B:BD:46:AD:35:4C:6C:07:F6:2D:8B:6A:16:02:43:D7:0C:EF:16:33:88:35:B6:69:EC:8B"]}
+}]
