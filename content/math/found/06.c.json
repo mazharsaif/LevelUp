@@ -1,0 +1,44 @@
+[
+ {
+  "t": "asn",
+  "q": "(a + b)² = a² + b²",
+  "a": "sometimes",
+  "why": "Only when a or b is 0. (3 + 4)² = 49, but 3² + 4² = 25. The missing piece is the middle term 2ab."
+ },
+ {
+  "t": "mc",
+  "q": "Why is 5⁰ = 1?",
+  "o": [
+   "The 1 is a convention with no reason behind it",
+   "Each step down in the power divides by 5: 5² = 25, 5¹ = 5, so 5⁰ = 5 ÷ 5 = 1",
+   "Because anything times 0 is 0",
+   "It isn't: 5⁰ = 5"
+  ],
+  "a": 1,
+  "why": "The pattern also explains negative powers: one more step down gives 5⁻¹ = 1/5."
+ },
+ {
+  "t": "step",
+  "q": "Simplify 2³ × 2⁴.",
+  "lines": [
+   "2³ × 2⁴",
+   "= 4⁷",
+   "= 16384"
+  ],
+  "a": 1,
+  "why": "Keep the base and add the powers: 2⁷ = 128. The bases are not multiplied together."
+ },
+ {
+  "t": "asn",
+  "q": "√(x²) = x",
+  "a": "sometimes",
+  "why": "Only for x ≥ 0. √((−3)²) = √9 = 3, not −3. In general √(x²) = |x|.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "mf",
+  "q": "2⁻³ is a negative number.",
+  "a": false,
+  "why": "Myth. A negative power means 'one over': 2⁻³ = 1/8, which is positive."
+ }
+]

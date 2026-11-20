@@ -1,0 +1,47 @@
+[
+ {
+  "t": "step",
+  "q": "Solve x² − 5x + 6 = 0.",
+  "lines": [
+   "(x − 2)(x − 3) = 0",
+   "x = −2 or x = −3"
+  ],
+  "a": 1,
+  "why": "x − 2 = 0 means x = +2. The solutions are x = 2 and x = 3. Check: 4 − 10 + 6 = 0 ✓.",
+  "gap": "alg.factor"
+ },
+ {
+  "t": "asn",
+  "q": "(A + B)² = A² + 2AB + B² for square matrices A and B.",
+  "a": "sometimes",
+  "why": "(A + B)² = A² + AB + BA + B². That only equals the usual formula when AB = BA.",
+  "gap": "alg.matrices"
+ },
+ {
+  "t": "asn",
+  "q": "ln(eˣ) = x",
+  "a": "always",
+  "why": "ln undoes e^: it asks 'which power of e gives eˣ?', and the answer is x.",
+  "gap": "alg.explog"
+ },
+ {
+  "t": "mc",
+  "q": "f(x) = 3x − 2. What is the inverse function?",
+  "o": [
+   "(x + 2)/3",
+   "1/(3x − 2)",
+   "3x + 2",
+   "x/3 − 2"
+  ],
+  "a": 0,
+  "why": "Undo the steps in reverse order: add 2, then divide by 3. f⁻¹ is not the same as 1/f.",
+  "gap": "alg.functions"
+ },
+ {
+  "t": "mf",
+  "q": "Two lines with the same slope never meet.",
+  "a": false,
+  "why": "Myth. With the same slope AND the same intercept they are the same line, so they meet everywhere.",
+  "gap": "alg.systems"
+ }
+]

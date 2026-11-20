@@ -243,7 +243,7 @@ def split_parts(cards, chapter_title=""):
 
 
 ANSWERS = re.compile(r"<p><b>Answers\.</b>(.*?)</p>", re.S)
-QTYPES = {"mc", "tf", "mf", "num"}
+QTYPES = {"mc", "tf", "mf", "num", "asn", "step"}
 
 
 def check_quiz(qs, where):
@@ -251,6 +251,10 @@ def check_quiz(qs, where):
          {"t": "mc",  "q": "...", "o": ["option", ...], "a": <index of the right option>, "why": "..."}
          {"t": "tf"|"mf", "q": "statement", "a": true|false, "why": "..."}     (mf = shown as Myth / Fact)
          {"t": "num", "q": "...", "a": <number>, "tol": <optional>, "unit": "<optional>", "why": "..."}
+       Concept checks (NN.c.json) may also use
+         {"t": "asn", "q": "statement", "a": "always"|"sometimes"|"never", "why": "..."}
+         {"t": "step", "q": "...", "lines": ["worked line", ...], "a": <index of the first wrong line>, "why": "..."}
+       and any question may carry "gap": "<node id>" = the earlier skill a wrong answer points back to.
        Refuses broken entries so the app never shows a question without a right answer."""
     for i, q in enumerate(qs, 1):
         bad = q.get("t") not in QTYPES or not q.get("q") or "a" not in q or not q.get("why")
@@ -260,12 +264,21 @@ def check_quiz(qs, where):
             bad = bad or not isinstance(q["a"], bool)
         if q.get("t") == "num":
             bad = bad or isinstance(q["a"], bool) or not isinstance(q["a"], (int, float))
+        if q.get("t") == "asn":
+            bad = bad or q["a"] not in ("always", "sometimes", "never")
+        if q.get("t") == "step":
+            bad = bad or not isinstance(q.get("lines"), list) or not (isinstance(q["a"], int) and 0 <= q["a"] < len(q["lines"]))
+        if q.get("gap") and q["gap"] not in NODE_IDS:
+            raise SystemExit(f"{where}: question {i} points to unknown skill {q['gap']}")
         if bad:
             raise SystemExit(f"{where}: question {i} is malformed: {q}")
     return qs
 
 
-def sync_tree_parts(parts_by_chapter, quiz_by_chapter=None):
+NODE_IDS = set()
+
+
+def sync_tree_parts(parts_by_chapter, quiz_by_chapter=None, concept_by_chapter=None):
     """Copy each chapter's parts (and its number of practice questions) onto its skill node in app/data/<tree>-path.json."""
     p = os.path.join(ROOT, "app", "data", f"{TREE}-path.json")
     raw = open(p, encoding="utf-8").read()
@@ -283,6 +296,13 @@ def sync_tree_parts(parts_by_chapter, quiz_by_chapter=None):
         elif not nq and "quiz" in node:
             del node["quiz"]
             changed += 1
+        nc = (concept_by_chapter or {}).get((node["branch"], node["chapter"]), 0)
+        if nc and node.get("cc") != nc:
+            node["cc"] = nc
+            changed += 1
+        elif not nc and "cc" in node:
+            del node["cc"]
+            changed += 1
     if changed:
         with open(p, "w", encoding="utf-8") as f:
             f.write(json.dumps(d, ensure_ascii=False, indent=2) + ("\n" if raw.endswith("\n") else ""))
@@ -293,7 +313,8 @@ def main():
     """One small file per chapter (downloaded only when a learner opens that skill) + a tiny index."""
     import shutil
     os.makedirs(OUT, exist_ok=True)
-    parts_by_chapter, quiz_by_chapter = {}, {}
+    parts_by_chapter, quiz_by_chapter, concept_by_chapter = {}, {}, {}
+    NODE_IDS.update(n["id"] for n in json.load(open(os.path.join(ROOT, "app", "data", f"{TREE}-path.json"), encoding="utf-8")).get("nodes", []))
     for branch in sorted(os.listdir(SRC)):
         bdir = os.path.join(SRC, branch)
         if not os.path.isdir(bdir):
@@ -322,10 +343,14 @@ def main():
             if os.path.exists(qf):
                 doc["quiz"] = check_quiz(json.load(open(qf, encoding="utf-8")), qf)
             quiz_by_chapter[(branch, int(n))] = len(doc.get("quiz", []))
+            cf = os.path.join(bdir, f"{int(n):02d}.c.json")                   # concept check (optional), same format
+            if os.path.exists(cf):
+                doc["concept"] = check_quiz(json.load(open(cf, encoding="utf-8")), cf)
+            concept_by_chapter[(branch, int(n))] = len(doc.get("concept", []))
             body = json.dumps(doc, ensure_ascii=False, separators=(",", ":"))
             with open(os.path.join(odir, f"{int(n):02d}.json"), "w", encoding="utf-8") as f:
                 f.write(body)
-            index[n] = {"title": title, "cards": len(cards), "bytes": len(body.encode()), "parts": len(parts), "quiz": quiz_by_chapter[(branch, int(n))]}
+            index[n] = {"title": title, "cards": len(cards), "bytes": len(body.encode()), "parts": len(parts), "quiz": quiz_by_chapter[(branch, int(n))], "cc": concept_by_chapter[(branch, int(n))]}
             print(f"{branch}/{name}: {len(cards):3d} cards in {len(parts) or 1} part(s), {len(body.encode()) // 1024:3d} KB")
         with open(os.path.join(odir, "index.json"), "w", encoding="utf-8") as f:
             json.dump({"chapters": index}, f, ensure_ascii=False, separators=(",", ":"))
@@ -333,7 +358,7 @@ def main():
         if os.path.exists(old):
             os.remove(old)
         print(f"-> app/data/{TREE}/{branch}/  ({sum(c['cards'] for c in index.values())} cards, {sum(c['bytes'] for c in index.values()) // 1024} KB total)")
-    sync_tree_parts(parts_by_chapter, quiz_by_chapter)
+    sync_tree_parts(parts_by_chapter, quiz_by_chapter, concept_by_chapter)
 
 
 if __name__ == "__main__":

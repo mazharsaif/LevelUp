@@ -100,7 +100,8 @@
           "b": 5
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.muldiv",
@@ -159,7 +160,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.fractions",
@@ -218,7 +220,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.order",
@@ -277,7 +280,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.powers",
@@ -335,7 +339,8 @@
           "b": 6
         }
       ],
-      "quiz": 8
+      "quiz": 8,
+      "cc": 5
     },
     {
       "id": "found.percent",
@@ -394,7 +399,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.expr",
@@ -455,7 +461,8 @@
           "b": 7
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.equations",
@@ -516,7 +523,8 @@
           "b": 8
         }
       ],
-      "quiz": 8
+      "quiz": 8,
+      "cc": 5
     },
     {
       "id": "found.rearrange",
@@ -574,7 +582,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.coords",
@@ -633,7 +642,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.words",
@@ -692,7 +702,8 @@
           "b": 7
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.lines",
@@ -750,7 +761,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "found.boss",
@@ -807,7 +819,8 @@
           "b": 6
         }
       ],
-      "quiz": 8
+      "quiz": 8,
+      "cc": 6
     },
     {
       "id": "alg.functions",
@@ -864,7 +877,8 @@
           "b": 7
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.poly",
@@ -924,7 +938,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.systems",
@@ -984,7 +999,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.factor",
@@ -1043,7 +1059,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.vectors",
@@ -1102,7 +1119,8 @@
           "b": 7
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.quadratic",
@@ -1162,7 +1180,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.matrices",
@@ -1222,7 +1241,8 @@
           "b": 9
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.parabolas",
@@ -1281,7 +1301,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.det",
@@ -1339,7 +1360,8 @@
           "b": 10
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.explog",
@@ -1399,7 +1421,8 @@
           "b": 8
         }
       ],
-      "quiz": 8
+      "quiz": 8,
+      "cc": 5
     },
     {
       "id": "alg.axb",
@@ -1458,7 +1481,8 @@
           "b": 9
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "alg.boss",
@@ -1515,7 +1539,8 @@
           "b": 8
         }
       ],
-      "quiz": 8
+      "quiz": 8,
+      "cc": 5
     },
     {
       "id": "calc.limits",
@@ -1571,7 +1596,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.rules",
@@ -1630,7 +1656,8 @@
           "b": 6
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.chain",
@@ -1688,7 +1715,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.marginal",
@@ -1746,7 +1774,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.explog",
@@ -1804,7 +1833,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.optim",
@@ -1862,7 +1892,8 @@
           "b": 6
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.partial",
@@ -1921,7 +1952,8 @@
           "b": 9
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.multi",
@@ -1978,7 +2010,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.integral",
@@ -2036,7 +2069,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.lagrange",
@@ -2095,7 +2129,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.surplus",
@@ -2153,7 +2188,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "calc.boss",
@@ -2210,7 +2246,8 @@
           "b": 6
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "stats.describe",
@@ -2266,7 +2303,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.spread",
@@ -2325,7 +2363,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.prob",
@@ -2384,7 +2423,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.bayes",
@@ -2443,7 +2483,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.rv",
@@ -2502,7 +2543,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.binom",
@@ -2561,7 +2603,8 @@
           "b": 7
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.normal",
@@ -2621,7 +2664,8 @@
           "b": 9
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.clt",
@@ -2680,7 +2724,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.ci",
@@ -2740,7 +2785,8 @@
           "b": 9
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.tests",
@@ -2800,7 +2846,8 @@
           "b": 8
         }
       ],
-      "quiz": 6
+      "quiz": 6,
+      "cc": 5
     },
     {
       "id": "stats.regress",
@@ -2860,7 +2907,8 @@
           "b": 10
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     },
     {
       "id": "stats.boss",
@@ -2916,7 +2964,8 @@
           "b": 8
         }
       ],
-      "quiz": 7
+      "quiz": 7,
+      "cc": 5
     }
   ]
 }

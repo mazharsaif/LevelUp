@@ -1,0 +1,52 @@
+[
+ {
+  "t": "step",
+  "q": "Differentiate ln(x² + 1).",
+  "lines": [
+   "ln(x² + 1)",
+   "→ 1/(x² + 1)"
+  ],
+  "a": 1,
+  "why": "The chain rule needs the inner derivative: 2x/(x² + 1).",
+  "gap": "calc.chain"
+ },
+ {
+  "t": "mf",
+  "q": "A function with f'(x) > 0 everywhere has a maximum.",
+  "a": false,
+  "why": "Myth. It keeps rising forever, so on all real numbers there's no highest point.",
+  "gap": "calc.optim"
+ },
+ {
+  "t": "num",
+  "q": "Find the limit of ((2 + h)² − 4)/h as h → 0.",
+  "a": 4,
+  "why": "That's the derivative of x² at x = 2: 2 · 2 = 4. Or expand: (4h + h²)/h = 4 + h → 4.",
+  "gap": "calc.limits"
+ },
+ {
+  "t": "mc",
+  "q": "Elasticity is −0.5. Raising the price will…",
+  "o": [
+   "raise revenue, because demand is inelastic",
+   "lower revenue",
+   "leave revenue unchanged",
+   "double revenue"
+  ],
+  "a": 0,
+  "why": "A 1% price rise cuts quantity by only 0.5%, so price × quantity goes up.",
+  "gap": "calc.explog"
+ },
+ {
+  "t": "step",
+  "q": "Find ∫₀¹ e^(2x) dx.",
+  "lines": [
+   "∫₀¹ e^(2x) dx",
+   "= [e^(2x)] from 0 to 1",
+   "= e² − 1"
+  ],
+  "a": 1,
+  "why": "The antiderivative of e^(2x) is e^(2x)/2 (check by differentiating). The answer is (e² − 1)/2.",
+  "gap": "calc.integral"
+ }
+]

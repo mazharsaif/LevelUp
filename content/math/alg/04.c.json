@@ -1,0 +1,49 @@
+[
+ {
+  "t": "step",
+  "q": "Solve x² = 5x.",
+  "lines": [
+   "x² = 5x",
+   "x = 5"
+  ],
+  "a": 1,
+  "why": "Dividing by x throws away x = 0. Instead, x² − 5x = x(x − 5) = 0, so x = 0 or x = 5.",
+  "gap": "found.equations"
+ },
+ {
+  "t": "mc",
+  "q": "Why does (x − 2)(x + 3) = 0 give x = 2 or x = −3?",
+  "o": [
+   "A product is zero only when one of its factors is zero",
+   "Because you set each bracket equal to the other",
+   "Because of the signs in the brackets",
+   "It doesn't"
+  ],
+  "a": 0,
+  "why": "This zero-product rule is the reason we factorise at all."
+ },
+ {
+  "t": "step",
+  "q": "Solve (x − 2)(x + 3) = 6.",
+  "lines": [
+   "(x − 2)(x + 3) = 6",
+   "x − 2 = 6 or x + 3 = 6",
+   "x = 8 or x = 3"
+  ],
+  "a": 1,
+  "why": "The zero rule only works when the right side is 0. Expand: x² + x − 6 = 6, so x² + x − 12 = 0 = (x + 4)(x − 3), giving x = −4 or x = 3."
+ },
+ {
+  "t": "asn",
+  "q": "x² − a² = (x − a)(x + a)",
+  "a": "always",
+  "why": "Expand: x² + ax − ax − a² = x² − a². This is the difference of squares.",
+  "gap": "alg.poly"
+ },
+ {
+  "t": "mf",
+  "q": "x² + 9 factorises as (x + 3)(x − 3).",
+  "a": false,
+  "why": "Myth. (x + 3)(x − 3) = x² − 9. x² + 9 has no real factors, because it is never 0."
+ }
+]

@@ -1,0 +1,57 @@
+[
+ {
+  "t": "step",
+  "q": "Solve 3x + 5 = 20.",
+  "lines": [
+   "3x + 5 = 20",
+   "3x = 25",
+   "x = 25/3"
+  ],
+  "a": 1,
+  "why": "To remove +5, subtract 5 from both sides: 3x = 15, so x = 5.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "step",
+  "q": "Solve x/2 + 3 = 7.",
+  "lines": [
+   "x/2 + 3 = 7",
+   "x + 3 = 14",
+   "x = 11"
+  ],
+  "a": 1,
+  "why": "Multiplying by 2 has to apply to every term: x + 6 = 14, so x = 8. Check: 8/2 + 3 = 7 ✓.",
+  "gap": "found.expr"
+ },
+ {
+  "t": "mc",
+  "q": "Why may you do the same thing to both sides of an equation?",
+  "o": [
+   "Because it's the rule",
+   "The two sides are the same number, and doing the same thing to equal numbers keeps them equal",
+   "Because it makes x positive",
+   "It only works with + and −"
+  ],
+  "a": 1,
+  "why": "An equation is a balance. Any change applied to both pans keeps it level, except dividing by zero."
+ },
+ {
+  "t": "mf",
+  "q": "Dividing both sides by x is always safe.",
+  "a": false,
+  "why": "Myth. If x could be 0, you lose that answer. From x² = 3x, dividing gives only x = 3, but x = 0 works too. Factorise instead: x(x − 3) = 0."
+ },
+ {
+  "t": "mc",
+  "q": "What solutions does 2(x + 1) = 2x + 3 have?",
+  "o": [
+   "One solution",
+   "None: it simplifies to 2 = 3",
+   "Every x works",
+   "x = 0"
+  ],
+  "a": 1,
+  "why": "2x + 2 = 2x + 3. Subtracting 2x leaves 2 = 3, which is never true, so no x works.",
+  "gap": "found.expr"
+ }
+]

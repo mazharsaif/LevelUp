@@ -1,0 +1,37 @@
+[
+ {
+  "t": "asn",
+  "q": "E[X] is a value that X can take.",
+  "a": "sometimes",
+  "why": "For a die, E[X] = 3.5, which you can never roll. The expected value is a long-run average."
+ },
+ {
+  "t": "asn",
+  "q": "E[X + Y] = E[X] + E[Y]",
+  "a": "always",
+  "why": "Expected values add even when X and Y depend on each other."
+ },
+ {
+  "t": "asn",
+  "q": "Var(X + Y) = Var(X) + Var(Y)",
+  "a": "sometimes",
+  "why": "True when X and Y are uncorrelated, for example independent. Otherwise add 2·Cov(X, Y)."
+ },
+ {
+  "t": "step",
+  "q": "Var(X) = 4. Find Var(3X).",
+  "lines": [
+   "Var(3X) = 3 · Var(X)",
+   "= 12"
+  ],
+  "a": 0,
+  "why": "Constants come out squared: Var(3X) = 3² · 4 = 36. The SD triples, and variance is SD².",
+  "gap": "stats.spread"
+ },
+ {
+  "t": "mf",
+  "q": "For independent X and Y, Var(X − Y) = Var(X) − Var(Y).",
+  "a": false,
+  "why": "Myth. Variances add: Var(X − Y) = Var(X) + Var(Y). Subtracting a random amount adds uncertainty too."
+ }
+]

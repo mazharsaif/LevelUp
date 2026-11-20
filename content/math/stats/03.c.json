@@ -1,0 +1,43 @@
+[
+ {
+  "t": "mf",
+  "q": "After 5 heads in a row, tails is more likely next time.",
+  "a": false,
+  "why": "Myth: the gambler's fallacy. The coin has no memory, so it's still 1/2."
+ },
+ {
+  "t": "asn",
+  "q": "P(A or B) = P(A) + P(B)",
+  "a": "sometimes",
+  "why": "Only when A and B can't happen together. Otherwise you count the overlap twice and must subtract P(A and B)."
+ },
+ {
+  "t": "step",
+  "q": "Find P(at least one 6) in 2 rolls of a die.",
+  "lines": [
+   "P(6) = 1/6 on each roll",
+   "Two rolls: 1/6 + 1/6 = 1/3"
+  ],
+  "a": 1,
+  "why": "Adding counts double six twice. Use the complement: 1 − (5/6)² = 11/36 ≈ 0.31.",
+  "gap": "found.fractions"
+ },
+ {
+  "t": "mc",
+  "q": "A and B can't both happen, and both have P > 0. Are they independent?",
+  "o": [
+   "Yes",
+   "No: if A happens, B can't, so A tells you about B",
+   "Always both",
+   "Only for coins"
+  ],
+  "a": 1,
+  "why": "Independent means knowing A doesn't change the chance of B. Here knowing A makes P(B) drop to 0."
+ },
+ {
+  "t": "asn",
+  "q": "The probability of an event is greater than 1.",
+  "a": "never",
+  "why": "Probabilities go from 0 (impossible) to 1 (certain). A result above 1 means a mistake, often double counting."
+ }
+]

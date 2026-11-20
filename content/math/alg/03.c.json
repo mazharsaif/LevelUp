@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "What does the solution of two linear equations in x and y show on a graph?",
+  "o": [
+   "The point where the two lines cross",
+   "Where each line meets the y-axis",
+   "The slope of each line",
+   "Nothing on the graph"
+  ],
+  "a": 0,
+  "why": "The crossing point is on both lines, so it makes both equations true at once.",
+  "gap": "found.lines"
+ },
+ {
+  "t": "mc",
+  "q": "x + y = 3 and 2x + 2y = 8. How many solutions are there?",
+  "o": [
+   "One",
+   "None: the lines are parallel",
+   "Infinitely many",
+   "Two"
+  ],
+  "a": 1,
+  "why": "The second equation is x + y = 4. Same slope, different intercept, so the lines never meet.",
+  "gap": "found.lines"
+ },
+ {
+  "t": "step",
+  "q": "Solve x + y = 10 and x − y = 2.",
+  "lines": [
+   "Add the equations: 2x = 12, so x = 6",
+   "Then y = 10 + 6 = 16"
+  ],
+  "a": 1,
+  "why": "From x + y = 10, y = 10 − x = 4. Check: 6 − 4 = 2 ✓.",
+  "gap": "found.equations"
+ },
+ {
+  "t": "asn",
+  "q": "Two linear equations in two unknowns have exactly one solution.",
+  "a": "sometimes",
+  "why": "They can have one (the lines cross), none (parallel lines) or infinitely many (the same line)."
+ },
+ {
+  "t": "mf",
+  "q": "If you reach 0 = 0 while solving, there is no solution.",
+  "a": false,
+  "why": "Myth. 0 = 0 is always true, so both equations describe the same line and there are infinitely many solutions. Reaching something like 0 = 5 means no solution."
+ }
+]

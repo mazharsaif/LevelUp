@@ -783,6 +783,7 @@ const nodeFrac = n => { const P = nodeParts(n); return nodeDone(n.id) ? 1 : P ? 
 const branchFrac = b => { const ns = treeNodes(b.id); return ns.length ? ns.reduce((a, n) => a + nodeFrac(n), 0) / ns.length : 0; };
 const nextNode = b => treeNodes(b.id).sort((x, y) => x.n - y.n).find(n => !nodeDone(n.id) && nodeOpen(n));
 let pendingRead = null;                                        // node to open in the reader once its branch view is drawn
+let pendingSheet = null;                                       // node whose sheet opens once its branch view is drawn
 const treeLayout = () => { try { return localStorage.getItem("a1.treeLayout") || "map"; } catch { return "map"; } };
 function continueTarget() {
   const lr = S.lastRead && C.content.nodes.find(n => n.id === S.lastRead.id);
@@ -875,6 +876,7 @@ function treeView(id) {
   }
   window.scrollTo(0, 0);
   if (pendingRead) { const n = nodes.find(x => x.id === pendingRead); pendingRead = null; if (n) openReader(br, n); }
+  if (pendingSheet) { const n = nodes.find(x => x.id === pendingSheet); pendingSheet = null; if (n) nodeSheet(n.id); }
 }
 const wrapT = (t, w = 15) => { const ws = t.split(" "), out = [""]; ws.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > w) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out.slice(0, w < 15 ? 3 : 2); };
 const wrapN = (t, w) => wrapT(t, w).length;
@@ -966,6 +968,8 @@ function nodeSheet(id) {
     }).catch(() => {});
     const PQ = el.querySelector("#practice");
     if (PQ) PQ.onclick = () => { closeSheet(); openQuiz(brN, n); };
+    const CQ = el.querySelector("#ccheck");
+    if (CQ) CQ.onclick = () => { closeSheet(); openQuiz(brN, n, null, "cc"); };
     const R0 = el.querySelector("#read");
     if (R0) R0.onclick = () => { closeSheet(); openReader(C.content.branches.find(b => b.id === n.branch), n); };
     if (st !== "locked") el.querySelectorAll(".partrow").forEach(b => (b.onclick = () => { closeSheet(); openReader(brN, n, +b.dataset.p); }));
@@ -977,13 +981,22 @@ function nodeSheet(id) {
 // ---- practice: each skill's questions (chapter file "quiz", built from content/<tree>/<branch>/NN.q.json)
 // Types: mc (multiple choice), tf / mf (true-false, shown as Myth / Fact), num (type a number).
 // S.quiz[node] = {best, of, at, xp}: the first run with 80 %+ right gives QUIZ_XP once; any run can be repeated.
+// Concept checks (chapter "concept", from NN.c.json, count on the node as n.cc) work the same, saved in S.cc:
+// misconception questions, plus asn (always / sometimes / never) and step (tap the first wrong line of a worked
+// solution). A question's "gap" names the earlier skill behind the mistake; misses list those as weak spots.
 const QUIZ_XP = 5, QUIZ_PASS = 0.8;
+const QMODE = { quiz: { key: "quiz", label: "Practice", none: "No practice questions for this skill yet." },
+  cc: { key: "concept", label: "Concept check", none: "No concept check for this skill yet." } };
 function practiceBlock(n, st) {
   const kinds = `<div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>`;
   if (!n.quiz) return `<div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div>${kinds}`;
   const r = (S.quiz || {})[n.id], best = r ? `best ${r.best}/${r.of}${r.best >= Math.ceil(QUIZ_PASS * r.of) ? " ✓" : ""}` : `+${QUIZ_XP} XP at 80 %`;
+  const c = (S.cc || {})[n.id], cbest = c ? `best ${c.best}/${c.of}${c.best >= Math.ceil(QUIZ_PASS * c.of) ? " ✓" : ""}` : `+${QUIZ_XP} XP at 80 %`;
   return `<div style="font-weight:800;margin:14px 0 6px">Practice <span class="tiny muted">${n.quiz} questions · ${best}</span></div>
-    <button class="btn ghost" id="practice" ${st === "locked" ? "disabled" : ""} style="margin:0">🧠 ${r ? "Practise again" : "Practise"}</button>`;
+    <button class="btn ghost" id="practice" ${st === "locked" ? "disabled" : ""} style="margin:0">🧠 ${r ? "Practise again" : "Practise"}</button>
+    ${n.cc ? `<div style="font-weight:800;margin:14px 0 2px">Concept check <span class="tiny muted">${n.cc} questions · ${cbest}</span></div>
+    <div class="tiny muted" style="margin-bottom:6px">Why it works, not just how: common mistakes, spot the wrong step, always or never true. Misses point to the skill to revisit.</div>
+    <button class="btn ghost" id="ccheck" ${st === "locked" ? "disabled" : ""} style="margin:0">🔍 ${c ? "Check again" : "Check my understanding"}</button>` : ""}`;
 }
 // numbers as people type them: −3, 3/4, 1,250, 0,5, 12%, 44,240 euros
 function parseNum(txt) {
@@ -995,19 +1008,26 @@ function parseNum(txt) {
   return /^-?(\d+\.?\d*|\.\d+)$/.test(t) ? +t : NaN;
 }
 const numOK = (q, v) => Math.abs(v - q.a) <= (q.tol != null ? q.tol : Math.max(1e-9, Math.abs(q.a) * 0.005));
-async function openQuiz(br, node, only) {
+async function openQuiz(br, node, only, mode = "quiz") {
+  const M = QMODE[mode];
   let ch = null;
   try { ch = await loadChapter(br, node.chapter); } catch { ch = null; }
-  if (!ch || !ch.quiz || !ch.quiz.length) { toast(navigator.onLine ? "No practice questions for this skill yet." : "No connection, so the questions can't download right now."); return; }
+  const QS = ch && ch[M.key];
+  if (!QS || !QS.length) { toast(navigator.onLine ? M.none : "No connection, so the questions can't download right now."); return; }
   document.body.classList.add("in-lesson");
-  const Q = (only || ch.quiz.map((_, i) => i)), res = [];
+  const Q = (only || QS.map((_, i) => i)), res = [];
+  const gapNode = q => q.gap && q.gap !== node.id ? C.content.nodes.find(x => x.id === q.gap) : null;
   let i = 0;
   const shuffle = a => { for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
   const draw = () => {
-    const q = ch.quiz[Q[i]], pct = Math.round(100 * i / Q.length);
-    const kind = q.t === "mc" ? "Concept check" : q.t === "mf" ? "Myth or fact" : q.t === "tf" ? "True or false" : "Work it out";
+    const q = QS[Q[i]], pct = Math.round(100 * i / Q.length);
+    const kind = q.t === "mc" ? (mode === "cc" ? "Concept check" : "Pick one") : q.t === "mf" ? "Myth or fact" : q.t === "tf" ? "True or false"
+      : q.t === "asn" ? "Always, sometimes or never?" : q.t === "step" ? "Find the mistake" : "Work it out";
     let body = "";
-    if (q.t === "mc") body = `<div class="opts">${shuffle(q.o.map((o, k) => k)).map(k => `<button class="opt" data-k="${k}">${esc(q.o[k])}</button>`).join("")}</div>`;
+    if (q.t === "asn") body = `<div class="opts tf asn">${["always", "sometimes", "never"].map(k => `<button class="opt" data-k="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join("")}</div>`;
+    else if (q.t === "step") body = `<div class="tiny muted" style="margin:-8px 0 8px">Tap the first line that is wrong.</div>
+      <div class="opts steps">${q.lines.map((l, k) => `<button class="opt stepl" data-k="${k}"><span class="sn">${k + 1}</span><span>${esc(l)}</span></button>`).join("")}</div>`;
+    else if (q.t === "mc") body = `<div class="opts">${shuffle(q.o.map((o, k) => k)).map(k => `<button class="opt" data-k="${k}">${esc(q.o[k])}</button>`).join("")}</div>`;
     else if (q.t === "tf" || q.t === "mf") { const [yes, no] = q.t === "mf" ? ["Fact", "Myth"] : ["True", "False"];
       body = `<div class="opts tf"><button class="opt" data-k="1">${yes}</button><button class="opt" data-k="0">${no}</button></div>`; }
     else body = `<div class="numin"><input id="na" inputmode="decimal" autocomplete="off" placeholder="Your answer">${q.unit ? `<span class="muted">${esc(q.unit)}</span>` : ""}</div>
@@ -1021,7 +1041,8 @@ async function openQuiz(br, node, only) {
     const nb = view().querySelector("#qn"), fb = view().querySelector("#fb");
     const answer = ok => {
       res[i] = ok;
-      fb.innerHTML = `<div class="qfb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Right" : "✗ Not quite"}</b>${!ok && q.t === "num" ? ` · answer: <b>${esc(String(q.a))}${q.unit ? " " + esc(q.unit) : ""}</b>` : ""}<div>${esc(q.why)}</div></div>`;
+      const g = !ok && gapNode(q);
+      fb.innerHTML = `<div class="qfb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Right" : "✗ Not quite"}</b>${!ok && q.t === "num" ? ` · answer: <b>${esc(String(q.a))}${q.unit ? " " + esc(q.unit) : ""}</b>` : ""}${!ok && q.t === "step" ? ` · line ${q.a + 1} is the first wrong one` : ""}<div>${esc(q.why)}</div>${g ? `<div class="tiny" style="margin-top:6px">🧱 Foundation behind this: <b>${g.icon} ${esc(g.title)}</b></div>` : ""}</div>`;
       nb.disabled = false; nb.textContent = i + 1 < Q.length ? "Next ›" : "See result"; nb.onclick = () => { i++; i < Q.length ? draw() : done(); };
     };
     if (q.t === "num") {
@@ -1031,26 +1052,38 @@ async function openQuiz(br, node, only) {
       nb.onclick = check; inp.onkeydown = e => { if (e.key === "Enter" && !inp.disabled) check(); };
     } else view().querySelectorAll(".opt").forEach(b => (b.onclick = () => {
       if (res[i] != null) return;
-      const k = +b.dataset.k, right = q.t === "mc" ? q.a : (q.a ? 1 : 0), ok = k === right;
-      view().querySelectorAll(".opt").forEach(o => { o.disabled = true; const kk = +o.dataset.k; o.classList.add(kk === right ? "right" : o === b ? "wrong" : "dim"); });
+      const val = o => q.t === "asn" ? o.dataset.k : +o.dataset.k;
+      const k = val(b), right = q.t === "mc" || q.t === "step" || q.t === "asn" ? q.a : (q.a ? 1 : 0), ok = k === right;
+      view().querySelectorAll(".opt").forEach(o => { o.disabled = true; o.classList.add(val(o) === right ? "right" : o === b ? "wrong" : "dim"); });
       answer(ok);
     }));
   };
   const done = () => {
     const got = res.filter(Boolean).length, full = !only, wrong = Q.filter((_, k) => !res[k]);
-    S.quiz = S.quiz || {};
-    const r = S.quiz[node.id] || { best: 0, of: ch.quiz.length, xp: false };
+    const SK = mode === "cc" ? "cc" : "quiz";
+    S[SK] = S[SK] || {};
+    const r = S[SK][node.id] || { best: 0, of: QS.length, xp: false };
     let xp = 0;
-    if (full) { r.of = ch.quiz.length; r.best = Math.max(r.best, got); r.at = today();
+    if (full) { r.of = QS.length; r.best = Math.max(r.best, got); r.at = today();
       if (!r.xp && got >= Math.ceil(QUIZ_PASS * Q.length)) { r.xp = true; xp = QUIZ_XP; } }
-    S.quiz[node.id] = r;
+    S[SK][node.id] = r;
+    const gaps = {};                                    // weak spots: earlier skills behind the misses
+    wrong.forEach(k => { const g = gapNode(QS[k]); if (g) gaps[g.id] = (gaps[g.id] || 0) + 1; });
+    const gapIds = Object.keys(gaps).sort((a, b) => gaps[b] - gaps[a]);
     xp ? addXP(xp) : save();
     view().innerHTML = `<div class="reader quiz" style="text-align:center;padding-top:40px"><div style="font-size:54px">${got === Q.length ? "🏆" : got >= Math.ceil(QUIZ_PASS * Q.length) ? "🎯" : "💪"}</div>
       <div class="q-title" style="margin-top:6px">${got} of ${Q.length} right</div>
-      <div class="muted small">${xp ? `+${xp} XP · practice passed` : got === Q.length ? "Perfect." : wrong.length ? "Have another go at the ones you missed." : ""}</div>
-      ${full && r.best ? `<div class="tiny muted" style="margin-top:6px">Your best: ${r.best}/${r.of}</div>` : ""}</div>
+      <div class="muted small">${xp ? `+${xp} XP · ${M.label.toLowerCase()} passed` : got === Q.length ? "Perfect." : wrong.length ? "Have another go at the ones you missed." : ""}</div>
+      ${full && r.best ? `<div class="tiny muted" style="margin-top:6px">Your best: ${r.best}/${r.of}</div>` : ""}
+      ${gapIds.length ? `<div class="card" style="text-align:left;margin-top:18px"><div style="font-weight:800">🧱 Foundations to revisit</div>
+        <div class="tiny muted" style="margin:2px 0 8px">Your misses come from these earlier skills. A quick reread usually fixes the rest.</div>
+        ${gapIds.map(id => { const g = C.content.nodes.find(x => x.id === id); return `<button class="partrow" data-gap="${id}"><span class="pn">${g.icon}</span><span class="grow"><b>${esc(g.title)}</b></span><span class="tiny muted">${gaps[id]} miss${gaps[id] > 1 ? "es" : ""} ›</span></button>`; }).join("")}</div>` : ""}</div>
       <div class="lesson-foot"><div class="row" style="gap:10px">${wrong.length ? `<button class="btn ghost grow" id="qr" style="margin:0">Retry ${wrong.length} missed</button>` : ""}<button class="btn grow" id="qb" style="margin:0">Back to the skill</button></div></div>`;
-    const qr = view().querySelector("#qr"); if (qr) qr.onclick = () => openQuiz(br, node, wrong);
+    const qr = view().querySelector("#qr"); if (qr) qr.onclick = () => openQuiz(br, node, wrong, mode);
+    view().querySelectorAll("[data-gap]").forEach(b => (b.onclick = () => {
+      const g = C.content.nodes.find(x => x.id === b.dataset.gap), h = "#/branch/" + g.branch;
+      pendingSheet = g.id; if (location.hash === h) treeView(g.branch); else location.hash = h;
+    }));
     view().querySelector("#qb").onclick = () => { treeView(); nodeSheet(node.id); };
   };
   draw();

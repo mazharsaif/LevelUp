@@ -1,0 +1,58 @@
+[
+ {
+  "t": "mc",
+  "q": "'5 less than twice y.' Which expression is it?",
+  "o": [
+   "5 − 2y",
+   "2y − 5",
+   "2(y − 5)",
+   "5y − 2"
+  ],
+  "a": 1,
+  "why": "'Twice y' is 2y, and '5 less than' that subtracts 5 from it. The order of the words is a trap."
+ },
+ {
+  "t": "mc",
+  "q": "There are 6 times as many students S as professors P. Which equation is right?",
+  "o": [
+   "6S = P",
+   "S = 6P",
+   "S + 6 = P",
+   "S/P = 1/6"
+  ],
+  "a": 1,
+  "why": "Check with 1 professor: there must be 6 students, so S = 6P. Writing 6S = P, in the order of the words, is the classic mistake."
+ },
+ {
+  "t": "step",
+  "q": "A shirt costs 40 after a 20% discount. What was the original price?",
+  "lines": [
+   "0.8 × P = 40",
+   "P = 40 × 1.2",
+   "P = 48"
+  ],
+  "a": 1,
+  "why": "Undo × 0.8 by dividing by 0.8: P = 50. Adding 20% back uses the wrong base.",
+  "gap": "found.percent"
+ },
+ {
+  "t": "mc",
+  "q": "A car drives at 60 km/h for 90 minutes. Someone works out 60 × 90 = 5400 km. What went wrong?",
+  "o": [
+   "Nothing",
+   "The units don't match: 90 minutes is 1.5 hours, so the answer is 90 km",
+   "They should have divided",
+   "They should have added"
+  ],
+  "a": 1,
+  "why": "Speed is per hour, so time must be in hours too. Checking the units catches this kind of mistake."
+ },
+ {
+  "t": "num",
+  "q": "A taxi charges a fixed 3 plus 2 per km. A trip cost 19. How many km was it?",
+  "a": 8,
+  "why": "3 + 2k = 19, so 2k = 16 and k = 8. Check: 3 + 16 = 19 ✓.",
+  "unit": "km",
+  "gap": "found.equations"
+ }
+]

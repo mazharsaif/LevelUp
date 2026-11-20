@@ -1,0 +1,47 @@
+[
+ {
+  "t": "mc",
+  "q": "You report the average of 40 incomes, and one of them is huge. Which average should you use?",
+  "o": [
+   "The median",
+   "The mean",
+   "The maximum",
+   "The range"
+  ],
+  "a": 0,
+  "why": "The median isn't pulled by one extreme value.",
+  "gap": "stats.describe"
+ },
+ {
+  "t": "mf",
+  "q": "If P(positive | disease) is high, then P(disease | positive) is high too.",
+  "a": false,
+  "why": "Myth. With a rare disease, most positives can still be false alarms.",
+  "gap": "stats.bayes"
+ },
+ {
+  "t": "step",
+  "q": "σ = 12 and n = 36. Find the standard error.",
+  "lines": [
+   "SE = 12/36",
+   "= 0.33"
+  ],
+  "a": 0,
+  "why": "SE = σ/√n = 12/6 = 2.",
+  "gap": "stats.clt"
+ },
+ {
+  "t": "asn",
+  "q": "If you reject H₀ at the 1% level, you also reject it at the 5% level.",
+  "a": "always",
+  "why": "p < 0.01 means p < 0.05 as well.",
+  "gap": "stats.tests"
+ },
+ {
+  "t": "mf",
+  "q": "A strong correlation proves that one thing causes the other.",
+  "a": false,
+  "why": "Myth. A third factor or reverse causation can produce the same pattern.",
+  "gap": "stats.regress"
+ }
+]

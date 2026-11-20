@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "f'(a) = 0. What is x = a?",
+  "o": [
+   "A maximum",
+   "A minimum",
+   "A maximum, a minimum or a flat point like x³ at 0",
+   "A root of f"
+  ],
+  "a": 2,
+  "why": "f' = 0 only means the graph is flat there. You need more checks to tell which kind of point it is."
+ },
+ {
+  "t": "asn",
+  "q": "A point where f'(x) = 0 is a maximum or a minimum.",
+  "a": "sometimes",
+  "why": "For x³ at x = 0, f' = 0 but the graph keeps rising: it's neither."
+ },
+ {
+  "t": "step",
+  "q": "Find the maximum value of f(x) = −x² + 8x.",
+  "lines": [
+   "f'(x) = −2x + 8 = 0",
+   "x = 4",
+   "Maximum value = f'(4) = 0"
+  ],
+  "a": 2,
+  "why": "The maximum VALUE is f(4) = −16 + 32 = 16. f'(4) = 0 only says the graph is flat there."
+ },
+ {
+  "t": "mc",
+  "q": "At a stationary point, f''(a) > 0. What is it?",
+  "o": [
+   "A minimum: the curve bends upwards",
+   "A maximum",
+   "An inflection point",
+   "Nothing can be said"
+  ],
+  "a": 0,
+  "why": "f'' > 0 means the slope is increasing, so the curve is shaped like a U.",
+  "gap": "alg.parabolas"
+ },
+ {
+  "t": "mf",
+  "q": "On an interval, the biggest value is always at a stationary point.",
+  "a": false,
+  "why": "Myth. Check the endpoints too. On [0, 10], f(x) = x is biggest at 10, where f' = 1."
+ }
+]

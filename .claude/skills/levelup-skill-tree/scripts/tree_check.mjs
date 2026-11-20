@@ -111,6 +111,45 @@ if (first.quiz) {
   const xp1 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
   if (xp1 - xp0 !== 5) fails.push(`quiz pass should give +5 XP, gave ${xp1 - xp0}`);
 }
+// concept check: miss one question on purpose (one with a "gap" if there is one), answer the rest right,
+// then check feedback, the score, the "Foundations to revisit" link and +5 XP (passes at 80 %)
+if (first.cc) {
+  const cc = await pg.evaluate(async (r, c) => (await (await fetch(`${r}${String(c).padStart(2, "0")}.json`)).json()).concept, br.reading, first.chapter);
+  if (!cc || cc.length !== first.cc) fails.push(`concept: node says ${first.cc} questions, chapter has ${cc && cc.length}`);
+  const missQ = cc.find(q => q.gap && q.gap !== first.id && q.t !== "num") || cc.find(q => q.t !== "num");
+  const xp0 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
+  await click(`.tnode[data-id="${first.id}"]`); await wait(300); await click("#ccheck"); await wait(600);
+  for (let k = 0; k < cc.length; k++) {
+    const title = await pg.$eval(".qq", e => e.textContent).catch(() => null);
+    const q = cc.find(x => x.q === title); if (!q) { fails.push(`concept: question ${k + 1} not found on screen`); break; }
+    const right = q.t === "mc" || q.t === "step" || q.t === "asn" ? q.a : (q.a ? 1 : 0), miss = q === missQ;
+    if (q.t === "num") { await pg.type("#na", String(q.a)); await click("#qn"); }
+    else { const opts = await pg.$$eval(".opt", os => os.map(o => o.dataset.k)), want = miss ? opts.find(o => o !== String(right)) : String(right);
+      await click(`.opt[data-k="${want}"]`); }
+    await wait(150);
+    const fb = await pg.$eval(".qfb", e => e.className + "|" + e.textContent).catch(() => "");
+    if (miss ? !fb.includes("no") : !fb.includes("ok")) fails.push(`concept: "${q.q.slice(0, 40)}" marked ${miss ? "right when wrong" : "wrong when right"}`);
+    if (miss && q.gap && q.gap !== first.id && !fb.includes("Foundation behind this")) fails.push("concept: miss did not name its foundation skill");
+    if (miss) await pg.screenshot({ path: `${OUT}/8_concept_miss.png` });
+    await click("#qn"); await wait(200);
+  }
+  await pg.screenshot({ path: `${OUT}/8b_concept_result.png`, fullPage: true });
+  const res = await pg.evaluate(() => document.querySelector(".quiz .q-title")?.textContent);
+  if (res !== `${cc.length - 1} of ${cc.length} right`) fails.push(`concept result screen says "${res}"`);
+  const gapBtn = await pg.$(`[data-gap="${missQ.gap}"]`);
+  if (missQ.gap && missQ.gap !== first.id && !gapBtn) fails.push("concept: no 'Foundations to revisit' link for the missed question");
+  if (gapBtn) {                                     // the link routes to the gap skill's branch and opens its sheet
+    await click(`[data-gap="${missQ.gap}"]`); await wait(600);
+    const gn = T.nodes.find(n => n.id === missQ.gap);
+    const sh = await pg.evaluate(() => document.getElementById("sheet-root")?.textContent || "");
+    if (!sh.includes(gn.title)) fails.push(`concept: revisit link did not open ${gn.title}`);
+    const gh = await pg.evaluate(() => location.hash); if (gh !== `#/branch/${gn.branch}`) fails.push(`concept: revisit link left the route at ${gh}`);
+    await pg.evaluate(() => document.getElementById("sheet-root")?.querySelector("#close")?.click()); await wait(300);
+    if (gn.branch !== branch) { await pg.evaluate(b => { location.hash = "#/branch/" + b; }, branch); await wait(600); }
+  } else { await click("#qb"); await wait(400); await pg.evaluate(() => document.getElementById("sheet-root")?.querySelector("#close")?.click()); await wait(200); }
+  const xp1 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
+  if (cc.length >= 5 && xp1 - xp0 !== 5) fails.push(`concept pass (${cc.length - 1}/${cc.length}) should give +5 XP, gave ${xp1 - xp0}`);
+}
 // layout toggle (map <-> path) keeps every node; pager moves to another branch and back
 await click('.segt button[data-l="path"]'); await wait(300);
 if (Object.keys(await states()).length !== nodes.length) fails.push("path layout lost nodes");

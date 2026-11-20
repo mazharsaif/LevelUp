@@ -1,0 +1,45 @@
+[
+ {
+  "t": "mf",
+  "q": "p = 0.03 means a 3% chance that the null hypothesis is true.",
+  "a": false,
+  "why": "Myth. It's the chance of data at least this extreme IF the null were true."
+ },
+ {
+  "t": "mf",
+  "q": "Not rejecting H₀ proves that H₀ is true.",
+  "a": false,
+  "why": "Myth. It only means the data aren't strong enough against it. A small sample often can't tell."
+ },
+ {
+  "t": "mc",
+  "q": "The true effect is small. As the sample grows, the p-value tends to…",
+  "o": [
+   "fall",
+   "rise",
+   "stay the same",
+   "become 1"
+  ],
+  "a": 0,
+  "why": "More data shrink the SE, so even a small real effect stands out.",
+  "gap": "stats.clt"
+ },
+ {
+  "t": "asn",
+  "q": "A statistically significant result is practically important.",
+  "a": "sometimes",
+  "why": "With huge samples, tiny effects become significant. Always look at the size of the effect too."
+ },
+ {
+  "t": "mc",
+  "q": "You test 20 true null hypotheses at the 5% level. How many do you expect to come out significant by chance?",
+  "o": [
+   "0",
+   "1",
+   "5",
+   "20"
+  ],
+  "a": 1,
+  "why": "20 × 0.05 = 1. This is why many tests need care."
+ }
+]

@@ -1,0 +1,51 @@
+[
+ {
+  "t": "asn",
+  "q": "AB = BA for square matrices A and B.",
+  "a": "sometimes",
+  "why": "Matrix multiplication usually can't be swapped. It works for some pairs, for example when one of them is the identity I."
+ },
+ {
+  "t": "mc",
+  "q": "A is 2×3 and B is 3×4. What size is AB?",
+  "o": [
+   "3×3",
+   "2×4",
+   "Not defined",
+   "4×2"
+  ],
+  "a": 1,
+  "why": "The inner sizes (3 and 3) must match. The outer sizes give the result: 2×4."
+ },
+ {
+  "t": "mf",
+  "q": "To multiply two matrices, you multiply the matching entries.",
+  "a": false,
+  "why": "Myth. Each entry of AB is a row of A dotted with a column of B.",
+  "gap": "alg.vectors"
+ },
+ {
+  "t": "mc",
+  "q": "A is 2×3 and B is 3×4. Is BA defined?",
+  "o": [
+   "Yes, it's 3×3",
+   "Yes, it's 4×2",
+   "No: B has 4 columns but A has 2 rows",
+   "Yes, it's 2×4"
+  ],
+  "a": 2,
+  "why": "For BA, B's columns (4) must match A's rows (2). They don't, so BA doesn't exist even though AB does."
+ },
+ {
+  "t": "step",
+  "q": "A = [[1, 2], [3, 4]] and B = [[0, 1], [1, 0]]. Find the top-left entry of AB.",
+  "lines": [
+   "Row 1 of A is (1, 2), column 1 of B is (0, 1)",
+   "Entry = 1·1 + 2·0",
+   "= 1"
+  ],
+  "a": 1,
+  "why": "Dot the row with the column in order: 1·0 + 2·1 = 2.",
+  "gap": "alg.vectors"
+ }
+]

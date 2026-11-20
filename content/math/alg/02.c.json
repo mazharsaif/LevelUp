@@ -1,0 +1,46 @@
+[
+ {
+  "t": "mc",
+  "q": "What is the degree of (x² + 1)(x³ − x)?",
+  "o": [
+   "3",
+   "5",
+   "6",
+   "2"
+  ],
+  "a": 1,
+  "why": "The highest powers multiply: x² · x³ = x⁵. Powers add when you multiply.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "step",
+  "q": "Expand (x − 3)².",
+  "lines": [
+   "(x − 3)²",
+   "= x² − 9"
+  ],
+  "a": 1,
+  "why": "(x − 3)(x − 3) = x² − 3x − 3x + 9 = x² − 6x + 9. Squaring doesn't split over a minus.",
+  "gap": "found.expr"
+ },
+ {
+  "t": "asn",
+  "q": "Adding two polynomials of degree 3 gives a polynomial of degree 3.",
+  "a": "sometimes",
+  "why": "The top terms can cancel: (x³ + x) + (−x³ + 1) = x + 1, which has degree 1."
+ },
+ {
+  "t": "mf",
+  "q": "x² + 1/x is a polynomial.",
+  "a": false,
+  "why": "Myth. 1/x = x⁻¹ is a negative power. Polynomials only use whole powers 0, 1, 2, …",
+  "gap": "found.powers"
+ },
+ {
+  "t": "num",
+  "q": "p(x) = x³ − 2x + 1. What is p(−2)?",
+  "a": -3,
+  "why": "(−2)³ = −8, and −2(−2) = +4, so p(−2) = −8 + 4 + 1 = −3.",
+  "gap": "found.negatives"
+ }
+]

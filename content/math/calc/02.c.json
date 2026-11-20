@@ -1,0 +1,49 @@
+[
+ {
+  "t": "step",
+  "q": "Differentiate f(x) = 5/x².",
+  "lines": [
+   "f(x) = 5/x²",
+   "f'(x) = 5/(2x)"
+  ],
+  "a": 1,
+  "why": "Write it as 5x⁻² first. Then f'(x) = −10x⁻³ = −10/x³.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mc",
+  "q": "Why is the derivative of a constant 0?",
+  "o": [
+   "Its graph is flat: it doesn't change as x changes",
+   "Because constants are small",
+   "It's just a convention",
+   "It isn't"
+  ],
+  "a": 0,
+  "why": "The derivative measures change. A constant never changes."
+ },
+ {
+  "t": "asn",
+  "q": "The derivative of f + g is f' + g'.",
+  "a": "always",
+  "why": "Rates of change add: if f grows at 2 and g at 3, f + g grows at 5."
+ },
+ {
+  "t": "mf",
+  "q": "The derivative of x² · x³ is 2x · 3x².",
+  "a": false,
+  "why": "Myth. x² · x³ = x⁵, whose derivative is 5x⁴. 2x · 3x² = 6x³ is wrong. Derivatives don't multiply like that, which is why the product rule exists."
+ },
+ {
+  "t": "mc",
+  "q": "f'(4) = −2 means…",
+  "o": [
+   "f(4) = −2",
+   "Near x = 4, f falls by about 2 for each 1 that x increases",
+   "f is negative",
+   "f has its minimum at 4"
+  ],
+  "a": 1,
+  "why": "The derivative is a rate, not a value. It says nothing about the sign of f(4)."
+ }
+]

@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "Where is the point (−3, 2)?",
+  "o": [
+   "3 left, 2 up",
+   "3 right, 2 down",
+   "2 left, 3 up",
+   "2 right, 3 up"
+  ],
+  "a": 0,
+  "why": "The first number is across (x), the second is up or down (y). −3 means 3 to the left.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "asn",
+  "q": "(a, b) and (b, a) are the same point.",
+  "a": "sometimes",
+  "why": "Only when a = b. (2, 5) is 2 across and 5 up, while (5, 2) is 5 across and 2 up."
+ },
+ {
+  "t": "step",
+  "q": "Find the distance from (1, 2) to (4, 6).",
+  "lines": [
+   "Across 3, up 4",
+   "Distance = 3 + 4 = 7"
+  ],
+  "a": 1,
+  "why": "The straight-line distance is the hypotenuse: √(3² + 4²) = √25 = 5. 7 is the length of the walk along the grid.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mf",
+  "q": "Every point on the y-axis has x = 0.",
+  "a": true,
+  "why": "Fact. On the y-axis you haven't moved left or right at all."
+ },
+ {
+  "t": "mc",
+  "q": "Which point is on the line y = 2x + 1?",
+  "o": [
+   "(1, 2)",
+   "(2, 5)",
+   "(0, 2)",
+   "(3, 6)"
+  ],
+  "a": 1,
+  "why": "A point is on the line when it makes the equation true. x = 2 gives 2(2) + 1 = 5 ✓.",
+  "gap": "found.expr"
+ }
+]

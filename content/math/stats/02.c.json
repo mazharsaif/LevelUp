@@ -1,0 +1,45 @@
+[
+ {
+  "t": "asn",
+  "q": "Adding 10 to every value changes the standard deviation.",
+  "a": "never",
+  "why": "Every value moves together, so the distances from the mean stay the same. Only the mean moves."
+ },
+ {
+  "t": "mc",
+  "q": "Every value is doubled. What happens to the variance?",
+  "o": [
+   "It doubles",
+   "It is multiplied by 4",
+   "It stays the same",
+   "It is multiplied by √2"
+  ],
+  "a": 1,
+  "why": "The SD doubles, and variance is SD², so it's multiplied by 2² = 4.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mf",
+  "q": "The SD can be negative when most data are below the mean.",
+  "a": false,
+  "why": "Myth. The SD is the square root of an average of squares, so it is never negative."
+ },
+ {
+  "t": "mc",
+  "q": "Which set has the bigger SD? A: 4, 5, 6. B: 1, 5, 9.",
+  "o": [
+   "A",
+   "B",
+   "They're the same",
+   "You can't tell"
+  ],
+  "a": 1,
+  "why": "Both have mean 5, but B's values are further from it. SD measures typical distance from the mean."
+ },
+ {
+  "t": "asn",
+  "q": "A data set has variance 0.",
+  "a": "sometimes",
+  "why": "Only when every value is the same, for example 3, 3, 3. Any difference between values makes the variance positive."
+ }
+]

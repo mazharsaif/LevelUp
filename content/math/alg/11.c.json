@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "If det A ≠ 0, then Ax = b has…",
+  "o": [
+   "exactly one solution",
+   "no solution",
+   "infinitely many solutions",
+   "two solutions"
+  ],
+  "a": 0,
+  "why": "A is invertible, so x = A⁻¹b is the one and only solution.",
+  "gap": "alg.det"
+ },
+ {
+  "t": "mc",
+  "q": "If det A = 0, then Ax = b has…",
+  "o": [
+   "exactly one solution",
+   "either no solution or infinitely many",
+   "always no solution",
+   "always infinitely many"
+  ],
+  "a": 1,
+  "why": "Like parallel lines (none) or the same line twice (infinitely many). Which one depends on b.",
+  "gap": "alg.systems"
+ },
+ {
+  "t": "step",
+  "q": "Solve Ax = b using the inverse.",
+  "lines": [
+   "Ax = b",
+   "x = bA⁻¹"
+  ],
+  "a": 1,
+  "why": "Multiply on the left: A⁻¹Ax = A⁻¹b, so x = A⁻¹b. With matrices the order matters.",
+  "gap": "alg.matrices"
+ },
+ {
+  "t": "mf",
+  "q": "For matrices, x = b/A is fine.",
+  "a": false,
+  "why": "Myth. Matrices can't be divided. Use A⁻¹, when it exists."
+ },
+ {
+  "t": "asn",
+  "q": "A system with more equations than unknowns has no solution.",
+  "a": "sometimes",
+  "why": "Usually it has none, but the extra equations can agree with the others, for example when one equation is repeated."
+ }
+]

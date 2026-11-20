@@ -1,0 +1,49 @@
+[
+ {
+  "t": "mc",
+  "q": "A test is 99% accurate, and 1 person in 1,000 has the disease. You test positive. About how likely is it that you have the disease?",
+  "o": [
+   "99%",
+   "About 9%",
+   "50%",
+   "1%"
+  ],
+  "a": 1,
+  "why": "Out of 100,000 people: 100 are sick and 99 test positive. 99,900 are well and 999 of them test positive by mistake. So 99/1098 ≈ 9%."
+ },
+ {
+  "t": "mf",
+  "q": "P(A | B) = P(B | A)",
+  "a": false,
+  "why": "Myth. P(clouds | rain) is close to 1, but P(rain | clouds) is much lower."
+ },
+ {
+  "t": "asn",
+  "q": "P(A and B) = P(A) · P(B)",
+  "a": "sometimes",
+  "why": "Only for independent events. In general P(A and B) = P(A) · P(B | A).",
+  "gap": "stats.prob"
+ },
+ {
+  "t": "step",
+  "q": "P(A) = 0.5, P(B) = 0.4 and P(A and B) = 0.1. Find P(A | B).",
+  "lines": [
+   "P(A | B) = P(A and B)/P(A)",
+   "= 0.1/0.5 = 0.2"
+  ],
+  "a": 0,
+  "why": "Divide by the event you're given, B: P(A | B) = 0.1/0.4 = 0.25."
+ },
+ {
+  "t": "mc",
+  "q": "Why does a low base rate matter for a medical test?",
+  "o": [
+   "False positives from the large healthy group outnumber the true positives",
+   "It doesn't matter",
+   "It makes the test less accurate",
+   "It makes the test more sensitive"
+  ],
+  "a": 0,
+  "why": "Even a small error rate, applied to a huge healthy group, gives many false alarms."
+ }
+]

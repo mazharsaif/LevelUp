@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "What does the 3 in y = 3x + 2 mean?",
+  "o": [
+   "The line crosses the y-axis at 3",
+   "For each step of 1 to the right, y goes up by 3",
+   "The line passes through (3, 2)",
+   "y is always 3 times x"
+  ],
+  "a": 1,
+  "why": "3 is the slope (rise per step to the right). The 2 is where the line crosses the y-axis."
+ },
+ {
+  "t": "asn",
+  "q": "A line with a bigger slope is higher on the graph.",
+  "a": "sometimes",
+  "why": "Slope is steepness, not height. y = 3x is below y = x + 10 until x = 5."
+ },
+ {
+  "t": "step",
+  "q": "Find the slope through (2, 7) and (5, 1).",
+  "lines": [
+   "slope = (1 − 7)/(5 − 2)",
+   "= 6/3",
+   "= 2"
+  ],
+  "a": 1,
+  "why": "1 − 7 = −6, so the slope is −6/3 = −2. The line goes down.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "mf",
+  "q": "A horizontal line's slope is undefined.",
+  "a": false,
+  "why": "Myth. A horizontal line has slope 0 (no rise). A vertical line has an undefined slope, because its run is 0 and you can't divide by 0.",
+  "gap": "found.muldiv"
+ },
+ {
+  "t": "mc",
+  "q": "Demand is Q = 100 − 2P. What does the −2 mean?",
+  "o": [
+   "The price falls by 2 for each unit",
+   "Each rise of 1 in the price cuts the quantity by 2",
+   "Quantity is 2 less than price",
+   "The price is −2"
+  ],
+  "a": 1,
+  "why": "It's the slope of Q against P: when P goes up by 1, Q changes by −2."
+ }
+]

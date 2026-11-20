@@ -1,0 +1,45 @@
+[
+ {
+  "t": "mc",
+  "q": "Sales fell 50% last year and rose 50% this year. Compared with two years ago, they are…",
+  "o": [
+   "the same",
+   "25% lower",
+   "50% lower",
+   "25% higher"
+  ],
+  "a": 1,
+  "why": "0.5 × 1.5 = 0.75. The 50% rise works on a smaller base than the 50% fall did.",
+  "gap": "found.fractions"
+ },
+ {
+  "t": "step",
+  "q": "A price including 20% VAT is 96. Find the price before VAT.",
+  "lines": [
+   "Price with VAT = 96",
+   "VAT = 20% of 96 = 19.20",
+   "Before VAT = 96 − 19.20 = 76.80"
+  ],
+  "a": 1,
+  "why": "The 20% is of the price BEFORE VAT, not of 96. 96 = 1.2 × P, so P = 80."
+ },
+ {
+  "t": "asn",
+  "q": "x% of y is equal to y% of x.",
+  "a": "always",
+  "why": "x/100 × y = y/100 × x. So 8% of 50 is the same as 50% of 8, which is 4.",
+  "gap": "found.fractions"
+ },
+ {
+  "t": "mf",
+  "q": "0.5% is the same as one half.",
+  "a": false,
+  "why": "Myth. 0.5% = 0.005, which is one two-hundredth. One half is 50%."
+ },
+ {
+  "t": "asn",
+  "q": "Three 10% rises in a row add up to a 30% rise.",
+  "a": "never",
+  "why": "1.1³ = 1.331, so it's a 33.1% rise. It is always more than 30%, because each rise works on a bigger base."
+ }
+]

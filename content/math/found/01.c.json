@@ -1,0 +1,43 @@
+[
+ {
+  "t": "asn",
+  "q": "Subtracting a number makes the result smaller.",
+  "a": "sometimes",
+  "why": "Subtracting a positive number makes it smaller, but subtracting a negative makes it bigger: 5 − (−2) = 7. Subtracting 0 changes nothing."
+ },
+ {
+  "t": "asn",
+  "q": "For any number x, −x is negative.",
+  "a": "sometimes",
+  "why": "−x means 'the opposite of x'. If x = −3, then −x = 3, which is positive. If x = 0, −x = 0."
+ },
+ {
+  "t": "mc",
+  "q": "Why is 6 − (−8) the same as 6 + 8?",
+  "o": [
+   "Two minus signs always make a plus; there is no reason behind it",
+   "Taking away a debt of 8 leaves you 8 better off",
+   "Because negative numbers are bigger than positive ones",
+   "It isn't: it equals 6 − 8 = −2"
+  ],
+  "a": 1,
+  "why": "Subtracting −8 removes a debt of 8, which is worth the same as gaining 8. The 'two minuses' rule is a shortcut for this idea."
+ },
+ {
+  "t": "mf",
+  "q": "|−5| < |3| because −5 < 3.",
+  "a": false,
+  "why": "Myth. |x| is the distance from 0 and ignores the sign: |−5| = 5, which is bigger than |3| = 3."
+ },
+ {
+  "t": "step",
+  "q": "Work out −3 − 4 + 10.",
+  "lines": [
+   "−3 − 4 + 10",
+   "= −3 − 14",
+   "= −17"
+  ],
+  "a": 1,
+  "why": "The minus belongs only to the 4. Going left to right: −3 − 4 = −7, then −7 + 10 = 3."
+ }
+]

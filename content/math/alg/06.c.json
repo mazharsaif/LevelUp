@@ -1,0 +1,51 @@
+[
+ {
+  "t": "asn",
+  "q": "A quadratic equation has two real solutions.",
+  "a": "sometimes",
+  "why": "It can have two, one (a repeated root) or none. The sign of b² − 4ac tells you which."
+ },
+ {
+  "t": "step",
+  "q": "Solve x² − 6x + 5 = 0 with the formula.",
+  "lines": [
+   "a = 1, b = −6, c = 5",
+   "x = (−6 ± √(36 − 20))/2",
+   "= (−6 ± 4)/2"
+  ],
+  "a": 1,
+  "why": "The formula starts with −b, and −(−6) = +6. So x = (6 ± 4)/2, which gives 5 or 1.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "mc",
+  "q": "What does b² − 4ac < 0 mean?",
+  "o": [
+   "No real solutions: the parabola never touches the x-axis",
+   "Two negative solutions",
+   "Exactly one solution",
+   "The solution is x = 0"
+  ],
+  "a": 0,
+  "why": "You would need the square root of a negative number, and no real number squares to a negative."
+ },
+ {
+  "t": "step",
+  "q": "Solve (x − 1)² = 9.",
+  "lines": [
+   "(x − 1)² = 9",
+   "x − 1 = 3",
+   "x = 4"
+  ],
+  "a": 1,
+  "why": "A square root gives ±: x − 1 = 3 or x − 1 = −3, so x = 4 or x = −2.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mf",
+  "q": "x² = −4 has the solution x = −2.",
+  "a": false,
+  "why": "Myth. (−2)² = +4. No real number squared gives a negative number.",
+  "gap": "found.powers"
+ }
+]

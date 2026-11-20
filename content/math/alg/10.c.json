@@ -1,0 +1,53 @@
+[
+ {
+  "t": "asn",
+  "q": "log(a + b) = log a + log b",
+  "a": "sometimes",
+  "why": "Only when a + b = ab, for example a = b = 2. The real rule is log(ab) = log a + log b."
+ },
+ {
+  "t": "mc",
+  "q": "Why is log₁₀ 1000 = 3?",
+  "o": [
+   "Because 1000 ÷ 10 = 100",
+   "Because 10³ = 1000: a log asks 'which power?'",
+   "Because 1000 has 3 zeros, and that's all a log counts",
+   "Because 1000 = 3 × 333.3"
+  ],
+  "a": 1,
+  "why": "log₁₀ x is the power you raise 10 to in order to get x. Counting zeros only works for exact powers of 10.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "step",
+  "q": "Solve 2ˣ = 32.",
+  "lines": [
+   "2ˣ = 32",
+   "x = 32/2",
+   "x = 16"
+  ],
+  "a": 1,
+  "why": "x is a power, not a factor. 2⁵ = 32, so x = 5 (or x = log 32 / log 2).",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mf",
+  "q": "e^(a + b) = eᵃ + eᵇ",
+  "a": false,
+  "why": "Myth. Adding powers means multiplying: e^(a + b) = eᵃ · eᵇ.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mc",
+  "q": "GDP grows 3% a year. About how long until it doubles?",
+  "o": [
+   "33 years",
+   "About 23 years",
+   "6 years",
+   "100 years"
+  ],
+  "a": 1,
+  "why": "Growth compounds: ln 2 / ln 1.03 ≈ 23.4 years (rule of 70: 70/3). 33 years ignores compounding.",
+  "gap": "found.percent"
+ }
+]

@@ -1,0 +1,45 @@
+[
+ {
+  "t": "mc",
+  "q": "y = (x − 3)² + 2. Where is the vertex?",
+  "o": [
+   "(3, 2)",
+   "(−3, 2)",
+   "(2, 3)",
+   "(3, −2)"
+  ],
+  "a": 0,
+  "why": "The bracket is 0 when x = 3, so a minus inside the bracket means a shift to the right."
+ },
+ {
+  "t": "asn",
+  "q": "If a > 0 in y = ax² + bx + c, the parabola has a lowest point.",
+  "a": "always",
+  "why": "a > 0 makes it open upwards (a U shape), so the vertex is a minimum."
+ },
+ {
+  "t": "mc",
+  "q": "Profit P = −q² + 20q. Which q gives the most profit?",
+  "o": [
+   "0",
+   "10",
+   "20",
+   "−10"
+  ],
+  "a": 1,
+  "why": "The vertex is at q = −b/(2a) = −20/(−2) = 10, halfway between the roots 0 and 20."
+ },
+ {
+  "t": "mf",
+  "q": "The vertex of y = x² − 4x is at x = −2, because of the minus sign.",
+  "a": false,
+  "why": "Myth. x = −b/(2a) = −(−4)/2 = 2.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "asn",
+  "q": "The graph of y = ax² + bx + c crosses the y-axis.",
+  "a": "always",
+  "why": "Every x is allowed, so x = 0 gives the point (0, c)."
+ }
+]

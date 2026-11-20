@@ -1,0 +1,47 @@
+[
+ {
+  "t": "mc",
+  "q": "What is the limit of f(x) as x → 2?",
+  "o": [
+   "Always f(2)",
+   "The value f(x) gets close to as x gets close to 2, whatever f(2) is",
+   "Undefined whenever f(2) is undefined",
+   "Always 0"
+  ],
+  "a": 1,
+  "why": "A limit is about what happens near 2, not at 2. f(2) can be different or missing."
+ },
+ {
+  "t": "num",
+  "q": "Find the limit of (x² − 9)/(x − 3) as x → 3.",
+  "a": 6,
+  "why": "Factorise: (x − 3)(x + 3)/(x − 3) = x + 3, which tends to 6. At x = 3 itself it's 0/0, but the limit still exists.",
+  "gap": "alg.factor"
+ },
+ {
+  "t": "mc",
+  "q": "The slope of the line from x = 1 to x = 1 + h on a curve is…",
+  "o": [
+   "the average rate of change, which tends to the derivative as h → 0",
+   "the derivative, which tends to 0 as h → 0",
+   "the area under the curve",
+   "always 1"
+  ],
+  "a": 0,
+  "why": "This is the whole idea of the derivative: shrink the gap until the average rate becomes the rate at one point.",
+  "gap": "found.lines"
+ },
+ {
+  "t": "mf",
+  "q": "0/0 = 0",
+  "a": false,
+  "why": "Myth. 0/0 is undefined. In a limit it means 'more work needed': the answer could turn out to be anything.",
+  "gap": "found.muldiv"
+ },
+ {
+  "t": "asn",
+  "q": "If f(a) is undefined, the limit of f(x) as x → a doesn't exist.",
+  "a": "sometimes",
+  "why": "(x² − 9)/(x − 3) is undefined at 3, but its limit there is 6. Other functions, like 1/x at 0, really have no limit."
+ }
+]

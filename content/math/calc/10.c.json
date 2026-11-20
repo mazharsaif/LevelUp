@@ -1,0 +1,57 @@
+[
+ {
+  "t": "mc",
+  "q": "At a Lagrange optimum, ∇f = λ∇g. What does that mean on a graph?",
+  "o": [
+   "The level curve of f just touches the constraint curve (they're tangent)",
+   "f equals g",
+   "λ is 0",
+   "The curves cross at a right angle"
+  ],
+  "a": 0,
+  "why": "If they crossed, you could slide along the constraint to a better level of f."
+ },
+ {
+  "t": "mc",
+  "q": "In a budget problem, λ = 5. What does that mean?",
+  "o": [
+   "One more unit of budget raises the best utility by about 5",
+   "The price is 5",
+   "You spend 5",
+   "Utility is 5"
+  ],
+  "a": 0,
+  "why": "λ is the shadow price of the constraint: what loosening it by one unit is worth."
+ },
+ {
+  "t": "step",
+  "q": "Maximise xy subject to x + y = 10.",
+  "lines": [
+   "L = xy − λ(x + y − 10)",
+   "y = λ and x = λ",
+   "x + y = 10 gives x = y = 5",
+   "Maximum = 10"
+  ],
+  "a": 3,
+  "why": "The maximum value is xy = 5 · 5 = 25. 10 is the budget, not the answer."
+ },
+ {
+  "t": "mf",
+  "q": "You can ignore the constraint and set f's partial derivatives to 0.",
+  "a": false,
+  "why": "Myth. That finds the unconstrained optimum, which may break the budget or not exist at all (xy has none)."
+ },
+ {
+  "t": "mc",
+  "q": "With one linear constraint, how do substitution and Lagrange compare?",
+  "o": [
+   "They give the same answer",
+   "Lagrange is wrong",
+   "Substitution is wrong",
+   "They give different answers"
+  ],
+  "a": 0,
+  "why": "Both find the same point. Lagrange also gives you λ and handles harder constraints.",
+  "gap": "calc.partial"
+ }
+]

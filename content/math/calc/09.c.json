@@ -1,0 +1,43 @@
+[
+ {
+  "t": "step",
+  "q": "Find ∫ x³ dx.",
+  "lines": [
+   "∫ x³ dx",
+   "= 3x² + C"
+  ],
+  "a": 1,
+  "why": "3x² is the derivative. Integrating goes the other way: x⁴/4 + C.",
+  "gap": "calc.rules"
+ },
+ {
+  "t": "mf",
+  "q": "∫₀² f(x) dx is an area, so it can never be negative.",
+  "a": false,
+  "why": "Myth. It's a signed area: parts below the x-axis count as negative. ∫₀² (−1) dx = −2."
+ },
+ {
+  "t": "mc",
+  "q": "Why do you add + C to an indefinite integral?",
+  "o": [
+   "Every constant has derivative 0, so many functions share the same derivative",
+   "It's only there to look neat",
+   "C stands for the area",
+   "Only x³ needs it"
+  ],
+  "a": 0,
+  "why": "x² + 1, x² − 7 and x² all have derivative 2x. + C covers all of them."
+ },
+ {
+  "t": "num",
+  "q": "Find ∫₁³ 2x dx.",
+  "a": 8,
+  "why": "The antiderivative is x². From 1 to 3: 9 − 1 = 8."
+ },
+ {
+  "t": "asn",
+  "q": "∫₀¹ f·g dx = (∫₀¹ f dx) · (∫₀¹ g dx)",
+  "a": "sometimes",
+  "why": "Almost always false. With f = g = x: ∫₀¹ x² dx = 1/3, but (1/2)·(1/2) = 1/4. It works by luck for constants."
+ }
+]

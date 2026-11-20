@@ -1,0 +1,51 @@
+[
+ {
+  "t": "step",
+  "q": "Expand 2(x + 3)².",
+  "lines": [
+   "2(x + 3)²",
+   "= (2x + 6)²",
+   "= 4x² + 24x + 36"
+  ],
+  "a": 1,
+  "why": "The power comes before the multiplication: (x + 3)² = x² + 6x + 9, then double it: 2x² + 12x + 18.",
+  "gap": "found.order"
+ },
+ {
+  "t": "asn",
+  "q": "3x is bigger than x.",
+  "a": "sometimes",
+  "why": "Only for positive x. If x = −2, then 3x = −6, which is smaller than −2. If x = 0, they are equal.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "mc",
+  "q": "Which pair are like terms?",
+  "o": [
+   "3x² and 3x",
+   "xy and yx",
+   "2x and 2y",
+   "x and x²"
+  ],
+  "a": 1,
+  "why": "xy = yx, because multiplication can be swapped, so 5xy + 2yx = 7xy. x and x² are different powers."
+ },
+ {
+  "t": "mf",
+  "q": "2x + 3y simplifies to 5xy.",
+  "a": false,
+  "why": "Myth. x and y stand for different things: 2 apples plus 3 pears isn't 5 'apple-pears'. 2x + 3y is already as simple as it gets."
+ },
+ {
+  "t": "step",
+  "q": "Simplify 5 − 2(x − 1).",
+  "lines": [
+   "5 − 2(x − 1)",
+   "= 3(x − 1)",
+   "= 3x − 3"
+  ],
+  "a": 1,
+  "why": "Multiply first: −2(x − 1) = −2x + 2, so the answer is 7 − 2x. You can't work out 5 − 2 first.",
+  "gap": "found.order"
+ }
+]

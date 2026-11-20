@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "C'(100) = 4. What does this mean?",
+  "o": [
+   "Making one more unit, the 101st, adds about 4 to cost",
+   "Average cost is 4",
+   "Total cost is 400",
+   "Cost falls by 4"
+  ],
+  "a": 0,
+  "why": "Marginal cost is the extra cost of one more unit, close to where you are."
+ },
+ {
+  "t": "asn",
+  "q": "Marginal cost equals average cost.",
+  "a": "sometimes",
+  "why": "Only at one point: where average cost is at its lowest. MC crosses AC there."
+ },
+ {
+  "t": "mf",
+  "q": "If marginal revenue is positive, revenue is at its maximum.",
+  "a": false,
+  "why": "Myth. Positive MR means selling more still raises revenue. Revenue is at its maximum where MR = 0."
+ },
+ {
+  "t": "step",
+  "q": "C(q) = 500 + 3q². Find the marginal cost at q = 10.",
+  "lines": [
+   "C(q) = 500 + 3q²",
+   "C'(q) = 500 + 6q",
+   "C'(10) = 560"
+  ],
+  "a": 1,
+  "why": "The fixed cost 500 is a constant, so its derivative is 0. C'(q) = 6q, which gives 60.",
+  "gap": "calc.rules"
+ },
+ {
+  "t": "mc",
+  "q": "Profit is at its maximum where…",
+  "o": [
+   "MR = MC",
+   "Revenue is at its maximum",
+   "Cost is at its minimum",
+   "MR = 0"
+  ],
+  "a": 0,
+  "why": "While MR > MC, one more unit adds profit. At MR = MC there's no more to gain."
+ }
+]

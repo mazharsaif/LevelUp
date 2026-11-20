@@ -1,0 +1,54 @@
+[
+ {
+  "t": "step",
+  "q": "Differentiate (3x + 1)⁴.",
+  "lines": [
+   "(3x + 1)⁴",
+   "→ 4(3x + 1)³"
+  ],
+  "a": 1,
+  "why": "The chain rule needs the inner derivative too: × 3. The answer is 12(3x + 1)³."
+ },
+ {
+  "t": "step",
+  "q": "Differentiate x²eˣ.",
+  "lines": [
+   "Product rule with f = x², g = eˣ",
+   "f' = 2x, g' = eˣ",
+   "Derivative = 2x · eˣ"
+  ],
+  "a": 2,
+  "why": "The product rule is f'g + fg' = 2xeˣ + x²eˣ. Multiplying only f' by g leaves out half.",
+  "gap": "calc.rules"
+ },
+ {
+  "t": "mc",
+  "q": "When do you need the chain rule?",
+  "o": [
+   "Whenever one function sits inside another",
+   "Only with eˣ",
+   "Whenever two terms are multiplied",
+   "Never with polynomials"
+  ],
+  "a": 0,
+  "why": "(x² + 1)⁵ is a polynomial too, but it's a power wrapped around x² + 1, so it needs the chain rule."
+ },
+ {
+  "t": "mf",
+  "q": "The derivative of √(x² + 1) is 1/(2√(x² + 1)).",
+  "a": false,
+  "why": "Myth. It's missing the inner derivative 2x. The answer is x/√(x² + 1)."
+ },
+ {
+  "t": "mc",
+  "q": "y changes 3 times as fast as u, and u changes 2 times as fast as x. How fast does y change with x?",
+  "o": [
+   "5",
+   "6",
+   "1.5",
+   "3"
+  ],
+  "a": 1,
+  "why": "Rates multiply along the chain: dy/dx = dy/du · du/dx = 3 · 2 = 6."
+ }
+]

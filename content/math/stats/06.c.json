@@ -1,0 +1,49 @@
+[
+ {
+  "t": "mc",
+  "q": "Which of these is a binomial count?",
+  "o": [
+   "Number of heads in 10 tosses",
+   "Number of tosses until the first head",
+   "A person's height",
+   "Waiting time for a bus"
+  ],
+  "a": 0,
+  "why": "Binomial: a fixed number of trials, each a success or not, with the same chance and independent of each other."
+ },
+ {
+  "t": "mf",
+  "q": "In 10 coin tosses, getting exactly 5 heads is more likely than not.",
+  "a": false,
+  "why": "Myth. It's the single most likely count, but P(5) = 252/1024 ≈ 25%."
+ },
+ {
+  "t": "mc",
+  "q": "What does the binomial model need?",
+  "o": [
+   "A fixed n, independent trials and the same p each time",
+   "p = 0.5",
+   "n > 30",
+   "Normally distributed data"
+  ],
+  "a": 0,
+  "why": "p can be anything from 0 to 1. Small n is fine."
+ },
+ {
+  "t": "num",
+  "q": "n = 20 and p = 0.3. What is the mean number of successes?",
+  "a": 6,
+  "why": "E[X] = np = 20 × 0.3 = 6.",
+  "gap": "stats.rv"
+ },
+ {
+  "t": "step",
+  "q": "Find P(exactly 2 heads in 3 tosses).",
+  "lines": [
+   "P = (1/2)² · (1/2)",
+   "= 1/8"
+  ],
+  "a": 0,
+  "why": "That's the chance of one order, like HHT. There are C(3, 2) = 3 orders (HHT, HTH, THH), so P = 3/8."
+ }
+]

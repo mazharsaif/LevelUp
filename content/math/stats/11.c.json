@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mf",
+  "q": "Ice-cream sales and drownings have a correlation of 0.9, so ice cream causes drowning.",
+  "a": false,
+  "why": "Myth. Hot weather drives both. Correlation alone can't show causation."
+ },
+ {
+  "t": "asn",
+  "q": "A correlation of 0 means there is no relationship.",
+  "a": "sometimes",
+  "why": "It means no straight-line relationship. y = x² with x from −3 to 3 has r = 0, but y depends completely on x."
+ },
+ {
+  "t": "mc",
+  "q": "The fitted line is wage = a + 0.8 · years. What does 0.8 mean?",
+  "o": [
+   "Each extra year goes with about 0.8 more wage, on average",
+   "80% of wages are explained",
+   "The wage is 0.8",
+   "The correlation is 0.8"
+  ],
+  "a": 0,
+  "why": "The slope is the change in y for one more unit of x.",
+  "gap": "found.lines"
+ },
+ {
+  "t": "mc",
+  "q": "What does R² = 0.25 mean?",
+  "o": [
+   "The line explains 25% of the variation in y",
+   "The slope is 0.25",
+   "The correlation is 0.25",
+   "25% of the points are wrong"
+  ],
+  "a": 0,
+  "why": "R² is the share of y's variance the line accounts for. Here the correlation is ±0.5."
+ },
+ {
+  "t": "step",
+  "q": "r = −0.6. Find R² for the simple regression.",
+  "lines": [
+   "R² = r",
+   "= −0.6"
+  ],
+  "a": 0,
+  "why": "R² = r² = 0.36. It can't be negative.",
+  "gap": "found.powers"
+ }
+]

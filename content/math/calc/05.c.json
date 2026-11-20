@@ -1,0 +1,52 @@
+[
+ {
+  "t": "mc",
+  "q": "What is the derivative of ln x?",
+  "o": [
+   "1/x",
+   "(ln x)/x",
+   "eˣ",
+   "x"
+  ],
+  "a": 0,
+  "why": "d/dx ln x = 1/x. This is why logs turn into percentage changes.",
+  "gap": "alg.explog"
+ },
+ {
+  "t": "step",
+  "q": "Differentiate e^(2x).",
+  "lines": [
+   "e^(2x)",
+   "→ 2x · e^(2x − 1)"
+  ],
+  "a": 1,
+  "why": "This isn't the power rule, because the x is in the exponent. eᵘ → eᵘ · u', so the answer is 2e^(2x).",
+  "gap": "calc.chain"
+ },
+ {
+  "t": "mc",
+  "q": "Price elasticity of demand is −2. What does that mean?",
+  "o": [
+   "A 1% price rise cuts quantity by about 2%",
+   "The price rises by 2",
+   "Quantity falls by 2 units",
+   "Demand is inelastic"
+  ],
+  "a": 0,
+  "why": "Elasticity compares percentage changes, not units, and |−2| > 1 means demand is elastic."
+ },
+ {
+  "t": "mf",
+  "q": "A straight-line demand curve has the same elasticity everywhere.",
+  "a": false,
+  "why": "Myth. Elasticity is slope × P/Q, and P/Q changes along the line. Demand is elastic at high prices and inelastic at low ones.",
+  "gap": "found.lines"
+ },
+ {
+  "t": "mf",
+  "q": "ln x is defined at x = 0.",
+  "a": false,
+  "why": "Myth. No power of e equals 0, so ln 0 doesn't exist.",
+  "gap": "alg.explog"
+ }
+]

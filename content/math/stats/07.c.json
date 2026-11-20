@@ -1,0 +1,49 @@
+[
+ {
+  "t": "mc",
+  "q": "About what share of a normal distribution lies within 2 SDs of the mean?",
+  "o": [
+   "68%",
+   "95%",
+   "99.7%",
+   "50%"
+  ],
+  "a": 1,
+  "why": "68% within 1 SD, 95% within 2 and 99.7% within 3."
+ },
+ {
+  "t": "step",
+  "q": "Heights have mean 170 and SD 10. Find the z-score of 185.",
+  "lines": [
+   "z = (185 − 170)/10²",
+   "= 0.15"
+  ],
+  "a": 0,
+  "why": "Divide by the SD, not the variance: z = 15/10 = 1.5.",
+  "gap": "stats.spread"
+ },
+ {
+  "t": "mf",
+  "q": "Any data with a mean and an SD follow a normal distribution.",
+  "a": false,
+  "why": "Myth. Incomes, waiting times and many other data are skewed. Every data set has a mean and an SD."
+ },
+ {
+  "t": "asn",
+  "q": "A z-score is negative.",
+  "a": "sometimes",
+  "why": "It's negative for values below the mean, 0 at the mean and positive above it."
+ },
+ {
+  "t": "mc",
+  "q": "For a standard normal Z, what is P(Z < 0)?",
+  "o": [
+   "0",
+   "0.5",
+   "1",
+   "0.68"
+  ],
+  "a": 1,
+  "why": "The curve is symmetric around 0, so exactly half lies below it."
+ }
+]

@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "What does ∂f/∂x mean?",
+  "o": [
+   "How f changes as x changes, with y held fixed",
+   "The total change in f",
+   "The change in x",
+   "The derivative of y"
+  ],
+  "a": 0,
+  "why": "A partial derivative moves one variable at a time and treats the others as constants."
+ },
+ {
+  "t": "step",
+  "q": "f = x²y + 3y. Find ∂f/∂x.",
+  "lines": [
+   "f = x²y + 3y",
+   "∂f/∂x = 2xy + 3"
+  ],
+  "a": 1,
+  "why": "3y doesn't depend on x, so it counts as a constant and its derivative is 0. ∂f/∂x = 2xy.",
+  "gap": "calc.rules"
+ },
+ {
+  "t": "num",
+  "q": "Q = 4K^0.5 L^0.5. Find ∂Q/∂L at K = 16, L = 4.",
+  "a": 4,
+  "why": "∂Q/∂L = 4 · 0.5 · K^0.5 · L^−0.5 = 2 · 4 / 2 = 4.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "mf",
+  "q": "∂f/∂x = 0 at a point means f doesn't change at all near it.",
+  "a": false,
+  "why": "Myth. It only means no change along the x direction. f can still change as y changes."
+ },
+ {
+  "t": "mc",
+  "q": "The marginal product of labour ∂Q/∂L is 4. What does that mean?",
+  "o": [
+   "One more unit of labour, with capital fixed, adds about 4 to output",
+   "Labour is 4",
+   "Output is 4",
+   "Capital rises too"
+  ],
+  "a": 0,
+  "why": "It's marginal analysis with the other inputs held still.",
+  "gap": "calc.marginal"
+ }
+]

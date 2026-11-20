@@ -1,0 +1,51 @@
+[
+ {
+  "t": "asn",
+  "q": "f(a + b) = f(a) + f(b)",
+  "a": "sometimes",
+  "why": "It's true for f(x) = 3x, but false for f(x) = x² or f(x) = x + 1. f( ) is not a number multiplying the brackets.",
+  "gap": "found.expr"
+ },
+ {
+  "t": "mc",
+  "q": "f(x) = x² − 1. What is f(x + 1)?",
+  "o": [
+   "x²",
+   "x² + 2x",
+   "x² − 1 + 1",
+   "x² + 1"
+  ],
+  "a": 1,
+  "why": "Replace every x with (x + 1): (x + 1)² − 1 = x² + 2x + 1 − 1 = x² + 2x.",
+  "gap": "found.expr"
+ },
+ {
+  "t": "mf",
+  "q": "f(x) means f times x.",
+  "a": false,
+  "why": "Myth. f(x) is the output of the function f when the input is x. f(2) means 'f applied to 2'."
+ },
+ {
+  "t": "mc",
+  "q": "Which of these does NOT make y a function of x?",
+  "o": [
+   "y = x²",
+   "y = 5",
+   "x = y²",
+   "y = |x|"
+  ],
+  "a": 2,
+  "why": "From x = y², x = 4 gives y = 2 or y = −2. A function gives exactly one output for each input."
+ },
+ {
+  "t": "step",
+  "q": "f(x) = 2x + 1 and g(x) = x². Find f(g(3)).",
+  "lines": [
+   "g(3) = 9",
+   "f(g(3)) = f(3) × g(3)",
+   "= 7 × 9 = 63"
+  ],
+  "a": 1,
+  "why": "Composition feeds g's output into f: f(g(3)) = f(9) = 19."
+ }
+]

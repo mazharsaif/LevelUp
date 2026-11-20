@@ -1,0 +1,50 @@
+[
+ {
+  "t": "step",
+  "q": "Work out 12 − 2 × 3.",
+  "lines": [
+   "12 − 2 × 3",
+   "= 10 × 3",
+   "= 30"
+  ],
+  "a": 1,
+  "why": "Multiplication comes before subtraction: 2 × 3 = 6, so 12 − 6 = 6."
+ },
+ {
+  "t": "step",
+  "q": "Work out 18 ÷ 3 × 2.",
+  "lines": [
+   "18 ÷ 3 × 2",
+   "= 18 ÷ 6",
+   "= 3"
+  ],
+  "a": 1,
+  "why": "× and ÷ have the same rank, so go left to right: 18 ÷ 3 = 6, then 6 × 2 = 12.",
+  "gap": "found.muldiv"
+ },
+ {
+  "t": "mc",
+  "q": "How do (−2)² and −2² compare?",
+  "o": [
+   "Both are 4",
+   "Both are −4",
+   "(−2)² = 4, but −2² = −4",
+   "(−2)² = −4, but −2² = 4"
+  ],
+  "a": 2,
+  "why": "In −2² the power only applies to the 2, and the minus comes after: −(2²) = −4. The brackets in (−2)² square the whole −2.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "asn",
+  "q": "a − b − c = a − (b − c)",
+  "a": "sometimes",
+  "why": "The right side is a − b + c, so the two sides only agree when c = 0. Subtraction can't be regrouped."
+ },
+ {
+  "t": "mf",
+  "q": "A fraction bar acts like brackets around the top and around the bottom.",
+  "a": true,
+  "why": "Fact. (8 + 4)/(2 + 1) means 12 ÷ 3 = 4, not 8 + 4 ÷ 2 + 1."
+ }
+]

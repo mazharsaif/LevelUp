@@ -1,0 +1,43 @@
+[
+ {
+  "t": "asn",
+  "q": "Multiplying a number by another number makes it bigger.",
+  "a": "sometimes",
+  "why": "Only when you multiply a positive number by something bigger than 1. 10 × 0.5 = 5, and 10 × (−2) = −20."
+ },
+ {
+  "t": "asn",
+  "q": "Dividing a positive number by a number between 0 and 1 makes it bigger.",
+  "a": "always",
+  "why": "10 ÷ 0.5 = 20: the question is how many halves fit into 10. Smaller pieces means more of them."
+ },
+ {
+  "t": "mc",
+  "q": "Why is (−3) × (−4) positive?",
+  "o": [
+   "It's a rule with no reason behind it",
+   "3 × 4 = 12 and −3 × 4 = −12. Changing the sign of one factor flips the result, so flipping it again gives +12",
+   "Because the minus signs add up to zero",
+   "Because 3 and 4 are both positive"
+  ],
+  "a": 1,
+  "why": "Each minus sign flips the result to the other side of zero. Two flips bring it back to positive."
+ },
+ {
+  "t": "step",
+  "q": "Work out 36 ÷ 6 ÷ 2.",
+  "lines": [
+   "36 ÷ 6 ÷ 2",
+   "= 36 ÷ 3",
+   "= 12"
+  ],
+  "a": 1,
+  "why": "Division is done left to right. You can't group 6 ÷ 2 first: 36 ÷ 6 = 6, then 6 ÷ 2 = 3."
+ },
+ {
+  "t": "mf",
+  "q": "0 ÷ 5 is undefined, just like 5 ÷ 0.",
+  "a": false,
+  "why": "Myth. 0 ÷ 5 = 0, because 0 × 5 = 0. Only dividing BY zero is undefined."
+ }
+]

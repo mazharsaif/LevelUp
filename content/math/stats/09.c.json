@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mf",
+  "q": "A 95% CI means there's a 95% chance that the true mean is in this interval.",
+  "a": false,
+  "why": "Myth, strictly speaking. The method catches the true value in 95% of samples. Any one interval either contains it or doesn't."
+ },
+ {
+  "t": "mc",
+  "q": "You want a narrower confidence interval. What helps?",
+  "o": [
+   "A bigger sample",
+   "A higher confidence level, like 99%",
+   "A smaller sample",
+   "More spread in the data"
+  ],
+  "a": 0,
+  "why": "A bigger n shrinks the SE. More confidence makes the interval wider."
+ },
+ {
+  "t": "step",
+  "q": "Mean 50, SD 10, n = 100. Find the 95% CI.",
+  "lines": [
+   "SE = 10/√100 = 1",
+   "CI = 50 ± 1.96 · 10",
+   "= 30.4 to 69.6"
+  ],
+  "a": 1,
+  "why": "Use the SE, not the SD: 50 ± 1.96 · 1, so 48.04 to 51.96.",
+  "gap": "stats.clt"
+ },
+ {
+  "t": "asn",
+  "q": "From the same data, a 99% interval is wider than a 95% interval.",
+  "a": "always",
+  "why": "To be more sure of catching the true value, you need a wider net."
+ },
+ {
+  "t": "mc",
+  "q": "A 95% CI for a pay gap is (−2, 5). What can you conclude?",
+  "o": [
+   "A gap of zero is plausible",
+   "The gap is definitely positive",
+   "The gap is exactly 1.5",
+   "The data are wrong"
+  ],
+  "a": 0,
+  "why": "0 is inside the interval, so the data are consistent with no gap."
+ }
+]

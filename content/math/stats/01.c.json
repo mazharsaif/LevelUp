@@ -1,0 +1,42 @@
+[
+ {
+  "t": "mc",
+  "q": "A billionaire moves into a town of 1,000 people. Which average of income changes a lot?",
+  "o": [
+   "The mean",
+   "The median",
+   "The mode",
+   "None of them"
+  ],
+  "a": 0,
+  "why": "The mean adds everyone up, so one huge value pulls it far up. The median only looks at the middle person."
+ },
+ {
+  "t": "asn",
+  "q": "The mean is one of the data values.",
+  "a": "sometimes",
+  "why": "The mean of 1 and 2 is 1.5, which isn't in the data. The average family has 2.4 children, but no family does."
+ },
+ {
+  "t": "mf",
+  "q": "If the mean is much bigger than the median, the data are probably skewed to the right.",
+  "a": true,
+  "why": "Fact. A long tail of big values pulls the mean up but barely moves the median."
+ },
+ {
+  "t": "step",
+  "q": "Find the median of 7, 2, 9, 3.",
+  "lines": [
+   "The middle two of 7, 2, 9, 3 are 2 and 9",
+   "Median = (2 + 9)/2 = 5.5"
+  ],
+  "a": 0,
+  "why": "Sort first: 2, 3, 7, 9. The middle two are 3 and 7, so the median is 5."
+ },
+ {
+  "t": "num",
+  "q": "The mean of 5 numbers is 10. Four of them are 8, 9, 11 and 12. What is the fifth?",
+  "a": 10,
+  "why": "Mean 10 for 5 numbers means a total of 50. 50 − 40 = 10."
+ }
+]

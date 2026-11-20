@@ -1,0 +1,51 @@
+[
+ {
+  "t": "step",
+  "q": "Solve −2x < 6.",
+  "lines": [
+   "−2x < 6",
+   "x < −3"
+  ],
+  "a": 1,
+  "why": "Dividing by a negative number flips the sign: x > −3. Check with x = 0: −2(0) = 0 < 6 is true, and 0 > −3.",
+  "gap": "found.negatives"
+ },
+ {
+  "t": "step",
+  "q": "Make r the subject of A = πr².",
+  "lines": [
+   "A = πr²",
+   "A/π = r²",
+   "r = A/(2π)"
+  ],
+  "a": 2,
+  "why": "To undo a square, take the square root: r = √(A/π). Halving does not undo squaring.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "asn",
+  "q": "If a < b, then 1/a < 1/b.",
+  "a": "sometimes",
+  "why": "For two positive numbers it flips: 2 < 3, but 1/2 > 1/3. It holds when a is negative and b is positive.",
+  "gap": "found.fractions"
+ },
+ {
+  "t": "mc",
+  "q": "Make x the subject of y = (x + 3)/2.",
+  "o": [
+   "x = 2y − 3",
+   "x = y/2 − 3",
+   "x = 2(y − 3)",
+   "x = 2y + 3"
+  ],
+  "a": 0,
+  "why": "Undo the steps in reverse order: multiply by 2 (2y = x + 3), then subtract 3."
+ },
+ {
+  "t": "mf",
+  "q": "If x² > 9, then x > 3.",
+  "a": false,
+  "why": "Myth. x = −4 also works, because (−4)² = 16 > 9. The full answer is x > 3 or x < −3.",
+  "gap": "found.powers"
+ }
+]

@@ -1,0 +1,43 @@
+[
+ {
+  "t": "mc",
+  "q": "det [[2, 4], [1, 2]] = 0. What does that mean?",
+  "o": [
+   "The matrix has no inverse: its columns lie on one line",
+   "Every entry is zero",
+   "It's the identity matrix",
+   "It is its own inverse"
+  ],
+  "a": 0,
+  "why": "The second column (4, 2) is twice the first (2, 1). The matrix squashes the plane onto a line, and that can't be undone."
+ },
+ {
+  "t": "step",
+  "q": "Find det [[3, 1], [2, 4]].",
+  "lines": [
+   "det = 3·4 + 1·2",
+   "= 14"
+  ],
+  "a": 0,
+  "why": "It's ad − bc, with a minus: 3·4 − 1·2 = 10."
+ },
+ {
+  "t": "asn",
+  "q": "det(A + B) = det A + det B",
+  "a": "sometimes",
+  "why": "Usually false. For 2×2 matrices, I + I = 2I has determinant 4, but det I + det I = 2."
+ },
+ {
+  "t": "asn",
+  "q": "(AB)⁻¹ = A⁻¹B⁻¹",
+  "a": "sometimes",
+  "why": "The rule is (AB)⁻¹ = B⁻¹A⁻¹, in reverse order like socks and shoes. It equals A⁻¹B⁻¹ only when those two commute.",
+  "gap": "alg.matrices"
+ },
+ {
+  "t": "mf",
+  "q": "Every square matrix has an inverse.",
+  "a": false,
+  "why": "Myth. Only matrices with det ≠ 0 have one."
+ }
+]

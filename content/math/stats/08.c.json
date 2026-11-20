@@ -1,0 +1,49 @@
+[
+ {
+  "t": "mf",
+  "q": "The central limit theorem says that with a big sample, the data become normal.",
+  "a": false,
+  "why": "Myth. The sample MEAN becomes roughly normal. The data keep their own shape."
+ },
+ {
+  "t": "mc",
+  "q": "The sample size goes from 25 to 100. What happens to the standard error of the mean?",
+  "o": [
+   "It halves",
+   "It quarters",
+   "It doubles",
+   "It stays the same"
+  ],
+  "a": 0,
+  "why": "SE = σ/√n, and √100/√25 = 2. Four times the data only halves the error.",
+  "gap": "found.powers"
+ },
+ {
+  "t": "asn",
+  "q": "A bigger sample gives a sample mean that is, on average, closer to the true mean.",
+  "a": "always",
+  "why": "The standard error σ/√n falls as n grows. Any single sample can still be unlucky."
+ },
+ {
+  "t": "mc",
+  "q": "Why does averaging reduce spread?",
+  "o": [
+   "Highs and lows partly cancel out",
+   "The numbers get bigger",
+   "The data change",
+   "It doesn't"
+  ],
+  "a": 0,
+  "why": "One extreme value is diluted by the others in the average."
+ },
+ {
+  "t": "step",
+  "q": "σ = 20 and n = 16. Find the standard error of the mean.",
+  "lines": [
+   "SE = σ/n",
+   "= 20/16 = 1.25"
+  ],
+  "a": 0,
+  "why": "SE = σ/√n = 20/4 = 5."
+ }
+]
