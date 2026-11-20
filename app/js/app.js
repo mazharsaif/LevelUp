@@ -677,7 +677,7 @@ function settingsView() {
     <button class="btn ghost sm" id="swu">Switch learner</button></div></div>`}`;
   const v = view();
   wireTop();
-  v.querySelector("#inv").onclick = shareApp;
+  v.querySelector("#inv").onclick = shareApp; iosGuideFile();
   if (isGuest()) { v.querySelector("#gsu").onclick = guestSignup; v.querySelector("#glv").onclick = doLeaveGuest; }
   else if (AUTH === "on") { v.querySelector("#cpw").onclick = passwordSheet; v.querySelector("#lout").onclick = doLogout; }
   else v.querySelector("#swu").onclick = userSheet;
@@ -1657,11 +1657,26 @@ function apkSheet() {
 }
 // sent with every invite (WhatsApp etc. put it above the link; the link preview comes from the og: tags in index.html)
 const SHARE_TEXT = "LevelUp was made to learn German faster, because the usual apps felt too slow. It uses active recall: each word comes back for a quick test right before you'd forget it, timed by spaced-repetition research. And it's fast: no slow animations, no ads, no complicated reward system. Just short lessons that stick. Join me!";
+// iOS instructions PDF travels with the invite as a file (when the phone can share files). It's fetched ahead of time
+// (iosGuideFile() when an invite button is drawn), because the share sheet must open within a few seconds of the tap.
+const IOS_GUIDE_NAME = "LevelUp iOS install instructions.pdf";
+let iosGuideP = null;
+function iosGuideFile() {
+  if (!iosGuideP) iosGuideP = fetch(IOS_GUIDE).then(r => r.ok ? r.blob() : null)
+    .then(b => b && new File([b], IOS_GUIDE_NAME, { type: "application/pdf" })).catch(() => { iosGuideP = null; return null; });
+  return iosGuideP;
+}
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
+  const guide = await Promise.race([iosGuideFile(), new Promise(r => setTimeout(() => r(null), 2500))]);
+  const withFile = !!(guide && navigator.canShare && navigator.canShare({ files: [guide] }));
   // both links go inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview card
-  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}\n🍎 iPhone: open the link in Safari, tap Share, then "Add to Home Screen". Picture guide: ${new URL(IOS_GUIDE, url).href}`;
-  try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". `
+    + (withFile ? "Step-by-step pictures in the attached PDF." : `Step-by-step pictures: ${new URL(IOS_GUIDE, url).href}`);
+  try {
+    if (withFile) { await navigator.share({ title: "LevelUp", text, files: [guide] }); return; }
+    if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(text); toast("Invite message copied"); }
   catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">
     <button class="btn" id="ok" style="margin-top:12px">Done</button>`, el => { el.querySelector("#invu").onfocus = e => e.target.select(); el.querySelector("#ok").onclick = closeSheet; }); }
@@ -1691,7 +1706,7 @@ function userSheet() {
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:18px;font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
     <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
-    el.querySelector("#inv").onclick = shareApp;
+    el.querySelector("#inv").onclick = shareApp; iosGuideFile();
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
   });
