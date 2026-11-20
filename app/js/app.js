@@ -1012,6 +1012,8 @@ async function openQuiz(br, node, only, mode = "quiz") {
   const M = QMODE[mode];
   let ch = null;
   try { ch = await loadChapter(br, node.chapter); } catch { ch = null; }
+  const want = mode === "cc" ? node.cc : node.quiz;   // the skill map is newer than the saved chapter: fetch it again
+  if (ch && want && (ch[M.key] || []).length !== want) { try { ch = await loadChapter(br, node.chapter, true); } catch {} }
   const QS = ch && ch[M.key];
   if (!QS || !QS.length) { toast(navigator.onLine ? M.none : "No connection, so the questions can't download right now."); return; }
   document.body.classList.add("in-lesson");
@@ -1097,8 +1099,12 @@ const CONTENT_CACHE = "a1-content-v1";
 const readingCache = {};
 const chapterUrl = (br, ch) => `${br.reading}${String(ch).padStart(2, "0")}.json`;
 const canDownload = () => "caches" in window && !!navigator.serviceWorker && !!navigator.serviceWorker.controller;
-async function loadChapter(br, ch) {
+async function loadChapter(br, ch, fresh) {
   const u = chapterUrl(br, ch);
+  if (fresh) {                  // the phone's saved copy is out of date: drop it so the next fetch goes to the server
+    delete readingCache[u];
+    try { if ("caches" in window) await (await caches.open(CONTENT_CACHE)).delete(new URL(u, location.href).href, { ignoreSearch: true }); } catch {}
+  }
   if (!readingCache[u]) { const r = await fetch(u); if (!r.ok) throw new Error(r.status); readingCache[u] = await r.json(); }
   return readingCache[u];
 }
