@@ -128,7 +128,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
-- 11-20: Maths: Calculus for Economics + Probability & Statistics branches (24 skills, 2 diagrams); all worked-example lines reflowed to phone width. All 4 math branches pass tree_check.
+- 11-20: Maths: Calculus for Economics + Probability & Statistics branches (24 skills, 2 diagrams); all worked-example lines reflowed to phone width. All 4 math branches pass tree_check. SW v29.
 - 11-20: Mathematics course live as a skill tree (Math Foundations 13 + Algebra & Matrices 12 skills, econ-flavoured, practice + answers); build tools take `--tree`; fixed skill-finish crash on tree courses (markGoal); tree_check fixes. SW v28.
 - 11-20: feedback batch (19 mazhar reports): 3-phrase parts + migration, alternating lessons, Today's plan, part bars/rings, streak = daily goal, time tracking + activity calendar, clearer pace chart, stricter Speak it, polite/friends split + hint, Zahlen (Numbers), 📞, feedback draft. SW v27.
 - 11-20: calendar versioning `YYYY.MM.DD.NN`: release tags in the deploy skill, `tools/next_version.sh`, version in `/api/health`, APK build stamps versionName/Code.
