@@ -133,9 +133,24 @@ class Backup(BaseModel):
 
 
 # ---------- app ----------
+def release() -> str:
+    """Release version (calendar versioning YYYY.MM.DD.NN) from the git tag on the deployed commit.
+    Untagged commit -> 'dev-<short hash>'; no git -> 'unknown'."""
+    import subprocess
+    try:
+        def git(*a: str) -> str:
+            return subprocess.run(["git", "-C", ROOT, *a], capture_output=True, text=True, timeout=5).stdout.strip()
+        tag = git("tag", "--points-at", "HEAD", "--list", "v[0-9]*.[0-9]*.[0-9]*.[0-9]*", "--sort=-v:refname").split("\n")[0]
+        return tag[1:] if tag else f"dev-{git('rev-parse', '--short', 'HEAD') or 'unknown'}"
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+
+
+RELEASE = release()
+
 app = FastAPI(
     title="LevelUp API",
-    version="1.0.0",
+    version=RELEASE,
     description="Progress sync for the LevelUp learning app. Same API as the original stdlib server.",
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)  # content.json and JS shrink a lot over Wi-Fi

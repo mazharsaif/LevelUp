@@ -29,6 +29,7 @@ Object.assign(m, {
   orientation: "portrait",
   enableNotifications: false,
   signingKey: { path: path.join(os.homedir(), ".levelup-android/levelup-release.keystore"), alias: "levelup" },
+  // build_apk.sh stamps the real release version (YYYY.MM.DD.NN, code = its digits) before every build
   appVersionCode: +(process.env.VERSION_CODE || 1),
   appVersionName: process.env.VERSION_NAME || "1.0.0",
 });

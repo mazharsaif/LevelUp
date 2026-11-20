@@ -3,7 +3,9 @@
 #   app/download/levelup.apk          the sideloadable APK (download button in the web app)
 #   app/.well-known/assetlinks.json   proves the APK owns levelrise.org (no URL bar)
 # Toolchain + signing key live in ~/.levelup-android (JDK 17, Android SDK, Bubblewrap, keystore).
-# Usage: tools/android/build_apk.sh            (bump versionCode in android/twa-manifest.json for updates)
+# Usage: tools/android/build_apk.sh            (stamps the next release version, see tools/next_version.sh)
+#        VERSION=2026.11.20.02 tools/android/build_apk.sh   (a specific version; YYYY.MM.DD.NN)
+# versionName = the version, versionCode = its digits (2026.11.20.02 -> 2026112002), so updates always install.
 # KEEP ~/.levelup-android/levelup-release.keystore + keystore-password.txt BACKED UP: without them no update installs.
 set -euo pipefail
 T="$HOME/.levelup-android"
@@ -14,6 +16,21 @@ export BUBBLEWRAP_KEYSTORE_PASSWORD="$PW" BUBBLEWRAP_KEY_PASSWORD="$PW"
 
 # Chrome reads the web manifest from the app's own host
 sed -i '' -E "s|https://[a-z0-9.-]+/manifest.webmanifest|https://levelrise.org/manifest.webmanifest|" "$ROOT/android/app/build.gradle"
+
+# Version: calendar versioning, same scheme as the release tags
+VERSION="${VERSION:-$("$ROOT/tools/next_version.sh")}"
+[[ "$VERSION" =~ ^20[0-9]{2}\.[01][0-9]\.[0-3][0-9]\.[0-9]{2}$ ]] || { echo "VERSION must be YYYY.MM.DD.NN, got $VERSION" >&2; exit 1; }
+CODE="${VERSION//./}"
+sed -i '' -E "s/versionCode [0-9]+/versionCode $CODE/; s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" "$ROOT/android/app/build.gradle"
+python3 - "$ROOT/android/twa-manifest.json" "$VERSION" "$CODE" <<'PY'
+import json, sys
+p, v, c = sys.argv[1], sys.argv[2], int(sys.argv[3])
+m = json.load(open(p))
+m["appVersionName"], m["appVersionCode"], m["appVersion"] = v, c, v
+json.dump(m, open(p, "w"), indent=2)
+open(p, "a").write("\n")
+PY
+echo "APK version $VERSION (versionCode $CODE)"
 
 cd "$ROOT/android"
 BT="$T/sdk/build-tools/36.1.0"
