@@ -112,6 +112,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Repo access from the droplet = SSH agent forwarding** (user's choice over a deploy key; private key never on the server). The droplet's ssh config points GitHub at the personal *public* key so the forwarded agent offers the personal key, not Endolit's. Later plan: `main` instance with GitHub Actions deploys (see Pending).
 - **cloud-init must be pure ASCII:** pbcopy turned `→`/`–` into bytes cloud-init rejected (`#x0086`) and it silently skipped the whole file. The script now has no non-ASCII characters; keep it that way.
 - **Root SSH login is off** (`/etc/ssh/sshd_config.d/00-no-root-login.conf`): DigitalOcean had installed the Endolit key for root because it was picked at creation; `disable_root` alone didn't remove it. Log in as `mazhar` (sudo).
+- **Domain `levelrise.org`** (11-20, Cloudflare registrar + DNS, bought because of level-up.com.de issues): A `@` + `www` DNS only (grey) → droplet, SSL Full (strict); same app/data as dev, logins are per domain. APK still on app.level-up.com.de.
 - **Domain `level-up.com.de`** (Cloudflare registrar + DNS; `com.de` is a CentralNic name space and on the Public Suffix List). `dev` A record DNS-only; apex proxied (orange). Cloudflare SSL/TLS = **Full (strict)** (never Flexible: redirect loop). Check domain auto-renew.
 - **Caddy over nginx** (auto HTTPS, 3 lines per app). Installed from Caddy's official apt repo (Ubuntu's 2.6.2 was years old). Certificates: Let's Encrypt, 90 days now (64 from Feb 2027, 45 from Feb 2028), renewed by Caddy. New app = DNS record + Caddyfile block, port from 8100–8119 bound to 127.0.0.1.
 - **Ports to avoid for new apps:** <1024, 32768–60999 (Linux ephemeral), common defaults (3000, 5432, 6379, 8080, 9000, 9090).
@@ -122,6 +123,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-20: New domain levelrise.org (Cloudflare, A @ + www DNS only → droplet); Caddy serves the app there, www redirects to apex. Old domains unchanged.
 - 11-20: Android APK (TWA via Bubblewrap, own signing key in ~/.levelup-android) for app.level-up.com.de + download button/banner for browser visitors; assetlinks + APK routes; Caddy block for the app subdomain.
 - 11-19: feedback (mazhar): own name in Ch 1.1 reading + spelling question, daily quest parts goal from pace, Android back gesture (sheets, lesson, double-back to exit).
 - 11-19: feedback (mazhar): setup goal text no longer cropped (choice cards); exercise title / English / German made visually distinct.

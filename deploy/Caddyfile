@@ -30,7 +30,19 @@ app.level-up.com.de {
 	reverse_proxy 127.0.0.1:8000
 }
 
-# Main domain: sends visitors to dev until the main copy exists
+# New main domain (bought 11-20 because of the level-up.com.de issues). Same app and data as dev.
+# Needs Cloudflare DNS: A "@" and A "www" -> 168.144.78.71 (DNS only, grey cloud), SSL/TLS = Full (strict).
+levelrise.org {
+	import common
+	reverse_proxy 127.0.0.1:8000
+}
+
+www.levelrise.org {
+	import common
+	redir https://levelrise.org{uri} permanent
+}
+
+# Old main domain: sends visitors to dev until the main copy exists
 level-up.com.de {
 	import common
 	redir https://dev.level-up.com.de{uri} temporary
