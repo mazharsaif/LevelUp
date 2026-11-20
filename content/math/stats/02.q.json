@@ -1,0 +1,56 @@
+[
+ {
+  "t": "num",
+  "q": "Find the sample variance of 2, 4, 6.",
+  "a": 4,
+  "why": "Mean 4; squared deviations 4, 0, 4 = 8; divide by n − 1 = 2."
+ },
+ {
+  "t": "mc",
+  "q": "Why divide by n − 1 in the sample variance?",
+  "o": [
+   "to make it bigger for no reason",
+   "a sample sits closer to its own mean, so n − 1 corrects the underestimate",
+   "because n is unknown",
+   "it makes the SD an integer"
+  ],
+  "a": 1,
+  "why": "Dividing by n would underestimate the population variance."
+ },
+ {
+  "t": "mc",
+  "q": "Every value is increased by 10. The standard deviation …",
+  "o": [
+   "rises by 10",
+   "stays the same",
+   "doubles",
+   "falls by 10"
+  ],
+  "a": 1,
+  "why": "Shifting everything does not change the spread."
+ },
+ {
+  "t": "mc",
+  "q": "Every value is doubled. The standard deviation …",
+  "o": [
+   "stays the same",
+   "doubles",
+   "is multiplied by 4",
+   "rises by 2"
+  ],
+  "a": 1,
+  "why": "Scaling multiplies the SD by the same factor (the variance by 4)."
+ },
+ {
+  "t": "num",
+  "q": "A mark of 74, where the mean is 62 and s = 8. Find the z-score.",
+  "a": 1.5,
+  "why": "(74 − 62)/8 = 1.5."
+ },
+ {
+  "t": "mf",
+  "q": "In finance, volatility is the standard deviation of returns.",
+  "a": true,
+  "why": "Fact."
+ }
+]

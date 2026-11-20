@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Who runs the database of all .com names?",
+  "o": [
+   "the registrar",
+   "the registry",
+   "the DNS host",
+   "the browser"
+  ],
+  "a": 1,
+  "why": "Registrars sell names; the registry runs the TLD."
+ },
+ {
+  "t": "mc",
+  "q": "Which record points a name at an IPv6 address?",
+  "o": [
+   "A",
+   "AAAA",
+   "CNAME",
+   "TXT"
+  ],
+  "a": 1,
+  "why": "A is IPv4, AAAA is IPv6."
+ },
+ {
+  "t": "mc",
+  "q": "Why can't the apex (example.com) be a CNAME?",
+  "o": [
+   "It must also hold SOA/NS records, and a CNAME can't coexist with other records",
+   "It is too short",
+   "Browsers forbid it",
+   "It can, always"
+  ],
+  "a": 0,
+  "why": "Some DNS hosts offer flattening/ALIAS instead."
+ },
+ {
+  "t": "mc",
+  "q": "A CAA record controls …",
+  "o": [
+   "which CAs may issue certificates for the domain",
+   "mail delivery",
+   "caching",
+   "redirects"
+  ],
+  "a": 0,
+  "why": "Certificate Authority Authorization."
+ }
+]

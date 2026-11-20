@@ -1,0 +1,63 @@
+[
+ {
+  "t": "mc",
+  "q": "r = −0.9 means …",
+  "o": [
+   "no relation",
+   "a strong negative straight-line relation",
+   "a weak positive relation",
+   "y causes x"
+  ],
+  "a": 1,
+  "why": "Close to −1."
+ },
+ {
+  "t": "num",
+  "q": "cov(x, y) = 10, sx = 2, sy = 10. Find r.",
+  "a": 0.5,
+  "why": "10/(2 × 10).",
+  "tol": 0.001
+ },
+ {
+  "t": "mc",
+  "q": "An OLS line always passes through …",
+  "o": [
+   "the origin",
+   "(x̄, ȳ)",
+   "the first data point",
+   "(0, ȳ)"
+  ],
+  "a": 1,
+  "why": "b₀ = ȳ − b₁x̄."
+ },
+ {
+  "t": "num",
+  "q": "ŷ = 2 + 0.5x. Predict y at x = 10.",
+  "a": 7,
+  "why": "2 + 5."
+ },
+ {
+  "t": "num",
+  "q": "A slope of 1.2 has SE 0.4. Its t-statistic?",
+  "a": 3,
+  "why": "1.2/0.4."
+ },
+ {
+  "t": "mc",
+  "q": "ln(wage) = a + 0.07 × education. One more year of education raises wages by about …",
+  "o": [
+   "0.07 euros",
+   "7%",
+   "70%",
+   "0.7%"
+  ],
+  "a": 1,
+  "why": "In a log model the slope is roughly a proportional change."
+ },
+ {
+  "t": "mf",
+  "q": "A strong correlation proves that x causes y.",
+  "a": false,
+  "why": "Myth: confounders and reverse causation."
+ }
+]

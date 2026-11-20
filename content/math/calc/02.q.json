@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "d/dx (x⁶) = ?",
+  "o": [
+   "6x⁵",
+   "x⁵",
+   "6x⁶",
+   "5x⁶"
+  ],
+  "a": 0,
+  "why": "Bring the power down, reduce by one."
+ },
+ {
+  "t": "num",
+  "q": "f(x) = 3x² − 4x + 1. Find f′(2).",
+  "a": 8,
+  "why": "f′ = 6x − 4 = 8."
+ },
+ {
+  "t": "mc",
+  "q": "d/dx (5/x) = ?",
+  "o": [
+   "5/x²",
+   "−5/x²",
+   "5 ln x",
+   "−5/x"
+  ],
+  "a": 1,
+  "why": "5x⁻¹ → −5x⁻²."
+ },
+ {
+  "t": "mc",
+  "q": "d/dx (√x) = ?",
+  "o": [
+   "1/(2√x)",
+   "2√x",
+   "√x/2",
+   "1/√x"
+  ],
+  "a": 0,
+  "why": "x^(1/2) → (1/2)x^(−1/2)."
+ },
+ {
+  "t": "num",
+  "q": "Cost C = q² + 10q + 200. Find marginal cost at q = 15.",
+  "a": 40,
+  "why": "C′ = 2q + 10 = 40."
+ },
+ {
+  "t": "mf",
+  "q": "The derivative of a fixed cost is the fixed cost itself.",
+  "a": false,
+  "why": "Myth. A constant does not change, so its derivative is 0."
+ }
+]

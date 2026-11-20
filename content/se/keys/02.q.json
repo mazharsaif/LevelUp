@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Blast radius means …",
+  "o": [
+   "how much damage a leaked credential can do",
+   "network range",
+   "a DNS setting",
+   "server size"
+  ],
+  "a": 0,
+  "why": "Smaller is better."
+ },
+ {
+  "t": "mc",
+  "q": "Least privilege for deploys means …",
+  "o": [
+   "one small key per job that can do only that job",
+   "one key for everything",
+   "root keys everywhere",
+   "no keys"
+  ],
+  "a": 0,
+  "why": "Limits what a leak can do."
+ },
+ {
+  "t": "mc",
+  "q": "Prompt injection can leak secrets because …",
+  "o": [
+   "an AI agent may follow instructions hidden in content it reads",
+   "it breaks TLS",
+   "it reads RAM",
+   "it changes DNS"
+  ],
+  "a": 0,
+  "why": "So don't hand agents broad keys."
+ },
+ {
+  "t": "mf",
+  "q": "A personal SSH key that deploys can also usually push code and log in elsewhere.",
+  "a": true,
+  "why": "Fact: that's why a deploy-only key is safer."
+ }
+]

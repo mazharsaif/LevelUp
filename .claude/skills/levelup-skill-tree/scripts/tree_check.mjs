@@ -4,7 +4,8 @@
 // or run from a folder where `npm i puppeteer-core` was done. Uses the system Chrome.
 // Checks: branch renders, ring segments match parts, first node open & rest locked, node sheet lists parts,
 // part-by-part reading (part 1, then the last part, then the rest; done only after all), finishing skill 1 unlocks its
-// dependants, About opens (if any), every chapter file loads with cards, no JS errors. Saves screenshots.
+// dependants, practice questions (if any) can all be answered right and pay +5 XP, About opens (if any),
+// every chapter file loads with cards, no JS errors. Saves screenshots.
 const pp = await import(process.env.PUPPETEER_CORE || "puppeteer-core");
 const puppeteer = pp.default || pp;
 const [branch, OUT, port = "8899"] = process.argv.slice(2);
@@ -85,6 +86,31 @@ await wait(400); st = await states();
 if (st[first.id] !== "done") fails.push(`${first.id} not marked done after finishing`);
 for (const n of nodes.filter(n => n.req.length && n.req.every(r => r === first.id))) if (st[n.id] !== "open") fails.push(`${n.id} should unlock after ${first.id}`);
 await pg.screenshot({ path: `${OUT}/5_after_finish.png`, fullPage: true });
+// practice: if skill 1 has questions, answer them all correctly (one wrong first, to see the feedback), then check result + XP
+if (first.quiz) {
+  const quiz = await pg.evaluate(async (r, c) => (await (await fetch(`${r}${String(c).padStart(2, "0")}.json`)).json()).quiz, br.reading, first.chapter);
+  if (!quiz || quiz.length !== first.quiz) fails.push(`quiz: node says ${first.quiz} questions, chapter has ${quiz && quiz.length}`);
+  const xp0 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
+  await click(`.tnode[data-id="${first.id}"]`); await wait(300); await click("#practice"); await wait(600);
+  for (let k = 0; k < quiz.length; k++) {
+    const title = await pg.$eval(".qq", e => e.textContent).catch(() => null);
+    const q = quiz.find(x => x.q === title); if (!q) { fails.push(`quiz: question ${k + 1} not found on screen`); break; }
+    if (q.t === "num") { await pg.type("#na", String(q.a)); await click("#qn"); }
+    else { const right = q.t === "mc" ? q.a : (q.a ? 1 : 0); await click(`.opt[data-k="${right}"]`); }
+    await wait(150);
+    const fb = await pg.$eval(".qfb", e => e.className).catch(() => "");
+    if (!fb.includes("ok")) fails.push(`quiz: right answer to "${q.q.slice(0, 40)}" was marked wrong`);
+    if (k === 0) await pg.screenshot({ path: `${OUT}/7_quiz.png` });
+    await click("#qn"); await wait(200);
+  }
+  await pg.screenshot({ path: `${OUT}/7b_quiz_result.png` });
+  const res = await pg.evaluate(() => document.querySelector(".quiz .q-title")?.textContent);
+  if (res !== `${quiz.length} of ${quiz.length} right`) fails.push(`quiz result screen says "${res}"`);
+  await click("#qb"); await wait(400);
+  await pg.evaluate(() => document.getElementById("sheet-root")?.querySelector("#close")?.click()); await wait(200);
+  const xp1 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
+  if (xp1 - xp0 !== 5) fails.push(`quiz pass should give +5 XP, gave ${xp1 - xp0}`);
+}
 // layout toggle (map <-> path) keeps every node; pager moves to another branch and back
 await click('.segt button[data-l="path"]'); await wait(300);
 if (Object.keys(await states()).length !== nodes.length) fails.push("path layout lost nodes");

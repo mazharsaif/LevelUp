@@ -1,0 +1,50 @@
+[
+ {
+  "t": "num",
+  "q": "f(x) = x². Find the average rate of change from x = 1 to x = 3.",
+  "a": 4,
+  "why": "(9 − 1)/(3 − 1) = 4."
+ },
+ {
+  "t": "num",
+  "q": "Find lim (x² − 16)/(x − 4) as x → 4.",
+  "a": 8,
+  "why": "Factor: (x + 4)(x − 4)/(x − 4) = x + 4 → 8."
+ },
+ {
+  "t": "num",
+  "q": "Find lim (3x + 2) as x → 5.",
+  "a": 17,
+  "why": "Substitute: 17."
+ },
+ {
+  "t": "mc",
+  "q": "The derivative at a point is the slope of …",
+  "o": [
+   "the secant through two far points",
+   "the tangent line at that point",
+   "the x-axis",
+   "the average of the function"
+  ],
+  "a": 1,
+  "why": "It is the limit of secant slopes as the gap shrinks."
+ },
+ {
+  "t": "mc",
+  "q": "Using the definition, the derivative of x² is …",
+  "o": [
+   "x",
+   "2x",
+   "x²/2",
+   "2"
+  ],
+  "a": 1,
+  "why": "((x + h)² − x²)/h = 2x + h → 2x."
+ },
+ {
+  "t": "mf",
+  "q": "A limit is the value of the function exactly at that point.",
+  "a": false,
+  "why": "Myth. It is what f(x) approaches near the point; f may not even be defined there."
+ }
+]

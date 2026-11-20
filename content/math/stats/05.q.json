@@ -1,0 +1,44 @@
+[
+ {
+  "t": "num",
+  "q": "X = 0, 10, 20 with probabilities 0.5, 0.3, 0.2. Find E(X).",
+  "a": 7,
+  "why": "0 + 3 + 4 = 7."
+ },
+ {
+  "t": "mc",
+  "q": "Expected value is best described as …",
+  "o": [
+   "the most likely value",
+   "the long-run average",
+   "the largest value",
+   "the median"
+  ],
+  "a": 1,
+  "why": "It may not even be a value X can take."
+ },
+ {
+  "t": "num",
+  "q": "A ticket costs 2 and wins 50 with probability 0.02. Expected net gain?",
+  "a": -1,
+  "why": "0.02 × 50 − 2 = 1 − 2."
+ },
+ {
+  "t": "num",
+  "q": "E(X) = 5, Var(X) = 4. Find Var(3X + 1).",
+  "a": 36,
+  "why": "Var(a + bX) = b² Var(X) = 9 × 4."
+ },
+ {
+  "t": "num",
+  "q": "X, Y independent with Var 9 and 16. SD(X + Y)?",
+  "a": 5,
+  "why": "√(9 + 16)."
+ },
+ {
+  "t": "mf",
+  "q": "Diversification works best when assets move closely together.",
+  "a": false,
+  "why": "Myth. Risk falls most when covariance is low or negative."
+ }
+]

@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "At a stationary point of f(x, y) …",
+  "o": [
+   "fx = 0 only",
+   "fx = 0 and fy = 0",
+   "fxx = 0",
+   "f = 0"
+  ],
+  "a": 1,
+  "why": "Flat in every direction."
+ },
+ {
+  "t": "mc",
+  "q": "D = fxx fyy − fxy² < 0 at a stationary point means …",
+  "o": [
+   "maximum",
+   "minimum",
+   "saddle point",
+   "test fails"
+  ],
+  "a": 2,
+  "why": "It rises one way and falls another."
+ },
+ {
+  "t": "mc",
+  "q": "Stationary point of f = x² + y² − 2x − 8y?",
+  "o": [
+   "(1, 4)",
+   "(2, 8)",
+   "(−1, −4)",
+   "(0, 0)"
+  ],
+  "a": 0,
+  "why": "2x − 2 = 0, 2y − 8 = 0."
+ },
+ {
+  "t": "mc",
+  "q": "For f = x² + y² − 2x − 8y, the point found is a …",
+  "o": [
+   "maximum",
+   "minimum",
+   "saddle",
+   "can't tell"
+  ],
+  "a": 1,
+  "why": "D = 4 > 0 and fxx = 2 > 0."
+ },
+ {
+  "t": "num",
+  "q": "Prices 30 and 40, cost C = x² + y². Find the profit-maximising x.",
+  "a": 15,
+  "why": "30 − 2x = 0."
+ },
+ {
+  "t": "mc",
+  "q": "A price-discriminating monopolist sets output where …",
+  "o": [
+   "MR₁ = MR₂ = MC",
+   "P₁ = P₂",
+   "MR₁ = P₂",
+   "MC = 0"
+  ],
+  "a": 0,
+  "why": "Equal marginal revenue in each market, equal to MC."
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "ACME HTTP-01 proves control by …",
+  "o": [
+   "serving a token at /.well-known/acme-challenge/ on port 80",
+   "a TXT record",
+   "an email",
+   "a phone call"
+  ],
+  "a": 0,
+  "why": "DNS-01 uses a TXT record instead."
+ },
+ {
+  "t": "mc",
+  "q": "Which challenge can issue a wildcard certificate?",
+  "o": [
+   "HTTP-01",
+   "DNS-01",
+   "TLS-ALPN-01",
+   "none"
+  ],
+  "a": 1,
+  "why": "Wildcards need DNS-01."
+ },
+ {
+  "t": "mc",
+  "q": "While testing your setup you should use …",
+  "o": [
+   "the production endpoint",
+   "the Let's Encrypt staging endpoint",
+   "a paid CA",
+   "self-signed certs"
+  ],
+  "a": 1,
+  "why": "Staging has much looser rate limits."
+ },
+ {
+  "t": "mc",
+  "q": "ARI (ACME Renewal Information) tells clients …",
+  "o": [
+   "when the CA suggests renewing",
+   "their password",
+   "the DNS TTL",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Smooths renewals and handles revocations."
+ }
+]

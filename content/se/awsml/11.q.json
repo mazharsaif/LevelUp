@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Unpredictable, spiky traffic with idle periods fits …",
+  "o": [
+   "serverless inference",
+   "a big always-on real-time endpoint",
+   "batch transform",
+   "EC2 reserved"
+  ],
+  "a": 0,
+  "why": "Scales to zero."
+ },
+ {
+  "t": "mc",
+  "q": "Large payloads or long processing (minutes) fits …",
+  "o": [
+   "asynchronous inference",
+   "real-time inference",
+   "Lambda@Edge",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "Queued requests, results to S3."
+ },
+ {
+  "t": "mc",
+  "q": "A Bedrock knowledge base does what?",
+  "o": [
+   "Chunks, embeds and retrieves your documents for RAG",
+   "fine-tunes the model",
+   "stores logs",
+   "hosts websites"
+  ],
+  "a": 0,
+  "why": "Managed RAG pipeline."
+ },
+ {
+  "t": "mc",
+  "q": "Many small models with sparse traffic on one endpoint:",
+  "o": [
+   "multi-model endpoint",
+   "one endpoint per model",
+   "batch transform",
+   "Step Functions"
+  ],
+  "a": 0,
+  "why": "Loads models on demand."
+ }
+]

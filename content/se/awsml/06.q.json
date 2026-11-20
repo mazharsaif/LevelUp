@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "AIF-C01 is the exam for …",
+  "o": [
+   "AWS Certified AI Practitioner",
+   "Solutions Architect",
+   "ML Engineer Associate",
+   "Developer"
+  ],
+  "a": 0,
+  "why": "The foundational AI exam."
+ },
+ {
+  "t": "mc",
+  "q": "On a scenario question, which word most often decides the answer?",
+  "o": [
+   "Keywords like 'least operational overhead' or 'lowest cost'",
+   "the longest option",
+   "the first option",
+   "any AWS name"
+  ],
+  "a": 0,
+  "why": "Decode the constraint first."
+ },
+ {
+  "t": "mc",
+  "q": "'No ML expertise, extract text from scanned forms' points to …",
+  "o": [
+   "Amazon Textract",
+   "SageMaker training",
+   "EC2 GPU",
+   "Kinesis"
+  ],
+  "a": 0,
+  "why": "A managed AI service."
+ },
+ {
+  "t": "mc",
+  "q": "'Translate product descriptions into 10 languages' points to …",
+  "o": [
+   "Amazon Translate",
+   "Amazon Polly",
+   "Amazon Rekognition",
+   "Amazon Lex"
+  ],
+  "a": 0,
+  "why": "Polly is text-to-speech; Lex is chatbots."
+ }
+]

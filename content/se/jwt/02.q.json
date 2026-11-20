@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Base64url encoding a JWT payload …",
+  "o": [
+   "hides it",
+   "only makes it text-safe; anyone can decode it",
+   "signs it",
+   "encrypts it"
+  ],
+  "a": 1,
+  "why": "Never put secrets in a JWT payload."
+ },
+ {
+  "t": "mc",
+  "q": "A digital signature proves …",
+  "o": [
+   "the data is secret",
+   "who made it and that it hasn't changed",
+   "it is short",
+   "it is recent"
+  ],
+  "a": 1,
+  "why": "Integrity and origin."
+ },
+ {
+  "t": "mc",
+  "q": "In RS256, the token is signed with …",
+  "o": [
+   "the public key",
+   "the private key",
+   "a shared password",
+   "SHA-256 alone"
+  ],
+  "a": 1,
+  "why": "Verified with the public key, which anyone may have."
+ },
+ {
+  "t": "mf",
+  "q": "A SHA-256 hash of a message proves who sent it.",
+  "a": false,
+  "why": "Myth. Anyone can compute a hash; it needs a key (HMAC or signature) to prove origin."
+ }
+]

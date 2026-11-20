@@ -58,10 +58,14 @@ Write the spec to **`content/se/<branch>/_tree.json`**, next to the chapters, so
 
 ```bash
 uv run .claude/skills/levelup-skill-tree/scripts/add_branch.py . content/se/<branch>/_tree.json
-uv run tools/build_se_content.py
+uv run tools/build_se_content.py            # add --tree math for the Mathematics course
 ```
 
 The script validates the spec (unique ids, prerequisites on lower levels, free grid slots, chapter files present, title length, crossing edges, and col 0↔2 jumps over a node in col 1). It also warns when an edge skips a row. Good shapes: a spine in col 1, a fan-out to 2–3 parallel skills, then a merge back into col 1 and writes `se-path.json` with `indent=2, ensure_ascii=False`. The git diff of `se-path.json` should be insertions only.
+
+## Step 3b: Practice questions (every skill)
+
+Each skill gets 4–8 questions in `content/<tree>/<branch>/NN.q.json`. Write them in Python with the helpers in `tools/quiz_src/_q.py` (`MC`, `MF`/`TF`, `NUM`) and keep the source next to the others there (`math_*.py`, `se_*.py`), then rebuild. Types: `mc` (concept check, one right option), `mf` (myth or fact), `tf`, `num` (type a number; `tol` optional, default 0.5 %). Every question needs a one-sentence `why`, shown after answering. Questions must match the chapter's own terms and examples; check every numeric answer by hand. The build validates them, puts them in the chapter file (`quiz`) and the count on the node (`quiz`); `tree_check.mjs` answers skill 1's set and expects +5 XP. Self-check answers written as `**Answers.** ...` are hidden behind a tap in the reader automatically.
 
 ## Step 4: Test on the scratch server only
 

@@ -1,0 +1,74 @@
+[
+ {
+  "t": "mc",
+  "q": "What size is a matrix with 3 rows and 2 columns?",
+  "o": [
+   "2 × 3",
+   "3 × 2",
+   "6",
+   "3 × 3"
+  ],
+  "a": 1,
+  "why": "Rows first: 3 × 2."
+ },
+ {
+  "t": "mc",
+  "q": "A is 2 × 3 and B is 3 × 4. What size is AB?",
+  "o": [
+   "2 × 4",
+   "3 × 3",
+   "4 × 2",
+   "Undefined"
+  ],
+  "a": 0,
+  "why": "Inside numbers match (3); outside give the size."
+ },
+ {
+  "t": "mc",
+  "q": "A is 2 × 3 and B is 2 × 3. Is AB defined?",
+  "o": [
+   "Yes, 2 × 3",
+   "Yes, 2 × 2",
+   "No",
+   "Yes, 3 × 3"
+  ],
+  "a": 2,
+  "why": "The inside numbers (3 and 2) don't match."
+ },
+ {
+  "t": "num",
+  "q": "[1 2; 3 4] × [5 6; 7 8]: what is the top-left entry?",
+  "a": 19,
+  "why": "Row 1 · column 1 = 1×5 + 2×7 = 19."
+ },
+ {
+  "t": "mf",
+  "q": "For matrices, AB always equals BA.",
+  "a": false,
+  "why": "Myth. Matrix multiplication usually depends on the order."
+ },
+ {
+  "t": "mc",
+  "q": "What is the transpose of a 2 × 5 matrix?",
+  "o": [
+   "2 × 5",
+   "5 × 2",
+   "10 × 1",
+   "5 × 5"
+  ],
+  "a": 1,
+  "why": "Rows become columns."
+ },
+ {
+  "t": "mc",
+  "q": "What does the identity matrix I do?",
+  "o": [
+   "Turns A into zeros",
+   "AI = A, like multiplying by 1",
+   "Swaps rows",
+   "Transposes A"
+  ],
+  "a": 1,
+  "why": "It plays the role of the number 1."
+ }
+]

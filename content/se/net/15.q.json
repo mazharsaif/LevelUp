@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Correct order for an HTTPS page load?",
+  "o": [
+   "DNS → TCP → TLS → HTTP",
+   "TLS → DNS → TCP → HTTP",
+   "HTTP → TLS → DNS → TCP",
+   "TCP → DNS → HTTP → TLS"
+  ],
+  "a": 0,
+  "why": "Find the IP, connect, secure, request."
+ },
+ {
+  "t": "mc",
+  "q": "With Cloudflare proxying, the browser's TLS connection ends at …",
+  "o": [
+   "your origin",
+   "Cloudflare's edge",
+   "the registrar",
+   "the DNS resolver"
+  ],
+  "a": 1,
+  "why": "Cloudflare opens a second connection to the origin."
+ },
+ {
+  "t": "mc",
+  "q": "'certificate has expired' is a failure at which layer?",
+  "o": [
+   "DNS",
+   "TCP",
+   "TLS",
+   "HTTP"
+  ],
+  "a": 2,
+  "why": "Certificate checks happen in the TLS handshake."
+ },
+ {
+  "t": "mc",
+  "q": "'NXDOMAIN' is a failure at which layer?",
+  "o": [
+   "DNS",
+   "TCP",
+   "TLS",
+   "HTTP"
+  ],
+  "a": 0,
+  "why": "The name doesn't exist."
+ }
+]

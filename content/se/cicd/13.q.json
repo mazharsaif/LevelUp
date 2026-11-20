@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "MLflow tracks …",
+  "o": [
+   "experiment runs: parameters, metrics and artefacts",
+   "DNS",
+   "IAM",
+   "billing"
+  ],
+  "a": 0,
+  "why": "Plus a model registry."
+ },
+ {
+  "t": "mc",
+  "q": "Registry aliases like 'champion' let you …",
+  "o": [
+   "promote or roll back without changing deploy code",
+   "rename the repo",
+   "delete runs",
+   "train faster"
+  ],
+  "a": 0,
+  "why": "Deploy what the alias points to."
+ },
+ {
+  "t": "mc",
+  "q": "Lineage answers …",
+  "o": [
+   "which data and code produced this model",
+   "who pays",
+   "which port",
+   "how big"
+  ],
+  "a": 0,
+  "why": "Traceability."
+ },
+ {
+  "t": "mc",
+  "q": "Retrain when …",
+  "o": [
+   "monitoring shows drift or quality drops",
+   "every hour regardless",
+   "never",
+   "the logo changes"
+  ],
+  "a": 0,
+  "why": "Triggered by evidence or a schedule tied to change."
+ }
+]

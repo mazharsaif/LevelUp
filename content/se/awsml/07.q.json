@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Best file format for analytics on a large S3 data lake?",
+  "o": [
+   "CSV",
+   "Parquet (columnar, compressed)",
+   "JSON lines",
+   "XML"
+  ],
+  "a": 1,
+  "why": "Reads only the needed columns."
+ },
+ {
+  "t": "mc",
+  "q": "Load a stream into S3 with no code to manage:",
+  "o": [
+   "Amazon Data Firehose",
+   "EC2 cron",
+   "Lambda@Edge",
+   "Route 53"
+  ],
+  "a": 0,
+  "why": "Managed delivery with buffering."
+ },
+ {
+  "t": "mc",
+  "q": "SageMaker Feature Store's online store is for …",
+  "o": [
+   "low-latency feature lookups at inference",
+   "long-term archives",
+   "model training only",
+   "logs"
+  ],
+  "a": 0,
+  "why": "The offline store is for training."
+ },
+ {
+  "t": "mf",
+  "q": "Kinesis Data Streams lets several consumers read the same stream.",
+  "a": true,
+  "why": "Fact: it's a durable, replayable stream."
+ }
+]

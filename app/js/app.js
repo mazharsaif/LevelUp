@@ -945,7 +945,7 @@ function nodeSheet(id) {
       <div class="partlist">${nodeParts(n).map((p, k) => `<button class="partrow ${partDone(n, k) ? "ok" : ""}" data-p="${k}" ${st === "locked" ? "disabled" : ""}>
         <span class="pn">${partDone(n, k) ? "✓" : k + 1}</span><span class="grow"><b>${esc(p.t[0])}</b>${p.t.length > 1 ? `<span class="tiny muted"> · ${esc(p.t.slice(1).join(" · "))}</span>` : ""}</span>
         <span class="tiny muted">${p.b - p.a + 1} cards</span></button>`).join("")}</div>` : ""}
-    <div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div><div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>
+    ${practiceBlock(n, st)}
     ${st !== "locked" ? `<button class="btn" id="read" style="margin-top:14px">${readLabel(n, st)}</button><div class="tiny muted" id="dlst" style="text-align:center;margin-top:4px"></div>` : ""}
     ${st === "done" ? `<div class="note" style="margin-top:8px">✅ Learned on ${fmtDate(S.tree[id])}</div>${dependents.length ? "" : `<button class="link" id="undo">Undo</button>`}` : ""}
     <button class="btn ghost" id="close">Close</button>`, el => {
@@ -955,12 +955,96 @@ function nodeSheet(id) {
       const info = idx.chapters[String(n.chapter)]; if (!info) return;
       dl.textContent = (await isDownloaded(brN, n.chapter)) ? `✓ Saved on this phone · ${info.cards} cards` : `${info.cards} cards · ${kb(info.bytes)} · downloads when you start`;
     }).catch(() => {});
+    const PQ = el.querySelector("#practice");
+    if (PQ) PQ.onclick = () => { closeSheet(); openQuiz(brN, n); };
     const R0 = el.querySelector("#read");
     if (R0) R0.onclick = () => { closeSheet(); openReader(C.content.branches.find(b => b.id === n.branch), n); };
     if (st !== "locked") el.querySelectorAll(".partrow").forEach(b => (b.onclick = () => { closeSheet(); openReader(brN, n, +b.dataset.p); }));
     const U = el.querySelector("#undo");
     if (U) U.onclick = () => { delete S.tree[id]; if (S.parts) delete S.parts[id]; save(); closeSheet(); treeView(); };
   });
+}
+
+// ---- practice: each skill's questions (chapter file "quiz", built from content/<tree>/<branch>/NN.q.json)
+// Types: mc (multiple choice), tf / mf (true-false, shown as Myth / Fact), num (type a number).
+// S.quiz[node] = {best, of, at, xp}: the first run with 80 %+ right gives QUIZ_XP once; any run can be repeated.
+const QUIZ_XP = 5, QUIZ_PASS = 0.8;
+function practiceBlock(n, st) {
+  const kinds = `<div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>`;
+  if (!n.quiz) return `<div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div>${kinds}`;
+  const r = (S.quiz || {})[n.id], best = r ? `best ${r.best}/${r.of}${r.best >= Math.ceil(QUIZ_PASS * r.of) ? " ✓" : ""}` : `+${QUIZ_XP} XP at 80 %`;
+  return `<div style="font-weight:800;margin:14px 0 6px">Practice <span class="tiny muted">${n.quiz} questions · ${best}</span></div>
+    <button class="btn ghost" id="practice" ${st === "locked" ? "disabled" : ""} style="margin:0">🧠 ${r ? "Practise again" : "Practise"}</button>`;
+}
+// numbers as people type them: −3, 3/4, 1,250, 0,5, 12%, 44,240 euros
+function parseNum(txt) {
+  let t = String(txt).trim().replace(/[−–—]/g, "-").replace(/\s+/g, "").replace(/[%€$£]|euros?|units?/gi, "");
+  if (/^-?\d+,\d{1,2}$/.test(t)) t = t.replace(",", ".");           // decimal comma
+  t = t.replace(/,/g, "");                                            // thousands separators
+  const f = t.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
+  if (f) return +f[2] ? +f[1] / +f[2] : NaN;
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(t) ? +t : NaN;
+}
+const numOK = (q, v) => Math.abs(v - q.a) <= (q.tol != null ? q.tol : Math.max(1e-9, Math.abs(q.a) * 0.005));
+async function openQuiz(br, node, only) {
+  let ch = null;
+  try { ch = await loadChapter(br, node.chapter); } catch { ch = null; }
+  if (!ch || !ch.quiz || !ch.quiz.length) { toast(navigator.onLine ? "No practice questions for this skill yet." : "No connection, so the questions can't download right now."); return; }
+  document.body.classList.add("in-lesson");
+  const Q = (only || ch.quiz.map((_, i) => i)), res = [];
+  let i = 0;
+  const shuffle = a => { for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+  const draw = () => {
+    const q = ch.quiz[Q[i]], pct = Math.round(100 * i / Q.length);
+    const kind = q.t === "mc" ? "Concept check" : q.t === "mf" ? "Myth or fact" : q.t === "tf" ? "True or false" : "Work it out";
+    let body = "";
+    if (q.t === "mc") body = `<div class="opts">${shuffle(q.o.map((o, k) => k)).map(k => `<button class="opt" data-k="${k}">${esc(q.o[k])}</button>`).join("")}</div>`;
+    else if (q.t === "tf" || q.t === "mf") { const [yes, no] = q.t === "mf" ? ["Fact", "Myth"] : ["True", "False"];
+      body = `<div class="opts tf"><button class="opt" data-k="1">${yes}</button><button class="opt" data-k="0">${no}</button></div>`; }
+    else body = `<div class="numin"><input id="na" inputmode="decimal" autocomplete="off" placeholder="Your answer">${q.unit ? `<span class="muted">${esc(q.unit)}</span>` : ""}</div>
+      <div class="tiny muted" style="margin-top:6px">A number. Fractions like 3/4 and negatives like −2 are fine.</div>`;
+    view().innerHTML = `<div class="lesson-top"><button class="x" id="qx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i + 1} / ${Q.length}</span></div>
+      <div class="reader quiz"><div class="r-eyebrow">${node.icon} ${esc(node.title)} · ${kind}</div>
+        <div class="q-title qq">${esc(q.q)}</div>${body}<div id="fb"></div></div>
+      <div class="lesson-foot"><button class="btn" id="qn" ${q.t === "num" ? "" : "disabled"} style="margin:0">${q.t === "num" ? "Check" : "Choose an answer"}</button></div>`;
+    window.scrollTo(0, 0);
+    view().querySelector("#qx").onclick = () => treeView();
+    const nb = view().querySelector("#qn"), fb = view().querySelector("#fb");
+    const answer = ok => {
+      res[i] = ok;
+      fb.innerHTML = `<div class="qfb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Right" : "✗ Not quite"}</b>${!ok && q.t === "num" ? ` · answer: <b>${esc(String(q.a))}${q.unit ? " " + esc(q.unit) : ""}</b>` : ""}<div>${esc(q.why)}</div></div>`;
+      nb.disabled = false; nb.textContent = i + 1 < Q.length ? "Next ›" : "See result"; nb.onclick = () => { i++; i < Q.length ? draw() : done(); };
+    };
+    if (q.t === "num") {
+      const inp = view().querySelector("#na"); inp.focus();
+      const check = () => { const v = parseNum(inp.value); if (isNaN(v)) { inp.classList.add("shake"); setTimeout(() => inp.classList.remove("shake"), 400); return; }
+        inp.disabled = true; const ok = numOK(q, v); inp.classList.add(ok ? "right" : "wrong"); answer(ok); };
+      nb.onclick = check; inp.onkeydown = e => { if (e.key === "Enter" && !inp.disabled) check(); };
+    } else view().querySelectorAll(".opt").forEach(b => (b.onclick = () => {
+      if (res[i] != null) return;
+      const k = +b.dataset.k, right = q.t === "mc" ? q.a : (q.a ? 1 : 0), ok = k === right;
+      view().querySelectorAll(".opt").forEach(o => { o.disabled = true; const kk = +o.dataset.k; o.classList.add(kk === right ? "right" : o === b ? "wrong" : "dim"); });
+      answer(ok);
+    }));
+  };
+  const done = () => {
+    const got = res.filter(Boolean).length, full = !only, wrong = Q.filter((_, k) => !res[k]);
+    S.quiz = S.quiz || {};
+    const r = S.quiz[node.id] || { best: 0, of: ch.quiz.length, xp: false };
+    let xp = 0;
+    if (full) { r.of = ch.quiz.length; r.best = Math.max(r.best, got); r.at = today();
+      if (!r.xp && got >= Math.ceil(QUIZ_PASS * Q.length)) { r.xp = true; xp = QUIZ_XP; } }
+    S.quiz[node.id] = r;
+    xp ? addXP(xp) : save();
+    view().innerHTML = `<div class="reader quiz" style="text-align:center;padding-top:40px"><div style="font-size:54px">${got === Q.length ? "🏆" : got >= Math.ceil(QUIZ_PASS * Q.length) ? "🎯" : "💪"}</div>
+      <div class="q-title" style="margin-top:6px">${got} of ${Q.length} right</div>
+      <div class="muted small">${xp ? `+${xp} XP · practice passed` : got === Q.length ? "Perfect." : wrong.length ? "Have another go at the ones you missed." : ""}</div>
+      ${full && r.best ? `<div class="tiny muted" style="margin-top:6px">Your best: ${r.best}/${r.of}</div>` : ""}</div>
+      <div class="lesson-foot"><div class="row" style="gap:10px">${wrong.length ? `<button class="btn ghost grow" id="qr" style="margin:0">Retry ${wrong.length} missed</button>` : ""}<button class="btn grow" id="qb" style="margin:0">Back to the skill</button></div></div>`;
+    const qr = view().querySelector("#qr"); if (qr) qr.onclick = () => openQuiz(br, node, wrong);
+    view().querySelector("#qb").onclick = () => { treeView(); nodeSheet(node.id); };
+  };
+  draw();
 }
 
 // ---- in-app reader: each skill's chapter as bite-sized cards (built by tools/build_se_content.py)

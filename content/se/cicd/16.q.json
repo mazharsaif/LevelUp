@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Canary vs blue-green:",
+  "o": [
+   "canary sends a small share of traffic first; blue-green switches all traffic between two full environments",
+   "they're the same",
+   "canary needs two clouds",
+   "blue-green is for databases only"
+  ],
+  "a": 0,
+  "why": "Both allow fast rollback."
+ },
+ {
+  "t": "mc",
+  "q": "GitOps means …",
+  "o": [
+   "the desired state lives in Git and a controller syncs the cluster to it",
+   "using GitHub only",
+   "no CI",
+   "manual deploys"
+  ],
+  "a": 0,
+  "why": "e.g. Argo CD, Flux."
+ },
+ {
+  "t": "mc",
+  "q": "An SBOM is …",
+  "o": [
+   "a list of the components in your software",
+   "a build server",
+   "a branch",
+   "a test type"
+  ],
+  "a": 0,
+  "why": "Supply-chain transparency."
+ },
+ {
+  "t": "mc",
+  "q": "Which is a DORA metric?",
+  "o": [
+   "deployment frequency",
+   "lines of code",
+   "number of meetings",
+   "test count"
+  ],
+  "a": 0,
+  "why": "Also lead time, change failure rate, time to restore."
+ }
+]

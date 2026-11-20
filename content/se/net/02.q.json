@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "The TCP handshake is …",
+  "o": [
+   "SYN, SYN-ACK, ACK",
+   "HELLO, OK",
+   "SYN, ACK, FIN",
+   "GET, 200"
+  ],
+  "a": 0,
+  "why": "Three-way handshake."
+ },
+ {
+  "t": "mc",
+  "q": "'Connection refused' usually means …",
+  "o": [
+   "a firewall silently drops packets",
+   "the host answered but nothing listens on that port",
+   "DNS failed",
+   "TLS failed"
+  ],
+  "a": 1,
+  "why": "A timeout suggests a firewall dropping packets."
+ },
+ {
+  "t": "mc",
+  "q": "A video call that prefers dropping a late packet over waiting fits …",
+  "o": [
+   "TCP",
+   "UDP",
+   "SMTP",
+   "FTP"
+  ],
+  "a": 1,
+  "why": "UDP has no retransmission delay."
+ },
+ {
+  "t": "mf",
+  "q": "An app bound to 127.0.0.1 can be reached from other machines on the LAN.",
+  "a": false,
+  "why": "Myth. Loopback only; bind 0.0.0.0 (carefully) to listen on all interfaces."
+ }
+]

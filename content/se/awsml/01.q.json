@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Day to day, you should sign in to AWS with …",
+  "o": [
+   "the root user",
+   "IAM Identity Center (short-lived credentials)",
+   "a shared password",
+   "long-lived access keys on your laptop"
+  ],
+  "a": 1,
+  "why": "Lock root away with MFA."
+ },
+ {
+  "t": "mf",
+  "q": "AWS Budgets stops spending automatically when you hit the limit.",
+  "a": false,
+  "why": "Myth. Budgets alert you (and budget actions can apply policies), but AWS has no hard spending cap by default."
+ },
+ {
+  "t": "mc",
+  "q": "Tagging lab resources helps you …",
+  "o": [
+   "find and delete everything a lab created",
+   "make them faster",
+   "get a discount",
+   "skip IAM"
+  ],
+  "a": 0,
+  "why": "Cleanup and cost tracking."
+ },
+ {
+  "t": "mc",
+  "q": "After every lab you should …",
+  "o": [
+   "leave endpoints running",
+   "delete endpoints, notebooks and other paid resources",
+   "close the browser only",
+   "upgrade the plan"
+  ],
+  "a": 1,
+  "why": "Idle endpoints still bill by the hour."
+ }
+]

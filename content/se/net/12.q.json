@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "An orange-cloud (proxied) record means …",
+  "o": [
+   "traffic goes through Cloudflare, hiding the origin IP",
+   "DNS only",
+   "the record is disabled",
+   "email only"
+  ],
+  "a": 0,
+  "why": "Grey cloud = DNS only."
+ },
+ {
+  "t": "mc",
+  "q": "Which SSL/TLS mode should you use with a valid origin certificate?",
+  "o": [
+   "Off",
+   "Flexible",
+   "Full (strict)",
+   "Full"
+  ],
+  "a": 2,
+  "why": "Encrypted and verified all the way."
+ },
+ {
+  "t": "mc",
+  "q": "Flexible mode plus an origin that redirects HTTP to HTTPS causes …",
+  "o": [
+   "a redirect loop",
+   "faster pages",
+   "nothing",
+   "a 404"
+  ],
+  "a": 0,
+  "why": "Cloudflare talks HTTP to the origin, which redirects back to HTTPS, forever."
+ },
+ {
+  "t": "mf",
+  "q": "With proxied records, the origin is automatically unreachable directly.",
+  "a": false,
+  "why": "Myth. Its IP may still leak; firewall it to Cloudflare ranges or use a Tunnel."
+ }
+]

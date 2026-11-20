@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "What is the slope of y = −2x + 7?",
+  "o": [
+   "7",
+   "−2",
+   "2",
+   "−7"
+  ],
+  "a": 1,
+  "why": "In y = mx + c the slope is m."
+ },
+ {
+  "t": "num",
+  "q": "Find the slope through (1, 4) and (3, 10).",
+  "a": 3,
+  "why": "(10 − 4)/(3 − 1) = 6/2 = 3."
+ },
+ {
+  "t": "num",
+  "q": "Find the y-intercept of 4x + 2y = 10.",
+  "a": 5,
+  "why": "2y = −4x + 10, y = −2x + 5: intercept 5."
+ },
+ {
+  "t": "mc",
+  "q": "Which line is parallel to y = 3x − 1?",
+  "o": [
+   "y = −3x + 2",
+   "y = 3x + 5",
+   "y = x/3",
+   "x = 3"
+  ],
+  "a": 1,
+  "why": "Parallel lines have the same slope, 3."
+ },
+ {
+  "t": "mc",
+  "q": "A line has slope 2 and passes through (1, 5). What is its equation?",
+  "o": [
+   "y = 2x + 3",
+   "y = 2x + 5",
+   "y = 5x + 2",
+   "y = 2x − 3"
+  ],
+  "a": 0,
+  "why": "5 = 2(1) + c, so c = 3."
+ },
+ {
+  "t": "num",
+  "q": "Demand P = 90 − 2Q and supply P = 30 + Q. Find the equilibrium quantity.",
+  "a": 20,
+  "why": "90 − 2Q = 30 + Q, so 3Q = 60, Q = 20 (and P = 50)."
+ },
+ {
+  "t": "mf",
+  "q": "A vertical line like x = 4 has slope 0.",
+  "a": false,
+  "why": "Myth. A horizontal line has slope 0. A vertical line's slope is undefined (division by zero)."
+ }
+]

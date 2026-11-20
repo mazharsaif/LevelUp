@@ -97,7 +97,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - Networking & HTTPS track: DONE 11-19 (`net`, 15 skills). Possible follow-up branch: VPNs / WireGuard / Tailscale, mkcert and local names.
 - SE path exercises: build the plan (concept check, myth/fact, match, order the flow, fill the code, spot the bug, fix the code, attack↔defence, scenario, design decision, threat-model, capstone review) as JSON items per node + new step renderers; then fill the other 7 branches.
 - Login system: DONE 11-19 (accounts in FastAPI, see State).
-- Maths: interactive practice (questions + answers are reading cards for now; needs the same exercise engine as the SE plan). Possible next branches: difference/differential equations, econometrics.
+- Practice: more types (order the flow, match the terms, fill the code), more questions per skill, maybe gate "learned" on practice. Maths next branches: difference/differential equations, econometrics.
 - Decide whether XP/streak/diamonds should be global per learner (currently per course).
 - Demo profiles: removed on the droplet 11-18 (files in `~/levelup-data/backups/demos-removed-2026-11-18/`, Yusuf added); still on the Mac `progress/`.
 - Update the deck screenshots: new hero forms, Settings tab, auto goal, LevelUp icon (deck text is already renamed).
@@ -129,6 +129,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-20: practice questions for skill-tree courses (feedback mazhar-cad4): `openQuiz()` in app.js (mc / myth-fact / true-false / type-a-number with tolerant parsing), +5 XP once at 80 %, retry missed, best score in the skill sheet (`S.quiz`). 665 questions: maths 327 (all 49 skills), SE 338 (all 84). Sources `tools/quiz_src/*.py` → `content/<tree>/<branch>/NN.q.json`. Reader hides `**Answers.**` behind a tap. tree_check answers skill 1's quiz. SW v31.
 - 11-20: top-row redesign: learner chip = avatar only with a ▾ badge (name in its menu/aria-label), course chip = big icon + name always shown (`short` in courses.json: "Software Eng.", "Maths"); `userChip()/courseChip()` in app.js used on Today, tree home, Progress, Settings, picker. SW v30.
 - 11-20: SE branch **SSH Keys & Deploys** (5 skills): why the personal key stays on the Mac, deploy-only + read-only keys, Actions deploy, mobile workflow.
 - 11-20: Maths: Calculus for Economics + Probability & Statistics branches (24 skills, 2 diagrams); all worked-example lines reflowed to phone width. All 4 math branches pass tree_check. SW v29.

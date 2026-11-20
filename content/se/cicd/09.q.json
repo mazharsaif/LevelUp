@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A multi-stage Dockerfile helps by …",
+  "o": [
+   "building in one stage and copying only the result into a small runtime image",
+   "running two apps",
+   "adding GPUs",
+   "skipping caching"
+  ],
+  "a": 0,
+  "why": "Smaller, safer images."
+ },
+ {
+  "t": "mc",
+  "q": "For faster builds, copy the dependency files and install them …",
+  "o": [
+   "before copying the source code",
+   "after copying everything",
+   "at runtime",
+   "never"
+  ],
+  "a": 0,
+  "why": "Code changes then don't bust the dependency layer cache."
+ },
+ {
+  "t": "mc",
+  "q": "A container exits immediately. First check:",
+  "o": [
+   "docker logs <container>",
+   "the CPU fan",
+   "DNS",
+   "the README"
+  ],
+  "a": 0,
+  "why": "See the error output."
+ },
+ {
+  "t": "mc",
+  "q": "Amazon ECR is …",
+  "o": [
+   "a container image registry",
+   "a database",
+   "a load balancer",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "Where ECS pulls images from."
+ }
+]

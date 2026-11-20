@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which service blocks harmful topics and PII in Bedrock apps?",
+  "o": [
+   "Bedrock Guardrails",
+   "Macie",
+   "CloudTrail",
+   "Inspector"
+  ],
+  "a": 0,
+  "why": "Content filters, denied topics, PII redaction."
+ },
+ {
+  "t": "mc",
+  "q": "SageMaker Clarify helps with …",
+  "o": [
+   "bias detection and explainability",
+   "billing",
+   "networking",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "Bias metrics and SHAP explanations."
+ },
+ {
+  "t": "mc",
+  "q": "Under the shared responsibility model, who secures your data and IAM settings?",
+  "o": [
+   "AWS",
+   "You, the customer",
+   "Nobody",
+   "The model provider"
+  ],
+  "a": 1,
+  "why": "AWS secures the cloud itself; you secure what you put in it."
+ },
+ {
+  "t": "mc",
+  "q": "Amazon Macie finds …",
+  "o": [
+   "sensitive data like PII in S3",
+   "model drift",
+   "slow queries",
+   "open ports"
+  ],
+  "a": 0,
+  "why": "Data discovery and classification."
+ }
+]

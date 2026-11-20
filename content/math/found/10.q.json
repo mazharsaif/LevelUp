@@ -1,0 +1,57 @@
+[
+ {
+  "t": "num",
+  "q": "A number tripled, minus 4, is 23. What is the number?",
+  "a": 9,
+  "why": "3n − 4 = 23, so 3n = 27, n = 9."
+ },
+ {
+  "t": "num",
+  "q": "Two numbers add to 50 and one is 4 times the other. What is the smaller one?",
+  "a": 10,
+  "why": "n + 4n = 50, so n = 10."
+ },
+ {
+  "t": "mc",
+  "q": "Translate: '7 less than x'.",
+  "o": [
+   "7 − x",
+   "x − 7",
+   "x < 7",
+   "7x"
+  ],
+  "a": 1,
+  "why": "Start with x, take 7 away."
+ },
+ {
+  "t": "num",
+  "q": "A gym charges a 30 joining fee plus 20 a month. After how many months has someone paid 270 in total?",
+  "a": 12,
+  "why": "30 + 20m = 270, so m = 12.",
+  "unit": "months"
+ },
+ {
+  "t": "num",
+  "q": "A price including 20% VAT is 72. What is the price before VAT?",
+  "a": 60,
+  "why": "1.2p = 72, so p = 60."
+ },
+ {
+  "t": "num",
+  "q": "8,000 is split between accounts paying 3% and 5%. Total interest is 320. How much is in the 5% account?",
+  "a": 4000,
+  "why": "0.05x + 0.03(8000 − x) = 320, so 0.02x = 80, x = 4,000."
+ },
+ {
+  "t": "mc",
+  "q": "A rectangle is 3 cm longer than wide with perimeter 26 cm. Which equation fits?",
+  "o": [
+   "w + (w + 3) = 26",
+   "2w + 2(w + 3) = 26",
+   "w(w + 3) = 26",
+   "2w + 3 = 26"
+  ],
+  "a": 1,
+  "why": "Perimeter = 2 × width + 2 × length."
+ }
+]

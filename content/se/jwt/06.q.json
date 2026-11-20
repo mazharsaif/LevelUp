@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Who issues the tokens in this system?",
+  "o": [
+   "the AI hosts",
+   "Laravel (the issuer)",
+   "the browser",
+   "Cloudflare"
+  ],
+  "a": 1,
+  "why": "AI hosts only verify."
+ },
+ {
+  "t": "mc",
+  "q": "When the app gets your 401, it should …",
+  "o": [
+   "show an error forever",
+   "refresh the token and retry once",
+   "retry 10 times",
+   "log the user out immediately"
+  ],
+  "a": 1,
+  "why": "Refresh + retry once."
+ },
+ {
+  "t": "mc",
+  "q": "A service token is used for …",
+  "o": [
+   "users logging in",
+   "backend-to-AI calls with no user present",
+   "password resets",
+   "encryption"
+  ],
+  "a": 1,
+  "why": "Short-lived, for the backend's own calls."
+ },
+ {
+  "t": "mc",
+  "q": "Your service returns 403. The app should …",
+  "o": [
+   "refresh and retry",
+   "show 'not allowed' and not retry",
+   "log out",
+   "switch servers"
+  ],
+  "a": 1,
+  "why": "A new token won't add a permission the user lacks."
+ }
+]

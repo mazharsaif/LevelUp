@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Where should LevelUp's writable data live under a hardened unit?",
+  "o": [
+   "a StateDirectory= path",
+   "/usr/lib",
+   "/tmp",
+   "the unit file"
+  ],
+  "a": 0,
+  "why": "Writable, owned and persistent."
+ },
+ {
+  "t": "mc",
+  "q": "A health-check timer is useful because …",
+  "o": [
+   "it catches a hung app that systemd thinks is running",
+   "it makes the app faster",
+   "it rotates logs",
+   "it renews TLS"
+  ],
+  "a": 0,
+  "why": "Exit-based restarts miss hangs."
+ },
+ {
+  "t": "mc",
+  "q": "Prove crash recovery by …",
+  "o": [
+   "killing the process and watching systemd restart it",
+   "reading the docs",
+   "rebooting the router",
+   "deleting logs"
+  ],
+  "a": 0,
+  "why": "Test, don't assume."
+ },
+ {
+  "t": "mc",
+  "q": "Which pair sets 'start at boot after the network'?",
+  "o": [
+   "WantedBy=multi-user.target and After=network-online.target",
+   "Type=exec and Restart=no",
+   "Nice and IOWeight",
+   "User and Group"
+  ],
+  "a": 0,
+  "why": "Install section plus ordering."
+ }
+]

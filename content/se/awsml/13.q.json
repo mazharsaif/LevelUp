@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Model Monitor detects …",
+  "o": [
+   "data and model quality drift on captured traffic",
+   "DNS issues",
+   "IAM errors",
+   "cost spikes only"
+  ],
+  "a": 0,
+  "why": "Compares live data to a baseline."
+ },
+ {
+  "t": "mc",
+  "q": "Which records every AWS API call for audits?",
+  "o": [
+   "CloudTrail",
+   "CloudWatch Logs only",
+   "Config",
+   "Inspector"
+  ],
+  "a": 0,
+  "why": "Who did what, when."
+ },
+ {
+  "t": "mc",
+  "q": "Encrypt training data with keys you control:",
+  "o": [
+   "AWS KMS",
+   "S3 public access",
+   "Route 53",
+   "IAM users"
+  ],
+  "a": 0,
+  "why": "Customer-managed keys."
+ },
+ {
+  "t": "mc",
+  "q": "Steady, long-term SageMaker usage is cheapest with …",
+  "o": [
+   "Savings Plans",
+   "on-demand forever",
+   "spot for endpoints",
+   "bigger instances"
+  ],
+  "a": 0,
+  "why": "Commit to usage for a discount."
+ }
+]

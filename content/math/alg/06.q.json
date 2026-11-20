@@ -1,0 +1,74 @@
+[
+ {
+  "t": "mc",
+  "q": "Solve x² − 5x + 6 = 0.",
+  "o": [
+   "x = 2 or 3",
+   "x = −2 or −3",
+   "x = 1 or 6",
+   "x = 5 or 6"
+  ],
+  "a": 0,
+  "why": "(x − 2)(x − 3) = 0."
+ },
+ {
+  "t": "mc",
+  "q": "Solve x² = 7x.",
+  "o": [
+   "x = 7",
+   "x = 0 or x = 7",
+   "x = √7",
+   "x = ±7"
+  ],
+  "a": 1,
+  "why": "x² − 7x = x(x − 7) = 0. Dividing by x would lose x = 0."
+ },
+ {
+  "t": "num",
+  "q": "For 2x² + 3x − 4 = 0, what is the discriminant b² − 4ac?",
+  "a": 41,
+  "why": "9 − 4(2)(−4) = 9 + 32 = 41."
+ },
+ {
+  "t": "mc",
+  "q": "A quadratic has discriminant −8. How many real roots?",
+  "o": [
+   "Two",
+   "One",
+   "None",
+   "Infinitely many"
+  ],
+  "a": 2,
+  "why": "D < 0: the parabola never reaches the x-axis."
+ },
+ {
+  "t": "mc",
+  "q": "Solve x² + 2x − 15 = 0 with any method.",
+  "o": [
+   "x = 3 or −5",
+   "x = −3 or 5",
+   "x = 15 or −1",
+   "x = 2 or −15"
+  ],
+  "a": 0,
+  "why": "(x + 5)(x − 3) = 0."
+ },
+ {
+  "t": "mc",
+  "q": "Complete the square: x² + 10x + 4 = …",
+  "o": [
+   "(x + 5)² − 21",
+   "(x + 5)² + 4",
+   "(x + 10)² − 96",
+   "(x + 5)² − 25"
+  ],
+  "a": 0,
+  "why": "(x + 5)² − 25 + 4 = (x + 5)² − 21."
+ },
+ {
+  "t": "num",
+  "q": "Profit π = −q² + 14q − 40. Find the larger break-even output.",
+  "a": 10,
+  "why": "q² − 14q + 40 = 0 gives (q − 4)(q − 10) = 0."
+ }
+]

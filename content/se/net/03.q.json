@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Who gives the final answer for a domain's records?",
+  "o": [
+   "the recursive resolver",
+   "the authoritative name server",
+   "the browser",
+   "the registrar's website"
+  ],
+  "a": 1,
+  "why": "Resolvers ask down the delegation chain to the authoritative server."
+ },
+ {
+  "t": "mc",
+  "q": "Why do DNS changes take time to appear?",
+  "o": [
+   "Caches keep old answers until their TTL runs out",
+   "DNS is slow to write",
+   "Registrars batch changes",
+   "IPv6"
+  ],
+  "a": 0,
+  "why": "Lower the TTL before planned changes."
+ },
+ {
+  "t": "mc",
+  "q": "Which tool queries DNS directly?",
+  "o": [
+   "curl",
+   "dig",
+   "ss",
+   "ping"
+  ],
+  "a": 1,
+  "why": "dig example.com A."
+ },
+ {
+  "t": "mf",
+  "q": "DNS over HTTPS (DoH) proves the records are authentic.",
+  "a": false,
+  "why": "Myth. DoH hides queries from the network; DNSSEC is what signs the records."
+ }
+]

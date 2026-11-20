@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A good password-reset token is …",
+  "o": [
+   "the user id",
+   "random, single-use, short-lived and stored hashed",
+   "the old password hashed",
+   "sent in the URL forever"
+  ],
+  "a": 1,
+  "why": "Treat it like a temporary password."
+ },
+ {
+  "t": "mc",
+  "q": "Building the reset link from the request's Host header risks …",
+  "o": [
+   "host header injection: links pointing at the attacker's domain",
+   "slow emails",
+   "CSRF",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Use a configured base URL, never the incoming Host."
+ },
+ {
+  "t": "mf",
+  "q": "Whoever controls a user's email inbox can usually take over their account.",
+  "a": true,
+  "why": "Fact: email is the master key for recovery, so protect it (and the email sending: SPF/DKIM/DMARC)."
+ },
+ {
+  "t": "mc",
+  "q": "Recovery codes should be …",
+  "o": [
+   "stored in plaintext for support",
+   "shown once, stored hashed, each usable once",
+   "the same for every user",
+   "emailed weekly"
+  ],
+  "a": 1,
+  "why": "Like backup passwords."
+ }
+]

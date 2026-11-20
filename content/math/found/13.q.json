@@ -1,0 +1,70 @@
+[
+ {
+  "t": "num",
+  "q": "Work out −6 − (−10) + 3 × (−2).",
+  "a": -2,
+  "why": "−6 + 10 = 4, and 3 × (−2) = −6: 4 − 6 = −2."
+ },
+ {
+  "t": "num",
+  "q": "Work out 3/4 − 1/6. Give a fraction or decimal.",
+  "a": 0.5833333333333334,
+  "why": "9/12 − 2/12 = 7/12.",
+  "tol": 0.002
+ },
+ {
+  "t": "num",
+  "q": "A salary rises from 32,000 to 35,200. What is the percentage rise?",
+  "a": 10,
+  "why": "3,200/32,000 = 10%.",
+  "unit": "%"
+ },
+ {
+  "t": "mc",
+  "q": "Simplify (x²)³ ÷ x⁴.",
+  "o": [
+   "x²",
+   "x",
+   "x⁵",
+   "x¹⁰"
+  ],
+  "a": 0,
+  "why": "x⁶ ÷ x⁴ = x²."
+ },
+ {
+  "t": "num",
+  "q": "Solve 4(x − 1) = 2x + 10.",
+  "a": 7,
+  "why": "4x − 4 = 2x + 10, so 2x = 14."
+ },
+ {
+  "t": "mc",
+  "q": "Make Q the subject of P = 40 − Q/2.",
+  "o": [
+   "Q = 80 − 2P",
+   "Q = 2P − 80",
+   "Q = 40 − 2P",
+   "Q = 20 − P/2"
+  ],
+  "a": 0,
+  "why": "Q/2 = 40 − P, so Q = 80 − 2P."
+ },
+ {
+  "t": "num",
+  "q": "Demand Q = 100 − 2P, supply Q = 3P − 25. Find the equilibrium price.",
+  "a": 25,
+  "why": "100 − 2P = 3P − 25, so 125 = 5P, P = 25."
+ },
+ {
+  "t": "mc",
+  "q": "Which inequality describes 'at most 12'?",
+  "o": [
+   "x < 12",
+   "x > 12",
+   "x ≤ 12",
+   "x ≥ 12"
+  ],
+  "a": 2,
+  "why": "At most 12 includes 12 itself: ≤."
+ }
+]

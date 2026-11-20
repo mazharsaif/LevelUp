@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "SNI in the ClientHello tells the server …",
+  "o": [
+   "which hostname the client wants",
+   "the client's password",
+   "the cipher key",
+   "the HTTP path"
+  ],
+  "a": 0,
+  "why": "So one IP can serve many certificates."
+ },
+ {
+  "t": "mc",
+  "q": "ALPN negotiates …",
+  "o": [
+   "the application protocol (h2 or http/1.1)",
+   "the IP",
+   "the DNS server",
+   "the port"
+  ],
+  "a": 0,
+  "why": "Inside the TLS handshake."
+ },
+ {
+  "t": "mc",
+  "q": "TLS 1.3 0-RTT data is unsafe for …",
+  "o": [
+   "non-idempotent requests, because it can be replayed",
+   "GET of static files",
+   "images",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Replays could repeat a payment."
+ },
+ {
+  "t": "mf",
+  "q": "TLS hides which website you are visiting from your network.",
+  "a": false,
+  "why": "Myth. The IP and (without ECH) the SNI hostname are visible; paths and content are hidden."
+ }
+]

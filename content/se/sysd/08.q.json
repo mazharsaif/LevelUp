@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Run a service without root:",
+  "o": [
+   "systemctl --user",
+   "sudo systemctl",
+   "cron only",
+   "launchctl"
+  ],
+  "a": 0,
+  "why": "User units live in ~/.config/systemd/user."
+ },
+ {
+  "t": "mc",
+  "q": "User services stop when you log out unless you …",
+  "o": [
+   "enable lingering (loginctl enable-linger)",
+   "use sudo",
+   "reboot",
+   "mask them"
+  ],
+  "a": 0,
+  "why": "Lingering keeps your user manager running."
+ },
+ {
+  "t": "mc",
+  "q": "The macOS counterpart of a user service is …",
+  "o": [
+   "a LaunchAgent plist",
+   "a cron job",
+   "a .service file",
+   "a Dockerfile"
+  ],
+  "a": 0,
+  "why": "launchd."
+ },
+ {
+  "t": "mc",
+  "q": "launchd's KeepAlive matches systemd's …",
+  "o": [
+   "Restart=",
+   "After=",
+   "WantedBy=",
+   "Type="
+  ],
+  "a": 0,
+  "why": "Restart when it exits."
+ }
+]

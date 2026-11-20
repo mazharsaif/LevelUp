@@ -1,0 +1,57 @@
+[
+ {
+  "t": "num",
+  "q": "Solve 5x − 3 = 22.",
+  "a": 5,
+  "why": "Add 3: 5x = 25; divide by 5: x = 5."
+ },
+ {
+  "t": "num",
+  "q": "Solve x/3 + 4 = 10.",
+  "a": 18,
+  "why": "Subtract 4: x/3 = 6; multiply by 3: x = 18."
+ },
+ {
+  "t": "num",
+  "q": "Solve 9 − 2x = 1.",
+  "a": 4,
+  "why": "Subtract 9: −2x = −8; divide by −2: x = 4."
+ },
+ {
+  "t": "num",
+  "q": "Solve 6x + 1 = 2x + 17.",
+  "a": 4,
+  "why": "Subtract 2x: 4x + 1 = 17; then 4x = 16, x = 4."
+ },
+ {
+  "t": "num",
+  "q": "Solve 3(x − 2) = 2(x + 1).",
+  "a": 8,
+  "why": "3x − 6 = 2x + 2, so x = 8."
+ },
+ {
+  "t": "num",
+  "q": "Solve x/4 + x/2 = 9.",
+  "a": 12,
+  "why": "Multiply every term by 4: x + 2x = 36, x = 12."
+ },
+ {
+  "t": "num",
+  "q": "A firm sells at 12 a unit, with fixed costs 1,800 and 8 per unit. How many units to break even?",
+  "a": 450,
+  "why": "12Q = 1800 + 8Q, so 4Q = 1800, Q = 450.",
+  "unit": "units"
+ },
+ {
+  "t": "mc",
+  "q": "From 2x + 6 = 10, someone writes x + 6 = 5. What went wrong?",
+  "o": [
+   "Nothing",
+   "They divided only 2x by 2, not every term",
+   "They should have added 6",
+   "They forgot to square"
+  ],
+  "a": 1,
+  "why": "Dividing must apply to every term: x + 3 = 5. Or subtract 6 first."
+ }
+]

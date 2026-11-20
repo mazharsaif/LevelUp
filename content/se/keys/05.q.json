@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A GitHub Actions deploy job needs the server's host key in …",
+  "o": [
+   "known_hosts",
+   "authorized_keys",
+   "the README",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "So it doesn't trust a fake server."
+ },
+ {
+  "t": "mc",
+  "q": "Store the deploy key for Actions as …",
+  "o": [
+   "an encrypted repository/environment secret",
+   "a variable",
+   "a file in the repo",
+   "a commit message"
+  ],
+  "a": 0,
+  "why": "Never commit keys."
+ },
+ {
+  "t": "mc",
+  "q": "Merging to main triggers …",
+  "o": [
+   "the workflow, which deploys",
+   "nothing",
+   "a DNS change",
+   "a new droplet"
+  ],
+  "a": 0,
+  "why": "on: push: branches: [main]."
+ },
+ {
+  "t": "mc",
+  "q": "Shipping a fix from your phone with the Mac off needs …",
+  "o": [
+   "a cloud session or CI that can deploy without the Mac",
+   "the Mac's SSH agent",
+   "a USB key",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Remote Control needs the Mac running."
+ }
+]

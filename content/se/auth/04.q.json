@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which cookie flag stops JavaScript from reading the session cookie?",
+  "o": [
+   "Secure",
+   "HttpOnly",
+   "SameSite",
+   "Path"
+  ],
+  "a": 1,
+  "why": "HttpOnly limits the damage of XSS."
+ },
+ {
+  "t": "mc",
+  "q": "SameSite=Lax mainly protects against …",
+  "o": [
+   "XSS",
+   "CSRF",
+   "SQL injection",
+   "brute force"
+  ],
+  "a": 1,
+  "why": "Cross-site POSTs don't carry the cookie."
+ },
+ {
+  "t": "mc",
+  "q": "Session fixation is prevented by …",
+  "o": [
+   "rotating the session id at login",
+   "longer sessions",
+   "storing the session in localStorage",
+   "HTTP/2"
+  ],
+  "a": 0,
+  "why": "A new id after login means a planted id is worthless."
+ },
+ {
+  "t": "mc",
+  "q": "Refresh-token reuse detection means: if an old refresh token is used again …",
+  "o": [
+   "ignore it",
+   "issue a new one",
+   "treat it as theft and revoke the whole token family",
+   "extend its lifetime"
+  ],
+  "a": 2,
+  "why": "Only a thief would replay an already-rotated token."
+ }
+]

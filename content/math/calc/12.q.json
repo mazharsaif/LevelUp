@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "d/dx (x³ − 4x) = ?",
+  "o": [
+   "3x² − 4",
+   "3x² − 4x",
+   "x² − 4",
+   "3x − 4"
+  ],
+  "a": 0,
+  "why": "Power rule term by term."
+ },
+ {
+  "t": "mc",
+  "q": "d/dx (e^(x²)) = ?",
+  "o": [
+   "2x e^(x²)",
+   "e^(2x)",
+   "x² e^(x²−1)",
+   "e^(x²)"
+  ],
+  "a": 0,
+  "why": "Chain rule."
+ },
+ {
+  "t": "num",
+  "q": "P = 60 − q, C = q² . Profit-maximising q?",
+  "a": 15,
+  "why": "MR = 60 − 2q, MC = 2q: 60 = 4q."
+ },
+ {
+  "t": "num",
+  "q": "Q = 200 − 4P at P = 25. Price elasticity?",
+  "a": -1,
+  "why": "Q = 100, ε = −4 × 25/100."
+ },
+ {
+  "t": "mc",
+  "q": "Q = 5 K^0.5 L^0.5. Returns to scale?",
+  "o": [
+   "constant",
+   "increasing",
+   "decreasing",
+   "none"
+  ],
+  "a": 0,
+  "why": "0.5 + 0.5 = 1."
+ },
+ {
+  "t": "num",
+  "q": "∫ from 0 to 2 of (x + 1) dx = ?",
+  "a": 4,
+  "why": "[x²/2 + x] = 2 + 2."
+ },
+ {
+  "t": "num",
+  "q": "U = x^0.5 y^0.5, px = 2, py = 5, m = 100. How much x?",
+  "a": 25,
+  "why": "Half the budget, 50, buys 25 units of x."
+ }
+]

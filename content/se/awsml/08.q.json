@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Rescaling a feature to mean 0, SD 1 is …",
+  "o": [
+   "normalisation to 0–1",
+   "standardisation",
+   "binning",
+   "one-hot encoding"
+  ],
+  "a": 1,
+  "why": "z-score scaling."
+ },
+ {
+  "t": "mc",
+  "q": "Turning a 'colour' category into separate 0/1 columns is …",
+  "o": [
+   "one-hot encoding",
+   "label smoothing",
+   "binning",
+   "PCA"
+  ],
+  "a": 0,
+  "why": "No false order between categories."
+ },
+ {
+  "t": "mc",
+  "q": "SMOTE helps with …",
+  "o": [
+   "class imbalance by creating synthetic minority examples",
+   "missing values",
+   "PII",
+   "scaling"
+  ],
+  "a": 0,
+  "why": "Synthetic oversampling."
+ },
+ {
+  "t": "mc",
+  "q": "Before fine-tuning on support tickets, you should …",
+  "o": [
+   "redact PII",
+   "add more PII",
+   "raise temperature",
+   "skip validation"
+  ],
+  "a": 0,
+  "why": "Don't teach a model your customers' data."
+ }
+]

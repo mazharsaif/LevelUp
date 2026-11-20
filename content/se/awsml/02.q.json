@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Predicting a house price is …",
+  "o": [
+   "classification",
+   "regression",
+   "clustering",
+   "reinforcement learning"
+  ],
+  "a": 1,
+  "why": "A number, not a category."
+ },
+ {
+  "t": "mc",
+  "q": "Grouping customers without labels is …",
+  "o": [
+   "supervised learning",
+   "unsupervised learning (clustering)",
+   "regression",
+   "reinforcement"
+  ],
+  "a": 1,
+  "why": "No labels: unsupervised."
+ },
+ {
+  "t": "mc",
+  "q": "Great training accuracy, poor test accuracy means …",
+  "o": [
+   "underfitting",
+   "overfitting",
+   "data drift",
+   "perfect model"
+  ],
+  "a": 1,
+  "why": "It memorised the training data."
+ },
+ {
+  "t": "mc",
+  "q": "Using a feature that wouldn't be known at prediction time is …",
+  "o": [
+   "data leakage",
+   "regularisation",
+   "scaling",
+   "bagging"
+  ],
+  "a": 0,
+  "why": "It inflates test scores."
+ }
+]

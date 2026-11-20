@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Make CI mandatory before merging to main:",
+  "o": [
+   "a branch ruleset with required status checks",
+   "a README note",
+   "a bigger runner",
+   "a tag"
+  ],
+  "a": 0,
+  "why": "Blocks merges until checks pass."
+ },
+ {
+  "t": "mc",
+  "q": "A secret vs a variable in Actions:",
+  "o": [
+   "secrets are encrypted and masked; variables are plain config",
+   "they're identical",
+   "variables are encrypted",
+   "secrets are public"
+  ],
+  "a": 0,
+  "why": "Never put keys in variables."
+ },
+ {
+  "t": "mc",
+  "q": "Workflows triggered from forks get repository secrets …",
+  "o": [
+   "by default, no",
+   "always",
+   "only on Fridays",
+   "if public"
+  ],
+  "a": 0,
+  "why": "To stop attackers exfiltrating them."
+ },
+ {
+  "t": "mc",
+  "q": "Keep dependencies updated automatically with …",
+  "o": [
+   "Dependabot",
+   "git bisect",
+   "ruff",
+   "pytest"
+  ],
+  "a": 0,
+  "why": "Opens update PRs."
+ }
+]

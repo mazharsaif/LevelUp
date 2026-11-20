@@ -1,0 +1,80 @@
+[
+ {
+  "t": "mc",
+  "q": "Factorise x² + 8x + 15.",
+  "o": [
+   "(x + 3)(x + 5)",
+   "(x + 1)(x + 15)",
+   "(x − 3)(x − 5)",
+   "(x + 8)(x + 15)"
+  ],
+  "a": 0,
+  "why": "Numbers that multiply to 15 and add to 8: 3 and 5."
+ },
+ {
+  "t": "mc",
+  "q": "Factorise x² − 2x − 24.",
+  "o": [
+   "(x − 6)(x + 4)",
+   "(x + 6)(x − 4)",
+   "(x − 8)(x + 3)",
+   "(x − 12)(x + 2)"
+  ],
+  "a": 0,
+  "why": "−6 × 4 = −24 and −6 + 4 = −2."
+ },
+ {
+  "t": "mc",
+  "q": "Factorise x² − 81.",
+  "o": [
+   "(x − 9)²",
+   "(x + 9)(x − 9)",
+   "(x − 81)(x + 1)",
+   "It does not factor"
+  ],
+  "a": 1,
+  "why": "Difference of two squares."
+ },
+ {
+  "t": "mc",
+  "q": "Factorise 2x² + 5x + 3.",
+  "o": [
+   "(2x + 3)(x + 1)",
+   "(2x + 1)(x + 3)",
+   "(x + 3)(x + 2)",
+   "(2x − 3)(x − 1)"
+  ],
+  "a": 0,
+  "why": "a × c = 6: numbers 3 and 2. Check: 2x² + 2x + 3x + 3."
+ },
+ {
+  "t": "mf",
+  "q": "x² + 25 factorises as (x + 5)(x − 5).",
+  "a": false,
+  "why": "Myth. (x + 5)(x − 5) = x² − 25. A sum of squares does not factor in real numbers."
+ },
+ {
+  "t": "mc",
+  "q": "Simplify (x² − 4)/(x + 2).",
+  "o": [
+   "x − 2",
+   "x + 2",
+   "x² − 2",
+   "x − 4"
+  ],
+  "a": 0,
+  "why": "(x + 2)(x − 2)/(x + 2) = x − 2."
+ },
+ {
+  "t": "mc",
+  "q": "What should you always try first when factorising?",
+  "o": [
+   "The quadratic formula",
+   "Taking out a common factor",
+   "Completing the square",
+   "Guessing roots"
+  ],
+  "a": 1,
+  "why": "e.g. 3x² − 12 = 3(x² − 4) = 3(x + 2)(x − 2)."
+ }
+]

@@ -1,0 +1,46 @@
+[
+ {
+  "t": "num",
+  "q": "C(5, 2) = ?",
+  "a": 10,
+  "why": "5!/(2! 3!) = 10."
+ },
+ {
+  "t": "num",
+  "q": "X ~ B(3, 0.5). P(X = 3)? (decimal)",
+  "a": 0.125,
+  "why": "0.5³.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "X ~ B(100, 0.2). E(X)?",
+  "a": 20,
+  "why": "np."
+ },
+ {
+  "t": "num",
+  "q": "X ~ B(100, 0.2). Var(X)?",
+  "a": 16,
+  "why": "np(1 − p) = 100 × 0.2 × 0.8."
+ },
+ {
+  "t": "mc",
+  "q": "Which is NOT a binomial condition?",
+  "o": [
+   "fixed number of trials",
+   "same p each trial",
+   "independent trials",
+   "the outcome is a measured amount like income"
+  ],
+  "a": 3,
+  "why": "Each trial must be success or failure."
+ },
+ {
+  "t": "num",
+  "q": "10% of items are faulty. P(no faulty in 2 items)? (decimal)",
+  "a": 0.81,
+  "why": "0.9².",
+  "tol": 0.001
+ }
+]

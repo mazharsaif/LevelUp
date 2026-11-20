@@ -1,0 +1,74 @@
+[
+ {
+  "t": "num",
+  "q": "Work out 2⁶.",
+  "a": 64,
+  "why": "2 × 2 × 2 × 2 × 2 × 2 = 64."
+ },
+ {
+  "t": "mc",
+  "q": "Simplify x⁵ × x³.",
+  "o": [
+   "x¹⁵",
+   "x⁸",
+   "2x⁸",
+   "x²"
+  ],
+  "a": 1,
+  "why": "Same base, multiply: add the powers: x⁸."
+ },
+ {
+  "t": "mc",
+  "q": "Simplify (x⁴)³.",
+  "o": [
+   "x⁷",
+   "x¹²",
+   "x⁶⁴",
+   "3x⁴"
+  ],
+  "a": 1,
+  "why": "Power of a power: multiply the powers: x¹²."
+ },
+ {
+  "t": "num",
+  "q": "Work out 5⁰.",
+  "a": 1,
+  "why": "Any non-zero number to the power 0 is 1."
+ },
+ {
+  "t": "num",
+  "q": "Work out 2⁻³ as a decimal.",
+  "a": 0.125,
+  "why": "2⁻³ = 1/2³ = 1/8 = 0.125."
+ },
+ {
+  "t": "mf",
+  "q": "√(9 + 16) = √9 + √16 = 7",
+  "a": false,
+  "why": "Myth. √(9 + 16) = √25 = 5. Roots don't split over sums."
+ },
+ {
+  "t": "mc",
+  "q": "Solve x² = 36.",
+  "o": [
+   "x = 6",
+   "x = −6",
+   "x = 6 or x = −6",
+   "x = 18"
+  ],
+  "a": 2,
+  "why": "Both 6² and (−6)² equal 36."
+ },
+ {
+  "t": "mc",
+  "q": "Write 0.00042 in scientific notation.",
+  "o": [
+   "4.2 × 10⁻⁴",
+   "4.2 × 10⁴",
+   "42 × 10⁻⁵",
+   "0.42 × 10⁻³"
+  ],
+  "a": 0,
+  "why": "The front number must be from 1 to 10: 4.2, and the point moved 4 places right: 10⁻⁴."
+ }
+]

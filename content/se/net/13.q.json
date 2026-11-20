@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "First step to point a domain at a server?",
+  "o": [
+   "Create an A record to the server's IP",
+   "Install Docker",
+   "Buy a certificate",
+   "Open port 22"
+  ],
+  "a": 0,
+  "why": "Then the proxy can get a certificate."
+ },
+ {
+  "t": "mc",
+  "q": "Caddy gets HTTPS certificates …",
+  "o": [
+   "automatically for each site block",
+   "only manually",
+   "only from paid CAs",
+   "never"
+  ],
+  "a": 0,
+  "why": "Automatic HTTPS."
+ },
+ {
+  "t": "mc",
+  "q": "Which firewall ports does a typical web droplet need open?",
+  "o": [
+   "22, 80, 443",
+   "all",
+   "8000 only",
+   "none"
+  ],
+  "a": 0,
+  "why": "SSH plus HTTP/HTTPS; keep app ports closed."
+ },
+ {
+  "t": "mc",
+  "q": "Verify HTTPS from outside with …",
+  "o": [
+   "curl -I https://yourdomain",
+   "ping localhost",
+   "ls",
+   "top"
+  ],
+  "a": 0,
+  "why": "Check status and the certificate from another network."
+ }
+]

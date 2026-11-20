@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "After a password database leak, the first priority is …",
+  "o": [
+   "changing the logo",
+   "forcing resets / revoking sessions and notifying affected users",
+   "deleting logs",
+   "waiting"
+  ],
+  "a": 1,
+  "why": "Contain, then notify."
+ },
+ {
+  "t": "mc",
+  "q": "A stolen session cookie is best limited by …",
+  "o": [
+   "long sessions",
+   "short idle timeouts, rotation and server-side revocation",
+   "Base64 encoding",
+   "a bigger cookie"
+  ],
+  "a": 1,
+  "why": "Server-side sessions can be killed instantly."
+ },
+ {
+  "t": "mf",
+  "q": "If you can't detect a failure, you can't respond to it.",
+  "a": true,
+  "why": "Fact: plan how you'd notice each failure (alerts on login spikes, resets, new devices)."
+ },
+ {
+  "t": "mc",
+  "q": "Which is part of an incident response checklist?",
+  "o": [
+   "Rotate affected secrets and keys",
+   "Delete the evidence",
+   "Disable all logging",
+   "Blame the user"
+  ],
+  "a": 0,
+  "why": "Rotate, revoke, preserve evidence, communicate."
+ }
+]

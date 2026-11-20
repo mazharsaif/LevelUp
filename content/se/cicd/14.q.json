@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A golden set for a RAG service is …",
+  "o": [
+   "questions with known good answers to evaluate against",
+   "the production database",
+   "the prompt",
+   "a GPU"
+  ],
+  "a": 0,
+  "why": "Fixed evaluation data."
+ },
+ {
+  "t": "mc",
+  "q": "Faithfulness measures whether answers …",
+  "o": [
+   "stay supported by the retrieved context",
+   "are long",
+   "are fast",
+   "rhyme"
+  ],
+  "a": 0,
+  "why": "Low faithfulness = hallucination."
+ },
+ {
+  "t": "mc",
+  "q": "With a small evaluation set, thresholds should …",
+  "o": [
+   "allow for noise (confidence)",
+   "be exact to 4 decimals",
+   "be zero",
+   "be ignored"
+  ],
+  "a": 0,
+  "why": "Small samples vary a lot."
+ },
+ {
+  "t": "mc",
+  "q": "Control LLM costs in CI by …",
+  "o": [
+   "a token budget and a small, fixed eval set",
+   "running every test on every model",
+   "unlimited retries",
+   "disabling caching"
+  ],
+  "a": 0,
+  "why": "Cost is part of the design."
+ }
+]

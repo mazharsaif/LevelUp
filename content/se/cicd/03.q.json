@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Conflict markers in a file are …",
+  "o": [
+   "<<<<<<<, ======= and >>>>>>>",
+   "#### and ----",
+   "/* */",
+   "TODO"
+  ],
+  "a": 0,
+  "why": "Ours above, theirs below."
+ },
+ {
+  "t": "mc",
+  "q": "Give up on a conflicted merge and go back:",
+  "o": [
+   "git merge --abort",
+   "git reset --hard origin",
+   "rm -rf .git",
+   "git push"
+  ],
+  "a": 0,
+  "why": "Rebase has --abort too."
+ },
+ {
+  "t": "mc",
+  "q": "During a rebase, after fixing a conflict you run …",
+  "o": [
+   "git add <file> then git rebase --continue",
+   "git commit -m fix then push",
+   "git merge",
+   "git stash"
+  ],
+  "a": 0,
+  "why": "One commit at a time."
+ },
+ {
+  "t": "mc",
+  "q": "A conflict in uv.lock is best fixed by …",
+  "o": [
+   "re-running uv lock to regenerate it",
+   "editing it by hand",
+   "deleting the project",
+   "ignoring it"
+  ],
+  "a": 0,
+  "why": "Lock files are generated."
+ }
+]

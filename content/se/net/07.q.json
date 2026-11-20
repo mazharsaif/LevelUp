@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Symmetric encryption uses …",
+  "o": [
+   "one shared key",
+   "a public and a private key",
+   "no key",
+   "a hash"
+  ],
+  "a": 0,
+  "why": "Fast; used for the bulk data in TLS (e.g. AES-GCM)."
+ },
+ {
+  "t": "mc",
+  "q": "Diffie-Hellman lets two parties …",
+  "o": [
+   "agree on a shared secret over an open channel",
+   "sign certificates",
+   "compress data",
+   "hash passwords"
+  ],
+  "a": 0,
+  "why": "ECDHE in TLS."
+ },
+ {
+  "t": "mc",
+  "q": "Forward secrecy means …",
+  "o": [
+   "a stolen server key later can't decrypt past sessions",
+   "faster handshakes",
+   "longer certificates",
+   "no keys"
+  ],
+  "a": 0,
+  "why": "Each session uses fresh ephemeral keys."
+ },
+ {
+  "t": "mf",
+  "q": "A hash can be reversed to get the original data if you have the key.",
+  "a": false,
+  "why": "Myth. Hashes have no key and are one-way."
+ }
+]

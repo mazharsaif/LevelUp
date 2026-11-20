@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which keyword usually points to a fully managed AI service?",
+  "o": [
+   "'least operational overhead' / 'no ML expertise'",
+   "'custom algorithm'",
+   "'full control of the container'",
+   "'on-premises GPU'"
+  ],
+  "a": 0,
+  "why": "Managed beats custom when overhead matters."
+ },
+ {
+  "t": "mc",
+  "q": "Real-time predictions under 100 ms for steady traffic:",
+  "o": [
+   "a real-time endpoint",
+   "batch transform",
+   "async inference",
+   "Athena"
+  ],
+  "a": 0,
+  "why": "Always-on, low latency."
+ },
+ {
+  "t": "mc",
+  "q": "Detect drift after deployment:",
+  "o": [
+   "SageMaker Model Monitor",
+   "CloudFormation",
+   "IAM",
+   "Route 53"
+  ],
+  "a": 0,
+  "why": "Baseline vs live."
+ },
+ {
+  "t": "mc",
+  "q": "Roll out with automatic rollback on alarms:",
+  "o": [
+   "blue/green with CloudWatch alarms",
+   "manual copy",
+   "delete and recreate",
+   "edit in place"
+  ],
+  "a": 0,
+  "why": "Deployment guardrails."
+ }
+]

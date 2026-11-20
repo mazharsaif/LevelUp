@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "You need sentiment analysis with no ML team. Start with …",
+  "o": [
+   "Amazon Comprehend",
+   "a custom SageMaker model",
+   "EC2 GPUs",
+   "Bedrock fine-tuning"
+  ],
+  "a": 0,
+  "why": "Use AI services first."
+ },
+ {
+  "t": "mc",
+  "q": "Script mode in SageMaker lets you …",
+  "o": [
+   "bring your own training script on a managed framework container",
+   "skip training",
+   "write SQL",
+   "use the console only"
+  ],
+  "a": 0,
+  "why": "Your code, AWS's container."
+ },
+ {
+  "t": "mc",
+  "q": "Managed spot training mainly …",
+  "o": [
+   "cuts training cost (with checkpoints for interruptions)",
+   "speeds DNS",
+   "improves accuracy",
+   "adds GPUs"
+  ],
+  "a": 0,
+  "why": "Up to about 90% cheaper."
+ },
+ {
+  "t": "mc",
+  "q": "LoRA is …",
+  "o": [
+   "a parameter-efficient fine-tuning method",
+   "a database",
+   "a loss function",
+   "a GPU"
+  ],
+  "a": 0,
+  "why": "Trains small adapter weights."
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "t": "num",
+  "q": "Find the mean of 3, 5, 8, 12.",
+  "a": 7,
+  "why": "28/4 = 7."
+ },
+ {
+  "t": "num",
+  "q": "Find the median of 9, 2, 7, 4, 11.",
+  "a": 7,
+  "why": "Sorted: 2, 4, 7, 9, 11: the middle is 7."
+ },
+ {
+  "t": "num",
+  "q": "Find the median of 2, 4, 6, 10.",
+  "a": 5,
+  "why": "Even count: average the middle two (4 + 6)/2."
+ },
+ {
+  "t": "mc",
+  "q": "Incomes are right-skewed. Which is usually larger?",
+  "o": [
+   "the mean",
+   "the median",
+   "they are equal",
+   "the mode"
+  ],
+  "a": 0,
+  "why": "A tail of high values pulls the mean up."
+ },
+ {
+  "t": "mc",
+  "q": "Which measure of spread ignores extreme values?",
+  "o": [
+   "range",
+   "interquartile range",
+   "maximum",
+   "mean"
+  ],
+  "a": 1,
+  "why": "The IQR uses only the middle half."
+ },
+ {
+  "t": "mf",
+  "q": "A large sample is always a good sample.",
+  "a": false,
+  "why": "Myth. A biased sample (say, only online volunteers) stays biased however large."
+ }
+]

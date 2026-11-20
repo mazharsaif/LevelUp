@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A Supervisor program is defined in …",
+  "o": [
+   "a [program:x] section",
+   "a unit file",
+   "crontab",
+   "a plist"
+  ],
+  "a": 0,
+  "why": "In supervisord.conf or conf.d."
+ },
+ {
+  "t": "mc",
+  "q": "After editing Supervisor config, apply it with …",
+  "o": [
+   "supervisorctl reread then update",
+   "supervisorctl restart all",
+   "reboot",
+   "kill -9"
+  ],
+  "a": 0,
+  "why": "update restarts only what changed."
+ },
+ {
+  "t": "mc",
+  "q": "FATAL in Supervisor means …",
+  "o": [
+   "it gave up after startretries failed starts",
+   "running fine",
+   "stopped by you",
+   "starting"
+  ],
+  "a": 0,
+  "why": "BACKOFF is while it's still retrying."
+ },
+ {
+  "t": "mc",
+  "q": "startsecs is …",
+  "o": [
+   "how long a program must stay up to count as started",
+   "the boot delay",
+   "a timeout to kill",
+   "log size"
+  ],
+  "a": 0,
+  "why": "Exits sooner count as failed starts."
+ }
+]

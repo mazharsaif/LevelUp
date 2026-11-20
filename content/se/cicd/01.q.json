@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Continuous deployment means …",
+  "o": [
+   "every change that passes the pipeline goes to production automatically",
+   "a human approves each release",
+   "merging daily",
+   "testing weekly"
+  ],
+  "a": 0,
+  "why": "Continuous delivery keeps it releasable; deployment ships automatically."
+ },
+ {
+  "t": "mc",
+  "q": "Continuous integration means …",
+  "o": [
+   "merging small changes often, each checked automatically",
+   "deploying to prod hourly",
+   "writing docs",
+   "one big merge per month"
+  ],
+  "a": 0,
+  "why": "Fast feedback on every change."
+ },
+ {
+  "t": "mc",
+  "q": "Why does ML need more than code versioning?",
+  "o": [
+   "Results depend on the code, the data and the model",
+   "ML has no code",
+   "Git can't store Python",
+   "It doesn't"
+  ],
+  "a": 0,
+  "why": "Version all three."
+ },
+ {
+  "t": "mc",
+  "q": "A quality gate is …",
+  "o": [
+   "a check that must pass before the pipeline continues",
+   "a firewall",
+   "a branch name",
+   "a Docker layer"
+  ],
+  "a": 0,
+  "why": "e.g. tests, accuracy thresholds."
+ }
+]

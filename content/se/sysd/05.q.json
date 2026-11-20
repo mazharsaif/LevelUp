@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Follow one unit's logs live:",
+  "o": [
+   "journalctl -u x -f",
+   "journalctl -x",
+   "tail /var/log/x",
+   "systemctl logs"
+  ],
+  "a": 0,
+  "why": "-u unit, -f follow."
+ },
+ {
+  "t": "mc",
+  "q": "Show only errors and worse:",
+  "o": [
+   "journalctl -p err",
+   "journalctl -e",
+   "journalctl --vacuum",
+   "journalctl -b -1"
+  ],
+  "a": 0,
+  "why": "-p filters by priority."
+ },
+ {
+  "t": "mc",
+  "q": "Logs disappear after reboot. Fix:",
+  "o": [
+   "make the journal persistent (Storage=persistent or /var/log/journal)",
+   "reinstall",
+   "use cron",
+   "nothing can"
+  ],
+  "a": 0,
+  "why": "Volatile journals live in /run."
+ },
+ {
+  "t": "mc",
+  "q": "Shrink the journal to 200 MB:",
+  "o": [
+   "journalctl --vacuum-size=200M",
+   "rm -rf /var/log",
+   "systemctl stop journald",
+   "journalctl -f"
+  ],
+  "a": 0,
+  "why": "Or set SystemMaxUse."
+ }
+]

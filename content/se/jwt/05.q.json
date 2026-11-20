@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A JWKS is …",
+  "o": [
+   "a JSON set of public keys, each with a kid",
+   "a private key file",
+   "a token",
+   "a password list"
+  ],
+  "a": 0,
+  "why": "Published by the issuer for verifiers."
+ },
+ {
+  "t": "mc",
+  "q": "A token's kid is not in your cached JWKS. You should …",
+  "o": [
+   "reject it at once",
+   "refetch the JWKS once (rate-limited), then decide",
+   "use the first key",
+   "accept it"
+  ],
+  "a": 1,
+  "why": "It may be a newly rotated key."
+ },
+ {
+  "t": "mf",
+  "q": "Using the first key in the JWKS is fine if there's only one today.",
+  "a": false,
+  "why": "Myth. Always select by kid, or rotation will break you."
+ },
+ {
+  "t": "mc",
+  "q": "A sensible JWKS cache time in this guide is about …",
+  "o": [
+   "1 second",
+   "1 hour",
+   "1 month",
+   "forever"
+  ],
+  "a": 1,
+  "why": "Cache for an hour, refetch once on an unknown kid."
+ }
+]

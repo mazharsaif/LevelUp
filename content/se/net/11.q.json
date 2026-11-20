@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "TLS termination at a reverse proxy means …",
+  "o": [
+   "the proxy decrypts HTTPS and forwards to the app",
+   "the app handles TLS",
+   "TLS is disabled",
+   "the DNS ends"
+  ],
+  "a": 0,
+  "why": "Caddy/nginx hold the certificate."
+ },
+ {
+  "t": "mc",
+  "q": "Behind a proxy, the app learns the client's real IP from …",
+  "o": [
+   "X-Forwarded-For (from a trusted proxy)",
+   "the TCP source address",
+   "the Host header",
+   "the cookie"
+  ],
+  "a": 0,
+  "why": "Only trust it from your own proxy."
+ },
+ {
+  "t": "mc",
+  "q": "HSTS tells browsers …",
+  "o": [
+   "only use HTTPS for this site for a period",
+   "cache everything",
+   "allow mixed content",
+   "use HTTP/3"
+  ],
+  "a": 0,
+  "why": "Start with a short max-age."
+ },
+ {
+  "t": "mc",
+  "q": "Why close the app's own port in the firewall?",
+  "o": [
+   "So nobody bypasses the proxy's TLS and headers",
+   "To save memory",
+   "To speed DNS",
+   "It's not needed"
+  ],
+  "a": 0,
+  "why": "Close the side door."
+ }
+]

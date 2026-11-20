@@ -1,0 +1,38 @@
+[
+ {
+  "t": "mc",
+  "q": "On Linux, PID 1 is …",
+  "o": [
+   "the init system (e.g. systemd)",
+   "the shell",
+   "the kernel",
+   "the first user"
+  ],
+  "a": 0,
+  "why": "It starts and adopts processes."
+ },
+ {
+  "t": "mc",
+  "q": "The polite way to stop a process is …",
+  "o": [
+   "SIGKILL first",
+   "SIGTERM, then SIGKILL if it doesn't exit",
+   "unplugging",
+   "SIGHUP only"
+  ],
+  "a": 1,
+  "why": "SIGTERM can be handled for a clean shutdown."
+ },
+ {
+  "t": "num",
+  "q": "A process killed by SIGKILL (signal 9) shows exit status 128 + 9 = ?",
+  "a": 137,
+  "why": "Shells report 128 + the signal number."
+ },
+ {
+  "t": "mf",
+  "q": "A process killed by SIGKILL can catch the signal and clean up.",
+  "a": false,
+  "why": "Myth. SIGKILL can't be caught or ignored."
+ }
+]

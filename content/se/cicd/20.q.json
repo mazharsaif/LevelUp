@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "Rebase rule:",
+  "o": [
+   "don't rebase shared history",
+   "always force-push main",
+   "never rebase",
+   "rebase only main"
+  ],
+  "a": 0,
+  "why": "Golden rule."
+ },
+ {
+  "t": "mc",
+  "q": "Keyless CI access to AWS:",
+  "o": [
+   "OIDC + IAM role",
+   "access keys in secrets",
+   "root password",
+   "SSH"
+  ],
+  "a": 0,
+  "why": "Short-lived credentials."
+ },
+ {
+  "t": "mc",
+  "q": "Bad release after deploy:",
+  "o": [
+   "roll back to the previous image tag",
+   "debug in production for hours",
+   "delete logs",
+   "push again blindly"
+  ],
+  "a": 0,
+  "why": "Restore first, investigate after."
+ },
+ {
+  "t": "mc",
+  "q": "Model gate compares against …",
+  "o": [
+   "the production baseline",
+   "nothing",
+   "random",
+   "the test count"
+  ],
+  "a": 0,
+  "why": "No regressions."
+ },
+ {
+  "t": "mc",
+  "q": "RAG releases are gated on …",
+  "o": [
+   "evaluation metrics on a golden set",
+   "the number of documents",
+   "the logo",
+   "token price"
+  ],
+  "a": 0,
+  "why": "e.g. faithfulness thresholds."
+ }
+]

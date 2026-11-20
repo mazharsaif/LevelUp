@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "∫ x⁴ dx = ?",
+  "o": [
+   "x⁵/5 + C",
+   "4x³ + C",
+   "x⁵ + C",
+   "5x⁵ + C"
+  ],
+  "a": 0,
+  "why": "Raise the power, divide by the new power."
+ },
+ {
+  "t": "mc",
+  "q": "∫ (1/x) dx = ?",
+  "o": [
+   "ln x + C",
+   "x⁰ + C",
+   "−1/x² + C",
+   "1/x² + C"
+  ],
+  "a": 0,
+  "why": "The power rule fails for n = −1; ln x fills the gap."
+ },
+ {
+  "t": "num",
+  "q": "Evaluate ∫ from 0 to 3 of 2x dx.",
+  "a": 9,
+  "why": "[x²] from 0 to 3 = 9."
+ },
+ {
+  "t": "num",
+  "q": "Evaluate ∫ from 1 to 2 of 3x² dx.",
+  "a": 7,
+  "why": "[x³] = 8 − 1."
+ },
+ {
+  "t": "mc",
+  "q": "MC = 4q + 5 and fixed cost 30. Total cost C(q) = ?",
+  "o": [
+   "2q² + 5q + 30",
+   "4q² + 5q + 30",
+   "2q² + 5q",
+   "4 + 30"
+  ],
+  "a": 0,
+  "why": "Integrate, then the constant is the fixed cost."
+ },
+ {
+  "t": "mf",
+  "q": "A definite integral needs the constant of integration C.",
+  "a": false,
+  "why": "Myth. C cancels when you subtract F(a) from F(b)."
+ }
+]

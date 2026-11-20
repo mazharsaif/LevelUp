@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "d/dx (x² × (x + 1)) with the product rule = ?",
+  "o": [
+   "3x² + 2x",
+   "2x",
+   "2x(x + 1)",
+   "x² + 2x"
+  ],
+  "a": 0,
+  "why": "2x(x + 1) + x² = 3x² + 2x."
+ },
+ {
+  "t": "mc",
+  "q": "d/dx ((3x + 1)⁴) = ?",
+  "o": [
+   "4(3x + 1)³",
+   "12(3x + 1)³",
+   "(3x + 1)³",
+   "12x³"
+  ],
+  "a": 1,
+  "why": "Outside: 4(·)³; inside: 3."
+ },
+ {
+  "t": "mc",
+  "q": "d/dx (x/(x + 2)) = ?",
+  "o": [
+   "2/(x + 2)²",
+   "1/(x + 2)",
+   "−2/(x + 2)²",
+   "x/(x + 2)²"
+  ],
+  "a": 0,
+  "why": "((x + 2) − x)/(x + 2)² = 2/(x + 2)²."
+ },
+ {
+  "t": "mc",
+  "q": "The chain rule says d/dx f(g(x)) = …",
+  "o": [
+   "f′(x) g′(x)",
+   "f′(g(x)) × g′(x)",
+   "f(g′(x))",
+   "f′(g′(x))"
+  ],
+  "a": 1,
+  "why": "Outside derivative (inside kept) times inside derivative."
+ },
+ {
+  "t": "num",
+  "q": "Q = 4√L and price 10. Find the marginal revenue product of labour at L = 4.",
+  "a": 10,
+  "why": "dQ/dL = 2/√L = 1; MRP = 10 × 1."
+ },
+ {
+  "t": "mf",
+  "q": "The derivative of a product is the product of the derivatives.",
+  "a": false,
+  "why": "Myth. (uv)′ = u′v + uv′."
+ }
+]

@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "'No account with that email' vs 'Wrong password' messages allow …",
+  "o": [
+   "credential stuffing",
+   "user enumeration",
+   "session fixation",
+   "CSRF"
+  ],
+  "a": 1,
+  "why": "Attackers learn which emails have accounts. Use one generic message."
+ },
+ {
+  "t": "mc",
+  "q": "Why hash a dummy password when the user does not exist?",
+  "o": [
+   "To slow the attacker",
+   "So the response time is the same and doesn't reveal whether the account exists",
+   "To create the account",
+   "To log the attempt"
+  ],
+  "a": 1,
+  "why": "A fast 'no such user' path leaks existence through timing."
+ },
+ {
+  "t": "mf",
+  "q": "Locking an account after 5 wrong passwords is a safe default.",
+  "a": false,
+  "why": "Myth. Anyone can lock out a victim (a denial of service). Prefer layered, sliding-window rate limits per IP and per account."
+ },
+ {
+  "t": "mc",
+  "q": "Which should never appear in logs?",
+  "o": [
+   "the user id",
+   "the time of a failed login",
+   "the password that was typed",
+   "the IP address"
+  ],
+  "a": 2,
+  "why": "Passwords (even wrong ones) and tokens never go in logs."
+ }
+]

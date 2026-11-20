@@ -1,0 +1,44 @@
+[
+ {
+  "t": "num",
+  "q": "Demand P = 50 − Q and price 30. Find the consumer surplus.",
+  "a": 200,
+  "why": "Q* = 20; triangle ½ × 20 × 20 = 200."
+ },
+ {
+  "t": "num",
+  "q": "Supply P = 10 + Q and price 30. Find the producer surplus.",
+  "a": 200,
+  "why": "Q* = 20; triangle ½ × 20 × 20."
+ },
+ {
+  "t": "mc",
+  "q": "Consumer surplus is the area …",
+  "o": [
+   "below demand and above the price",
+   "below the price and above supply",
+   "under the supply curve",
+   "to the right of equilibrium"
+  ],
+  "a": 0,
+  "why": "What buyers would pay minus what they do pay."
+ },
+ {
+  "t": "num",
+  "q": "A perpetuity pays 1,000 a year at r = 4% (continuous). Its present value?",
+  "a": 25000,
+  "why": "A/r = 1000/0.04."
+ },
+ {
+  "t": "num",
+  "q": "MC = 2q. Extra cost of raising output from 5 to 10?",
+  "a": 75,
+  "why": "[q²] from 5 to 10 = 100 − 25."
+ },
+ {
+  "t": "mf",
+  "q": "A tax that shrinks total surplus creates a deadweight loss.",
+  "a": true,
+  "why": "Fact: the lost surplus is the deadweight loss."
+ }
+]

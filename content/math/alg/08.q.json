@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "Does y = −3x² + x + 2 have a maximum or a minimum?",
+  "o": [
+   "Maximum",
+   "Minimum",
+   "Neither",
+   "Both"
+  ],
+  "a": 0,
+  "why": "a = −3 < 0: it opens downward."
+ },
+ {
+  "t": "num",
+  "q": "Find the x value of the vertex of y = x² − 6x + 1.",
+  "a": 3,
+  "why": "x = −b/(2a) = 6/2 = 3."
+ },
+ {
+  "t": "num",
+  "q": "y = (x − 2)² + 7. What is the minimum value of y?",
+  "a": 7,
+  "why": "(x − 2)² is never negative, so y is at least 7."
+ },
+ {
+  "t": "num",
+  "q": "A parabola has roots 2 and 8. At what x is its vertex?",
+  "a": 5,
+  "why": "Halfway between the roots."
+ },
+ {
+  "t": "num",
+  "q": "Demand P = 40 − 2Q. Which Q maximises revenue R = 40Q − 2Q²?",
+  "a": 10,
+  "why": "Q = −40/(2 × −2) = 10."
+ },
+ {
+  "t": "num",
+  "q": "Profit π = −2q² + 24q − 30. What is the maximum profit?",
+  "a": 42,
+  "why": "q = 6, π = −72 + 144 − 30 = 42."
+ },
+ {
+  "t": "mc",
+  "q": "Where does y = x² − 4x + 3 cross the y-axis?",
+  "o": [
+   "(0, 3)",
+   "(3, 0)",
+   "(0, −4)",
+   "(1, 0)"
+  ],
+  "a": 0,
+  "why": "Set x = 0: y = c = 3."
+ }
+]

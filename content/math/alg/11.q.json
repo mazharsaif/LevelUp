@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "In Ax = b, what is in A?",
+  "o": [
+   "The unknowns",
+   "The coefficients",
+   "The right-hand sides",
+   "The determinant"
+  ],
+  "a": 1,
+  "why": "Each row of A holds one equation's coefficients."
+ },
+ {
+  "t": "mc",
+  "q": "If det(A) ≠ 0, the solution of Ax = b is …",
+  "o": [
+   "x = bA",
+   "x = A⁻¹b",
+   "x = b/A",
+   "x = Aᵀb"
+  ],
+  "a": 1,
+  "why": "Multiply both sides on the left by A⁻¹."
+ },
+ {
+  "t": "mc",
+  "q": "In Cramer's rule, to find x you …",
+  "o": [
+   "replace x's column of A with b and divide that determinant by det(A)",
+   "divide b by A",
+   "invert b",
+   "multiply A by b"
+  ],
+  "a": 0,
+  "why": "x = det(Aₓ)/det(A)."
+ },
+ {
+  "t": "num",
+  "q": "Solve 2x + y = 5, x + y = 3 (give x).",
+  "a": 2,
+  "why": "Subtract: x = 2 (and y = 1)."
+ },
+ {
+  "t": "mc",
+  "q": "Row reduction ends with a row [0 0 0 | 4]. What does that tell you?",
+  "o": [
+   "x = 4",
+   "No solution",
+   "Infinitely many solutions",
+   "det = 4"
+  ],
+  "a": 1,
+  "why": "0 = 4 is impossible."
+ },
+ {
+  "t": "num",
+  "q": "Macro model: Y = C + I, C = 50 + 0.75Y, I = 100. Find Y.",
+  "a": 600,
+  "why": "Y = 50 + 0.75Y + 100, so 0.25Y = 150."
+ },
+ {
+  "t": "num",
+  "q": "In that model, what is the multiplier 1/(1 − 0.75)?",
+  "a": 4,
+  "why": "Each extra euro of investment raises income by 4."
+ }
+]

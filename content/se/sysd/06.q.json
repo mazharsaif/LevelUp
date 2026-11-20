@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "To activate a timer you enable …",
+  "o": [
+   "the .timer unit",
+   "the .service unit",
+   "both always",
+   "cron"
+  ],
+  "a": 0,
+  "why": "The timer triggers its service."
+ },
+ {
+  "t": "mc",
+  "q": "Persistent=true on a timer means …",
+  "o": [
+   "a run missed while the machine was off happens at next boot",
+   "it runs forever",
+   "it never stops",
+   "logs persist"
+  ],
+  "a": 0,
+  "why": "Catches up."
+ },
+ {
+  "t": "mc",
+  "q": "Run a one-off command as a transient unit:",
+  "o": [
+   "systemd-run",
+   "systemctl start",
+   "at",
+   "nohup"
+  ],
+  "a": 0,
+  "why": "Gets logs and limits like a service."
+ },
+ {
+  "t": "mc",
+  "q": "Socket activation means …",
+  "o": [
+   "systemd listens and starts the service on the first connection",
+   "the service listens itself",
+   "TLS",
+   "a firewall"
+  ],
+  "a": 0,
+  "why": "Saves resources, keeps the port during restarts."
+ }
+]

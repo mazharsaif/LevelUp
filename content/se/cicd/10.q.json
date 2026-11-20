@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "OIDC from GitHub Actions to AWS removes the need for …",
+  "o": [
+   "long-lived AWS access keys in GitHub secrets",
+   "IAM roles",
+   "a trust policy",
+   "a region"
+  ],
+  "a": 0,
+  "why": "Short-lived credentials per run."
+ },
+ {
+  "t": "mc",
+  "q": "Which claim scopes a role to one repo and branch?",
+  "o": [
+   "sub",
+   "aud",
+   "iat",
+   "exp"
+  ],
+  "a": 0,
+  "why": "e.g. repo:owner/name:ref:refs/heads/main."
+ },
+ {
+  "t": "mc",
+  "q": "Separate roles for plan/build/deploy limit …",
+  "o": [
+   "the blast radius if one is abused",
+   "speed",
+   "logging",
+   "cost only"
+  ],
+  "a": 0,
+  "why": "Least privilege."
+ },
+ {
+  "t": "mc",
+  "q": "A trust policy says …",
+  "o": [
+   "who may assume the role",
+   "what the role may do",
+   "the region",
+   "the bucket name"
+  ],
+  "a": 0,
+  "why": "The permissions policy says what it may do."
+ }
+]

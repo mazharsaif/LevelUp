@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Park unfinished work to switch branches:",
+  "o": [
+   "git stash",
+   "git reset --hard",
+   "git clean -fd",
+   "git rm"
+  ],
+  "a": 0,
+  "why": "git stash pop brings it back."
+ },
+ {
+  "t": "mc",
+  "q": "Find the commit that broke a test by binary search:",
+  "o": [
+   "git bisect",
+   "git blame",
+   "git log",
+   "git grep"
+  ],
+  "a": 0,
+  "why": "Halves the range each step."
+ },
+ {
+  "t": "mc",
+  "q": "Undo a pushed commit without rewriting history:",
+  "o": [
+   "git revert",
+   "git reset --hard",
+   "git commit --amend",
+   "git rebase -i"
+  ],
+  "a": 0,
+  "why": "Adds a new commit that undoes it."
+ },
+ {
+  "t": "mc",
+  "q": "You reset away a commit by mistake. Find it again with …",
+  "o": [
+   "git reflog",
+   "git status",
+   "git diff",
+   "nothing: it's gone"
+  ],
+  "a": 0,
+  "why": "The reflog remembers where HEAD was."
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "The golden rule of rebasing:",
+  "o": [
+   "never rebase commits that others already have (shared history)",
+   "always rebase main",
+   "rebase only on Fridays",
+   "never merge"
+  ],
+  "a": 0,
+  "why": "Rewriting shared history breaks other people's clones."
+ },
+ {
+  "t": "mc",
+  "q": "Safe force push after a rebase of your own branch:",
+  "o": [
+   "git push --force-with-lease",
+   "git push --force",
+   "git push -f origin main",
+   "delete the remote"
+  ],
+  "a": 0,
+  "why": "It refuses if someone else pushed meanwhile."
+ },
+ {
+  "t": "mc",
+  "q": "Combine, reword or drop commits before a PR:",
+  "o": [
+   "git rebase -i",
+   "git merge",
+   "git stash",
+   "git tag"
+  ],
+  "a": 0,
+  "why": "Interactive rebase."
+ },
+ {
+  "t": "mc",
+  "q": "A Conventional Commit message looks like …",
+  "o": [
+   "feat: add login page",
+   "stuff",
+   "Update file.py",
+   "WIP!!!"
+  ],
+  "a": 0,
+  "why": "type: description, readable by tools."
+ }
+]

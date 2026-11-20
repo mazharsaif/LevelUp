@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Why limit how many password hashes run at once (a semaphore)?",
+  "o": [
+   "Hashing is memory-hard: too many at once can exhaust the server",
+   "To make logins faster",
+   "To store more users",
+   "To save disk"
+  ],
+  "a": 0,
+  "why": "Argon2id uses lots of memory per hash."
+ },
+ {
+  "t": "mc",
+  "q": "The kid in a JWT header is used to …",
+  "o": [
+   "pick the right key from the JWKS",
+   "encrypt the token",
+   "store the user id",
+   "set the expiry"
+  ],
+  "a": 0,
+  "why": "Key id, so keys can rotate."
+ },
+ {
+  "t": "mc",
+  "q": "Under GDPR, a personal-data breach must usually be reported to the authority within …",
+  "o": [
+   "24 hours",
+   "72 hours",
+   "30 days",
+   "a year"
+  ],
+  "a": 1,
+  "why": "72 hours of becoming aware."
+ },
+ {
+  "t": "mc",
+  "q": "OWASP ASVS is …",
+  "o": [
+   "a hashing algorithm",
+   "a checklist standard for verifying application security",
+   "a cloud service",
+   "a password policy"
+  ],
+  "a": 1,
+  "why": "Application Security Verification Standard."
+ }
+]

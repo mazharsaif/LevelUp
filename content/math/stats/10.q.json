@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "H₀ in a test of whether a policy works is usually …",
+  "o": [
+   "the policy works",
+   "the policy has no effect",
+   "the sample is wrong",
+   "p < 0.05"
+  ],
+  "a": 1,
+  "why": "The null is the 'nothing going on' claim."
+ },
+ {
+  "t": "mc",
+  "q": "p = 0.03 at α = 5%. You …",
+  "o": [
+   "reject H₀",
+   "accept H₀ as proven",
+   "do not reject H₀",
+   "need a bigger α"
+  ],
+  "a": 0,
+  "why": "0.03 < 0.05."
+ },
+ {
+  "t": "num",
+  "q": "x̄ = 103, μ₀ = 100, s = 15, n = 100. Test statistic z?",
+  "a": 2,
+  "why": "SE = 1.5; z = 3/1.5."
+ },
+ {
+  "t": "mc",
+  "q": "A Type I error is …",
+  "o": [
+   "missing a real effect",
+   "rejecting a true H₀ (false alarm)",
+   "a calculation slip",
+   "using t instead of z"
+  ],
+  "a": 1,
+  "why": "Its probability is α."
+ },
+ {
+  "t": "mf",
+  "q": "Not rejecting H₀ proves there is no effect.",
+  "a": false,
+  "why": "Myth. The sample may have been too small to see it."
+ },
+ {
+  "t": "mf",
+  "q": "A statistically significant effect can be economically tiny.",
+  "a": true,
+  "why": "Fact: with huge samples tiny effects become significant."
+ }
+]

@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Changing /invoices/123 to /invoices/124 shows another user's invoice. This is …",
+  "o": [
+   "CSRF",
+   "IDOR (missing ownership check)",
+   "XSS",
+   "enumeration"
+  ],
+  "a": 1,
+  "why": "Every object access must check ownership."
+ },
+ {
+  "t": "mc",
+  "q": "Copying all request fields into the user record, so a user sets is_admin=true, is …",
+  "o": [
+   "mass assignment",
+   "SQL injection",
+   "fixation",
+   "replay"
+  ],
+  "a": 0,
+  "why": "Allow-list the fields a client may set."
+ },
+ {
+  "t": "mc",
+  "q": "RBAC decides access by …",
+  "o": [
+   "roles",
+   "attributes like time and location",
+   "relationships like 'owner of'",
+   "IP address"
+  ],
+  "a": 0,
+  "why": "Role-based access control."
+ },
+ {
+  "t": "mf",
+  "q": "Hiding a button in the UI is enough authorisation.",
+  "a": false,
+  "why": "Myth. The server must check every request; the UI is only convenience."
+ }
+]

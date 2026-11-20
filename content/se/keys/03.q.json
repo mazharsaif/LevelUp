@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "command=\"levelup-deploy\" in authorized_keys means …",
+  "o": [
+   "that key can only run that one command",
+   "the key runs as root",
+   "the key is disabled",
+   "the command runs at boot"
+  ],
+  "a": 0,
+  "why": "A forced command."
+ },
+ {
+  "t": "mc",
+  "q": "The restrict option turns off …",
+  "o": [
+   "port, agent and X11 forwarding, PTY and more",
+   "the key",
+   "logging",
+   "TLS"
+  ],
+  "a": 0,
+  "why": "Then re-enable only what's needed."
+ },
+ {
+  "t": "mc",
+  "q": "The command the client asked for is available to a forced command as …",
+  "o": [
+   "SSH_ORIGINAL_COMMAND",
+   "PATH",
+   "HOME",
+   "argv[0]"
+  ],
+  "a": 0,
+  "why": "Ignore or validate it."
+ },
+ {
+  "t": "mc",
+  "q": "from=\"1.2.3.4\" on a key line …",
+  "o": [
+   "limits where the key may connect from",
+   "sets the server IP",
+   "encrypts the key",
+   "renames it"
+  ],
+  "a": 0,
+  "why": "Extra restriction."
+ }
+]

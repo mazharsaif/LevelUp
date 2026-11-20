@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "For fraud detection, missing fraud is costly. Prioritise …",
+  "o": [
+   "precision",
+   "recall",
+   "accuracy",
+   "latency"
+  ],
+  "a": 1,
+  "why": "Recall = share of real fraud caught."
+ },
+ {
+  "t": "mc",
+  "q": "F1 is …",
+  "o": [
+   "the harmonic mean of precision and recall",
+   "accuracy squared",
+   "AUC",
+   "the loss"
+  ],
+  "a": 0,
+  "why": "Balances the two."
+ },
+ {
+  "t": "mc",
+  "q": "Testing a new model on live traffic without affecting users is …",
+  "o": [
+   "A/B testing",
+   "shadow testing",
+   "canary",
+   "blue/green"
+  ],
+  "a": 1,
+  "why": "The shadow's answers are logged, not served."
+ },
+ {
+  "t": "mc",
+  "q": "ROUGE is mostly used to evaluate …",
+  "o": [
+   "summaries against reference text",
+   "image labels",
+   "latency",
+   "costs"
+  ],
+  "a": 0,
+  "why": "Overlap with references."
+ }
+]

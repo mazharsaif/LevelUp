@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "The SageMaker Model Registry is for …",
+  "o": [
+   "versioning models and their approval status",
+   "storing raw data",
+   "billing",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "Approve before deploy."
+ },
+ {
+  "t": "mc",
+  "q": "Shift 10% of traffic first, then the rest if healthy:",
+  "o": [
+   "canary deployment",
+   "all-at-once",
+   "shadow",
+   "rollback"
+  ],
+  "a": 0,
+  "why": "Watch alarms during the bake time."
+ },
+ {
+  "t": "mc",
+  "q": "A Condition step in SageMaker Pipelines can …",
+  "o": [
+   "stop registration if the model's metric is below a threshold",
+   "rename buckets",
+   "send email only",
+   "train faster"
+  ],
+  "a": 0,
+  "why": "A quality gate."
+ },
+ {
+  "t": "mf",
+  "q": "Prompt changes need no tests because they aren't code.",
+  "a": false,
+  "why": "Myth. Prompt regression tests catch quality drops."
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "t": "num",
+  "q": "Find det [3 2; 1 4].",
+  "a": 10,
+  "why": "3 × 4 − 2 × 1 = 10."
+ },
+ {
+  "t": "mc",
+  "q": "det(A) = 0 means …",
+  "o": [
+   "A has an inverse",
+   "A is singular: no inverse",
+   "A is the identity",
+   "A is 3 × 3"
+  ],
+  "a": 1,
+  "why": "A zero determinant means no inverse."
+ },
+ {
+  "t": "num",
+  "q": "Find k so that [k 3; 4 6] is singular.",
+  "a": 2,
+  "why": "6k − 12 = 0, so k = 2."
+ },
+ {
+  "t": "mc",
+  "q": "Inverse of [2 1; 5 3]?",
+  "o": [
+   "[3 −1; −5 2]",
+   "[3 1; 5 2]",
+   "[−3 1; 5 −2]",
+   "[2 −1; −5 3]"
+  ],
+  "a": 0,
+  "why": "det = 1; swap a and d, change signs of b and c."
+ },
+ {
+  "t": "num",
+  "q": "Find det of the triangular matrix [3 5 1; 0 2 7; 0 0 4].",
+  "a": 24,
+  "why": "Product of the diagonal: 3 × 2 × 4."
+ },
+ {
+  "t": "mf",
+  "q": "If one row of a matrix is a multiple of another row, its determinant is 0.",
+  "a": true,
+  "why": "Fact: the rows carry the same information."
+ },
+ {
+  "t": "num",
+  "q": "Find det [1 2 0; 0 1 3; 2 0 1].",
+  "a": 13,
+  "why": "1(1 − 0) − 2(0 − 6) + 0 = 1 + 12 = 13."
+ }
+]

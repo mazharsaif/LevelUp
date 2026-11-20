@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A GitHub deploy key is …",
+  "o": [
+   "an SSH key attached to one repository",
+   "your account key",
+   "a personal access token",
+   "a webhook"
+  ],
+  "a": 0,
+  "why": "Scoped to one repo."
+ },
+ {
+  "t": "mc",
+  "q": "Give the droplet a read-only deploy key so it can …",
+  "o": [
+   "pull but not push",
+   "push to main",
+   "delete the repo",
+   "change settings"
+  ],
+  "a": 0,
+  "why": "Least privilege."
+ },
+ {
+  "t": "mc",
+  "q": "IdentitiesOnly yes in ssh config …",
+  "o": [
+   "uses only the key named for that host, not every agent key",
+   "disables keys",
+   "forces passwords",
+   "enables forwarding"
+  ],
+  "a": 0,
+  "why": "Avoids offering the wrong key."
+ },
+ {
+  "t": "mf",
+  "q": "Once the droplet has its own deploy key, agent forwarding can be turned off.",
+  "a": true,
+  "why": "Fact: it no longer needs your personal key."
+ }
+]

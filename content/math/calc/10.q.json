@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "In a Lagrangian, λ is called …",
+  "o": [
+   "the shadow price of the constraint",
+   "the price of good x",
+   "the utility level",
+   "the budget"
+  ],
+  "a": 0,
+  "why": "It measures how much the optimum improves per unit of relaxed constraint."
+ },
+ {
+  "t": "mc",
+  "q": "At the utility maximum with a budget, the tangency condition is …",
+  "o": [
+   "MUx = MUy",
+   "MRS = px/py",
+   "x = y",
+   "px = py"
+  ],
+  "a": 1,
+  "why": "Dividing the first two first-order conditions gives MRS = price ratio."
+ },
+ {
+  "t": "mc",
+  "q": "Maximise U = xy with x + y = 20. Best bundle?",
+  "o": [
+   "(10, 10)",
+   "(20, 0)",
+   "(15, 5)",
+   "(5, 15)"
+  ],
+  "a": 0,
+  "why": "MRS y/x = 1 so x = y."
+ },
+ {
+  "t": "num",
+  "q": "U = x^0.5 y^0.5, px = 1, py = 2, m = 40. How much x?",
+  "a": 20,
+  "why": "Half of income on x: 20/1 = 20."
+ },
+ {
+  "t": "num",
+  "q": "U = x^0.3 y^0.7, m = 100. How much is spent on y?",
+  "a": 70,
+  "why": "Cobb-Douglas: the share of y is 0.7."
+ },
+ {
+  "t": "mf",
+  "q": "In the consumer problem, λ is the marginal utility of income.",
+  "a": true,
+  "why": "Fact: extra utility from one more euro."
+ }
+]

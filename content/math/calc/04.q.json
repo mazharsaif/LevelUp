@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "Marginal cost is …",
+  "o": [
+   "C(q)/q",
+   "C′(q)",
+   "C(q) − R(q)",
+   "the fixed cost"
+  ],
+  "a": 1,
+  "why": "The derivative of total cost."
+ },
+ {
+  "t": "num",
+  "q": "R = 50q − q². Find MR at q = 10.",
+  "a": 30,
+  "why": "MR = 50 − 2q = 30."
+ },
+ {
+  "t": "mc",
+  "q": "At current output MR = 20 and MC = 14. The firm should …",
+  "o": [
+   "produce more",
+   "produce less",
+   "stop",
+   "keep output"
+  ],
+  "a": 0,
+  "why": "The next unit adds 6 to profit."
+ },
+ {
+  "t": "mc",
+  "q": "If MC is below AC, then AC is …",
+  "o": [
+   "rising",
+   "falling",
+   "at its maximum",
+   "zero"
+  ],
+  "a": 1,
+  "why": "A below-average extra unit pulls the average down."
+ },
+ {
+  "t": "mc",
+  "q": "Q(L) = 10√L has Q″ < 0. This means …",
+  "o": [
+   "increasing returns",
+   "diminishing marginal returns",
+   "constant returns",
+   "falling output"
+  ],
+  "a": 1,
+  "why": "Each extra worker adds less than the one before."
+ },
+ {
+  "t": "num",
+  "q": "C = 100 + q². At what q is average cost lowest?",
+  "a": 10,
+  "why": "AC = MC: 100/q + q = 2q, so q² = 100."
+ }
+]

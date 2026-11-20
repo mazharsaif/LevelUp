@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "OAuth 2.0 on its own is for …",
+  "o": [
+   "authentication",
+   "delegated authorisation (access to an API)",
+   "password storage",
+   "encryption"
+  ],
+  "a": 1,
+  "why": "OpenID Connect adds the ID token for login."
+ },
+ {
+  "t": "mc",
+  "q": "PKCE protects the authorization code flow against …",
+  "o": [
+   "code interception",
+   "XSS",
+   "weak passwords",
+   "DNS spoofing"
+  ],
+  "a": 0,
+  "why": "Only the app that made the verifier can redeem the code."
+ },
+ {
+  "t": "mc",
+  "q": "Passkeys (WebAuthn) resist phishing because …",
+  "o": [
+   "they are long",
+   "the credential is bound to the site's origin",
+   "they expire daily",
+   "they are sent by SMS"
+  ],
+  "a": 1,
+  "why": "A fake site cannot get a valid signature."
+ },
+ {
+  "t": "mf",
+  "q": "SMS codes are as strong as an authenticator app (TOTP).",
+  "a": false,
+  "why": "Myth. SMS can be hijacked by SIM swapping and interception."
+ }
+]

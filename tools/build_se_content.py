@@ -242,8 +242,31 @@ def split_parts(cards, chapter_title=""):
     return parts
 
 
-def sync_tree_parts(parts_by_chapter):
-    """Copy each chapter's parts onto its skill node in app/data/se-path.json (keeps formatting)."""
+ANSWERS = re.compile(r"<p><b>Answers\.</b>(.*?)</p>", re.S)
+QTYPES = {"mc", "tf", "mf", "num"}
+
+
+def check_quiz(qs, where):
+    """Practice questions for one skill (content/<tree>/<branch>/NN.q.json), a list of:
+         {"t": "mc",  "q": "...", "o": ["option", ...], "a": <index of the right option>, "why": "..."}
+         {"t": "tf"|"mf", "q": "statement", "a": true|false, "why": "..."}     (mf = shown as Myth / Fact)
+         {"t": "num", "q": "...", "a": <number>, "tol": <optional>, "unit": "<optional>", "why": "..."}
+       Refuses broken entries so the app never shows a question without a right answer."""
+    for i, q in enumerate(qs, 1):
+        bad = q.get("t") not in QTYPES or not q.get("q") or "a" not in q or not q.get("why")
+        if q.get("t") == "mc":
+            bad = bad or not isinstance(q.get("o"), list) or len(q["o"]) < 2 or not (isinstance(q["a"], int) and 0 <= q["a"] < len(q["o"]))
+        if q.get("t") in ("tf", "mf"):
+            bad = bad or not isinstance(q["a"], bool)
+        if q.get("t") == "num":
+            bad = bad or isinstance(q["a"], bool) or not isinstance(q["a"], (int, float))
+        if bad:
+            raise SystemExit(f"{where}: question {i} is malformed: {q}")
+    return qs
+
+
+def sync_tree_parts(parts_by_chapter, quiz_by_chapter=None):
+    """Copy each chapter's parts (and its number of practice questions) onto its skill node in app/data/<tree>-path.json."""
     p = os.path.join(ROOT, "app", "data", f"{TREE}-path.json")
     raw = open(p, encoding="utf-8").read()
     d = json.loads(raw)
@@ -252,6 +275,13 @@ def sync_tree_parts(parts_by_chapter):
         parts = parts_by_chapter.get((node["branch"], node["chapter"]))
         if parts is not None and node.get("parts") != parts:
             node["parts"] = parts
+            changed += 1
+        nq = (quiz_by_chapter or {}).get((node["branch"], node["chapter"]), 0)
+        if nq and node.get("quiz") != nq:
+            node["quiz"] = nq
+            changed += 1
+        elif not nq and "quiz" in node:
+            del node["quiz"]
             changed += 1
     if changed:
         with open(p, "w", encoding="utf-8") as f:
@@ -263,7 +293,7 @@ def main():
     """One small file per chapter (downloaded only when a learner opens that skill) + a tiny index."""
     import shutil
     os.makedirs(OUT, exist_ok=True)
-    parts_by_chapter = {}
+    parts_by_chapter, quiz_by_chapter = {}, {}
     for branch in sorted(os.listdir(SRC)):
         bdir = os.path.join(SRC, branch)
         if not os.path.isdir(bdir):
@@ -282,13 +312,20 @@ def main():
                 continue
             with open(os.path.join(bdir, name), encoding="utf-8") as f:
                 title, cards = chapter_cards(f.read())
+            for c in cards:                                                    # self-check answers: hidden until tapped
+                c["html"] = ANSWERS.sub(r'<details class="ans"><summary>🔒 Answers: try the questions first, then tap to show</summary><p>\1</p></details>', c["html"])
             n = str(int(m.group(1)))
             parts = split_parts(cards, title) if int(n) > 0 else []           # 00 = the branch's About: no parts
             parts_by_chapter[(branch, int(n))] = parts
-            body = json.dumps({"title": title, "cards": cards, "parts": parts}, ensure_ascii=False, separators=(",", ":"))
+            doc = {"title": title, "cards": cards, "parts": parts}
+            qf = os.path.join(bdir, f"{int(n):02d}.q.json")                   # practice questions (optional), see check_quiz()
+            if os.path.exists(qf):
+                doc["quiz"] = check_quiz(json.load(open(qf, encoding="utf-8")), qf)
+            quiz_by_chapter[(branch, int(n))] = len(doc.get("quiz", []))
+            body = json.dumps(doc, ensure_ascii=False, separators=(",", ":"))
             with open(os.path.join(odir, f"{int(n):02d}.json"), "w", encoding="utf-8") as f:
                 f.write(body)
-            index[n] = {"title": title, "cards": len(cards), "bytes": len(body.encode()), "parts": len(parts)}
+            index[n] = {"title": title, "cards": len(cards), "bytes": len(body.encode()), "parts": len(parts), "quiz": quiz_by_chapter[(branch, int(n))]}
             print(f"{branch}/{name}: {len(cards):3d} cards in {len(parts) or 1} part(s), {len(body.encode()) // 1024:3d} KB")
         with open(os.path.join(odir, "index.json"), "w", encoding="utf-8") as f:
             json.dump({"chapters": index}, f, ensure_ascii=False, separators=(",", ":"))
@@ -296,7 +333,7 @@ def main():
         if os.path.exists(old):
             os.remove(old)
         print(f"-> app/data/{TREE}/{branch}/  ({sum(c['cards'] for c in index.values())} cards, {sum(c['bytes'] for c in index.values()) // 1024} KB total)")
-    sync_tree_parts(parts_by_chapter)
+    sync_tree_parts(parts_by_chapter, quiz_by_chapter)
 
 
 if __name__ == "__main__":

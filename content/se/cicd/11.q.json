@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A smoke test after deploy checks …",
+  "o": [
+   "that the new release basically works (e.g. /health)",
+   "every edge case",
+   "the cost",
+   "the docs"
+  ],
+  "a": 0,
+  "why": "Fast and shallow."
+ },
+ {
+  "t": "mc",
+  "q": "Tag images with …",
+  "o": [
+   "the commit SHA (immutable)",
+   "latest only",
+   "the date only",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "So you know exactly what's running and can roll back."
+ },
+ {
+  "t": "mc",
+  "q": "Smoke test fails after deploy. You …",
+  "o": [
+   "roll back to the previous image",
+   "wait and hope",
+   "delete the cluster",
+   "push to main"
+  ],
+  "a": 0,
+  "why": "Restore service first."
+ },
+ {
+  "t": "mc",
+  "q": "A GitHub environment with required reviewers gives …",
+  "o": [
+   "a manual approval step before deploy",
+   "faster builds",
+   "free minutes",
+   "secrets for forks"
+  ],
+  "a": 0,
+  "why": "Human gate for production."
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Why prefer RS256 over HS256 for many services?",
+  "o": [
+   "It is shorter",
+   "Verifiers only need the public key, so they can't mint tokens",
+   "It needs no keys",
+   "It is encrypted"
+  ],
+  "a": 1,
+  "why": "With HS256 every verifier holds the signing secret."
+ },
+ {
+  "t": "mc",
+  "q": "The 'alg: none' attack is stopped by …",
+  "o": [
+   "accepting any alg",
+   "pinning the allowed algorithm(s) on the verifier",
+   "longer tokens",
+   "Base64"
+  ],
+  "a": 1,
+  "why": "Never let the token choose its own algorithm."
+ },
+ {
+  "t": "mc",
+  "q": "Algorithm confusion (RS256 → HS256) abuses …",
+  "o": [
+   "a verifier that uses the RSA public key as an HMAC secret",
+   "a weak password",
+   "expired keys",
+   "missing exp"
+  ],
+  "a": 0,
+  "why": "Pin RS256 and use a proper key object."
+ },
+ {
+  "t": "mc",
+  "q": "Which RFC gives JWT best current practices?",
+  "o": [
+   "RFC 7519",
+   "RFC 8725",
+   "RFC 2616",
+   "RFC 1918"
+  ],
+  "a": 1,
+  "why": "RFC 8725, JWT Best Current Practices."
+ }
+]

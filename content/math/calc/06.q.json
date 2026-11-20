@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "At a maximum of a smooth function …",
+  "o": [
+   "f′ = 0 and f″ < 0",
+   "f′ = 0 and f″ > 0",
+   "f″ = 0",
+   "f′ > 0"
+  ],
+  "a": 0,
+  "why": "Flat (FOC), bending down (SOC)."
+ },
+ {
+  "t": "num",
+  "q": "Find the x that minimises f(x) = x² − 10x + 3.",
+  "a": 5,
+  "why": "f′ = 2x − 10 = 0."
+ },
+ {
+  "t": "mc",
+  "q": "Profit is maximised where …",
+  "o": [
+   "MR = MC",
+   "R = C",
+   "P = AC",
+   "MC = 0"
+  ],
+  "a": 0,
+  "why": "π′ = MR − MC = 0."
+ },
+ {
+  "t": "num",
+  "q": "P = 100 − 2q, C = 20q. Find the profit-maximising q.",
+  "a": 20,
+  "why": "MR = 100 − 4q = 20."
+ },
+ {
+  "t": "num",
+  "q": "T = 120t − 6t² (tax revenue). Which tax t maximises T?",
+  "a": 10,
+  "why": "T′ = 120 − 12t = 0."
+ },
+ {
+  "t": "mf",
+  "q": "Every stationary point is a maximum or a minimum.",
+  "a": false,
+  "why": "Myth. It can be neither, like x³ at x = 0."
+ }
+]

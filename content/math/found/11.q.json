@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "In which quadrant is (−3, 5)?",
+  "o": [
+   "I",
+   "II",
+   "III",
+   "IV"
+  ],
+  "a": 1,
+  "why": "x negative, y positive: top left, quadrant II."
+ },
+ {
+  "t": "mc",
+  "q": "Which point is on the y-axis?",
+  "o": [
+   "(3, 0)",
+   "(0, −4)",
+   "(2, 2)",
+   "(−1, 1)"
+  ],
+  "a": 1,
+  "why": "Points on the y-axis have x = 0."
+ },
+ {
+  "t": "mf",
+  "q": "(2, 5) and (5, 2) are the same point.",
+  "a": false,
+  "why": "Myth. x comes first: (2, 5) is 2 across and 5 up; (5, 2) is 5 across and 2 up."
+ },
+ {
+  "t": "num",
+  "q": "Find the distance from (1, 1) to (7, 9).",
+  "a": 10,
+  "why": "Across 6, up 8: √(36 + 64) = √100 = 10."
+ },
+ {
+  "t": "mc",
+  "q": "Find the midpoint of (−4, 2) and (6, 8).",
+  "o": [
+   "(1, 5)",
+   "(2, 10)",
+   "(5, 3)",
+   "(10, 6)"
+  ],
+  "a": 0,
+  "why": "Average the x values: 1; average the y values: 5."
+ },
+ {
+  "t": "tf",
+  "q": "The point (3, 10) lies on y = 3x + 1.",
+  "a": true,
+  "why": "3 × 3 + 1 = 10, so yes."
+ },
+ {
+  "t": "mc",
+  "q": "In a supply and demand diagram, economists usually put …",
+  "o": [
+   "price on the x-axis",
+   "quantity on the x-axis and price on the y-axis",
+   "both on the y-axis",
+   "time on the x-axis"
+  ],
+  "a": 1,
+  "why": "By convention: quantity across, price up."
+ }
+]

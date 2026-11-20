@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Which certificate field lists the hostnames it is valid for?",
+  "o": [
+   "Issuer",
+   "Subject Alternative Name (SAN)",
+   "Serial",
+   "Not Before"
+  ],
+  "a": 1,
+  "why": "Browsers check the SAN."
+ },
+ {
+  "t": "mc",
+  "q": "Browsers trust a site's certificate because …",
+  "o": [
+   "it's long",
+   "it chains through intermediates to a root in their trust store",
+   "it's free",
+   "DNS says so"
+  ],
+  "a": 1,
+  "why": "Chain of trust."
+ },
+ {
+  "t": "mc",
+  "q": "Certificate Transparency logs let you …",
+  "o": [
+   "see every certificate issued for your domain",
+   "encrypt mail",
+   "hide certificates",
+   "skip validation"
+  ],
+  "a": 0,
+  "why": "Spot mis-issuance."
+ },
+ {
+  "t": "mf",
+  "q": "Certificate lifetimes are getting longer, so renewal matters less.",
+  "a": false,
+  "why": "Myth. They are shrinking; automate renewal."
+ }
+]

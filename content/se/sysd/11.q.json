@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "status=203/EXEC means …",
+  "o": [
+   "the ExecStart program couldn't be executed (wrong path or permissions)",
+   "out of memory",
+   "wrong user",
+   "timeout"
+  ],
+  "a": 0,
+  "why": "Check the path and the executable bit."
+ },
+ {
+  "t": "mc",
+  "q": "status=217/USER means …",
+  "o": [
+   "the User= doesn't exist",
+   "bad path",
+   "port in use",
+   "disk full"
+  ],
+  "a": 0,
+  "why": "Create the user or fix the name."
+ },
+ {
+  "t": "mc",
+  "q": "After 'start-limit-hit', to allow starts again run …",
+  "o": [
+   "systemctl reset-failed x",
+   "reboot only",
+   "journalctl --vacuum",
+   "systemctl mask x"
+  ],
+  "a": 0,
+  "why": "Then fix the cause and start."
+ },
+ {
+  "t": "mc",
+  "q": "To reproduce 'works in my shell but not as a service', run the command with …",
+  "o": [
+   "env -i (an empty environment)",
+   "sudo -E",
+   "more RAM",
+   "nohup"
+  ],
+  "a": 0,
+  "why": "Services don't get your shell's variables."
+ }
+]

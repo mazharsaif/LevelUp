@@ -1,0 +1,50 @@
+[
+ {
+  "t": "num",
+  "q": "Work out 8 + 2 × 5.",
+  "a": 18,
+  "why": "Multiply first: 2 × 5 = 10, then 8 + 10 = 18."
+ },
+ {
+  "t": "num",
+  "q": "Work out 24 ÷ 4 × 2.",
+  "a": 12,
+  "why": "Division and multiplication have the same rank: go left to right. 24 ÷ 4 = 6, then 6 × 2 = 12."
+ },
+ {
+  "t": "num",
+  "q": "Work out 20 − 8 + 3.",
+  "a": 15,
+  "why": "Left to right: 20 − 8 = 12, then 12 + 3 = 15 (not 20 − 11)."
+ },
+ {
+  "t": "num",
+  "q": "Work out −3².",
+  "a": -9,
+  "why": "The power applies to 3 first: 3² = 9, then the minus: −9. (−3)² would be 9."
+ },
+ {
+  "t": "num",
+  "q": "Work out (12 + 6)/(5 − 2).",
+  "a": 6,
+  "why": "A fraction bar works like brackets: 18/3 = 6."
+ },
+ {
+  "t": "num",
+  "q": "Work out 2 × (3 + 4)² − 10.",
+  "a": 88,
+  "why": "Brackets 7, power 49, multiply 98, subtract: 88."
+ },
+ {
+  "t": "mc",
+  "q": "Revenue is 10 × 50, fixed cost 100 and variable cost 4 per unit for 50 units. Which expression gives profit?",
+  "o": [
+   "10 × 50 − 100 + 4 × 50",
+   "10 × 50 − (100 + 4 × 50)",
+   "(10 × 50 − 100) × 4 × 50",
+   "10 × (50 − 100) + 4 × 50"
+  ],
+  "a": 1,
+  "why": "All of the cost must be subtracted, so it goes in brackets: 500 − 300 = 200."
+ }
+]

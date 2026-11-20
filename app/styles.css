@@ -1022,3 +1022,22 @@ ul.agenda li:first-child{border-top:0}
 .legend span{display:inline-flex;align-items:center;gap:2px}
 .w-ok{color:var(--green);font-weight:700}
 .w-miss{color:var(--red);font-weight:800;text-decoration:underline wavy}
+
+/* practice questions in skill-tree courses (openQuiz) */
+.quiz .qq{font-size:20px;line-height:1.35;margin:6px 0 16px}
+.quiz .opts{display:flex;flex-direction:column;gap:10px}
+.quiz .opts.tf{flex-direction:row}.quiz .opts.tf .opt{flex:1;text-align:center}
+.quiz .opt{font-size:16px}
+.numin{display:flex;align-items:center;gap:10px}
+.numin input{flex:1;font:inherit;font-size:22px;font-weight:700;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);min-width:0}
+.numin input.right{border-color:var(--green)}.numin input.wrong{border-color:var(--red)}
+.numin input.shake{animation:qshake .35s}
+@keyframes qshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.qfb{margin:16px 0 120px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);font-size:15px;line-height:1.45}
+.qfb.ok{border-color:var(--green);background:var(--green-l)}.qfb.no{border-color:var(--red);background:var(--red-l)}
+.qfb div{margin-top:6px}
+body.theme-sl .qfb.ok{background:rgba(40,160,90,.15)}body.theme-sl .qfb.no{background:rgba(220,60,60,.15)}
+/* self-check answers in the reader: hidden until tapped */
+details.ans{margin-top:12px;border:1.5px dashed var(--line);border-radius:10px;padding:8px 12px}
+details.ans summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--muted, #888)}
+details.ans[open] summary{margin-bottom:6px}

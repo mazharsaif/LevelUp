@@ -1,0 +1,63 @@
+[
+ {
+  "t": "num",
+  "q": "1,000 grows at 5% a year. What is it after 2 years?",
+  "a": 1102.5,
+  "why": "1000 × 1.05² = 1102.50.",
+  "tol": 0.01
+ },
+ {
+  "t": "num",
+  "q": "Work out log₁₀(1000).",
+  "a": 3,
+  "why": "10³ = 1000."
+ },
+ {
+  "t": "num",
+  "q": "Work out ln(e⁴).",
+  "a": 4,
+  "why": "ln and e undo each other."
+ },
+ {
+  "t": "mc",
+  "q": "ln(a b) = ?",
+  "o": [
+   "ln a × ln b",
+   "ln a + ln b",
+   "ln(a + b)",
+   "b ln a"
+  ],
+  "a": 1,
+  "why": "The product rule for logs."
+ },
+ {
+  "t": "mf",
+  "q": "ln(a + b) = ln a + ln b",
+  "a": false,
+  "why": "Myth. There is no rule for the log of a sum."
+ },
+ {
+  "t": "num",
+  "q": "Solve 2ˣ = 32.",
+  "a": 5,
+  "why": "2⁵ = 32."
+ },
+ {
+  "t": "num",
+  "q": "By the rule of 70, how many years does it take to double at 3.5% growth?",
+  "a": 20,
+  "why": "70 ÷ 3.5 = 20 years."
+ },
+ {
+  "t": "mc",
+  "q": "Take logs of Y = A K^0.4 L^0.6.",
+  "o": [
+   "ln Y = ln A + 0.4 ln K + 0.6 ln L",
+   "ln Y = A + 0.4K + 0.6L",
+   "ln Y = ln A × 0.4 ln K × 0.6 ln L",
+   "ln Y = 0.4 ln(AK) + 0.6 ln L"
+  ],
+  "a": 0,
+  "why": "Products become sums and powers become multipliers."
+ }
+]

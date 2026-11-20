@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Inside a container, the main process is PID 1. A common helper for signal handling and zombies is …",
+  "o": [
+   "tini (docker run --init)",
+   "cron",
+   "systemd-run",
+   "nohup"
+  ],
+  "a": 0,
+  "why": "A tiny init."
+ },
+ {
+  "t": "mc",
+  "q": "Running Supervisor inside a container that Docker already restarts can cause …",
+  "o": [
+   "double supervision, hiding failures",
+   "faster restarts",
+   "smaller images",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Pick one layer to own restarts."
+ },
+ {
+  "t": "mf",
+  "q": "Restarting on exit is enough: a hung app will be caught.",
+  "a": false,
+  "why": "Myth. A hung process doesn't exit; add health checks."
+ },
+ {
+  "t": "mc",
+  "q": "Containers should usually run …",
+  "o": [
+   "one main process each",
+   "every service in one",
+   "no process",
+   "systemd always"
+  ],
+  "a": 0,
+  "why": "One concern per container."
+ }
+]

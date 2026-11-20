@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "ruff is …",
+  "o": [
+   "a fast linter and formatter for Python",
+   "a type checker",
+   "a test runner",
+   "a container tool"
+  ],
+  "a": 0,
+  "why": "mypy does types."
+ },
+ {
+  "t": "mc",
+  "q": "Run the same checks before every commit:",
+  "o": [
+   "pre-commit hooks",
+   "cron",
+   "Dependabot",
+   "a README"
+  ],
+  "a": 0,
+  "why": "Catch issues before CI."
+ },
+ {
+  "t": "mc",
+  "q": "Test on Python 3.11, 3.12 and 3.13 in one workflow:",
+  "o": [
+   "a matrix build",
+   "three repos",
+   "a cache",
+   "a fixture"
+  ],
+  "a": 0,
+  "why": "strategy.matrix."
+ },
+ {
+  "t": "mf",
+  "q": "100% coverage proves the code is correct.",
+  "a": false,
+  "why": "Myth. It shows lines ran, not that the assertions are right."
+ }
+]

@@ -1,0 +1,74 @@
+[
+ {
+  "t": "mc",
+  "q": "What is the degree of 3x² − 7x⁵ + 2?",
+  "o": [
+   "2",
+   "3",
+   "5",
+   "7"
+  ],
+  "a": 2,
+  "why": "The highest power is 5."
+ },
+ {
+  "t": "mc",
+  "q": "Expand (x − 3)(x + 7).",
+  "o": [
+   "x² + 4x − 21",
+   "x² − 4x − 21",
+   "x² + 4x + 21",
+   "x² − 21"
+  ],
+  "a": 0,
+  "why": "x² + 7x − 3x − 21."
+ },
+ {
+  "t": "mc",
+  "q": "Expand (x + 4)².",
+  "o": [
+   "x² + 16",
+   "x² + 8x + 16",
+   "x² + 4x + 16",
+   "2x + 8"
+  ],
+  "a": 1,
+  "why": "(a + b)² = a² + 2ab + b²."
+ },
+ {
+  "t": "mf",
+  "q": "(x + 5)² = x² + 25",
+  "a": false,
+  "why": "Myth: the middle term 10x is missing. Check with x = 1: 36 ≠ 26."
+ },
+ {
+  "t": "mc",
+  "q": "Expand (x + 6)(x − 6).",
+  "o": [
+   "x² − 36",
+   "x² + 36",
+   "x² − 12x − 36",
+   "x² + 12x − 36"
+  ],
+  "a": 0,
+  "why": "Difference of two squares."
+ },
+ {
+  "t": "num",
+  "q": "p(x) = 2x³ − x + 4. Find p(−1).",
+  "a": 3,
+  "why": "2(−1) − (−1) + 4 = −2 + 1 + 4 = 3."
+ },
+ {
+  "t": "mc",
+  "q": "Revenue R = 80q − 2q², cost C = 20q + 100. Profit is …",
+  "o": [
+   "−2q² + 60q − 100",
+   "−2q² + 100q + 100",
+   "60q − 100",
+   "−2q² + 60q + 100"
+  ],
+  "a": 0,
+  "why": "R − C = 80q − 2q² − 20q − 100."
+ }
+]

@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Checking that a user is who they claim to be is …",
+  "o": [
+   "authorisation",
+   "authentication",
+   "identification",
+   "recovery"
+  ],
+  "a": 1,
+  "why": "Authentication proves identity; authorisation decides what that identity may do."
+ },
+ {
+  "t": "mc",
+  "q": "An attacker guesses passwords against your live login page. That is …",
+  "o": [
+   "an offline attack",
+   "an online attack",
+   "a replay attack",
+   "phishing"
+  ],
+  "a": 1,
+  "why": "Online attacks go through your server, so rate limits help. Offline attacks run on a stolen hash database."
+ },
+ {
+  "t": "mf",
+  "q": "Validating input in the browser is enough, since the server only receives what the form allows.",
+  "a": false,
+  "why": "Myth. Never trust the client: anyone can send any request straight to the server."
+ },
+ {
+  "t": "mc",
+  "q": "When an auth check itself errors (say the database is down), the system should …",
+  "o": [
+   "let the request through",
+   "deny the request (fail closed)",
+   "log in as guest",
+   "retry forever"
+  ],
+  "a": 1,
+  "why": "Fail closed: an error must never grant access."
+ }
+]

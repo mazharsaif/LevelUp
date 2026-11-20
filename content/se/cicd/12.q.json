@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A data contract checks …",
+  "o": [
+   "validity (schema, types, ranges)",
+   "drift over time",
+   "model accuracy",
+   "cost"
+  ],
+  "a": 0,
+  "why": "Drift needs monitoring over time."
+ },
+ {
+  "t": "mc",
+  "q": "Gate a new model by comparing it to …",
+  "o": [
+   "the current production baseline",
+   "random guessing only",
+   "nothing",
+   "last year's data"
+  ],
+  "a": 0,
+  "why": "Don't ship regressions."
+ },
+ {
+  "t": "mc",
+  "q": "Why gate on slices (subgroups), not only the average?",
+  "o": [
+   "A model can improve on average while getting worse for a group",
+   "It's faster",
+   "Slices are cheaper",
+   "It isn't needed"
+  ],
+  "a": 0,
+  "why": "Check important segments."
+ },
+ {
+  "t": "mc",
+  "q": "The gate's tolerance should come from …",
+  "o": [
+   "the natural run-to-run variation in the metric",
+   "a gut feeling",
+   "zero always",
+   "the PR title"
+  ],
+  "a": 0,
+  "why": "Otherwise noise fails good models."
+ }
+]

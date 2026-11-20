@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which methods are idempotent?",
+  "o": [
+   "POST",
+   "GET, PUT and DELETE",
+   "only GET",
+   "POST and PATCH"
+  ],
+  "a": 1,
+  "why": "Repeating them has the same effect as once."
+ },
+ {
+  "t": "mc",
+  "q": "502 Bad Gateway from a reverse proxy usually means …",
+  "o": [
+   "the upstream app is down or refused the connection",
+   "the app was too slow",
+   "the page doesn't exist",
+   "the user is not logged in"
+  ],
+  "a": 0,
+  "why": "504 is the timeout case."
+ },
+ {
+  "t": "mc",
+  "q": "Which header tells a shared server which site you want?",
+  "o": [
+   "Host",
+   "Accept",
+   "Cookie",
+   "Referer"
+  ],
+  "a": 0,
+  "why": "One IP can serve many sites."
+ },
+ {
+  "t": "mc",
+  "q": "Status 404 means …",
+  "o": [
+   "server error",
+   "not found",
+   "forbidden",
+   "redirect"
+  ],
+  "a": 1,
+  "why": "403 forbidden, 5xx server errors, 3xx redirects."
+ }
+]

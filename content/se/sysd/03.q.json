@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Start a service now AND at every boot:",
+  "o": [
+   "systemctl start x",
+   "systemctl enable --now x",
+   "systemctl enable x",
+   "systemctl restart x"
+  ],
+  "a": 1,
+  "why": "enable = at boot; --now also starts it."
+ },
+ {
+  "t": "mc",
+  "q": "After editing a unit file you must run …",
+  "o": [
+   "systemctl daemon-reload",
+   "reboot",
+   "journalctl",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "So systemd rereads unit files."
+ },
+ {
+  "t": "mc",
+  "q": "The safe way to change a packaged unit is …",
+  "o": [
+   "edit /usr/lib/... directly",
+   "a drop-in override (systemctl edit x)",
+   "copy it to /tmp",
+   "rename it"
+  ],
+  "a": 1,
+  "why": "Updates won't overwrite your change."
+ },
+ {
+  "t": "mc",
+  "q": "mask does …",
+  "o": [
+   "prevent the unit from being started at all",
+   "hide its logs",
+   "rename it",
+   "restart it"
+  ],
+  "a": 0,
+  "why": "It links the unit to /dev/null."
+ }
+]

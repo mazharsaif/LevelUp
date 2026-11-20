@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Debugging an unreachable site, start at …",
+  "o": [
+   "DNS: does the name resolve to the right IP?",
+   "the CSS",
+   "the database",
+   "the logo"
+  ],
+  "a": 0,
+  "why": "Go layer by layer, bottom up."
+ },
+ {
+  "t": "mc",
+  "q": "curl --resolve is used to …",
+  "o": [
+   "test a specific server IP while keeping the real hostname (SNI, Host)",
+   "flush DNS",
+   "renew certs",
+   "compress"
+  ],
+  "a": 0,
+  "why": "Bypass DNS or a CDN to test the origin."
+ },
+ {
+  "t": "mc",
+  "q": "Which command shows what is listening on which port?",
+  "o": [
+   "ss -tlnp",
+   "dig",
+   "curl",
+   "whois"
+  ],
+  "a": 0,
+  "why": "TCP listening sockets with processes."
+ },
+ {
+  "t": "mc",
+  "q": "504 Gateway Timeout points at …",
+  "o": [
+   "the upstream being too slow",
+   "a DNS typo",
+   "an expired domain",
+   "a 404"
+  ],
+  "a": 0,
+  "why": "502 is the refused/down case."
+ }
+]

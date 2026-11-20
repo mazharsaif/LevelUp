@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A pytest fixture is …",
+  "o": [
+   "reusable setup injected into tests by name",
+   "a failing test",
+   "a CI job",
+   "a mock server only"
+  ],
+  "a": 0,
+  "why": "Declared with @pytest.fixture."
+ },
+ {
+  "t": "mc",
+  "q": "Run one test with many inputs:",
+  "o": [
+   "@pytest.mark.parametrize",
+   "a for loop in CI",
+   "copy-paste",
+   "fixtures only"
+  ],
+  "a": 0,
+  "why": "Each case reports separately."
+ },
+ {
+  "t": "mc",
+  "q": "Check that code raises ValueError:",
+  "o": [
+   "with pytest.raises(ValueError):",
+   "assert ValueError",
+   "try/except pass",
+   "print"
+  ],
+  "a": 0,
+  "why": "Fails if nothing is raised."
+ },
+ {
+  "t": "mc",
+  "q": "Replace a call to a paid API during tests with …",
+  "o": [
+   "monkeypatch or a mock",
+   "the real API",
+   "sleep",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Fast, free, deterministic."
+ }
+]

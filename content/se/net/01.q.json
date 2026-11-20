@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Which address is private (not routable on the internet)?",
+  "o": [
+   "8.8.8.8",
+   "192.168.1.20",
+   "1.1.1.1",
+   "142.250.1.1"
+  ],
+  "a": 1,
+  "why": "10/8, 172.16/12 and 192.168/16 are private ranges."
+ },
+ {
+  "t": "num",
+  "q": "How many addresses are in a /24 IPv4 block?",
+  "a": 256,
+  "why": "32 − 24 = 8 host bits: 2⁸ = 256."
+ },
+ {
+  "t": "mc",
+  "q": "127.0.0.1 is …",
+  "o": [
+   "your router",
+   "loopback: this machine itself",
+   "a public DNS server",
+   "the broadcast address"
+  ],
+  "a": 1,
+  "why": "Traffic to it never leaves the host."
+ },
+ {
+  "t": "mc",
+  "q": "NAT on a home router lets …",
+  "o": [
+   "many private devices share one public IP",
+   "packets skip routers",
+   "DNS work",
+   "TLS terminate"
+  ],
+  "a": 0,
+  "why": "It rewrites addresses and ports on the way out."
+ }
+]

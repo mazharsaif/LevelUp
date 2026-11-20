@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Which is the right way to store passwords?",
+  "o": [
+   "Encrypted with AES",
+   "Hashed with SHA-256",
+   "Hashed with a slow, memory-hard function like Argon2id plus a unique salt",
+   "Plaintext in a protected table"
+  ],
+  "a": 2,
+  "why": "Fast hashes can be brute-forced; encryption can be reversed with the key."
+ },
+ {
+  "t": "mc",
+  "q": "What does a per-user salt prevent?",
+  "o": [
+   "Slow logins",
+   "Precomputed (rainbow table) attacks and spotting users with the same password",
+   "Phishing",
+   "Weak passwords"
+  ],
+  "a": 1,
+  "why": "Same password, different salt, different hash."
+ },
+ {
+  "t": "mf",
+  "q": "Forcing users to change their password every 90 days is current NIST advice.",
+  "a": false,
+  "why": "Myth. Modern NIST guidance drops forced periodic changes; change only on evidence of compromise, and check new passwords against breach lists."
+ },
+ {
+  "t": "mc",
+  "q": "A pepper is …",
+  "o": [
+   "a salt stored next to the hash",
+   "a secret added to every hash, kept outside the database",
+   "a password rule",
+   "a hashing algorithm"
+  ],
+  "a": 1,
+  "why": "A database leak alone then isn't enough to crack hashes."
+ }
+]

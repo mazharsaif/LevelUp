@@ -1,0 +1,50 @@
+[
+ {
+  "t": "num",
+  "q": "Work out −7 + 12.",
+  "a": 5,
+  "why": "Different signs: subtract the sizes (12 − 7) and keep the sign of the bigger one, which is positive."
+ },
+ {
+  "t": "num",
+  "q": "Work out −4 − 9.",
+  "a": -13,
+  "why": "Both steps go left on the number line: −4 then 9 more to the left is −13."
+ },
+ {
+  "t": "num",
+  "q": "Work out 6 − (−8).",
+  "a": 14,
+  "why": "Subtracting a negative is adding: 6 + 8 = 14."
+ },
+ {
+  "t": "mc",
+  "q": "Which number is the biggest?",
+  "o": [
+   "−12",
+   "−3",
+   "−7",
+   "−0.5"
+  ],
+  "a": 3,
+  "why": "On the number line, −0.5 is furthest to the right, so it is the biggest."
+ },
+ {
+  "t": "mf",
+  "q": "−9 is bigger than −2 because 9 is bigger than 2.",
+  "a": false,
+  "why": "Myth. −2 is to the right of −9 on the number line, so −2 > −9. Owing 2 is better than owing 9."
+ },
+ {
+  "t": "num",
+  "q": "A firm made a loss of 4 million last year and a profit of 3 million this year. By how many million did its result change?",
+  "a": 7,
+  "why": "Change = new − old = 3 − (−4) = 7 million."
+ },
+ {
+  "t": "num",
+  "q": "Inflation fell from 3% to −2% (deflation). What was the change in percentage points? (Give a negative number for a fall.)",
+  "a": -5,
+  "why": "−2 − 3 = −5 percentage points."
+ }
+]

@@ -1,0 +1,75 @@
+[
+ {
+  "t": "mc",
+  "q": "Make t the subject of v = u + at.",
+  "o": [
+   "t = v − u − a",
+   "t = (v − u)/a",
+   "t = a/(v − u)",
+   "t = v/a − u"
+  ],
+  "a": 1,
+  "why": "Subtract u, then divide by a."
+ },
+ {
+  "t": "mc",
+  "q": "Make P the subject of Q = 60 − 3P.",
+  "o": [
+   "P = 20 − Q/3",
+   "P = Q/3 − 20",
+   "P = 60 − Q/3",
+   "P = 3Q − 60"
+  ],
+  "a": 0,
+  "why": "3P = 60 − Q, so P = (60 − Q)/3 = 20 − Q/3."
+ },
+ {
+  "t": "mc",
+  "q": "Solve −4x > 12.",
+  "o": [
+   "x > −3",
+   "x < −3",
+   "x > 3",
+   "x < 3"
+  ],
+  "a": 1,
+  "why": "Dividing by a negative flips the sign: x < −3."
+ },
+ {
+  "t": "mc",
+  "q": "Solve 2 < x + 5 ≤ 9.",
+  "o": [
+   "−3 < x ≤ 4",
+   "7 < x ≤ 14",
+   "−3 ≤ x < 4",
+   "3 < x ≤ 4"
+  ],
+  "a": 0,
+  "why": "Subtract 5 from all three parts."
+ },
+ {
+  "t": "mf",
+  "q": "When you multiply both sides of an inequality by −1, the sign stays the same.",
+  "a": false,
+  "why": "Myth. 2 < 5 but −2 > −5: multiplying or dividing by a negative flips it."
+ },
+ {
+  "t": "num",
+  "q": "A taxi charges 3 plus 1.50 per km. What is the furthest you can go, in whole km, for at most 20?",
+  "a": 11,
+  "why": "3 + 1.5d ≤ 20 gives d ≤ 11.33, so 11 whole km.",
+  "unit": "km"
+ },
+ {
+  "t": "mc",
+  "q": "Make x the subject of ax = bx + c (x appears twice).",
+  "o": [
+   "x = c/(a − b)",
+   "x = (c − b)/a",
+   "x = c/a − b",
+   "x = (a − b)/c"
+  ],
+  "a": 0,
+  "why": "Collect: ax − bx = c, factorise: x(a − b) = c, divide."
+ }
+]

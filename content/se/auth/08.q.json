@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A key question before choosing a hosted auth provider is …",
+  "o": [
+   "its logo",
+   "whether you can export password hashes if you leave",
+   "its colour scheme",
+   "how many SDKs it has"
+  ],
+  "a": 1,
+  "why": "Without hash export, leaving means forcing every user to reset."
+ },
+ {
+  "t": "mc",
+  "q": "Lazy migration means …",
+  "o": [
+   "moving all users in one night",
+   "moving each user to the new system the next time they log in",
+   "deleting old users",
+   "never migrating"
+  ],
+  "a": 1,
+  "why": "Their password is verified once against the old store, then rehashed."
+ },
+ {
+  "t": "mc",
+  "q": "Hosted auth providers typically charge by …",
+  "o": [
+   "monthly active users (MAU)",
+   "lines of code",
+   "CPU time",
+   "number of tables"
+  ],
+  "a": 0,
+  "why": "Costs grow with users."
+ },
+ {
+  "t": "mf",
+  "q": "'Auth' is just a login form.",
+  "a": false,
+  "why": "Myth: it includes recovery, sessions, MFA, rate limits, auditing and more."
+ }
+]

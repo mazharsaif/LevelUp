@@ -1,0 +1,74 @@
+[
+ {
+  "t": "mc",
+  "q": "Solve x + y = 10 and x − y = 4.",
+  "o": [
+   "x = 7, y = 3",
+   "x = 3, y = 7",
+   "x = 6, y = 4",
+   "x = 5, y = 5"
+  ],
+  "a": 0,
+  "why": "Add the equations: 2x = 14."
+ },
+ {
+  "t": "mc",
+  "q": "Solve y = 2x and 3x + y = 15.",
+  "o": [
+   "x = 3, y = 6",
+   "x = 5, y = 0",
+   "x = 2, y = 4",
+   "x = 6, y = 3"
+  ],
+  "a": 0,
+  "why": "3x + 2x = 15, so x = 3."
+ },
+ {
+  "t": "num",
+  "q": "Demand P = 60 − 2Q and supply P = 15 + Q. Find the equilibrium quantity.",
+  "a": 15,
+  "why": "60 − 2Q = 15 + Q, so 3Q = 45."
+ },
+ {
+  "t": "mc",
+  "q": "Elimination gives 0 = 4. What does that mean?",
+  "o": [
+   "One solution",
+   "No solution: the lines are parallel",
+   "Infinitely many solutions",
+   "x = 4"
+  ],
+  "a": 1,
+  "why": "A false statement means the two lines never meet."
+ },
+ {
+  "t": "mc",
+  "q": "How many solutions has x + 2y = 3 together with 2x + 4y = 6?",
+  "o": [
+   "None",
+   "One",
+   "Infinitely many",
+   "Two"
+  ],
+  "a": 2,
+  "why": "The second is the first doubled: the same line."
+ },
+ {
+  "t": "mc",
+  "q": "Solve 2x + 3y = 13 and x + y = 5.",
+  "o": [
+   "x = 2, y = 3",
+   "x = 3, y = 2",
+   "x = 5, y = 1",
+   "x = 1, y = 4"
+  ],
+  "a": 0,
+  "why": "From the second x = 5 − y; then 10 − 2y + 3y = 13, y = 3."
+ },
+ {
+  "t": "mf",
+  "q": "Two unknowns always need at least two independent equations to pin them down.",
+  "a": true,
+  "why": "Fact. One equation in two unknowns is a whole line of solutions."
+ }
+]

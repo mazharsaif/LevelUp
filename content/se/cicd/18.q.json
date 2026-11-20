@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "A senior design answer usually starts with …",
+  "o": [
+   "context and constraints",
+   "the favourite tool",
+   "code",
+   "a diagram of Kubernetes"
+  ],
+  "a": 0,
+  "why": "Context, options, decision, cost."
+ },
+ {
+  "t": "mc",
+  "q": "A 'golden path' is …",
+  "o": [
+   "a paved, supported default way to build and ship",
+   "the fastest network route",
+   "a Git branch",
+   "a secret"
+  ],
+  "a": 0,
+  "why": "Teams can still deviate with reason."
+ },
+ {
+  "t": "mc",
+  "q": "Reusable workflows help ten teams by …",
+  "o": [
+   "sharing one maintained pipeline definition",
+   "copying YAML everywhere",
+   "removing tests",
+   "adding approvals everywhere"
+  ],
+  "a": 0,
+  "why": "Fix once, everyone benefits."
+ },
+ {
+  "t": "mc",
+  "q": "A rollout plan should include …",
+  "o": [
+   "how you measure success and when you roll back",
+   "only the launch date",
+   "no metrics",
+   "a press release"
+  ],
+  "a": 0,
+  "why": "Measure and have an exit."
+ }
+]

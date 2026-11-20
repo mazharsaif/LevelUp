@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Which key may be copied to servers?",
+  "o": [
+   "the private key",
+   "the public key",
+   "both",
+   "neither"
+  ],
+  "a": 1,
+  "why": "The private key never leaves your machine."
+ },
+ {
+  "t": "mc",
+  "q": "A server decides who may log in by checking …",
+  "o": [
+   "~/.ssh/authorized_keys",
+   "known_hosts",
+   "/etc/passwd only",
+   "the firewall"
+  ],
+  "a": 0,
+  "why": "It lists the public keys allowed in."
+ },
+ {
+  "t": "mc",
+  "q": "The SSH agent gives programs …",
+  "o": [
+   "signatures made with your key, never the key itself",
+   "a copy of your private key",
+   "your password",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "The key stays inside the agent."
+ },
+ {
+  "t": "mf",
+  "q": "With agent forwarding, the remote host can use your key to sign while you're connected.",
+  "a": true,
+  "why": "Fact: so only forward to hosts you trust."
+ }
+]

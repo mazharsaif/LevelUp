@@ -1,0 +1,57 @@
+[
+ {
+  "t": "num",
+  "q": "Mean of 10, 20, 30, 40?",
+  "a": 25,
+  "why": "100/4."
+ },
+ {
+  "t": "num",
+  "q": "P(A) = 0.6. P(not A)?",
+  "a": 0.4,
+  "why": "1 − 0.6.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "X ~ B(20, 0.5). E(X)?",
+  "a": 10,
+  "why": "np."
+ },
+ {
+  "t": "num",
+  "q": "X ~ N(50, 5²). z for 60?",
+  "a": 2,
+  "why": "(60 − 50)/5."
+ },
+ {
+  "t": "num",
+  "q": "σ = 12, n = 36. Standard error?",
+  "a": 2,
+  "why": "12/6."
+ },
+ {
+  "t": "mc",
+  "q": "p = 0.20 at α = 5%. Decision?",
+  "o": [
+   "reject H₀",
+   "do not reject H₀",
+   "accept H₁",
+   "the test is invalid"
+  ],
+  "a": 1,
+  "why": "0.20 > 0.05."
+ },
+ {
+  "t": "mc",
+  "q": "A regression slope is significant at 5% roughly when the size of t is above …",
+  "o": [
+   "0.5",
+   "1",
+   "2",
+   "10"
+  ],
+  "a": 2,
+  "why": "Rule of thumb: about 2 (1.96 in large samples)."
+ }
+]

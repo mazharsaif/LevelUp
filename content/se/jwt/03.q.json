@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "How many dot-separated parts does a signed JWT have?",
+  "o": [
+   "2",
+   "3",
+   "4",
+   "5"
+  ],
+  "a": 1,
+  "why": "Header, payload, signature."
+ },
+ {
+  "t": "mc",
+  "q": "The exp claim is …",
+  "o": [
+   "the issuer",
+   "the expiry time (seconds since 1970)",
+   "the user id",
+   "the key id"
+  ],
+  "a": 1,
+  "why": "Reject tokens after exp (allowing small clock skew)."
+ },
+ {
+  "t": "mc",
+  "q": "Why should client apps treat the token as opaque?",
+  "o": [
+   "It is encrypted",
+   "Only the verifying service should rely on its contents; the format may change",
+   "It is binary",
+   "It is too long"
+  ],
+  "a": 1,
+  "why": "Apps just pass it along."
+ },
+ {
+  "t": "mf",
+  "q": "Decoding a JWT without verifying the signature is fine for access decisions.",
+  "a": false,
+  "why": "Myth. Unverified claims can be forged; verify first."
+ }
+]

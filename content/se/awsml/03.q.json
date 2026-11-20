@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Lower temperature makes model output …",
+  "o": [
+   "more random",
+   "more focused and repeatable",
+   "longer",
+   "cheaper per token"
+  ],
+  "a": 1,
+  "why": "Use low temperature for extraction and consistency."
+ },
+ {
+  "t": "mc",
+  "q": "An embedding is …",
+  "o": [
+   "a vector of numbers representing meaning",
+   "a prompt",
+   "a token limit",
+   "a model weight file"
+  ],
+  "a": 0,
+  "why": "Similar texts get nearby vectors."
+ },
+ {
+  "t": "mc",
+  "q": "A model invents a policy that doesn't exist. Best fix?",
+  "o": [
+   "Raise temperature",
+   "Ground answers with RAG on the real documents",
+   "Use a bigger font",
+   "Remove the system prompt"
+  ],
+  "a": 1,
+  "why": "That's a hallucination."
+ },
+ {
+  "t": "mc",
+  "q": "A nightly job summarising 100,000 documents fits which Bedrock pricing?",
+  "o": [
+   "On-demand",
+   "Batch inference",
+   "Provisioned throughput",
+   "Free tier"
+  ],
+  "a": 1,
+  "why": "About half the on-demand price for offline jobs."
+ }
+]

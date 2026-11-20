@@ -1,0 +1,74 @@
+[
+ {
+  "t": "num",
+  "q": "Find 3a − 2b when a = 4 and b = −5.",
+  "a": 22,
+  "why": "3(4) − 2(−5) = 12 + 10 = 22."
+ },
+ {
+  "t": "mc",
+  "q": "Simplify 5x + 3y − 2x + y.",
+  "o": [
+   "3x + 4y",
+   "7xy",
+   "3x + 3y",
+   "8x − y"
+  ],
+  "a": 0,
+  "why": "Collect like terms: (5 − 2)x + (3 + 1)y."
+ },
+ {
+  "t": "mc",
+  "q": "Expand −3(x − 4).",
+  "o": [
+   "−3x − 12",
+   "−3x + 12",
+   "−3x − 4",
+   "3x + 12"
+  ],
+  "a": 1,
+  "why": "Minus times minus is plus: −3 × −4 = +12."
+ },
+ {
+  "t": "mc",
+  "q": "Expand (x + 2)(x + 5).",
+  "o": [
+   "x² + 10",
+   "x² + 7x + 10",
+   "x² + 7x + 7",
+   "2x + 7"
+  ],
+  "a": 1,
+  "why": "x² + 5x + 2x + 10 = x² + 7x + 10."
+ },
+ {
+  "t": "mc",
+  "q": "Factorise 8x² − 12x.",
+  "o": [
+   "4(2x² − 3x)",
+   "4x(2x − 3)",
+   "x(8x − 12)",
+   "2x(4x − 6)"
+  ],
+  "a": 1,
+  "why": "Take out everything common: 4x. All four are equal, but only 4x(2x − 3) is fully factorised."
+ },
+ {
+  "t": "mf",
+  "q": "x × x = 2x",
+  "a": false,
+  "why": "Myth. x × x = x². (x + x = 2x.)"
+ },
+ {
+  "t": "mc",
+  "q": "Simplify 4 − (x − 6).",
+  "o": [
+   "−2 − x",
+   "10 − x",
+   "−2 + x",
+   "10 + x"
+  ],
+  "a": 1,
+  "why": "The minus changes both signs inside: 4 − x + 6 = 10 − x."
+ }
+]

@@ -1,0 +1,43 @@
+[
+ {
+  "t": "num",
+  "q": "A fair die is rolled. What is P(4 or more)? (decimal or fraction)",
+  "a": 0.5,
+  "why": "4, 5, 6: 3/6.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "P(rain) = 0.3. What is P(no rain)?",
+  "a": 0.7,
+  "why": "Complement: 1 − 0.3.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "P(A) = 0.4, P(B) = 0.5, P(A and B) = 0.2. Find P(A or B).",
+  "a": 0.7,
+  "why": "0.4 + 0.5 − 0.2.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "Two independent events with probabilities 0.5 and 0.2. P(both)?",
+  "a": 0.1,
+  "why": "Multiply: 0.1.",
+  "tol": 0.001
+ },
+ {
+  "t": "num",
+  "q": "A coin is tossed 3 times. P(at least one head)? (decimal)",
+  "a": 0.875,
+  "why": "1 − (1/2)³ = 7/8.",
+  "tol": 0.001
+ },
+ {
+  "t": "mf",
+  "q": "Mutually exclusive events are the same as independent events.",
+  "a": false,
+  "why": "Myth. Mutually exclusive events cannot happen together, so knowing one happened tells you the other didn't: they are dependent."
+ }
+]

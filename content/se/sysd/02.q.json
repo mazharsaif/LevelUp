@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "After= in a unit controls …",
+  "o": [
+   "start order only",
+   "whether the other unit is started",
+   "restart policy",
+   "logs"
+  ],
+  "a": 0,
+  "why": "Wants=/Requires= pull units in; After= orders them."
+ },
+ {
+  "t": "mc",
+  "q": "Your own unit files belong in …",
+  "o": [
+   "/etc/systemd/system",
+   "/usr/lib/systemd/system",
+   "/tmp",
+   "/var/log"
+  ],
+  "a": 0,
+  "why": "/etc overrides the package defaults in /usr/lib."
+ },
+ {
+  "t": "mc",
+  "q": "A target is …",
+  "o": [
+   "a group of units / a sync point like multi-user.target",
+   "a log file",
+   "a timer",
+   "a socket"
+  ],
+  "a": 0,
+  "why": "Like a runlevel."
+ },
+ {
+  "t": "mc",
+  "q": "systemd tracks all of a service's processes with …",
+  "o": [
+   "cgroups",
+   "PID files",
+   "cron",
+   "ps"
+  ],
+  "a": 0,
+  "why": "So it can stop every child."
+ }
+]

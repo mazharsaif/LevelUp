@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A STAR story has …",
+  "o": [
+   "Situation, Task, Action, Result",
+   "Start, Test, Assert, Run",
+   "Setup, Teardown, Act, Report",
+   "Story, Theme, Arc, Resolution"
+  ],
+  "a": 0,
+  "why": "Structure for interview examples."
+ },
+ {
+  "t": "mc",
+  "q": "An ADR is …",
+  "o": [
+   "an architecture decision record",
+   "a Docker registry",
+   "a test report",
+   "an alert"
+  ],
+  "a": 0,
+  "why": "Why a decision was made."
+ },
+ {
+  "t": "mc",
+  "q": "Good evidence of skill in your repos:",
+  "o": [
+   "a clear README, ADRs and a working CI badge",
+   "many empty repos",
+   "private repos only",
+   "no docs"
+  ],
+  "a": 0,
+  "why": "Make it easy to verify."
+ },
+ {
+  "t": "mf",
+  "q": "In interviews, a what-if story you actually lived beats a textbook answer.",
+  "a": true,
+  "why": "Fact: real trade-offs show judgement."
+ }
+]

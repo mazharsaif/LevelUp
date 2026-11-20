@@ -1,0 +1,51 @@
+[
+ {
+  "t": "num",
+  "q": "σ = 20, n = 100. Standard error of the mean?",
+  "a": 2,
+  "why": "20/√100."
+ },
+ {
+  "t": "mc",
+  "q": "To halve the standard error you need …",
+  "o": [
+   "twice the sample",
+   "four times the sample",
+   "half the sample",
+   "the same sample"
+  ],
+  "a": 1,
+  "why": "SE falls with √n."
+ },
+ {
+  "t": "mc",
+  "q": "The central limit theorem says, for large n …",
+  "o": [
+   "the population becomes normal",
+   "the sample mean is about normal, whatever the population shape",
+   "every sample equals the population",
+   "the SE grows"
+  ],
+  "a": 1,
+  "why": "It is about the distribution of x̄."
+ },
+ {
+  "t": "num",
+  "q": "p = 0.5, n = 400. SE of the sample proportion? (decimal)",
+  "a": 0.025,
+  "why": "√(0.25/400).",
+  "tol": 0.0005
+ },
+ {
+  "t": "num",
+  "q": "Spending has mean 2,000 and SD 400. For n = 64, SE of x̄?",
+  "a": 50,
+  "why": "400/8."
+ },
+ {
+  "t": "mf",
+  "q": "The sample mean is an unbiased estimator of the population mean.",
+  "a": true,
+  "why": "Fact: on average it hits μ."
+ }
+]

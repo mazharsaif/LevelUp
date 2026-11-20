@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Undo the last local commit but keep the changes:",
+  "o": [
+   "git reset --soft HEAD~1",
+   "git reset --hard HEAD~1",
+   "git revert HEAD",
+   "git stash drop"
+  ],
+  "a": 0,
+  "why": "--hard would delete the changes."
+ },
+ {
+  "t": "mc",
+  "q": "See why a container exited:",
+  "o": [
+   "docker logs <id>",
+   "docker ps only",
+   "docker rmi",
+   "docker pull"
+  ],
+  "a": 0,
+  "why": "Then docker inspect for the exit code."
+ },
+ {
+  "t": "mc",
+  "q": "'permission denied (publickey)' on git push means …",
+  "o": [
+   "the SSH key isn't accepted (wrong key or not loaded)",
+   "a merge conflict",
+   "a full disk",
+   "a CI failure"
+  ],
+  "a": 0,
+  "why": "Check ssh -T and the agent."
+ },
+ {
+  "t": "mc",
+  "q": "A CI job fails with 'ModuleNotFoundError'. Likely cause?",
+  "o": [
+   "dependencies weren't installed in the job",
+   "Git is broken",
+   "the runner is offline",
+   "a DNS issue"
+  ],
+  "a": 0,
+  "why": "Install from the lock file first."
+ }
+]

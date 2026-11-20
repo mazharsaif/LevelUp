@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "An SLO is …",
+  "o": [
+   "a target for service reliability, like 99.5% of requests OK",
+   "a log format",
+   "a deploy tool",
+   "a secret"
+  ],
+  "a": 0,
+  "why": "Service level objective."
+ },
+ {
+  "t": "mc",
+  "q": "The error budget is …",
+  "o": [
+   "the allowed unreliability under the SLO",
+   "the cloud bill",
+   "the test count",
+   "a bug list"
+  ],
+  "a": 0,
+  "why": "Spend it on change; freeze when it's gone."
+ },
+ {
+  "t": "mc",
+  "q": "Structured logs (e.g. JSON) help because …",
+  "o": [
+   "you can query and alert on fields",
+   "they're shorter",
+   "they hide errors",
+   "they're encrypted"
+  ],
+  "a": 0,
+  "why": "Machine-readable."
+ },
+ {
+  "t": "mc",
+  "q": "A blameless postmortem focuses on …",
+  "o": [
+   "what in the system allowed the failure and how to prevent it",
+   "who to blame",
+   "nothing",
+   "marketing"
+  ],
+  "a": 0,
+  "why": "Learning, not punishment."
+ }
+]

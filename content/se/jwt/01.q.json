@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A valid token is sent but lacks the needed permission. Which status?",
+  "o": [
+   "401",
+   "403",
+   "404",
+   "500"
+  ],
+  "a": 1,
+  "why": "401 = not authenticated (no/bad token); 403 = authenticated but not allowed."
+ },
+ {
+  "t": "mc",
+  "q": "A bearer token means …",
+  "o": [
+   "only the bearer's IP may use it",
+   "whoever holds it can use it, so it must be kept secret",
+   "it is encrypted",
+   "it never expires"
+  ],
+  "a": 1,
+  "why": "Like cash: possession is enough."
+ },
+ {
+  "t": "mc",
+  "q": "Why are JWTs called stateless?",
+  "o": [
+   "They contain everything needed to verify them, with no server-side session lookup",
+   "They never change",
+   "They have no claims",
+   "They use UDP"
+  ],
+  "a": 0,
+  "why": "The signature and claims are self-contained."
+ },
+ {
+  "t": "mf",
+  "q": "A shared X-Password header proves which user is calling.",
+  "a": false,
+  "why": "Myth. Everyone shares it; it identifies no user, can't carry permissions and leaks easily."
+ }
+]

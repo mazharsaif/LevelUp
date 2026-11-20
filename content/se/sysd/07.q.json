@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Score a unit's sandboxing:",
+  "o": [
+   "systemd-analyze security x",
+   "systemctl status x",
+   "journalctl -u x",
+   "ps aux"
+  ],
+  "a": 0,
+  "why": "Lower exposure is better."
+ },
+ {
+  "t": "mc",
+  "q": "ProtectSystem=strict makes …",
+  "o": [
+   "the whole filesystem read-only except allowed paths",
+   "the network off",
+   "root required",
+   "logs private"
+  ],
+  "a": 0,
+  "why": "Pair with StateDirectory= for writable data."
+ },
+ {
+  "t": "mc",
+  "q": "Cap memory for a unit with …",
+  "o": [
+   "MemoryMax=",
+   "Nice=",
+   "LimitCORE=",
+   "TimeoutSec="
+  ],
+  "a": 0,
+  "why": "Enforced by cgroups."
+ },
+ {
+  "t": "mc",
+  "q": "After hardening, the app fails with 'read-only file system'. Fix:",
+  "o": [
+   "grant the path with StateDirectory= or ReadWritePaths=",
+   "remove all hardening",
+   "run as root",
+   "reboot"
+  ],
+  "a": 0,
+  "why": "Open only what is needed."
+ }
+]

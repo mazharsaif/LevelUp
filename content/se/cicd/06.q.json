@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "In a GitHub Actions step, 'uses' vs 'run':",
+  "o": [
+   "'uses' calls a reusable action; 'run' runs shell commands",
+   "they are the same",
+   "'run' calls actions",
+   "'uses' sets env vars"
+  ],
+  "a": 0,
+  "why": "e.g. uses: actions/checkout."
+ },
+ {
+  "t": "mc",
+  "q": "Cancel older runs of the same branch when you push again:",
+  "o": [
+   "concurrency with cancel-in-progress",
+   "timeout-minutes",
+   "permissions",
+   "matrix"
+  ],
+  "a": 0,
+  "why": "Saves minutes."
+ },
+ {
+  "t": "mc",
+  "q": "A job runs on …",
+  "o": [
+   "a runner (a VM or container)",
+   "your laptop always",
+   "GitHub's database",
+   "DNS"
+  ],
+  "a": 0,
+  "why": "runs-on: ubuntu-latest."
+ },
+ {
+  "t": "mc",
+  "q": "Give the workflow token only what it needs with …",
+  "o": [
+   "permissions:",
+   "secrets:",
+   "env:",
+   "needs:"
+  ],
+  "a": 0,
+  "why": "Least privilege for GITHUB_TOKEN."
+ }
+]

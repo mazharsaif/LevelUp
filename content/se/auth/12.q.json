@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "Best password storage today?",
+  "o": [
+   "SHA-256",
+   "AES",
+   "Argon2id with a salt",
+   "MD5"
+  ],
+  "a": 2,
+  "why": "Slow and memory-hard."
+ },
+ {
+  "t": "mc",
+  "q": "Ownership check missing on /orders/:id is …",
+  "o": [
+   "IDOR",
+   "CSRF",
+   "XSS",
+   "SSRF"
+  ],
+  "a": 0,
+  "why": "Broken object-level authorisation."
+ },
+ {
+  "t": "mc",
+  "q": "Which cookie flag blocks script access?",
+  "o": [
+   "HttpOnly",
+   "Secure",
+   "SameSite",
+   "Domain"
+  ],
+  "a": 0,
+  "why": "Limits XSS damage."
+ },
+ {
+  "t": "mc",
+  "q": "Phishing-resistant login?",
+  "o": [
+   "SMS code",
+   "Passkey / WebAuthn",
+   "Security question",
+   "Email link"
+  ],
+  "a": 1,
+  "why": "Origin-bound credentials."
+ },
+ {
+  "t": "mf",
+  "q": "Account lockout after a few failures is free of downsides.",
+  "a": false,
+  "why": "Myth: it enables lockout denial of service."
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which Type= does this guide recommend for most apps?",
+  "o": [
+   "simple",
+   "exec",
+   "forking",
+   "oneshot"
+  ],
+  "a": 1,
+  "why": "exec reports failure if the binary can't start."
+ },
+ {
+  "t": "mc",
+  "q": "Restart=on-failure restarts the service when …",
+  "o": [
+   "it exits with an error or is killed",
+   "it exits cleanly",
+   "you stop it",
+   "never"
+  ],
+  "a": 0,
+  "why": "Not after a clean stop."
+ },
+ {
+  "t": "mc",
+  "q": "Secrets for a unit are best loaded with …",
+  "o": [
+   "EnvironmentFile= pointing to a root-only file",
+   "Environment= in the world-readable unit",
+   "the command line",
+   "a public URL"
+  ],
+  "a": 0,
+  "why": "Unit files are readable by all users."
+ },
+ {
+  "t": "mc",
+  "q": "StartLimitBurst protects against …",
+  "o": [
+   "a crash loop restarting forever",
+   "slow disks",
+   "DNS failure",
+   "big logs"
+  ],
+  "a": 0,
+  "why": "Too many restarts in the interval stops trying."
+ }
+]

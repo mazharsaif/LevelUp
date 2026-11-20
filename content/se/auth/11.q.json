@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "The first step of securing a real app is …",
+  "o": [
+   "buying a WAF",
+   "threat-modelling: what to protect, from whom, and how it could fail",
+   "rewriting it",
+   "adding MFA everywhere"
+  ],
+  "a": 1,
+  "why": "Decisions follow from the threat model."
+ },
+ {
+  "t": "mc",
+  "q": "For HTTPS on a home network without a public domain, a simple option is …",
+  "o": [
+   "mkcert (a local CA)",
+   "Let's Encrypt HTTP-01",
+   "self-signed and ignore warnings",
+   "plain HTTP"
+  ],
+  "a": 0,
+  "why": "mkcert installs a local CA your devices trust."
+ },
+ {
+  "t": "mc",
+  "q": "One central policy dependency for authorisation helps because …",
+  "o": [
+   "every route checks access the same way",
+   "it is faster",
+   "it hides errors",
+   "it removes logins"
+  ],
+  "a": 0,
+  "why": "Scattered checks get forgotten."
+ },
+ {
+  "t": "mf",
+  "q": "Migrating existing users can be done by forcing a password set on first login.",
+  "a": true,
+  "why": "Fact: a common, simple migration plan for small apps."
+ }
+]

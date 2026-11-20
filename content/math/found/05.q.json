@@ -1,0 +1,51 @@
+[
+ {
+  "t": "num",
+  "q": "Write 7.5% as a decimal.",
+  "a": 0.075,
+  "why": "Divide by 100: 0.075."
+ },
+ {
+  "t": "num",
+  "q": "Find 15% of 260.",
+  "a": 39,
+  "why": "0.15 × 260 = 39."
+ },
+ {
+  "t": "num",
+  "q": "Increase 400 by 12%.",
+  "a": 448,
+  "why": "Multiplier 1.12: 400 × 1.12 = 448."
+ },
+ {
+  "t": "num",
+  "q": "A price falls from 50 to 42. What is the percentage change? (Negative for a fall.)",
+  "a": -16,
+  "why": "(42 − 50)/50 × 100 = −16%.",
+  "unit": "%"
+ },
+ {
+  "t": "num",
+  "q": "After a 25% discount a jacket costs 90. What was the original price?",
+  "a": 120,
+  "why": "90 is 75% of the original: 90 ÷ 0.75 = 120 (not 90 + 25% = 112.5)."
+ },
+ {
+  "t": "mf",
+  "q": "A 10% rise followed by a 10% fall brings a price back to where it started.",
+  "a": false,
+  "why": "Myth. 1.1 × 0.9 = 0.99: the price ends 1% lower."
+ },
+ {
+  "t": "mc",
+  "q": "The interest rate rises from 2% to 3%. Which statement is right?",
+  "o": [
+   "It rose by 1%",
+   "It rose by 1 percentage point, which is a 50% rise",
+   "It rose by 50 percentage points",
+   "It rose by 3%"
+  ],
+  "a": 1,
+  "why": "3 − 2 = 1 percentage point; relative to 2, that is a 50% rise."
+ }
+]
