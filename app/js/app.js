@@ -660,7 +660,7 @@ function settingsView() {
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
     <p class="muted small">Save all pronunciation clips on this phone so lessons work without internet.</p>
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
-  ${offerApk() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 Android app</div>
+  ${offerApk() || offerIos() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 ${offerIos() ? "iPhone app" : "Android app"}</div>
     <p class="muted small">Install LevelUp as an app: full screen, own icon, same account and progress.</p>${apkBtn("btn")}</div>` : ""}
   <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
     <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
@@ -1605,15 +1605,38 @@ const IS_ANDROID = /Android/i.test(navigator.userAgent);
 const standaloneApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const offerApk = () => !IN_APK && !IS_IOS && !standaloneApp();
 const APK_URL = "download/levelup.apk";
-const apkBtn = (cls = "btn ghost", style = "") => offerApk() ? `<button class="${cls}" type="button" data-apk style="${style}">📱 Download the Android app</button>` : "";
+// iPhone: no APK, but Safari's "Add to Home Screen" installs LevelUp as a full-screen app (iosSheet explains it)
+const offerIos = () => IS_IOS && !standaloneApp();
+const IOS_GUIDE = "download/levelup-iphone-guide.pdf";
+const apkBtn = (cls = "btn ghost", style = "") => offerApk() ? `<button class="${cls}" type="button" data-apk style="${style}">📱 Download the Android app</button>`
+  : offerIos() ? `<button class="${cls}" type="button" data-ios style="${style}">📱 Add LevelUp to your home screen</button>` : "";
 const apkHidden = () => { try { return !!localStorage.getItem("a1.apkHide"); } catch { return false; } };
 const apkBanner = () => offerApk() && IS_ANDROID && !apkHidden() ? `<div class="card row" id="apkb" style="gap:10px;align-items:center;padding:10px 12px">
   <span style="font-size:24px">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Full screen, own icon, opens straight into your lessons.</div></div>
-  <button class="btn sm" type="button" data-apk style="width:auto;margin:0">Get it</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>` : "";
+  <button class="btn sm" type="button" data-apk style="width:auto;margin:0">Get it</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>`
+  : offerIos() && !apkHidden() ? `<div class="card row" id="apkb" style="gap:10px;align-items:center;padding:10px 12px">
+  <span style="font-size:24px">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Add it to your home screen: full screen, own icon.</div></div>
+  <button class="btn sm" type="button" data-ios style="width:auto;margin:0">How</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>` : "";
 function wireApk(root = view()) {
   root.querySelectorAll("[data-apk]").forEach(b => (b.onclick = apkSheet));
+  root.querySelectorAll("[data-ios]").forEach(b => (b.onclick = iosSheet));
   const x = root.querySelector("#apkx");
   if (x) x.onclick = () => { try { localStorage.setItem("a1.apkHide", "1"); } catch { /* ignore */ } root.querySelector("#apkb")?.remove(); toast("You can still get the app in Settings"); };
+}
+const SHARE_ICON = `<svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:-3px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10H6v11h12V10h-2"/><path d="M12 15V3M8 7l4-4 4 4"/></svg>`;
+function iosSheet() {
+  const notSafari = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(navigator.userAgent);
+  sheet(`<h2 style="margin-top:0">📱 LevelUp on iPhone</h2>
+    <p class="muted small" style="margin-top:0">iPhones install LevelUp from Safari. It gets its own icon, opens full screen and keeps your progress.</p>
+    ${notSafari ? `<div class="note">You're not in Safari. Open <b>levelrise.org</b> in <b>Safari</b> first, then follow the steps.</div>` : ""}
+    <ol class="small" style="padding-left:20px;line-height:1.6">
+      <li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari's bar. On iOS 26, tap <b>•••</b> first, then <b>Share</b>.</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b>. If you don't see it, tap <b>View More</b>.</li>
+      <li>Keep <b>Open as Web App</b> on (if shown) and tap <b>Add</b>.</li>
+      <li>Open <b>LevelUp</b> from your home screen and log in once.</li>
+    </ol>
+    <a class="btn ghost" href="${IOS_GUIDE}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">🖼️ Guide with pictures (PDF)</a>
+    <button class="btn" type="button" id="iosc">Got it</button>`, el => { el.querySelector("#iosc").onclick = closeSheet; });
 }
 function apkSheet() {
   const appUrl = "https://levelrise.org";
@@ -1637,7 +1660,7 @@ const SHARE_TEXT = "LevelUp was made to learn German faster, because the usual a
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
   // both links go inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview card
-  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}`;
+  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}\n🍎 iPhone: open the link in Safari, tap Share, then "Add to Home Screen". Picture guide: ${new URL(IOS_GUIDE, url).href}`;
   try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(text); toast("Invite message copied"); }
   catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">
