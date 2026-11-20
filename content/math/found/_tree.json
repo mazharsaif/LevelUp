@@ -1,0 +1,390 @@
+{
+  "branch": {
+    "id": "found",
+    "title": "Math Foundations",
+    "icon": "🧮",
+    "color": "#4FB3FF",
+    "order": 1
+  },
+  "nodes": [
+    {
+      "key": "negatives",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "➖",
+      "chapter": 1,
+      "title": "Numbers & negatives",
+      "short": "The number line, signs, no slips",
+      "learn": [
+        "Place and compare negative numbers on the number line",
+        "Add and subtract with mixed signs",
+        "Turn two minus signs into a plus",
+        "Use negatives for losses, falls and deficits"
+      ],
+      "concepts": [
+        "Number line",
+        "Negative number",
+        "Absolute value",
+        "Percentage point"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "muldiv",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "negatives"
+      ],
+      "icon": "✖️",
+      "chapter": 2,
+      "title": "Multiply & divide",
+      "short": "Mental tricks, long methods, signs",
+      "learn": [
+        "Multiply and divide without a calculator",
+        "Use splitting and doubling tricks",
+        "Apply the sign rules for negatives",
+        "Explain why you cannot divide by zero"
+      ],
+      "concepts": [
+        "Distributive law",
+        "Long division",
+        "Sign rules",
+        "Undefined"
+      ],
+      "exercises": [
+        "Concept check",
+        "Order the flow",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "fractions",
+      "level": 2,
+      "col": 0,
+      "req": [
+        "muldiv"
+      ],
+      "icon": "🍰",
+      "chapter": 4,
+      "title": "Fractions",
+      "short": "Simplify, add, multiply, divide",
+      "learn": [
+        "Simplify fractions and find equivalent ones",
+        "Multiply and divide fractions",
+        "Add and subtract with different denominators",
+        "Avoid the illegal cancel"
+      ],
+      "concepts": [
+        "Numerator",
+        "Denominator",
+        "Common denominator",
+        "Reciprocal"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "order",
+      "level": 2,
+      "col": 1,
+      "req": [
+        "muldiv"
+      ],
+      "icon": "🔢",
+      "chapter": 3,
+      "title": "Order of operations",
+      "short": "BODMAS and its traps",
+      "learn": [
+        "Apply BODMAS in the right order",
+        "Go left to right within the same rank",
+        "Treat a fraction bar as brackets",
+        "Tell −3² from (−3)²"
+      ],
+      "concepts": [
+        "BODMAS",
+        "Brackets",
+        "Left to right",
+        "Fraction bar"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Order the flow"
+      ]
+    },
+    {
+      "key": "powers",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "muldiv"
+      ],
+      "icon": "🚀",
+      "chapter": 6,
+      "title": "Powers & roots",
+      "short": "Exponent laws, roots, big numbers",
+      "learn": [
+        "Evaluate powers including negatives",
+        "Use the laws of exponents",
+        "Work with square roots and their two signs",
+        "Write big and small numbers in scientific notation"
+      ],
+      "concepts": [
+        "Exponent",
+        "Square root",
+        "Zero and negative powers",
+        "Scientific notation"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "percent",
+      "level": 3,
+      "col": 0,
+      "req": [
+        "fractions"
+      ],
+      "icon": "💯",
+      "chapter": 5,
+      "title": "Decimals & percent",
+      "short": "Multipliers and percentage change",
+      "learn": [
+        "Convert between fractions, decimals and percentages",
+        "Increase or decrease with one multiplier",
+        "Compute percentage change from the old value",
+        "Solve reverse percentages"
+      ],
+      "concepts": [
+        "Multiplier",
+        "Percentage change",
+        "Reverse percentage",
+        "Compounding",
+        "Percentage point"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "expr",
+      "level": 3,
+      "col": 1,
+      "req": [
+        "order",
+        "powers"
+      ],
+      "icon": "🔤",
+      "chapter": 7,
+      "title": "Letters & expressions",
+      "short": "Like terms, expand, factorise",
+      "learn": [
+        "Read and write algebra notation",
+        "Substitute values safely",
+        "Collect like terms",
+        "Expand and factorise brackets"
+      ],
+      "concepts": [
+        "Variable",
+        "Term",
+        "Coefficient",
+        "Like terms",
+        "Expanding"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ]
+    },
+    {
+      "key": "equations",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "expr",
+        "percent"
+      ],
+      "icon": "⚖️",
+      "chapter": 8,
+      "title": "Solving equations",
+      "short": "The balance method",
+      "learn": [
+        "Solve linear equations step by step",
+        "Handle letters on both sides",
+        "Clear fractions first",
+        "Find a break-even quantity"
+      ],
+      "concepts": [
+        "Balance",
+        "Inverse operation",
+        "Check the answer",
+        "Break-even"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "rearrange",
+      "level": 5,
+      "col": 0,
+      "req": [
+        "equations"
+      ],
+      "icon": "🔀",
+      "chapter": 9,
+      "title": "Rearranging & inequalities",
+      "short": "Change the subject, flip the sign",
+      "learn": [
+        "Make any letter the subject of a formula",
+        "Collect and factorise when the subject appears twice",
+        "Solve inequalities and flip on negatives",
+        "Solve double inequalities"
+      ],
+      "concepts": [
+        "Subject",
+        "Inverse demand",
+        "Inequality",
+        "Flip rule"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "coords",
+      "level": 5,
+      "col": 2,
+      "req": [
+        "equations"
+      ],
+      "icon": "📍",
+      "chapter": 11,
+      "title": "Coordinate plane",
+      "short": "Points, quadrants, distance",
+      "learn": [
+        "Plot and read points (x, y)",
+        "Name the quadrants and their signs",
+        "Find the midpoint and the distance",
+        "Plot a rule from a table of values"
+      ],
+      "concepts": [
+        "Origin",
+        "Ordered pair",
+        "Quadrant",
+        "Distance formula",
+        "Midpoint"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "words",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "rearrange"
+      ],
+      "icon": "📝",
+      "chapter": 10,
+      "title": "Word problems",
+      "short": "Words into equations",
+      "learn": [
+        "Name the unknown with its units",
+        "Translate phrases into maths",
+        "Set up total-and-split problems",
+        "Answer in words and sanity-check"
+      ],
+      "concepts": [
+        "Let x = ...",
+        "Translation table",
+        "Mixture problem",
+        "Profit equation"
+      ],
+      "exercises": [
+        "Scenario",
+        "Order the flow",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "lines",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "coords"
+      ],
+      "icon": "📈",
+      "chapter": 12,
+      "title": "Straight-line graphs",
+      "short": "y = mx + c and equilibrium",
+      "learn": [
+        "Read slope and intercept from y = mx + c",
+        "Find the slope through two points",
+        "Find a line's equation and draw it",
+        "Find where two lines meet (equilibrium)"
+      ],
+      "concepts": [
+        "Slope",
+        "Intercept",
+        "Parallel lines",
+        "Equilibrium"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "words",
+        "lines"
+      ],
+      "icon": "👑",
+      "chapter": 13,
+      "title": "Foundations review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Do arithmetic with negatives, fractions and percentages",
+        "Simplify, expand and solve",
+        "Turn word problems into equations",
+        "Work with lines and equilibrium"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true
+    }
+  ]
+}

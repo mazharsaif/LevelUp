@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Add (or update) one skill-tree branch in LevelUp's app/data/se-path.json from a spec file.
 
-    python3 add_branch.py <LevelUp dir> <spec.json> [--update]
+    python3 add_branch.py <LevelUp dir> <spec.json> [--update] [--tree math]
+  (--tree X: app/data/X-path.json and content/X/<branch>/; default se = Software Engineering)
 
 spec.json:
 {
@@ -46,7 +47,8 @@ def main():
         sys.exit(__doc__)
     app, spec_path = sys.argv[1], sys.argv[2]
     update = "--update" in sys.argv
-    p = os.path.join(app, "app", "data", "se-path.json")
+    tree = sys.argv[sys.argv.index("--tree") + 1] if "--tree" in sys.argv else "se"
+    p = os.path.join(app, "app", "data", f"{tree}-path.json")
     raw = open(p, encoding="utf-8").read()
     d = json.loads(raw)
     spec = json.load(open(spec_path, encoding="utf-8"))
@@ -56,7 +58,7 @@ def main():
     existing = next((x for x in d["branches"] if x["id"] == bid), None)
     if existing and not update:
         sys.exit(f"branch '{bid}' already exists: use --update")
-    content = os.path.join(app, "content", "se", bid)
+    content = os.path.join(app, "content", tree, bid)
     prev = {n["id"]: n for n in d["nodes"] if n["branch"] == bid}
     nodes, seen, pos = [], set(), {}
     for i, s in enumerate(spec["nodes"], 1):
@@ -136,7 +138,7 @@ def main():
         out.extend(nodes)
     d["nodes"] = out
     b.setdefault("status", "open")
-    b.setdefault("reading", f"data/se/{bid}/")
+    b.setdefault("reading", f"data/{tree}/{bid}/")
     if os.path.exists(os.path.join(content, "00.md")):
         b.setdefault("intro", 0)
     if existing:

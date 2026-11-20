@@ -1,0 +1,362 @@
+{
+  "branch": {
+    "id": "alg",
+    "title": "Algebra & Matrices",
+    "icon": "📐",
+    "color": "#B48CFF",
+    "order": 2
+  },
+  "nodes": [
+    {
+      "key": "functions",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🎛️",
+      "chapter": 1,
+      "title": "Functions",
+      "short": "f(x), domain, inverse",
+      "learn": [
+        "Read and evaluate f(x) notation",
+        "Find a domain and range",
+        "Combine and compose functions",
+        "Find inverse functions such as inverse demand"
+      ],
+      "concepts": [
+        "Function",
+        "Domain",
+        "Range",
+        "Composite",
+        "Inverse"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "poly",
+      "level": 1,
+      "col": 0,
+      "req": [
+        "functions"
+      ],
+      "icon": "🧱",
+      "chapter": 2,
+      "title": "Polynomials",
+      "short": "Degree, add, multiply",
+      "learn": [
+        "Name the degree and coefficients",
+        "Add and subtract polynomials",
+        "Multiply polynomials term by term",
+        "Use the three special products"
+      ],
+      "concepts": [
+        "Degree",
+        "Leading coefficient",
+        "FOIL",
+        "Perfect square",
+        "Difference of squares"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ]
+    },
+    {
+      "key": "systems",
+      "level": 1,
+      "col": 2,
+      "req": [
+        "functions"
+      ],
+      "icon": "🧩",
+      "chapter": 3,
+      "title": "Systems of equations",
+      "short": "Substitution and elimination",
+      "learn": [
+        "Solve two equations by substitution",
+        "Solve by elimination",
+        "Spot no solution or infinitely many",
+        "Solve market equilibrium systems"
+      ],
+      "concepts": [
+        "System",
+        "Substitution",
+        "Elimination",
+        "Equilibrium"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Concept check"
+      ]
+    },
+    {
+      "key": "factor",
+      "level": 2,
+      "col": 0,
+      "req": [
+        "poly"
+      ],
+      "icon": "🔧",
+      "chapter": 4,
+      "title": "Factoring",
+      "short": "Quadratics into brackets",
+      "learn": [
+        "Take out a common factor",
+        "Factor x² + bx + c",
+        "Factor ax² + bx + c with the ac method",
+        "Use the special patterns and simplify fractions"
+      ],
+      "concepts": [
+        "Common factor",
+        "ac method",
+        "Difference of squares",
+        "Algebraic fraction"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "vectors",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "systems"
+      ],
+      "icon": "➡️",
+      "chapter": 5,
+      "title": "Vectors",
+      "short": "Add, scale, dot product",
+      "learn": [
+        "Write vectors as rows and columns",
+        "Add and scale vectors",
+        "Compute dot products (spending = p · q)",
+        "Find a vector's length and test perpendicularity"
+      ],
+      "concepts": [
+        "Vector",
+        "Scalar",
+        "Dot product",
+        "Norm",
+        "Orthogonal"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "quadratic",
+      "level": 3,
+      "col": 0,
+      "req": [
+        "factor"
+      ],
+      "icon": "✳️",
+      "chapter": 6,
+      "title": "Quadratic equations",
+      "short": "Factor, complete the square, formula",
+      "learn": [
+        "Solve by factoring",
+        "Solve by completing the square",
+        "Use the quadratic formula without sign slips",
+        "Count roots with the discriminant"
+      ],
+      "concepts": [
+        "Root",
+        "Completing the square",
+        "Quadratic formula",
+        "Discriminant"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "matrices",
+      "level": 3,
+      "col": 2,
+      "req": [
+        "vectors"
+      ],
+      "icon": "🔲",
+      "chapter": 7,
+      "title": "Matrices",
+      "short": "Size, multiply, transpose",
+      "learn": [
+        "Read a matrix's size and entries",
+        "Add and scale matrices",
+        "Multiply matrices and check sizes",
+        "Use the identity and transpose"
+      ],
+      "concepts": [
+        "Matrix",
+        "Row × column",
+        "Identity",
+        "Transpose",
+        "AB ≠ BA"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Spot the bug"
+      ]
+    },
+    {
+      "key": "parabolas",
+      "level": 4,
+      "col": 0,
+      "req": [
+        "quadratic"
+      ],
+      "icon": "⛰️",
+      "chapter": 8,
+      "title": "Graphs of quadratics",
+      "short": "Vertex, max profit",
+      "learn": [
+        "Tell from a whether a parabola opens up or down",
+        "Find the vertex, axis and intercepts",
+        "Write vertex form by completing the square",
+        "Find maximum revenue or profit"
+      ],
+      "concepts": [
+        "Parabola",
+        "Vertex",
+        "Axis of symmetry",
+        "Maximum",
+        "Minimum"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "det",
+      "level": 4,
+      "col": 2,
+      "req": [
+        "matrices"
+      ],
+      "icon": "🧮",
+      "chapter": 9,
+      "title": "Determinants & inverses",
+      "short": "det, singular, A⁻¹",
+      "learn": [
+        "Compute 2 × 2 and 3 × 3 determinants",
+        "Know what det = 0 means",
+        "Invert a 2 × 2 matrix",
+        "Invert by row reduction"
+      ],
+      "concepts": [
+        "Determinant",
+        "Singular",
+        "Inverse",
+        "Row reduction"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "explog",
+      "level": 5,
+      "col": 0,
+      "req": [
+        "parabolas"
+      ],
+      "icon": "🌱",
+      "chapter": 10,
+      "title": "Exponentials & logs",
+      "short": "Growth, e, ln",
+      "learn": [
+        "Model growth and decay with a × bˣ",
+        "Use e for continuous growth",
+        "Apply the rules of logarithms",
+        "Solve equations with the unknown in the power"
+      ],
+      "concepts": [
+        "Exponential growth",
+        "e",
+        "Natural log",
+        "Log rules",
+        "Doubling time"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "axb",
+      "level": 5,
+      "col": 2,
+      "req": [
+        "det"
+      ],
+      "icon": "🎯",
+      "chapter": 11,
+      "title": "Solving Ax = b",
+      "short": "Inverse, Cramer, elimination",
+      "learn": [
+        "Write a system as Ax = b",
+        "Solve with the inverse",
+        "Use Cramer's rule for one unknown",
+        "Solve by Gaussian elimination and read the multiplier"
+      ],
+      "concepts": [
+        "Augmented matrix",
+        "Cramer's rule",
+        "Gaussian elimination",
+        "Multiplier"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Capstone review"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 6,
+      "col": 1,
+      "req": [
+        "explog",
+        "axb"
+      ],
+      "icon": "👑",
+      "chapter": 12,
+      "title": "Algebra review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Work with functions and polynomials",
+        "Solve and graph quadratics",
+        "Use exponentials and logs",
+        "Solve systems with matrices"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true
+    }
+  ]
+}

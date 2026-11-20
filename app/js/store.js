@@ -360,7 +360,8 @@ export function importState(txt) {
 // ---------- XP / streak ----------
 export function addXP(n) { const t = today(); S.xp[t] = (S.xp[t] || 0) + n; markGoal(); save(); }
 // remember the day's goal as reached (the goal is frozen per day, so this never flips back)
-export function markGoal(st = S) { const t = today(); if (!st.hit) st.hit = {}; if (!st.hit[t] && (st.xp[t] || 0) >= goalFor(st)) st.hit[t] = goalFor(st); }
+export function markGoal(st = S) { if (!C.content || !C.content.path) return;   // skill-tree courses have no daily goal (no lesson path)
+  const t = today(); if (!st.hit) st.hit = {}; if (!st.hit[t] && (st.xp[t] || 0) >= goalFor(st)) st.hit[t] = goalFor(st); }
 export const xpToday = (st = S) => st.xp[today()] || 0;
 // A streak day: Quest Mode = the daily XP goal was reached; Quest Mode off (no goal) or before 11-20 = any XP that day.
 export function dayCounts(d, st = S) {

@@ -1,5 +1,5 @@
 // Headless check of one LevelUp skill-tree branch on the SCRATCH server (never real progress).
-//   node tree_check.mjs <branchId> <outDir> [port=8899]
+//   node tree_check.mjs <branchId> <outDir> [port=8899]      env TREE=math COURSE=math-core for the Mathematics course
 // Needs puppeteer-core: set PUPPETEER_CORE=/abs/path/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js
 // or run from a folder where `npm i puppeteer-core` was done. Uses the system Chrome.
 // Checks: branch renders, ring segments match parts, first node open & rest locked, node sheet lists parts,
@@ -11,18 +11,22 @@ const [branch, OUT, port = "8899"] = process.argv.slice(2);
 if (!branch || !OUT) { console.error("usage: node tree_check.mjs <branchId> <outDir> [port]"); process.exit(2); }
 const fs = await import("fs"); fs.mkdirSync(OUT, { recursive: true });
 const U = `http://127.0.0.1:${port}/`, wait = ms => new Promise(r => setTimeout(r, ms));
-const T = await (await fetch(U + "data/se-path.json")).json();
+const TREE = process.env.TREE || "se", COURSE = process.env.COURSE || "se-path";
+const T = await (await fetch(U + `data/${TREE}-path.json`)).json();
 const br = T.branches.find(b => b.id === branch); if (!br) { console.error("no branch", branch); process.exit(1); }
 const nodes = T.nodes.filter(n => n.branch === branch), first = nodes.find(n => !n.req.length);
 const b = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: "new" });
 const pg = await b.newPage(); const errs = [], fails = [];
-pg.on("pageerror", e => errs.push(e.message)); pg.on("console", m => m.type() === "error" && errs.push("console: " + m.text()));
+pg.on("pageerror", e => errs.push(e.message)); pg.on("console", m => m.type() === "error" && !/^Failed to load resource/.test(m.text()) && errs.push("console: " + m.text()));
+// failed requests by URL; /api/auth/* is a 404 on server.py (no logins) and expected there
+pg.on("response", r => r.status() >= 400 && !r.url().includes("/api/auth/") && errs.push(`HTTP ${r.status()} ${r.url()}`));
 await pg.emulate({ viewport: { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, userAgent: "Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile" });
 await pg.goto(U, { waitUntil: "networkidle0" });
 const user = (await (await fetch(U + "api/users")).json())[0].id;
-await pg.evaluate(u => { localStorage.clear(); sessionStorage.clear(); localStorage.setItem("a1.user", u); sessionStorage.setItem("a1.picked." + u, "se-path"); localStorage.setItem("a1.course." + u, "se-path"); localStorage.setItem("a1.hero." + u, "m"); }, user);
+await pg.evaluate((u, c) => { localStorage.clear(); sessionStorage.clear(); localStorage.setItem("a1.user", u); sessionStorage.setItem("a1.picked." + u, c); localStorage.setItem("a1.course." + u, c); localStorage.setItem("a1.hero." + u, "m"); }, user, COURSE);
 await pg.reload({ waitUntil: "networkidle0" }); await wait(800);
-const click = async sel => { await pg.evaluate(s => { const e = document.querySelector(s); if (!e) throw new Error("missing " + s); e.dispatchEvent(new MouseEvent("click", { bubbles: true })); }, sel); await wait(300); };
+const click = async sel => { if (!(await pg.$(sel))) { await pg.screenshot({ path: `${OUT}/missing.png` }); throw new Error("missing " + sel + " (screen saved as missing.png)"); }
+  await pg.evaluate(s => document.querySelector(s).dispatchEvent(new MouseEvent("click", { bubbles: true })), sel); await wait(300); };
 const states = () => pg.evaluate(() => Object.fromEntries([...document.querySelectorAll(".tnode")].map(g => [g.dataset.id, g.className.baseVal.split(" ")[1]])));
 // course home: Continue card + one card per open branch
 const openIds = T.branches.filter(x => x.status === "open").map(x => x.id);
@@ -70,7 +74,7 @@ if (P > 1) {
   for (let k = 0; k < P; k++) {
     if ((await states())[first.id] === "done") break;
     if (!(await pg.$("#read"))) await click(`.tnode[data-id="${first.id}"]`);
-    await click("#read"); await wait(400); await readThrough(); await wait(400);
+    await click("#read"); await wait(400); await readThrough(); await wait(1500);   // the last part ends with the skill-learned screen
   }
 } else {
   await click("#read"); await wait(500); await pg.screenshot({ path: `${OUT}/3_reader.png` });

@@ -1,8 +1,8 @@
 // Offline support: app shell + lesson data cached on install, audio cached the first time it plays.
-const SHELL = "a1-shell-v27";
+const SHELL = "a1-shell-v28";
 const AUDIO = "a1-audio-v1";
 const CONTENT = "a1-content-v1"; // reading material, downloaded per skill only when opened (never precached)
-const FILES = ["./", "index.html", "styles.css", "js/app.js", "js/store.js", "js/lesson.js", "js/audio.js", "js/hero.js", "js/bugreport.js", "data/se-path.json",
+const FILES = ["./", "index.html", "styles.css", "js/app.js", "js/store.js", "js/lesson.js", "js/audio.js", "js/hero.js", "js/bugreport.js", "data/se-path.json", "data/math-path.json",
   "data/content.json", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-512-maskable.png", "icons/apple-touch-icon.png", "data/courses.json"];
 
 self.addEventListener("install", e => {
@@ -26,7 +26,7 @@ self.addEventListener("fetch", e => {
     }));
     return;
   }
-  if (url.pathname.includes("/data/se/")) {
+  if (url.pathname.includes("/data/se/") || url.pathname.includes("/data/math/")) {
     // downloaded reading: serve the phone's copy instantly (works offline), refresh it quietly in the background
     e.respondWith(caches.open(CONTENT).then(async c => {
       const hit = await c.match(e.request, { ignoreSearch: true });

@@ -5,16 +5,19 @@ Output: app/data/se/<branch>/NN.json  ->  {"title", "cards": [{"s", "sub", "html
         plus <branch>/index.json (sizes), and each skill node in app/data/se-path.json gets the same "parts"
         (3-4 sub-topics split at section boundaries, so a long skill can be done in pieces).
 Each card is one idea: roughly 60-150 words of text, or one table, or one code example with its lead-in.
-Standard library only.  Run:  uv run tools/build_se_content.py
+Standard library only.  Run:  uv run tools/build_se_content.py [--tree math]
+Other skill-tree courses use the same layout: --tree X reads content/X/, writes app/data/X/ and app/data/X-path.json.
 """
 import html
 import json
 import os
 import re
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "content", "se")
-OUT = os.path.join(ROOT, "app", "data", "se")
+TREE = sys.argv[sys.argv.index("--tree") + 1] if "--tree" in sys.argv else "se"   # se = Software Engineering, math = Mathematics
+SRC = os.path.join(ROOT, "content", TREE)
+OUT = os.path.join(ROOT, "app", "data", TREE)
 TARGET, MIN_FLUSH = 130, 45
 IMG_BASE = ""                         # set per branch: images live in app/data/se/<branch>/img/          # words per card: aim, and the least we flush before a big block
 
@@ -241,7 +244,7 @@ def split_parts(cards, chapter_title=""):
 
 def sync_tree_parts(parts_by_chapter):
     """Copy each chapter's parts onto its skill node in app/data/se-path.json (keeps formatting)."""
-    p = os.path.join(ROOT, "app", "data", "se-path.json")
+    p = os.path.join(ROOT, "app", "data", f"{TREE}-path.json")
     raw = open(p, encoding="utf-8").read()
     d = json.loads(raw)
     changed = 0
@@ -253,7 +256,7 @@ def sync_tree_parts(parts_by_chapter):
     if changed:
         with open(p, "w", encoding="utf-8") as f:
             f.write(json.dumps(d, ensure_ascii=False, indent=2) + ("\n" if raw.endswith("\n") else ""))
-    print(f"se-path.json: parts updated on {changed} skill(s)")
+    print(f"{TREE}-path.json: parts updated on {changed} skill(s)")
 
 
 def main():
@@ -269,7 +272,7 @@ def main():
         shutil.rmtree(odir, ignore_errors=True)
         os.makedirs(odir)
         global IMG_BASE
-        IMG_BASE = f"data/se/{branch}/"
+        IMG_BASE = f"data/{TREE}/{branch}/"
         if os.path.isdir(os.path.join(bdir, "img")):                           # diagrams referenced as ![caption](img/x.svg)
             shutil.copytree(os.path.join(bdir, "img"), os.path.join(odir, "img"))
         index = {}
@@ -292,7 +295,7 @@ def main():
         old = os.path.join(OUT, branch + ".json")          # the earlier all-in-one file
         if os.path.exists(old):
             os.remove(old)
-        print(f"-> app/data/se/{branch}/  ({sum(c['cards'] for c in index.values())} cards, {sum(c['bytes'] for c in index.values()) // 1024} KB total)")
+        print(f"-> app/data/{TREE}/{branch}/  ({sum(c['cards'] for c in index.values())} cards, {sum(c['bytes'] for c in index.values()) // 1024} KB total)")
     sync_tree_parts(parts_by_chapter)
 
 

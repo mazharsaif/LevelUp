@@ -1,0 +1,1508 @@
+{
+  "version": 1,
+  "kind": "tree",
+  "title": "Mathematics",
+  "xpPerSkill": 15,
+  "branches": [
+    {
+      "id": "calc",
+      "title": "Calculus for Economics",
+      "icon": "📈",
+      "color": "#FF9F43",
+      "status": "soon",
+      "order": 3,
+      "planned": [
+        "Limits & rates of change",
+        "Derivatives & marginal cost",
+        "Optimisation: max profit, min cost",
+        "Partial derivatives",
+        "Constrained optimisation (Lagrange)",
+        "Integrals & consumer surplus"
+      ]
+    },
+    {
+      "id": "stats",
+      "title": "Probability & Statistics",
+      "icon": "🎲",
+      "color": "#57E3A0",
+      "status": "soon",
+      "order": 4,
+      "planned": [
+        "Mean, median, variance",
+        "Probability rules",
+        "Distributions & the normal curve",
+        "Sampling & confidence intervals",
+        "Hypothesis tests",
+        "Regression basics"
+      ]
+    },
+    {
+      "id": "found",
+      "title": "Math Foundations",
+      "icon": "🧮",
+      "color": "#4FB3FF",
+      "order": 1,
+      "status": "open",
+      "reading": "data/math/found/",
+      "intro": 0
+    },
+    {
+      "id": "alg",
+      "title": "Algebra & Matrices",
+      "icon": "📐",
+      "color": "#B48CFF",
+      "order": 2,
+      "status": "open",
+      "reading": "data/math/alg/",
+      "intro": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "found.negatives",
+      "branch": "found",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "➖",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Numbers & negatives",
+      "short": "The number line, signs, no slips",
+      "learn": [
+        "Place and compare negative numbers on the number line",
+        "Add and subtract with mixed signs",
+        "Turn two minus signs into a plus",
+        "Use negatives for losses, falls and deficits"
+      ],
+      "concepts": [
+        "Number line",
+        "Negative number",
+        "Absolute value",
+        "Percentage point"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The number line"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Adding and subtracting with negatives",
+            "Worked examples"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "Common mistakes",
+            "Practice"
+          ],
+          "a": 4,
+          "b": 5
+        }
+      ]
+    },
+    {
+      "id": "found.muldiv",
+      "branch": "found",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "✖️",
+      "req": [
+        "found.negatives"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "Multiply & divide",
+      "short": "Mental tricks, long methods, signs",
+      "learn": [
+        "Multiply and divide without a calculator",
+        "Use splitting and doubling tricks",
+        "Apply the sign rules for negatives",
+        "Explain why you cannot divide by zero"
+      ],
+      "concepts": [
+        "Distributive law",
+        "Long division",
+        "Sign rules",
+        "Undefined"
+      ],
+      "exercises": [
+        "Concept check",
+        "Order the flow",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What multiplication and division mean"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Times tables without memorising all of them",
+            "Long multiplication and division"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "Signs: negatives in multiplication and division",
+            "Zero",
+            "Practice"
+          ],
+          "a": 4,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.fractions",
+      "branch": "found",
+      "n": 3,
+      "level": 2,
+      "col": 0,
+      "icon": "🍰",
+      "req": [
+        "found.muldiv"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Fractions",
+      "short": "Simplify, add, multiply, divide",
+      "learn": [
+        "Simplify fractions and find equivalent ones",
+        "Multiply and divide fractions",
+        "Add and subtract with different denominators",
+        "Avoid the illegal cancel"
+      ],
+      "concepts": [
+        "Numerator",
+        "Denominator",
+        "Common denominator",
+        "Reciprocal"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a fraction is",
+            "Equivalent fractions and simplifying"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Multiplying and dividing",
+            "Adding and subtracting"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Common mistakes",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.order",
+      "branch": "found",
+      "n": 4,
+      "level": 2,
+      "col": 1,
+      "icon": "🔢",
+      "req": [
+        "found.muldiv"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Order of operations",
+      "short": "BODMAS and its traps",
+      "learn": [
+        "Apply BODMAS in the right order",
+        "Go left to right within the same rank",
+        "Treat a fraction bar as brackets",
+        "Tell −3² from (−3)²"
+      ],
+      "concepts": [
+        "BODMAS",
+        "Brackets",
+        "Left to right",
+        "Fraction bar"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The rule: BODMAS",
+            "Same rank: go left to right"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Worked examples",
+            "Fraction bars and negatives"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Why it matters in economics",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.powers",
+      "branch": "found",
+      "n": 5,
+      "level": 2,
+      "col": 2,
+      "icon": "🚀",
+      "req": [
+        "found.muldiv"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "Powers & roots",
+      "short": "Exponent laws, roots, big numbers",
+      "learn": [
+        "Evaluate powers including negatives",
+        "Use the laws of exponents",
+        "Work with square roots and their two signs",
+        "Write big and small numbers in scientific notation"
+      ],
+      "concepts": [
+        "Exponent",
+        "Square root",
+        "Zero and negative powers",
+        "Scientific notation"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a power means"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "The laws of exponents",
+            "Square roots and cube roots"
+          ],
+          "a": 2,
+          "b": 4
+        },
+        {
+          "t": [
+            "Scientific notation and big numbers",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.percent",
+      "branch": "found",
+      "n": 6,
+      "level": 3,
+      "col": 0,
+      "icon": "💯",
+      "req": [
+        "found.fractions"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Decimals & percent",
+      "short": "Multipliers and percentage change",
+      "learn": [
+        "Convert between fractions, decimals and percentages",
+        "Increase or decrease with one multiplier",
+        "Compute percentage change from the old value",
+        "Solve reverse percentages"
+      ],
+      "concepts": [
+        "Multiplier",
+        "Percentage change",
+        "Reverse percentage",
+        "Compounding",
+        "Percentage point"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Decimals and place value",
+            "Converting between the three forms"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Percentages of an amount and the multiplier",
+            "Percentage change and reverse percentages"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.expr",
+      "branch": "found",
+      "n": 7,
+      "level": 3,
+      "col": 1,
+      "icon": "🔤",
+      "req": [
+        "found.order",
+        "found.powers"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Letters & expressions",
+      "short": "Like terms, expand, factorise",
+      "learn": [
+        "Read and write algebra notation",
+        "Substitute values safely",
+        "Collect like terms",
+        "Expand and factorise brackets"
+      ],
+      "concepts": [
+        "Variable",
+        "Term",
+        "Coefficient",
+        "Like terms",
+        "Expanding"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Letters stand for numbers"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Collecting like terms",
+            "Expanding brackets"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Factorising: brackets in reverse",
+            "Common mistakes",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "found.equations",
+      "branch": "found",
+      "n": 8,
+      "level": 4,
+      "col": 1,
+      "icon": "⚖️",
+      "req": [
+        "found.expr",
+        "found.percent"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "Solving equations",
+      "short": "The balance method",
+      "learn": [
+        "Solve linear equations step by step",
+        "Handle letters on both sides",
+        "Clear fractions first",
+        "Find a break-even quantity"
+      ],
+      "concepts": [
+        "Balance",
+        "Inverse operation",
+        "Check the answer",
+        "Break-even"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The balance idea"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "More worked examples",
+            "Letters on both sides",
+            "Equations with fractions",
+            "An economics example: break-even"
+          ],
+          "a": 3,
+          "b": 6
+        },
+        {
+          "t": [
+            "Common mistakes",
+            "Practice"
+          ],
+          "a": 7,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "found.rearrange",
+      "branch": "found",
+      "n": 9,
+      "level": 5,
+      "col": 0,
+      "icon": "🔀",
+      "req": [
+        "found.equations"
+      ],
+      "mins": 5,
+      "chapter": 9,
+      "title": "Rearranging & inequalities",
+      "short": "Change the subject, flip the sign",
+      "learn": [
+        "Make any letter the subject of a formula",
+        "Collect and factorise when the subject appears twice",
+        "Solve inequalities and flip on negatives",
+        "Solve double inequalities"
+      ],
+      "concepts": [
+        "Subject",
+        "Inverse demand",
+        "Inequality",
+        "Flip rule"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Changing the subject of a formula",
+            "Harder rearrangements"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Inequalities",
+            "Double inequalities"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "found.coords",
+      "branch": "found",
+      "n": 10,
+      "level": 5,
+      "col": 2,
+      "icon": "📍",
+      "req": [
+        "found.equations"
+      ],
+      "mins": 5,
+      "chapter": 11,
+      "title": "Coordinate plane",
+      "short": "Points, quadrants, distance",
+      "learn": [
+        "Plot and read points (x, y)",
+        "Name the quadrants and their signs",
+        "Find the midpoint and the distance",
+        "Plot a rule from a table of values"
+      ],
+      "concepts": [
+        "Origin",
+        "Ordered pair",
+        "Quadrant",
+        "Distance formula",
+        "Midpoint"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Axes and coordinates"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Quadrants and the axes",
+            "Distance and midpoint"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Plotting a relationship from a table",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "found.words",
+      "branch": "found",
+      "n": 11,
+      "level": 6,
+      "col": 0,
+      "icon": "📝",
+      "req": [
+        "found.rearrange"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Word problems",
+      "short": "Words into equations",
+      "learn": [
+        "Name the unknown with its units",
+        "Translate phrases into maths",
+        "Set up total-and-split problems",
+        "Answer in words and sanity-check"
+      ],
+      "concepts": [
+        "Let x = ...",
+        "Translation table",
+        "Mixture problem",
+        "Profit equation"
+      ],
+      "exercises": [
+        "Scenario",
+        "Order the flow",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "A four-step method",
+            "Translating phrases",
+            "Worked example: ages and amounts"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Worked example: economics",
+            "Worked example: rates and mixtures"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Practice"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "found.lines",
+      "branch": "found",
+      "n": 12,
+      "level": 6,
+      "col": 2,
+      "icon": "📈",
+      "req": [
+        "found.coords"
+      ],
+      "mins": 5,
+      "chapter": 12,
+      "title": "Straight-line graphs",
+      "short": "y = mx + c and equilibrium",
+      "learn": [
+        "Read slope and intercept from y = mx + c",
+        "Find the slope through two points",
+        "Find a line's equation and draw it",
+        "Find where two lines meet (equilibrium)"
+      ],
+      "concepts": [
+        "Slope",
+        "Intercept",
+        "Parallel lines",
+        "Equilibrium"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "y = mx + c: slope and intercept"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Slope from two points",
+            "Drawing a line and finding its equation"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Where two lines meet",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "found.boss",
+      "branch": "found",
+      "n": 13,
+      "level": 7,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "found.words",
+        "found.lines"
+      ],
+      "mins": 5,
+      "chapter": 13,
+      "title": "Foundations review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Do arithmetic with negatives, fractions and percentages",
+        "Simplify, expand and solve",
+        "Turn word problems into equations",
+        "Work with lines and equilibrium"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "Round 1: arithmetic"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Round 2: percentages and powers",
+            "Round 3: algebra and equations"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "Round 4: problems and graphs",
+            "What next"
+          ],
+          "a": 4,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "alg.functions",
+      "branch": "alg",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🎛️",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Functions",
+      "short": "f(x), domain, inverse",
+      "learn": [
+        "Read and evaluate f(x) notation",
+        "Find a domain and range",
+        "Combine and compose functions",
+        "Find inverse functions such as inverse demand"
+      ],
+      "concepts": [
+        "Function",
+        "Domain",
+        "Range",
+        "Composite",
+        "Inverse"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a function is"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Domain and range",
+            "Combining functions"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Inverse functions",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "alg.poly",
+      "branch": "alg",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🧱",
+      "req": [
+        "alg.functions"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "Polynomials",
+      "short": "Degree, add, multiply",
+      "learn": [
+        "Name the degree and coefficients",
+        "Add and subtract polynomials",
+        "Multiply polynomials term by term",
+        "Use the three special products"
+      ],
+      "concepts": [
+        "Degree",
+        "Leading coefficient",
+        "FOIL",
+        "Perfect square",
+        "Difference of squares"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a polynomial is",
+            "Adding and subtracting"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Multiplying",
+            "Special products"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Evaluating and dividing by a monomial",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "alg.systems",
+      "branch": "alg",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🧩",
+      "req": [
+        "alg.functions"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Systems of equations",
+      "short": "Substitution and elimination",
+      "learn": [
+        "Solve two equations by substitution",
+        "Solve by elimination",
+        "Spot no solution or infinitely many",
+        "Solve market equilibrium systems"
+      ],
+      "concepts": [
+        "System",
+        "Substitution",
+        "Elimination",
+        "Equilibrium"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a system is",
+            "Method 1: substitution"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Method 2: elimination",
+            "No solution or infinitely many",
+            "Economics: equilibrium in two markets"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Three equations, three unknowns",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "alg.factor",
+      "branch": "alg",
+      "n": 4,
+      "level": 2,
+      "col": 0,
+      "icon": "🔧",
+      "req": [
+        "alg.poly"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Factoring",
+      "short": "Quadratics into brackets",
+      "learn": [
+        "Take out a common factor",
+        "Factor x² + bx + c",
+        "Factor ax² + bx + c with the ac method",
+        "Use the special patterns and simplify fractions"
+      ],
+      "concepts": [
+        "Common factor",
+        "ac method",
+        "Difference of squares",
+        "Algebraic fraction"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Why factor?",
+            "Quadratics x² + bx + c"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Quadratics ax² + bx + c (a not 1)",
+            "Special patterns"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Simplifying algebraic fractions",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "alg.vectors",
+      "branch": "alg",
+      "n": 5,
+      "level": 2,
+      "col": 2,
+      "icon": "➡️",
+      "req": [
+        "alg.systems"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Vectors",
+      "short": "Add, scale, dot product",
+      "learn": [
+        "Write vectors as rows and columns",
+        "Add and scale vectors",
+        "Compute dot products (spending = p · q)",
+        "Find a vector's length and test perpendicularity"
+      ],
+      "concepts": [
+        "Vector",
+        "Scalar",
+        "Dot product",
+        "Norm",
+        "Orthogonal"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a vector is"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Adding and scaling",
+            "The dot product"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Length (norm)",
+            "Practice"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "alg.quadratic",
+      "branch": "alg",
+      "n": 6,
+      "level": 3,
+      "col": 0,
+      "icon": "✳️",
+      "req": [
+        "alg.factor"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "Quadratic equations",
+      "short": "Factor, complete the square, formula",
+      "learn": [
+        "Solve by factoring",
+        "Solve by completing the square",
+        "Use the quadratic formula without sign slips",
+        "Count roots with the discriminant"
+      ],
+      "concepts": [
+        "Root",
+        "Completing the square",
+        "Quadratic formula",
+        "Discriminant"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Quadratic equations and roots",
+            "Method 1: factoring"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Method 2: completing the square",
+            "Method 3: the quadratic formula",
+            "The discriminant"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Economics example: break-even with a quadratic",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "alg.matrices",
+      "branch": "alg",
+      "n": 7,
+      "level": 3,
+      "col": 2,
+      "icon": "🔲",
+      "req": [
+        "alg.vectors"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Matrices",
+      "short": "Size, multiply, transpose",
+      "learn": [
+        "Read a matrix's size and entries",
+        "Add and scale matrices",
+        "Multiply matrices and check sizes",
+        "Use the identity and transpose"
+      ],
+      "concepts": [
+        "Matrix",
+        "Row × column",
+        "Identity",
+        "Transpose",
+        "AB ≠ BA"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a matrix is",
+            "Adding, subtracting and scaling"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Matrix multiplication",
+            "Order matters"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "The identity and the transpose",
+            "Practice"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "alg.parabolas",
+      "branch": "alg",
+      "n": 8,
+      "level": 4,
+      "col": 0,
+      "icon": "⛰️",
+      "req": [
+        "alg.quadratic"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "Graphs of quadratics",
+      "short": "Vertex, max profit",
+      "learn": [
+        "Tell from a whether a parabola opens up or down",
+        "Find the vertex, axis and intercepts",
+        "Write vertex form by completing the square",
+        "Find maximum revenue or profit"
+      ],
+      "concepts": [
+        "Parabola",
+        "Vertex",
+        "Axis of symmetry",
+        "Maximum",
+        "Minimum"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The shape of a parabola",
+            "Finding the vertex"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Sketching a parabola",
+            "Economics: maximum revenue and profit"
+          ],
+          "a": 5,
+          "b": 6
+        },
+        {
+          "t": [
+            "Practice"
+          ],
+          "a": 7,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "alg.det",
+      "branch": "alg",
+      "n": 9,
+      "level": 4,
+      "col": 2,
+      "icon": "🧮",
+      "req": [
+        "alg.matrices"
+      ],
+      "mins": 5,
+      "chapter": 9,
+      "title": "Determinants & inverses",
+      "short": "det, singular, A⁻¹",
+      "learn": [
+        "Compute 2 × 2 and 3 × 3 determinants",
+        "Know what det = 0 means",
+        "Invert a 2 × 2 matrix",
+        "Invert by row reduction"
+      ],
+      "concepts": [
+        "Determinant",
+        "Singular",
+        "Inverse",
+        "Row reduction"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The determinant of a 2 × 2 matrix"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The determinant of a 3 × 3 matrix",
+            "The inverse matrix"
+          ],
+          "a": 3,
+          "b": 6
+        },
+        {
+          "t": [
+            "Inverses of bigger matrices",
+            "Practice"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ]
+    },
+    {
+      "id": "alg.explog",
+      "branch": "alg",
+      "n": 10,
+      "level": 5,
+      "col": 0,
+      "icon": "🌱",
+      "req": [
+        "alg.parabolas"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Exponentials & logs",
+      "short": "Growth, e, ln",
+      "learn": [
+        "Model growth and decay with a × bˣ",
+        "Use e for continuous growth",
+        "Apply the rules of logarithms",
+        "Solve equations with the unknown in the power"
+      ],
+      "concepts": [
+        "Exponential growth",
+        "e",
+        "Natural log",
+        "Log rules",
+        "Doubling time"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Exponential functions",
+            "The number e and continuous growth"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Logarithms",
+            "Rules of logs"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Solving exponential equations",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "alg.axb",
+      "branch": "alg",
+      "n": 11,
+      "level": 5,
+      "col": 2,
+      "icon": "🎯",
+      "req": [
+        "alg.det"
+      ],
+      "mins": 5,
+      "chapter": 11,
+      "title": "Solving Ax = b",
+      "short": "Inverse, Cramer, elimination",
+      "learn": [
+        "Write a system as Ax = b",
+        "Solve with the inverse",
+        "Use Cramer's rule for one unknown",
+        "Solve by Gaussian elimination and read the multiplier"
+      ],
+      "concepts": [
+        "Augmented matrix",
+        "Cramer's rule",
+        "Gaussian elimination",
+        "Multiplier"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Capstone review"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Writing a system as Ax = b",
+            "Method 1: the inverse"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Method 2: Cramer's rule",
+            "Method 3: row reduction (Gaussian elimination)"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "An economics model in matrix form",
+            "Practice"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    },
+    {
+      "id": "alg.boss",
+      "branch": "alg",
+      "n": 12,
+      "level": 6,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "alg.explog",
+        "alg.axb"
+      ],
+      "mins": 5,
+      "chapter": 12,
+      "title": "Algebra review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Work with functions and polynomials",
+        "Solve and graph quadratics",
+        "Use exponentials and logs",
+        "Solve systems with matrices"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "Round 1: functions and polynomials",
+            "Round 2: quadratics and exponentials"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Round 3: systems, vectors and matrices"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "Round 4: economics problems",
+            "What next"
+          ],
+          "a": 6,
+          "b": 8
+        }
+      ]
+    }
+  ]
+}
