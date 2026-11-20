@@ -1,0 +1,355 @@
+{
+  "branch": {
+    "id": "calc",
+    "title": "Calculus for Economics",
+    "icon": "📈",
+    "color": "#FF9F43"
+  },
+  "nodes": [
+    {
+      "key": "limits",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🔭",
+      "chapter": 1,
+      "title": "Limits & rates",
+      "short": "From slope to derivative",
+      "learn": [
+        "Compute average rates of change",
+        "See the instant rate as a limit",
+        "Evaluate simple limits, including 0/0 cases",
+        "Derive a derivative from the definition"
+      ],
+      "concepts": [
+        "Secant",
+        "Tangent",
+        "Limit",
+        "Continuity"
+      ],
+      "exercises": [
+        "Concept check",
+        "Order the flow",
+        "Spot the bug"
+      ]
+    },
+    {
+      "key": "rules",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "limits"
+      ],
+      "icon": "📏",
+      "chapter": 2,
+      "title": "Derivative rules",
+      "short": "Power, constant, sum",
+      "learn": [
+        "Use derivative notation",
+        "Differentiate polynomials term by term",
+        "Handle negative and fractional powers",
+        "Find marginal cost from a cost function"
+      ],
+      "concepts": [
+        "Power rule",
+        "f′(x)",
+        "dy/dx",
+        "Marginal cost"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ]
+    },
+    {
+      "key": "chain",
+      "level": 2,
+      "col": 0,
+      "req": [
+        "rules"
+      ],
+      "icon": "⛓️",
+      "chapter": 3,
+      "title": "Product & chain rules",
+      "short": "Product, quotient, chain",
+      "learn": [
+        "Apply the product rule",
+        "Apply the quotient rule",
+        "Apply the chain rule to nested functions",
+        "Find the marginal revenue product"
+      ],
+      "concepts": [
+        "Product rule",
+        "Quotient rule",
+        "Chain rule",
+        "MRP of labour"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Spot the bug",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "marginal",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "rules"
+      ],
+      "icon": "💶",
+      "chapter": 4,
+      "title": "Marginal analysis",
+      "short": "MC, MR, MP, averages",
+      "learn": [
+        "Read marginal values as derivatives",
+        "Compare MR and MC",
+        "Link marginal and average cost",
+        "Spot diminishing returns with f″"
+      ],
+      "concepts": [
+        "Marginal cost",
+        "Marginal revenue",
+        "Average cost",
+        "Diminishing returns"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "explog",
+      "level": 3,
+      "col": 0,
+      "req": [
+        "chain"
+      ],
+      "icon": "🌱",
+      "chapter": 5,
+      "title": "Exp, logs & elasticity",
+      "short": "eˣ, ln x, growth, ε",
+      "learn": [
+        "Differentiate eˣ and ln x",
+        "Turn growth rates into log derivatives",
+        "Compute price elasticity",
+        "Read elasticities from log models"
+      ],
+      "concepts": [
+        "eˣ",
+        "ln x",
+        "Growth rate",
+        "Elasticity"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "optim",
+      "level": 3,
+      "col": 2,
+      "req": [
+        "marginal"
+      ],
+      "icon": "⛰️",
+      "chapter": 6,
+      "title": "Optimisation",
+      "short": "FOC, SOC, MR = MC",
+      "learn": [
+        "Find stationary points",
+        "Classify them with f″",
+        "Derive MR = MC",
+        "Minimise average cost"
+      ],
+      "concepts": [
+        "First-order condition",
+        "Second-order condition",
+        "Maximum",
+        "Minimum"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "partial",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "explog",
+        "optim"
+      ],
+      "icon": "🧭",
+      "chapter": 7,
+      "title": "Partial derivatives",
+      "short": "MPL, MPK, MRS",
+      "learn": [
+        "Differentiate one variable at a time",
+        "Find marginal products of Cobb-Douglas",
+        "Compute the MRS",
+        "Use the total differential"
+      ],
+      "concepts": [
+        "Partial derivative",
+        "Cobb-Douglas",
+        "Returns to scale",
+        "MRS"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Match the terms"
+      ]
+    },
+    {
+      "key": "multi",
+      "level": 5,
+      "col": 0,
+      "req": [
+        "partial"
+      ],
+      "icon": "🗻",
+      "chapter": 8,
+      "title": "Two-variable optima",
+      "short": "FOCs and the Hessian",
+      "learn": [
+        "Set both partials to zero",
+        "Classify with the Hessian determinant",
+        "Spot saddle points",
+        "Solve two-product and price-discrimination problems"
+      ],
+      "concepts": [
+        "Hessian",
+        "Saddle point",
+        "Price discrimination"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Concept check"
+      ]
+    },
+    {
+      "key": "integral",
+      "level": 5,
+      "col": 2,
+      "req": [
+        "partial"
+      ],
+      "icon": "∫",
+      "chapter": 9,
+      "title": "Integrals",
+      "short": "Antiderivatives and areas",
+      "learn": [
+        "Find antiderivatives",
+        "Recover total cost from MC",
+        "Evaluate definite integrals",
+        "Read integrals as areas and totals"
+      ],
+      "concepts": [
+        "Antiderivative",
+        "Constant of integration",
+        "Definite integral",
+        "Fundamental theorem"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug",
+        "Fill the code"
+      ]
+    },
+    {
+      "key": "lagrange",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "multi"
+      ],
+      "icon": "🎯",
+      "chapter": 10,
+      "title": "Lagrange multipliers",
+      "short": "Optimise under a budget",
+      "learn": [
+        "Set up a Lagrangian",
+        "Solve utility maximisation",
+        "Read λ as a shadow price",
+        "Minimise cost for a given output"
+      ],
+      "concepts": [
+        "Lagrangian",
+        "λ",
+        "MRS = price ratio",
+        "Shadow price"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "surplus",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "integral"
+      ],
+      "icon": "🧺",
+      "chapter": 11,
+      "title": "Integrals in economics",
+      "short": "Surplus and present value",
+      "learn": [
+        "Compute consumer surplus",
+        "Compute producer surplus",
+        "Handle curved demand",
+        "Find present values of income streams"
+      ],
+      "concepts": [
+        "Consumer surplus",
+        "Producer surplus",
+        "Present value",
+        "Perpetuity"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check",
+        "Capstone review"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "lagrange",
+        "surplus"
+      ],
+      "icon": "👑",
+      "chapter": 12,
+      "title": "Calculus review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Differentiate with all the rules",
+        "Optimise in one and two variables",
+        "Solve constrained problems",
+        "Use integrals for totals and surplus"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true
+    }
+  ]
+}

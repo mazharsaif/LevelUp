@@ -1,0 +1,357 @@
+{
+  "branch": {
+    "id": "stats",
+    "title": "Probability & Statistics",
+    "icon": "🎲",
+    "color": "#57E3A0"
+  },
+  "nodes": [
+    {
+      "key": "describe",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "📋",
+      "chapter": 1,
+      "title": "Describing data",
+      "short": "Mean, median, quartiles",
+      "learn": [
+        "Tell populations from samples",
+        "Find mean, median and mode",
+        "Choose median for skewed data",
+        "Find quartiles and the IQR"
+      ],
+      "concepts": [
+        "Mean",
+        "Median",
+        "Skew",
+        "IQR"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "spread",
+      "level": 1,
+      "col": 0,
+      "req": [
+        "describe"
+      ],
+      "icon": "📏",
+      "chapter": 2,
+      "title": "Variance & SD",
+      "short": "Spread, risk, z-scores",
+      "learn": [
+        "Compute sample variance and SD",
+        "Use the shortcut formula",
+        "Know how shifts and scales change them",
+        "Compare values with z-scores"
+      ],
+      "concepts": [
+        "Variance",
+        "Standard deviation",
+        "z-score",
+        "Volatility"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "prob",
+      "level": 1,
+      "col": 2,
+      "req": [
+        "describe"
+      ],
+      "icon": "🎲",
+      "chapter": 3,
+      "title": "Probability basics",
+      "short": "Complement, or, and",
+      "learn": [
+        "Compute equally-likely probabilities",
+        "Use the complement",
+        "Use the addition rule",
+        "Multiply for independent events"
+      ],
+      "concepts": [
+        "Sample space",
+        "Complement",
+        "Mutually exclusive",
+        "Independent"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "bayes",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "prob"
+      ],
+      "icon": "🔄",
+      "chapter": 4,
+      "title": "Conditional & Bayes",
+      "short": "Updating on evidence",
+      "learn": [
+        "Compute P(A | B)",
+        "Use total probability",
+        "Apply Bayes' theorem",
+        "Avoid the base-rate trap"
+      ],
+      "concepts": [
+        "Conditional probability",
+        "Prior",
+        "Posterior",
+        "Base rate"
+      ],
+      "exercises": [
+        "Scenario",
+        "Spot the bug",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "rv",
+      "level": 3,
+      "col": 1,
+      "req": [
+        "spread",
+        "bayes"
+      ],
+      "icon": "🎰",
+      "chapter": 5,
+      "title": "Random variables",
+      "short": "Expected value and risk",
+      "learn": [
+        "Read a probability distribution",
+        "Compute expected value",
+        "Compute variance and SD",
+        "Use the rules for a + bX and sums"
+      ],
+      "concepts": [
+        "Random variable",
+        "Expected value",
+        "Variance",
+        "Covariance"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Design decision"
+      ]
+    },
+    {
+      "key": "binom",
+      "level": 4,
+      "col": 0,
+      "req": [
+        "rv"
+      ],
+      "icon": "🪙",
+      "chapter": 6,
+      "title": "Binomial",
+      "short": "Successes in n trials",
+      "learn": [
+        "Check the binomial conditions",
+        "Count arrangements with C(n, k)",
+        "Compute binomial probabilities",
+        "Use mean np and variance np(1 − p)"
+      ],
+      "concepts": [
+        "Binomial",
+        "n choose k",
+        "np",
+        "Independence"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "normal",
+      "level": 4,
+      "col": 2,
+      "req": [
+        "rv"
+      ],
+      "icon": "🔔",
+      "chapter": 7,
+      "title": "Normal distribution",
+      "short": "Bell curve and z-tables",
+      "learn": [
+        "Use the 68-95-99.7 rule",
+        "Standardise with z",
+        "Read probabilities from the table",
+        "Work backwards to cut-off values"
+      ],
+      "concepts": [
+        "Normal",
+        "Standard normal",
+        "Φ(z)",
+        "Fat tails"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Spot the bug"
+      ]
+    },
+    {
+      "key": "clt",
+      "level": 5,
+      "col": 1,
+      "req": [
+        "binom",
+        "normal"
+      ],
+      "icon": "🧪",
+      "chapter": 8,
+      "title": "Sampling & CLT",
+      "short": "Standard errors",
+      "learn": [
+        "Explain sampling variation and bias",
+        "Compute the standard error",
+        "State the central limit theorem",
+        "Find probabilities for sample means"
+      ],
+      "concepts": [
+        "Sampling distribution",
+        "Standard error",
+        "CLT",
+        "Bias"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Scenario"
+      ]
+    },
+    {
+      "key": "ci",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "clt"
+      ],
+      "icon": "↔️",
+      "chapter": 9,
+      "title": "Confidence intervals",
+      "short": "Estimate ± margin",
+      "learn": [
+        "Build intervals for means",
+        "Use t for small samples",
+        "Build intervals for proportions",
+        "Interpret confidence and choose n"
+      ],
+      "concepts": [
+        "Confidence interval",
+        "t distribution",
+        "Margin of error",
+        "Degrees of freedom"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "tests",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "clt"
+      ],
+      "icon": "⚖️",
+      "chapter": 10,
+      "title": "Hypothesis tests",
+      "short": "p-values and errors",
+      "learn": [
+        "Set up H₀ and H₁",
+        "Compute test statistics and p-values",
+        "Tell Type I from Type II errors",
+        "Separate significance from importance"
+      ],
+      "concepts": [
+        "Null hypothesis",
+        "p-value",
+        "Significance level",
+        "Type I and II errors"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Myth or fact"
+      ]
+    },
+    {
+      "key": "regress",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "ci",
+        "tests"
+      ],
+      "icon": "📉",
+      "chapter": 11,
+      "title": "Correlation & regression",
+      "short": "OLS, R², slope tests",
+      "learn": [
+        "Compute and read correlation",
+        "Fit an OLS line by hand",
+        "Interpret slope, residuals and R²",
+        "Test a slope and question causation"
+      ],
+      "concepts": [
+        "Correlation",
+        "OLS",
+        "R²",
+        "Causation"
+      ],
+      "exercises": [
+        "Scenario",
+        "Fill the code",
+        "Capstone review"
+      ]
+    },
+    {
+      "key": "boss",
+      "level": 8,
+      "col": 1,
+      "req": [
+        "regress"
+      ],
+      "icon": "👑",
+      "chapter": 12,
+      "title": "Statistics review",
+      "short": "Mixed practice exam",
+      "learn": [
+        "Describe data and compute probabilities",
+        "Use the binomial and normal",
+        "Build intervals and run tests",
+        "Fit and read a regression"
+      ],
+      "concepts": [
+        "Mixed review",
+        "Self-diagnosis"
+      ],
+      "exercises": [
+        "Practice exam",
+        "Capstone review"
+      ],
+      "boss": true
+    }
+  ]
+}

@@ -7,6 +7,6 @@
     { "id": "se-path", "title": "Software Engineering", "subtitle": "Skill tree · Authentication branch open", "group": "Tech & Science", "icon": "🛠️", "color": "#9B8CFF", "status": "ready", "type": "tree", "content": "data/se-path.json" },
     { "id": "ds-basics", "title": "Data Science", "subtitle": "Coming Soon", "group": "Tech & Science", "icon": "📊", "color": "#57E3A0", "status": "soon" },
     { "id": "py-basics", "title": "Python", "subtitle": "Coming Soon", "group": "Tech & Science", "icon": "🐍", "color": "#FFCC4D", "status": "soon" },
-    { "id": "math-core", "title": "Mathematics", "subtitle": "Skill tree · Foundations and Algebra & Matrices open", "group": "Tech & Science", "icon": "➗", "color": "#B48CFF", "status": "ready", "type": "tree", "content": "data/math-path.json" }
+    { "id": "math-core", "title": "Mathematics", "subtitle": "Skill tree · Foundations to Calculus & Statistics · 49 skills", "group": "Tech & Science", "icon": "➗", "color": "#B48CFF", "status": "ready", "type": "tree", "content": "data/math-path.json" }
   ]
 }
