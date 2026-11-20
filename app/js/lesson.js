@@ -172,8 +172,10 @@ function tokenIs(tok, w) {
 }
 // The English to translate: own look (tagged, lighter) so it isn't confused with the title or the German
 function enPrompt(en, hint = "") {
-  return `<div class="en-prompt"><span class="en-tag">English</span><div class="en-text">${esc(en)}</div>${hint ? `<div class="muted small" style="margin-top:6px">${hint}</div>` : ""}</div>`;
+  return `<div class="en-prompt"><span class="en-tag">English</span><div class="en-text">${phone(esc(en))}</div>${hint ? `<div class="muted small" style="margin-top:6px">${phone(hint)}</div>` : ""}</div>`;
 }
+// 📞 in front of "on the phone" so phone-only phrases stand out (feedback 11-20)
+export const phone = html => String(html).replace(/(\(?)on the phone/i, "$1📞 on the phone");
 // Build the sentence: only words the learner knows (this part's words + already learned ones) become tiles;
 // everything else is pre-filled so they are never asked to place words they haven't met.
 function buildFor(w, pool) {
@@ -229,7 +231,10 @@ export function sayStep(p, pool, { forceTiles = false } = {}) {
     }
     if (extra.length >= want) break;
   }
-  return { t: "say", ...it, mode, key: "s:" + it.de, tiles: shuffle([...toks, ...extra]) };
+  // the same English in another register ("How are you?" polite vs friends): if they build that one, say so
+  const bare = e => e.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase();
+  const sibs = pool.filter(q => q !== p && bare(q.en) === bare(p.en)).flatMap(sayItems).filter(x => norm(x.de) !== norm(it.de)).map(x => ({ de: x.de, note: x.note }));
+  return { t: "say", ...it, mode, key: "s:" + it.de, tiles: shuffle([...toks, ...extra]), sibs };
 }
 // Long phrase, first time: most words are already in place; the learner fills only 2-3 key words.
 export function guidedSayStep(p, pool) {
@@ -396,17 +401,26 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
 const COMBO = { 3: "🔥 3 in a row – nice!", 5: "🔥 5 in a row – you're on fire!", 8: "⚡ 8 in a row – unstoppable!", 12: "🌟 12 in a row – are you secretly German?", 20: "🚀 20 in a row – legendary focus!" };
 
 // ---------- 🎤 Speak it: optional pronunciation practice (Chrome Web Speech API, de-DE) ----------
-// Lenient on purpose: it checks the words it heard, not the sounds. Never counts toward accuracy; +1 XP when understood.
+// It checks the words it heard, not the sounds: every word of the phrase must be heard (one may be missing in phrases of
+// 6+ words), so "wie geht es Ihnen" doesn't pass for "Wie geht es dir?". Never counts toward accuracy; +1 XP when understood.
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 export const speakAvailable = () => !!SpeechRec && window.isSecureContext;
 export const speakOn = () => speakAvailable() && S && S.settings.speak !== false;
 export const speakable = p => !!p && !/[…()]/.test(p.de) && p.de.length <= 70;
-const words = t => norm(t).replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
-// share of the target's words that were heard (in any order), best over the recogniser's alternatives
-function heardScore(alts, target) {
+const NUM = ["null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf"];
+const words = t => norm(String(t).replace(/[’']s\b/g, " es")).replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean).map(w => (/^\d+$/.test(w) && NUM[+w] ? norm(NUM[+w]) : w));
+// best of the recogniser's alternatives: which of the phrase's words were heard, and whether that's enough
+function heardCheck(alts, target) {
   const want = words(target);
-  return Math.max(0, ...alts.map(a => { const got = new Set(words(a)); return want.filter(x => got.has(x)).length / (want.length || 1); }));
+  let best = null;
+  for (const a of alts) {
+    const got = new Set(words(a)), hit = want.map(x => got.has(x)), miss = hit.filter(h => !h).length;
+    if (!best || miss < best.miss) best = { alt: a, hit, miss };
+  }
+  best = best || { alt: "", hit: want.map(() => false), miss: want.length };
+  return { ...best, want, ok: best.miss <= (want.length >= 6 ? 1 : 0) };
 }
+const shownTarget = (target, hit) => { let k = 0; return esc(target).split(/(\s+)/).map(t => /\S/.test(t) && words(t).length ? `<span class="${hit[k++] ? "w-ok" : "w-miss"}">${t}</span>` : t).join(""); };
 const MIC_ERRORS = { "not-allowed": "Microphone blocked: allow it for this site in the browser settings.", "service-not-allowed": "Microphone blocked: allow it for this site in the browser settings.",
   "no-speech": "I didn't hear anything. Tap and speak again.", "audio-capture": "No microphone found.", network: "Speech recognition needs an internet connection." };
 function speak(s, lb) {
@@ -417,17 +431,19 @@ function speak(s, lb) {
   if (S.settings.autoplay) play(s.p.a, s.p.de);
   const f = foot(`<button class="btn" id="mic">🎤 Tap and speak</button><button class="btn ghost" id="skip">Skip</button>`);
   const mic = f.querySelector("#mic"), heard = lb.querySelector("#heard");
-  let tries = 0, rec = null;
+  let tries = 0, rec = null; const said = [];
   f.querySelector("#skip").onclick = () => { if (rec) rec.abort(); next(); };
   mic.onclick = () => {
     rec = new SpeechRec();
     rec.lang = "de-DE"; rec.interimResults = false; rec.maxAlternatives = 5;
     mic.disabled = true; mic.textContent = "Listening…";
     rec.onresult = e => {
-      const alts = [...e.results[0]].map(a => a.transcript), score = heardScore(alts, s.p.de);
-      heard.innerHTML = `Heard: <b>${esc(alts[0] || "…")}</b>`;
+      const alts = [...e.results[0]].map(a => a.transcript), r = heardCheck(alts, s.p.de);
       tries++;
-      if (score >= 0.7) {
+      said.push(r.alt || alts[0] || "");
+      heard.innerHTML = `You said: <b>${esc(r.alt || alts[0] || "…")}</b>` + (r.ok ? "" : `<br>Wanted: ${shownTarget(s.p.de, r.hit)} <span class="muted tiny">(red = not heard)</span>`) +
+        (said.length > 1 ? `<br><span class="muted tiny">Earlier: ${said.slice(0, -1).map(esc).join(" · ")}</span>` : "");
+      if (r.ok) {
         if (!s.paid) { s.paid = true; addXP(1); }
         blip(true);
         f.innerHTML = `<div class="feedback ok" style="position:static"><h3>Verstanden! 🎉</h3><p>+1 XP for speaking.</p><button class="btn" id="go">Continue</button></div>`;
@@ -638,7 +654,7 @@ function flip(s, lb) {
   if (S.settings.autoplay) play(p.a, p.de);
   const f = foot(`<button class="btn blue" id="show">Show meaning</button>`);
   const reveal = () => {
-    lb.querySelector("#en").textContent = p.en;
+    lb.querySelector("#en").innerHTML = phone(esc(p.en));
     lb.querySelector("#en").style.color = "var(--ink)";
     f.innerHTML = `<div class="row"><button class="btn ghost grow" id="no">Still learning</button><button class="btn grow" id="yes" style="margin-top:0">I knew it</button></div>`;
     f.querySelector("#yes").onclick = () => { R.answered++; R.right++; next(); };
@@ -754,7 +770,9 @@ function say(s, lb) {
          <input class="type" id="inp" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type in German">
          <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`}`;
   const f = foot(`<button class="btn" id="chk" disabled>Check</button>`), btn = f.querySelector("#chk");
-  const finishSay = (ok, note = "") => {
+  const finishSay = (ok, note = "", got = "") => {
+    const sib = !ok && (s.sibs || []).find(x => norm(x.de) === norm(got));
+    if (sib) note = `“${esc(sib.de)}” is right too, but it's the ${esc(sib.note || "other")} form. This one asks for: ${esc(s.note || s.ctx || "the form shown")}.`;
     play(s.a, s.de);
     answered(s, ok, { correctHTML: esc(s.answers.join("  /  ")), note: note || (ok ? "" : "If yours means the same with a different word order, tap “I was right”."), allowOverride: true });
   };
@@ -776,14 +794,14 @@ function say(s, lb) {
     btn.onclick = () => {
       if (btn.dataset.done) return; btn.dataset.done = 1;
       const got = placed.map(i => s.tiles[i]).join(" ");
-      finishSay(s.answers.some(a => norm(a) === norm(got)));
+      finishSay(s.answers.some(a => norm(a) === norm(got)), "", got);
     };
   } else {
     const inp = lb.querySelector("#inp");
     const upd = () => (btn.disabled = !inp.value.trim());
     lb.querySelectorAll(".uml button").forEach(b => (b.onclick = () => { inp.value += b.dataset.c; inp.focus(); upd(); }));
     inp.oninput = upd;
-    const go = () => { if (btn.disabled || btn.dataset.done) return; btn.dataset.done = 1; inp.disabled = true; const r = checkSay(inp.value, s.answers); finishSay(r.ok, r.note); };
+    const go = () => { if (btn.disabled || btn.dataset.done) return; btn.dataset.done = 1; inp.disabled = true; const r = checkSay(inp.value, s.answers); finishSay(r.ok, r.note, inp.value); };
     btn.onclick = go;
     inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); go(); } };
     setTimeout(() => inp.focus(), 50);
@@ -847,12 +865,18 @@ function finish() {
     ${r.wrongIds.size ? `<p class="muted small">Words to watch: ${[...r.wrongIds].slice(0, 8).map(id => esc(C.word[id].de)).join(", ")}</p>` : ""}
   </div>`;
   wireSpeakers(view());
-  const ft = foot(r.nextBit ? `<div class="row"><button class="btn ghost grow" id="home" style="margin-top:0">Later</button><button class="btn grow" id="nb" style="margin-top:0">Next part ›</button></div>`
+  // next part: the app may pick a part of another lesson (alternating lessons), else the next part of this one
+  const nx = NEXT_HOOK && r.kind !== "review" && (r.bitOf || r.lessonDone) ? NEXT_HOOK() : null;
+  const goNext = nx ? nx.go : r.nextBit;
+  const ft = foot(goNext ? `<div class="row"><button class="btn ghost grow" id="home" style="margin-top:0">Later</button><button class="btn grow" id="nb" style="margin-top:0">Next part ›</button></div>
+      ${nx ? `<div class="muted tiny" style="text-align:center;margin-top:6px">Next: ${esc(nx.label)}</div>` : ""}`
     : `<button class="btn" id="go">Continue</button>`);
   const home = () => { document.body.classList.remove("in-lesson"); location.hash = "#/today"; };
   (ft.querySelector("#go") || ft.querySelector("#home")).onclick = home;
-  const nb = ft.querySelector("#nb"); if (nb) nb.onclick = r.nextBit;
+  const nb = ft.querySelector("#nb"); if (nb) nb.onclick = goNext;
 }
+let NEXT_HOOK = null; // () => {label, go} | null, set by the app (Quest Mode path order)
+export const setNextHook = f => { NEXT_HOOK = f; };
 function evolveCard(f) {
   return `<div class="evolve">✦ Your form has evolved ✦<br><b>${f.name}</b> · ${f.r}-Rank</div>
     <div class="formcard"><div class="row" style="justify-content:center;gap:8px"><span class="fde">${esc(f.de)}</span>

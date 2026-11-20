@@ -990,3 +990,30 @@ body.theme-ez .feedback.ok{background:var(--ok-l)}
 
 /* no pinch-zoom or double-tap zoom (viewport meta does it on Android; touch-action covers the rest) */
 html,body{touch-action:pan-x pan-y}
+
+/* ---- 11-20 feedback: part bar, path rings, today's plan, activity calendar, heard words ---- */
+.partbar{display:flex;gap:4px;margin:8px 0 4px}
+.partbar i{flex:1;height:7px;border-radius:4px;background:var(--line)}
+.partbar i.on{background:var(--green)}
+.partbar i.cur{background:var(--green-l);box-shadow:inset 0 0 0 1.5px var(--green)}
+.node .pring{position:absolute;left:50%;top:50%;width:86px;height:86px;transform:translate(-50%,-50%);pointer-events:none;overflow:visible}
+.node .pring path{fill:none;stroke:var(--line);stroke-width:5;stroke-linecap:round}
+.node .pring path.on{stroke:#ffc800}
+body.theme-sl .node .pring path{stroke:rgba(127,151,184,.35)}
+body.theme-sl .node .pring path.on{stroke:#ffcc4d}
+ul.agenda{margin:0;padding-left:0;list-style:none;font-size:14px;line-height:1.45}
+ul.agenda li{padding:4px 0;border-top:1px solid var(--line)}
+ul.agenda li:first-child{border-top:0}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0}
+.cal .ch{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
+.cday{aspect-ratio:1;border:0;border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;cursor:pointer;line-height:1.05}
+.cday small{font-size:9px;font-weight:600;opacity:.8}
+.cday.act{box-shadow:inset 0 0 0 2px var(--green)}
+.cday.hit{background:var(--green);color:#fff}
+.cday.today{outline:2px solid var(--amber);outline-offset:1px}
+.cday.future{opacity:.35}
+.ck{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.ck.hit{background:var(--green)}.ck.act{box-shadow:inset 0 0 0 2px var(--green)}
+.legend span{display:inline-flex;align-items:center;gap:2px}
+.w-ok{color:var(--green);font-weight:700}
+.w-miss{color:var(--red);font-weight:800;text-decoration:underline wavy}

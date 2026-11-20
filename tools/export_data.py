@@ -293,8 +293,10 @@ def split_alternatives(de: str, en: str) -> list[tuple[str, str]]:
 
     "Bitte. / Danke." + "Please. / Thanks."   -> paired one to one
     "Bitte schön. / Gern geschehen." + "You're welcome."   -> both get the one meaning
-    "Danke, gut. Und Ihnen? / Und dir?"   -> kept: the second part is only a fragment
+    "Danke, gut. Und Ihnen? / Und dir?"   -> FRAGMENT_SPLITS: polite and friends forms as two phrases (feedback 11-20)
     """
+    if de in FRAGMENT_SPLITS:
+        return FRAGMENT_SPLITS[de]
     des = [x.strip() for x in de.split(" / ")]
     if len(des) < 2 or not all(map(_whole_phrase, des)):
         return [(de, en)]  # "Ich bin verheiratet / ledig." swaps one word inside a sentence: keep it whole
@@ -305,6 +307,12 @@ def split_alternatives(de: str, en: str) -> list[tuple[str, str]]:
         return list(zip(des, ens))
     return [(x, en) for x in des] if len(ens) == 1 else [(de, en)]
 
+
+# "a / b" where b is only a fragment: spelled out by hand (keep store.js OLD_SPLIT in step when adding one)
+FRAGMENT_SPLITS = {
+    "Danke, gut. Und Ihnen? / Und dir?": [("Danke, gut. Und Ihnen?", "Fine, thanks. And you? (polite)"),
+                                          ("Danke, gut. Und dir?", "Fine, thanks. And you? (friends)")],
+}
 
 # alternatives that all carry the whole English meaning, rather than one part each
 SAME_MEANING = {"Entschuldigung! / Entschuldigen Sie!"}
@@ -334,13 +342,22 @@ for i, (v, g, p) in enumerate(R.P):
         for c in range(a, b + 1):
             first_ch.setdefault(c, i)
 PHRASE_DAY = {0: 0, 1: 1, 2: 2, 3: 5, 4: 6, 5: 29, 6: 46, 7: 38, 8: 47, 9: 55, 10: 33, 11: 40, 12: 28, 13: 14}
+def lesson_topic(t: str) -> str:
+    """Short topic for a lesson title. Appendix topics get their English too (feedback 11-20: "Zahlen" alone is unclear):
+    "A1. Zahlen – Numbers" -> "Zahlen (Numbers)"; others as before ("Family, people & relationships" -> "Family")."""
+    m = re.match(r"^A\d+\. (.+?) – (.+)$", t)
+    if m:
+        return f"{m[1].split(' / ')[0]} ({m[2].split(' & ')[0]})"
+    return R.short_topic(t)
+
+
 start = R.START
 items = []
 for k, b in enumerate(batches):
     day = (__import__("datetime").date.fromisoformat(b["date"]) - start).days
     topics = []
     for s in b["segs"]:
-        t = R.short_topic(s["topic"])
+        t = lesson_topic(s["topic"])
         if t not in topics:
             topics.append(t)
     items.append((day, 0, dict(id=f"v{k + 1}", kind="vocab", n=k + 1, title=" · ".join(topics), words=[wid[w] for w in b["words"]])))

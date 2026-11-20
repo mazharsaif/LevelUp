@@ -1,8 +1,8 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday } from "./store.js";
-import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit } from "./lesson.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
+import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
@@ -88,6 +88,25 @@ function startItem(it, bit) {
 const chapterDone = gid => (C.gparts[gid] || [gid]).every(id => S.done[id]);
 const chaptersDone = () => C.content.grammar.filter(g => chapterDone(g.id)).length;
 const partLabel = it => { const n = bitCount(it), d = bitsDone(it); return n > 1 ? `Part ${Math.min(d + 1, n)} of ${n}` : ""; };
+const itemName = it => (it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title);
+// one segment per part of a lesson: done / next / to do (feedback 11-20: "part x of y" alone wasn't clear)
+function partBar(it) {
+  const n = bitCount(it); if (n < 2) return "";
+  const b = (S.bits || {})[it.id] || [], all = !!S.done[it.id], cur = nextBit(it);
+  return `<div class="partbar" role="img" aria-label="${bitsDone(it)} of ${n} parts done">${Array.from({ length: n }, (_, k) => `<i class="${all || b[k] ? "on" : k === cur ? "cur" : ""}"></i>`).join("")}</div>`;
+}
+// time until midnight, e.g. "5 h 12 min"
+function leftToday() {
+  const m = Math.max(0, Math.ceil((new Date().setHours(24, 0, 0, 0) - Date.now()) / 60000));
+  return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
+}
+// average minutes in lessons per part finished, from the tracked days (null until there's enough data)
+function minPerPart() {
+  const parts = {}; for (const l of S.log) if (C.item[l.id]) parts[l.d] = (parts[l.d] || 0) + 1;
+  let sec = 0, n = 0;
+  for (const [d, t] of Object.entries(S.time || {})) if (parts[d] && t[1]) { sec += t[1]; n += parts[d]; }
+  return n >= 3 ? Math.max(1, Math.round(sec / 60 / n)) : null;
+}
 
 // ------------------------------------------------------------------ setup
 // pace always counts from the day you start; default finish = 3 months later
@@ -156,16 +175,43 @@ function paceCard(pc) {
     <span style="position:absolute;top:-3px;left:calc(${pc.expected}% - 1px);width:3px;height:18px;background:var(--ink);border-radius:2px"></span></div></div>`;
 }
 
+let tleftTimer = 0;
+// 📋 Today's plan: what the rest of today's parts will teach (feedback 11-20)
+function agendaCard(due) {
+  const need = Math.max(0, partsGoal() - partsToday()), plan = planParts(need || 1);
+  if (!plan.length) return "";
+  const words = new Map(), phr = new Map(), gram = [];
+  for (const { it, ids } of plan) {
+    if (it.kind === "vocab") ids.forEach(id => { const t = topicName(C.word[id].topic).split(" (")[0].split(",")[0]; words.set(t, (words.get(t) || 0) + 1); });
+    else if (it.kind === "phrases") phr.set(it.title, (phr.get(it.title) || 0) + ids.length);
+    else gram.push(it.title);
+  }
+  const sum = m => [...m.values()].reduce((a, b) => a + b, 0), list = m => [...m].map(([t, n]) => `${esc(t)} ${n}`).join(" · ");
+  const mpp = minPerPart(), revN = Math.min(20, due.length);
+  const li = [
+    words.size && `🔤 <b>${sum(words)} new word${sum(words) > 1 ? "s" : ""}</b> <span class="muted">· ${list(words)}</span>`,
+    phr.size && `💬 <b>${sum(phr)} new phrase${sum(phr) > 1 ? "s" : ""}</b> <span class="muted">· ${list(phr)}</span>`,
+    gram.length && `📐 <b>Grammar</b> <span class="muted">· ${gram.map(esc).join(" · ")}</span>`,
+    revN && `🧠 <b>${revN} word${revN > 1 ? "s" : ""} to recall</b> <span class="muted">· memory training</span>`,
+    mpp && `⏱ <b>about ${mpp * plan.length + Math.ceil(revN / 4)} min</b> <span class="muted">· from your own average</span>`,
+  ].filter(Boolean);
+  return `<div class="card"><div class="sys-h">📋 Today's plan</div>
+    <div class="muted small" style="margin-bottom:6px">${need ? `${need} part${need > 1 ? "s" : ""} left for today's quest:` : "Today's parts are done ✓ Next up, as a bonus:"}</div>
+    <ul class="agenda">${li.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
+}
 function todayView() {
   if (!questMode()) return freeToday();
-  const it = nextItem(), due = dueWords();
+  const it = nextPick(), due = dueWords();
   view().innerHTML = topBar() + apkBanner() + `
   ${dailyQuest(due)}
   ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
-      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
-      <div class="muted small">${[partLabel(it), it.kind === "vocab" ? `${bitsOf(it)[Math.min(bitsDone(it), bitCount(it) - 1)].length} new words` : ""].filter(Boolean).join(" · ")}</div>
-      <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button></div>`
+      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(itemName(it))}</div>
+      ${partBar(it)}
+      <div class="muted small">${[partLabel(it), it.kind === "vocab" ? `${bitsOf(it)[nextBit(it)].length} new words` : it.kind === "phrases" ? `${bitsOf(it)[nextBit(it)].length} new phrases` : ""].filter(Boolean).join(" · ")}</div>
+      ${bitCount(it) > 1 ? `<div class="muted tiny">This lesson has ${bitCount(it)} short parts${minPerPart() ? ` (about ${minPerPart()} min each)` : ""}. Each part you finish counts for the daily quest.</div>` : ""}
+      <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button></div>
+    ${agendaCard(due)}`
     : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
@@ -174,6 +220,7 @@ function todayView() {
     ${memWarn()}</div>` : ""}`;
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
+  clearInterval(tleftTimer); tleftTimer = setInterval(() => { const e = document.getElementById("tleft"); if (e) e.textContent = leftToday(); else clearInterval(tleftTimer); }, 30000);
   levelWatch();
   wireTop();
   const rw = checkRewards(questStatus(due).all);
@@ -279,9 +326,19 @@ function skillSheet(sk) {
 }
 
 // ------------------------------------------------------------------ path
+// segmented ring around a path node: one arc per part, filled when done
+function nodeRing(it) {
+  const n = bitCount(it); if (n < 2) return "";
+  const b = (S.bits || {})[it.id] || [], all = !!S.done[it.id], R = 40, c = 43, gap = 12, seg = 360 / n;
+  const pt = a => [c + R * Math.cos(a * Math.PI / 180), c + R * Math.sin(a * Math.PI / 180)];
+  return `<svg class="pring" viewBox="0 0 86 86" aria-hidden="true">${Array.from({ length: n }, (_, k) => {
+    const a0 = -90 + k * seg + gap / 2, a1 = -90 + (k + 1) * seg - gap / 2, [sx, sy] = pt(a0), [ex, ey] = pt(a1);
+    return `<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${R},${R} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${ex.toFixed(1)},${ey.toFixed(1)}" class="${all || b[k] ? "on" : ""}"/>`;
+  }).join("")}</svg>`;
+}
 function pathView() {
   if (!questMode()) return skillMapView();
-  const nx = nextItem();
+  const nx = nextPick();
   const plan = weekPlan();
   let k = 0;
   view().innerHTML = `<h1>Your path to A1</h1>${paceCard(pace())}<p class="muted small">Everything is open – tap any lesson.</p>` +
@@ -291,8 +348,7 @@ function pathView() {
         const done = !!S.done[i.id], cur = nx && nx.id === i.id;
         const side = off > 0 ? "l" : "r";
         return `<button class="node ${i.kind} ${done ? "done" : "avail"} ${cur ? "cur" : ""}" data-id="${i.id}" style="transform:translateX(${off}px)">
-          ${cur ? `<span class="start-tip">${bitsDone(i) ? `${bitsDone(i)}/${bitCount(i)}` : "START"}</span>` : ""}<span class="nglyph">${done ? "✓" : GLYPH[i.kind]}</span>
-          ${!done && !cur && bitsDone(i) ? `<span class="bitbadge">${bitsDone(i)}/${bitCount(i)}</span>` : ""}
+          ${nodeRing(i)}${cur ? `<span class="start-tip">${bitsDone(i) ? `Part ${Math.min(bitsDone(i) + 1, bitCount(i))}/${bitCount(i)}` : "START"}</span>` : ""}<span class="nglyph">${done ? "✓" : GLYPH[i.kind]}</span>
           <span class="lbl ${side}">${esc(i.kind === "vocab" ? `${i.n}. ${i.title}` : i.title)}</span></button>`;
       }).join("")}</div></div>`).join("");
   view().querySelectorAll(".node").forEach(b => (b.onclick = () => itemSheet(C.item[b.dataset.id])));
@@ -436,6 +492,42 @@ function wordSheet(w) {
 }
 
 // ------------------------------------------------------------------ progress
+const legendLine = (c, dash, w) => `<span><svg width="24" height="8" aria-hidden="true"><line x1="1" y1="4" x2="23" y2="4" stroke="${c}" stroke-width="${w}" ${dash ? `stroke-dasharray="${dash}"` : ""} stroke-linecap="round"/></svg> `;
+// 📅 activity calendar: goal reached (filled), active (outlined), minutes spent; tap a day for details
+let calMonth = null;
+function calendarCard() {
+  const t = today(), m0 = calMonth || t.slice(0, 7), [y, m] = m0.split("-").map(Number);
+  const first = `${m0}-01`, days = new Date(y, m, 0).getDate(), lead = (parse(first).getDay() + 6) % 7;
+  const parts = {}; for (const l of S.log) if (C.item[l.id]) parts[l.d] = (parts[l.d] || 0) + 1;
+  const tm = d => (S.time || {})[d] || [0, 0], min = sec => Math.round(sec / 60);
+  let cells = "";
+  for (let k = 0; k < lead; k++) cells += `<span></span>`;
+  for (let k = 1; k <= days; k++) {
+    const d = `${m0}-${String(k).padStart(2, "0")}`, hit = dayCounts(d), act = (S.xp[d] || 0) > 0 || tm(d)[0] > 0;
+    cells += `<button class="cday ${hit ? "hit" : act ? "act" : ""} ${d === t ? "today" : ""} ${d > t ? "future" : ""}" data-d="${d}">${k}${tm(d)[0] >= 60 ? `<small>${min(tm(d)[0])}m</small>` : ""}</button>`;
+  }
+  const all = Object.entries(S.time || {}).filter(([, v]) => v[0] >= 60), avg = all.length ? min(all.reduce((a, [, v]) => a + v[0], 0) / all.length) : null;
+  const goalDays = Object.keys(S.hit || {}), gAvg = goalDays.filter(d => tm(d)[0] >= 60), gMin = gAvg.length ? min(gAvg.reduce((a, d) => a + tm(d)[0], 0) / gAvg.length) : null, mpp = minPerPart();
+  return `<div class="card" id="calcard"><div class="row"><div class="grow" style="font-weight:800">📅 Activity</div>
+      <button class="link" id="calp" aria-label="Previous month">‹</button><b class="small" style="min-width:90px;text-align:center">${fmtDate(first, { month: "short", year: "numeric" })}</b><button class="link" id="caln" aria-label="Next month" ${m0 >= t.slice(0, 7) ? "disabled" : ""}>›</button></div>
+    <div class="cal">${["M", "T", "W", "T", "F", "S", "S"].map(x => `<span class="ch">${x}</span>`).join("")}${cells}</div>
+    <div class="legend"><span><i class="ck hit"></i>${questMode() ? "Daily goal reached" : "Learned"} (counts for 🔥)</span><span><i class="ck act"></i>Active</span><span>12m = minutes in the app</span></div>
+    <div class="stat-grid" style="margin-top:10px">
+      <div class="tile"><span>Avg per active day</span><b>${avg != null ? `${avg} min` : "–"}</b></div>
+      <div class="tile"><span>Avg on goal days</span><b>${gMin != null ? `${gMin} min` : "–"}</b></div>
+      <div class="tile"><span>Avg per lesson part</span><b>${mpp != null ? `${mpp} min` : "–"}</b></div></div>
+    <p class="muted tiny" style="margin-bottom:0">Time counts while the app is open and you're using it (since 20 Nov 2026). Tap a day for details.</p></div>`;
+}
+function wireCalendar() {
+  const c = view().querySelector("#calcard"); if (!c) return;
+  const shift = k => { const [y, m] = (calMonth || today().slice(0, 7)).split("-").map(Number), d = new Date(y, m - 1 + k, 1); calMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; c.outerHTML = calendarCard(); wireCalendar(); };
+  c.querySelector("#calp").onclick = () => shift(-1);
+  c.querySelector("#caln").onclick = () => shift(1);
+  c.querySelectorAll(".cday").forEach(b => (b.onclick = () => {
+    const d = b.dataset.d, tm = (S.time || {})[d] || [0, 0], n = S.log.filter(l => l.d === d && C.item[l.id]).length, hit = (S.hit || {})[d];
+    toast(`${fmtDate(d, { weekday: "short", day: "numeric", month: "short" })} · ${S.xp[d] || 0} XP${hit ? ` · goal ${hit} ✓` : ""} · ${n} part${n === 1 ? "" : "s"}${tm[0] ? ` · ${Math.round(tm[0] / 60)} min (${Math.round(tm[1] / 60)} in lessons)` : ""}`);
+  }));
+}
 function chartSVG(pc) {
   const W = 340, H = 190, L = 30, Rm = 10, T = 10, B = 26;
   const start = S.settings.startDate, target = S.settings.targetDate;
@@ -458,7 +550,8 @@ function chartSVG(pc) {
     ticks += `<text x="${X(s)}" y="${H - 8}" text-anchor="middle">${m.toLocaleDateString("en-GB", { month: "short" })}</text>`;
     m.setMonth(m.getMonth() + 1);
   }
-  const proj = pc.projected && t >= start ? `<line x1="${X(t)}" y1="${Y(pc.actual)}" x2="${X(pc.projected <= end ? pc.projected : end)}" y2="${Y(pc.projected <= end ? 100 : pc.actual + pc.actualPerDay * daysBetween(t, end))}" stroke="var(--green)" stroke-width="2" stroke-dasharray="2 4" opacity=".8"/>` : "";
+  const proj = pc.projected && t >= start ? `<line x1="${X(t)}" y1="${Y(pc.actual)}" x2="${X(pc.projected <= end ? pc.projected : end)}" y2="${Y(pc.projected <= end ? 100 : pc.actual + pc.actualPerDay * daysBetween(t, end))}" stroke="#a970ff" stroke-width="2.5" stroke-dasharray="2 4" stroke-linecap="round"/>` : "";
+  const ex = Math.min(100, Math.max(0, 100 * daysBetween(start, t) / Math.max(1, daysBetween(start, target)))), youUp = pc.actual >= ex;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Expected versus actual pace">
     ${grid}${ticks}
     <line x1="${X(target)}" x2="${X(target)}" y1="${T}" y2="${H - B}" stroke="var(--amber)" stroke-dasharray="3 3"/>
@@ -467,6 +560,9 @@ function chartSVG(pc) {
     ${proj}
     <path d="${stepPath}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round"/>
     <circle cx="${X(t)}" cy="${Y(pc.actual)}" r="5" fill="var(--green)" stroke="var(--card)" stroke-width="2"/>
+    <text x="${X(t) + 8}" y="${Y(pc.actual) + (youUp ? -8 : 14)}" style="fill:var(--green);font-weight:800">You ${pc.actual.toFixed(1)}%</text>
+    <circle cx="${X(t)}" cy="${Y(ex)}" r="3.5" fill="var(--muted)"/>
+    <text x="${X(t) + 8}" y="${Y(ex) + (youUp ? 14 : -8)}" style="fill:var(--muted);font-weight:700">Expected ${ex.toFixed(1)}%</text>
   </svg>`;
 }
 
@@ -490,7 +586,7 @@ function progressView() {
     </div></div>
   <div class="card"><div class="row"><div class="grow" style="font-weight:800">Pace to ${fmtDate(S.settings.targetDate, { day: "numeric", month: "short", year: "numeric" })}</div>${paceLine(pc)}</div>
     ${chartSVG(pc)}
-    <div class="legend"><span><i style="background:var(--muted)"></i>Expected pace</span><span><i style="background:var(--green)"></i>Your progress</span><span><i style="background:var(--green);opacity:.5"></i>Projection at current pace</span></div>
+    <div class="legend">${legendLine("var(--green)", "", 3)}<b>You</b> (your real progress)</span>${legendLine("var(--muted)", "6 5", 2)}Expected (straight line to the 🎯 target)</span>${legendLine("#a970ff", "2 4", 2.5)}Projection if you keep your pace</span></div>
     <div class="stat-grid" style="margin-top:12px">
       <div class="tile"><span>Expected today</span><b>${pc.expected.toFixed(1)}%</b></div>
       <div class="tile"><span>You are at</span><b>${pc.actual.toFixed(1)}%</b></div>
@@ -501,6 +597,7 @@ function progressView() {
     </div>
     <p class="muted tiny">A1 % = vocabulary ${WEIGHTS.vocab}% (by words) + grammar ${WEIGHTS.grammar}% (20 chapters) + phrases ${WEIGHTS.phrases}% (14 topics). Expected pace is a straight line from your start date to your target.</p>
   </div>
+  ${calendarCard()}
   <div class="card"><div style="font-weight:800;margin-bottom:6px">🧠 Memory</div>
     <div class="stat-grid">
       <div class="tile"><span>Learning</span><b style="color:var(--amber)">${r.learning}</b></div>
@@ -516,12 +613,12 @@ function progressView() {
     <div class="stat-grid"><div class="tile"><span>Today</span><b>${xpToday()}<span class="tiny muted">/${goalFor()}</span></b></div>
     <div class="tile"><span>Total</span><b>${totalXP()}</b></div>
     <div class="tile"><span>Last 7 days</span><b>${[0,1,2,3,4,5,6].reduce((a, k) => a + (S.xp[addDays(today(), -k)] || 0), 0)}</b></div>
-    <div class="tile"><span>Days goal met</span><b>${Object.values(S.xp).filter(v => v >= goalFor()).length}</b></div></div>
+    <div class="tile"><span>Days goal met</span><b>${Object.keys(S.hit || {}).length + Object.entries(S.xp).filter(([d, v]) => d < (S.settings.streakFrom || "") && v >= goalFor()).length}</b></div></div>
     ${(S.penLog || []).length ? `<div class="small" style="margin-top:10px"><b style="color:var(--red)">Penalties: −${Object.values(S.pen).reduce((a, b) => a + b, 0)} XP</b>
       ${S.penLog.slice(-4).reverse().map(p => `<div class="muted tiny">${fmtDate(p.d)} · −${p.xp} XP · ${esc(p.why)}</div>`).join("")}</div>` : ""}</div>
 `;
   const v = view();
-  v.insertAdjacentHTML("beforeend", `<div id="cmp"></div>`); wireTop(); fillCompare();
+  v.insertAdjacentHTML("beforeend", `<div id="cmp"></div>`); wireTop(); fillCompare(); wireCalendar();
   v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
 }
 
@@ -1038,19 +1135,20 @@ function questStatus(due) {
   const revDone = S.reviews[t] || 0, revGoal = Math.min(20, due.length + revDone);
   const q = [
     { ok: x >= g, txt: `Earn ${g} XP`, v: `${x}/${g}` },
-    { ok: newToday >= pg, txt: `Clear ${pg} lesson part${pg > 1 ? "s" : ""}`, v: `${Math.min(newToday, pg)}/${pg}` },
+    { ok: newToday >= pg, txt: `Finish ${pg} short part${pg > 1 ? "s" : ""} of any lesson`, v: `${Math.min(newToday, pg)}/${pg}` },
     { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Review all ${revGoal} words to remember` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
   ];
-  return { q, all: q.every(i => i.ok), x };
+  return { q, all: q.every(i => i.ok), x, g };
 }
 function dailyQuest(due) {
-  const { q, all, x } = questStatus(due), paid = S.questDays && S.questDays[today()];
+  const { q, all, x, g } = questStatus(due), paid = S.questDays && S.questDays[today()], hit = (S.hit || {})[today()], st = streak();
   return `<div class="card sl-only"><div class="sys-h"><span class="ex">!</span> Daily quest</div>
     <div class="small muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">TRAINING FOR ${esc((C.course && C.course.title) || "YOUR COURSE").toUpperCase()} HAS ARRIVED</div>
     ${q.map(i => `<div class="quest ${i.ok ? "ok" : ""}"><span class="box">${i.ok ? "✓" : ""}</span>${esc(i.txt)}<span class="v">${i.v}</span></div>`).join("")}
     <div class="small" style="text-align:center;margin-top:8px;letter-spacing:1px;color:${all ? "#57e3a0" : "var(--muted)"}">
       ${all ? `QUEST COMPLETE · 💎 +${QUEST_GEMS} ${paid ? "COLLECTED" : ""}` : `REWARD: 💎 ${QUEST_GEMS}`}</div>
-    ${!all && x === 0 && streak() > 0 ? `<div class="warn-line">⚠ Earn at least 1 XP before midnight to keep your 🔥 ${streak()} day streak.</div>` : ""}</div>`;
+    ${!hit && st > 0 ? `<div class="warn-line">⚠ Reach ${g} XP today to keep your 🔥 ${st}-day streak · <b id="tleft">${leftToday()}</b> left (${Math.max(0, g - x)} XP to go)</div>`
+      : !all ? `<div class="small muted" style="text-align:center;margin-top:6px">⏳ <b id="tleft">${leftToday()}</b> left today</div>` : ""}</div>`;
 }
 function statusWindow(pr, pc, r) {
   const L = level(pr.total), rk = rank(pr.total);
@@ -1176,7 +1274,7 @@ const XP_HELP = `<h2 style="margin-top:0">⚡ How XP works</h2>
   <tr><td>🎤 Phrase spoken correctly</td><td><b>+1</b></td></tr></table>
   <p class="small">Repeating a part you already finished gives +1. A failed part (under 60 % right) gives +1 for the effort. A quit lesson gives nothing.</p>
   <p class="small"><b>Daily goal</b> = the XP you aim for each day (one new lesson ≈ 20 XP).
-  <b>Streak</b> = days in a row with at least 1 XP. XP is added per day to your progress on the server, which also feeds the Party comparison.</p>
+  <b>Streak</b> = days in a row you reach your daily XP goal (with Quest Mode off: any XP that day; days before 20 Nov 2026 count with any XP). XP is added per day to your progress on the server, which also feeds the Party comparison.</p>
   <p class="small"><b>💎 Diamonds</b>: +${QUEST_GEMS} for clearing all three daily quests. Streak milestones (7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365 days) give a gift box – tap it to open: Common 15–30 💎, Rare 40–80, Epic 100–180, Legendary 250–400.</p>
   <p class="small muted">XP measures effort. Your A1 % measures how much of the course you've covered.</p>
   <p class="small"><b>Level</b> follows your A1 %, not XP: level 1 at the start, <b>level 100 = A1 reached</b>: every lesson done and remembered (about one level per lesson). After that you keep levelling: every ${POST_A1_XP} XP from reviews and practice adds another level (101, 102 …). Your hunter rank (E → S) and the purple aura grow with it.</p>
@@ -1476,6 +1574,12 @@ async function fillCompare() {
 (async function boot() {
   installBugButton();   // first, so it works even if loading fails
   applyTheme();
+  startTimeTracking();
+  setNextHook(() => { // finish screen "Next part": alternate lessons in Quest Mode
+    if (!questMode()) return null;
+    const it = nextPick(); if (!it) return null;
+    return { label: `${itemName(it)}${bitCount(it) > 1 ? ` · part ${Math.min(bitsDone(it) + 1, bitCount(it))} of ${bitCount(it)}` : ""}`, go: () => startItem(it) };
+  });
   loadAvatars();
   await loadCourses();
   await checkAuth();

@@ -5,7 +5,9 @@
 import { S, USER, COURSE, courseInfo } from "./store.js";
 import { lessonDebug } from "./lesson.js";
 
-const QUEUE = "a1.bugQueue";
+const QUEUE = "a1.bugQueue", DRAFT = "a1.bugDraft"; // draft: text + kind kept until sent (feedback 11-20: going back lost it)
+const getDraft = () => { try { return JSON.parse(localStorage.getItem(DRAFT) || "null") || { text: "", kind: "bug" }; } catch { return { text: "", kind: "bug" }; } };
+const setDraft = d => { try { d && d.text.trim() ? localStorage.setItem(DRAFT, JSON.stringify(d)) : localStorage.removeItem(DRAFT); } catch { /* storage blocked */ } };
 const errors = [];                       // last few JS errors, newest last
 const pushErr = (msg) => { errors.push({ at: new Date().toISOString(), msg: String(msg).slice(0, 500) }); if (errors.length > 10) errors.shift(); };
 window.addEventListener("error", e => pushErr(`${e.message} @ ${(e.filename || "").split("/").pop()}:${e.lineno}`));
@@ -76,15 +78,15 @@ export async function flushBugQueue() {
 
 function openBox() {
   if (document.getElementById("bug-root")) return;
-  const snap = capture();                                  // screen as it was when tapped
+  const snap = capture(), draft = getDraft();             // screen as it was when tapped
   const root = document.createElement("div");
   root.id = "bug-root";
   root.innerHTML = `<div class="bug-bg"><div class="bug-box" role="dialog" aria-label="Send feedback">
     <div class="bug-h">💬 Send feedback</div>
     <div class="bug-page">On: <b>${esc(snap.page)}</b></div>
     <div class="bug-kinds">${[["bug", "Something broke"], ["content", "Wrong answer / text"], ["idea", "Idea"]].map(([k, l], i) =>
-      `<label><input type="radio" name="bk" value="${k}" ${i === 0 ? "checked" : ""}> ${l}</label>`).join("")}</div>
-    <textarea id="bug-text" maxlength="4000" placeholder="What happened, or what would make this better?"></textarea>
+      `<label><input type="radio" name="bk" value="${k}" ${k === draft.kind || (i === 0 && !["content", "idea"].includes(draft.kind)) ? "checked" : ""}> ${l}</label>`).join("")}</div>
+    <textarea id="bug-text" maxlength="4000" placeholder="What happened, or what would make this better?">${esc(draft.text)}</textarea>
     <label class="bug-inc"><input type="checkbox" id="bug-inc" checked> Include what's on the screen (text and layout)</label>
     <div class="bug-msg" id="bug-msg"></div>
     <div class="bug-btns"><button class="bug-cancel" id="bug-cancel">Cancel</button><button class="bug-send" id="bug-send" disabled>Send report</button></div>
@@ -92,14 +94,18 @@ function openBox() {
   document.body.appendChild(root);
   const $ = s => root.querySelector(s), close = () => root.remove();
   const ta = $("#bug-text"), btn = $("#bug-send");
-  ta.oninput = () => (btn.disabled = !ta.value.trim());
+  const kind = () => root.querySelector("input[name=bk]:checked").value, keep = () => setDraft({ text: ta.value, kind: kind() });
+  ta.oninput = () => { btn.disabled = !ta.value.trim(); keep(); };
+  root.querySelectorAll("input[name=bk]").forEach(r => (r.onchange = keep));
+  btn.disabled = !ta.value.trim();
   $("#bug-cancel").onclick = close;
   $(".bug-bg").onclick = e => { if (e.target === e.currentTarget) close(); };
-  setTimeout(() => ta.focus(), 60);
+  setTimeout(() => { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 60);
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = "Sending…";
     const ctx = $("#bug-inc").checked ? snap : { page: snap.page, url: snap.url, user: snap.user, course: snap.course, capturedAt: snap.capturedAt, userAgent: snap.userAgent, viewport: snap.viewport, errors: snap.errors };
-    const report = { text: ta.value.trim(), category: root.querySelector("input[name=bk]:checked").value, ctx };
+    const report = { text: ta.value.trim(), category: kind(), ctx };
+    setDraft(null); // sent or queued: either way it's safe
     try {
       const id = await send(report);
       $("#bug-msg").textContent = `Thanks! Saved as report ${id}.`;

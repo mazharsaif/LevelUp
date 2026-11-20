@@ -261,6 +261,8 @@ export const blank = () => ({
   tree: {},       // skill-tree courses: node id -> date learned
   parts: {},      // skill-tree courses: node id -> {part index -> date finished}
   say: {},        // phrase (German) -> times produced correctly in "Say it in German"
+  hit: {},        // date -> daily XP goal reached that day (counts for the streak in Quest Mode)
+  time: {},       // date -> [seconds active in the app, seconds of that in lessons]
 });
 function normalize(st) {
   const b = blank();
@@ -272,6 +274,10 @@ function normalize(st) {
   if (oldXP && st.settings.goalMode === "manual") st.settings.dailyGoal = Math.max(10, Math.round(st.settings.dailyGoal * 0.4));
   // grammar chapters finished before they were split into parts: every part counts as done
   for (const [gid, ids] of Object.entries(C.gparts || {})) if (st.done[gid]) ids.forEach(id => { if (!st.done[id]) st.done[id] = { ...st.done[gid] }; });
+  if (!st.settings.pb3) migratePhraseBits(st);
+  // streak rule from 11-20: a day counts when the daily goal is reached (Quest Mode); days before still count with any XP
+  if (!st.settings.streakFrom) st.settings.streakFrom = today();
+  if (st.setup && C.content && C.content.path) markGoal(st);
   return st;
 }
 
@@ -352,13 +358,32 @@ export function importState(txt) {
 }
 
 // ---------- XP / streak ----------
-export function addXP(n) { const t = today(); S.xp[t] = (S.xp[t] || 0) + n; save(); }
+export function addXP(n) { const t = today(); S.xp[t] = (S.xp[t] || 0) + n; markGoal(); save(); }
+// remember the day's goal as reached (the goal is frozen per day, so this never flips back)
+export function markGoal(st = S) { const t = today(); if (!st.hit) st.hit = {}; if (!st.hit[t] && (st.xp[t] || 0) >= goalFor(st)) st.hit[t] = goalFor(st); }
 export const xpToday = (st = S) => st.xp[today()] || 0;
+// A streak day: Quest Mode = the daily XP goal was reached; Quest Mode off (no goal) or before 11-20 = any XP that day.
+export function dayCounts(d, st = S) {
+  if ((st.hit || {})[d]) return true;
+  return (st.xp[d] || 0) > 0 && (!questMode(st) || d < (st.settings.streakFrom || "9999"));
+}
 export function streak(st = S) {
   let d = today(), n = 0;
-  if (!st.xp[d]) d = addDays(d, -1); // today not done yet – the streak still counts until midnight
-  while (st.xp[d]) { n++; d = addDays(d, -1); }
+  if (!dayCounts(d, st)) d = addDays(d, -1); // today not done yet – the streak still counts until midnight
+  while (dayCounts(d, st)) { n++; d = addDays(d, -1); }
   return n;
+}
+// ---------- time spent: active seconds per day (screen visible and touched in the last 90 s), and how much of it in lessons ----------
+let lastInput = Date.now(), tick = null, unsaved = 0;
+export function startTimeTracking() {
+  if (tick) return;
+  for (const ev of ["pointerdown", "keydown", "touchstart", "scroll"]) addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true });
+  tick = setInterval(() => {
+    if (!S || !USER || document.visibilityState !== "visible" || Date.now() - lastInput > 90000) return;
+    const t = today(), d = (S.time || (S.time = {}))[t] || (S.time[t] = [0, 0]);
+    d[0] += 15; if (document.body.classList.contains("in-lesson")) d[1] += 15;
+    if ((unsaved += 15) >= 60) { unsaved = 0; save(); }
+  }, 15000);
 }
 export const totalXP = (st = S) => Math.max(0, Object.values(st.xp).reduce((a, b) => a + b, 0) - Object.values(st.pen || {}).reduce((a, b) => a + b, 0));
 export function addPenalty(n, why, d = today()) {
@@ -604,10 +629,28 @@ function chunk(arr, size, minLast) {
   if (out.length > 1 && out.at(-1).length < minLast) out.at(-2).push(...out.pop());
   return out;
 }
+export const PHRASE_BIT = 3; // phrases per part (was 5 until 11-20: parts felt too long)
 export function bitsOf(it) {
   if (it.kind === "vocab") return chunk(it.words, 4, 3);
-  if (it.kind === "phrases") return chunk(C.phrases[it.id].items.map((_, i) => i), 5, 3);
+  if (it.kind === "phrases") return chunk(C.phrases[it.id].items.map((_, i) => i), PHRASE_BIT, 2);
   return [[0]]; // grammar: one part
+}
+// Phrase parts were 5 phrases each (until 11-20); now 3. Keep finished phrases finished: a new part is done when every
+// phrase in it was in a finished old part. Old content also had "Danke, gut. Und Ihnen? / Und dir?" as one phrase (now two).
+const OLD_SPLIT = ["Danke, gut. Und Ihnen?"]; // first of a phrase that was split into it + the next one on 11-20
+function migratePhraseBits(st) {
+  if (!C.phrases || !C.content || !C.content.path) return; // not a language course (or content not loaded yet)
+  for (const it of C.content.path) {
+    if (it.kind !== "phrases" || st.done[it.id]) continue;
+    const old = (st.bits || {})[it.id];
+    if (!old || !old.some(Boolean)) continue;
+    const items = C.phrases[it.id].items, oldIdx = []; // new index for each old index
+    for (let i = 0; i < items.length; i++) { oldIdx.push([i]); if (OLD_SPLIT.includes(items[i].de) && i + 1 < items.length) oldIdx.at(-1).push(++i); }
+    const doneAt = {}; // new phrase index -> date its old part was finished
+    chunk(oldIdx.map((_, k) => k), 5, 3).forEach((ks, b) => { if (old[b]) ks.forEach(k => oldIdx[k].forEach(i => { doneAt[i] = old[b]; })); });
+    st.bits[it.id] = chunk(items.map((_, i) => i), PHRASE_BIT, 2).map(ids => (ids.every(i => doneAt[i]) ? doneAt[ids[0]] : null));
+  }
+  st.settings.pb3 = true;
 }
 export const bitCount = it => bitsOf(it).length;
 export function bitsDone(it, st = S) {
@@ -756,6 +799,37 @@ export function partsToday(st = S) {
 }
 
 export const nextItem = () => C.content.path.find(i => !S.done[i.id]);
+// Lesson of the last part finished today (or null)
+export function lastPartToday(st = S) {
+  const t = today();
+  for (let k = st.log.length - 1; k >= 0 && st.log[k].d === t; k--) if (C.item[st.log[k].id]) return st.log[k].id;
+  return null;
+}
+// What to do next: the first unfinished lesson, but right after a part of it, a part of another of the first 3
+// unfinished lessons (another kind if there is one), so a day alternates lessons instead of one long run (feedback 11-20).
+export function pickFrom(isDone, last) {
+  const open = [];
+  for (const i of C.content.path) if (!isDone(i.id) && open.push(i) >= 3) break;
+  if (!open.length) return null;
+  if (!last || open[0].id !== last) return open[0];
+  const k = C.item[last] && C.item[last].kind;
+  return open.find(i => i.id !== last && i.kind !== k) || open.find(i => i.id !== last) || open[0];
+}
+export const nextPick = (st = S) => pickFrom(id => !!st.done[id], lastPartToday(st));
+// The next n parts (simulated with nextPick): [{it, k (part index), ids (words / phrase indices)}]
+export function planParts(n, st = S) {
+  const done = new Set(Object.keys(st.done)), bits = {}, out = [];
+  let last = lastPartToday(st);
+  for (let j = 0; j < n; j++) {
+    const it = pickFrom(id => done.has(id), last); if (!it) break;
+    const B = bitsOf(it), b = bits[it.id] || (bits[it.id] = [...((st.bits || {})[it.id] || [])]);
+    let k = B.findIndex((_, x) => !b[x]); if (k < 0) k = 0;
+    b[k] = 1; out.push({ it, k, ids: B[k] });
+    if (it.kind === "grammar" || B.every((_, x) => b[x])) done.add(it.id);
+    last = it.id;
+  }
+  return out;
+}
 export function completeItem(id, score, xp) {
   const first = !S.done[id];
   S.done[id] = { date: first ? today() : S.done[id].date, score, last: today() };
