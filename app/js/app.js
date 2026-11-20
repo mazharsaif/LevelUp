@@ -75,7 +75,8 @@ function route() {
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
   const pt = document.querySelector('#tabs a[data-tab="path"]');
   if (pt) pt.innerHTML = questMode() ? `<span class="ti">🗺️</span><span>Path</span>` : `<span class="ti">🧩</span><span>Skills</span>`;
-  ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, grammar: () => grammarView(arg) }[name] || todayView)();
+  ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, grammar: () => grammarView(arg),
+     stories: storiesView, story: () => storyView(arg) }[name] || todayView)();
   window.scrollTo(0, 0);
 }
 
@@ -222,6 +223,7 @@ function todayView() {
       <div class="muted small">Review them now to keep them fresh</div></div>
       <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div>
     ${memWarn()}</div>` : ""}`;
+  appendStories();
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
   clearInterval(tleftTimer); tleftTimer = setInterval(() => { const e = document.getElementById("tleft"); if (e) e.textContent = leftToday(); else clearInterval(tleftTimer); }, 30000);
@@ -284,6 +286,7 @@ function freeToday() {
   const ab = view().querySelector("#all"); if (ab) ab.onclick = () => { try { localStorage.setItem("a1.freeLayout", "skills"); } catch { /* ignore */ } location.hash = "#/path"; };
   const ob = view().querySelector("#ord"); if (ob) ob.onclick = () => { try { localStorage.setItem("a1.freeLayout", "order"); } catch { /* ignore */ } location.hash = "#/path"; };
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
+  appendStories();
   levelWatch();
   wireTop();
 }
@@ -1662,6 +1665,123 @@ async function fillCompare() {
     <tr><td>A1 complete</td>${rows.map(r => cell(r, "pct", v => `${v.toFixed(1)}%`)).join("")}</tr>
     <tr><td>Pace (lessons)</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b style="color:${r.s.gapLessons >= -1 ? "var(--green)" : "var(--amber)"}">${pacefmt(r.s.gapLessons)}</b></td>`).join("")}</tr>
     </table></div>`;
+}
+
+// ------------------------------------------------------------------ stories (feedback mazhar-02ba)
+// Optional listening practice for German: no XP, no effect on course progress. data/stories.json is built by
+// tools/build_stories.py. A story unlocks at minWords learned words. Flow: new words -> listen (no text) ->
+// questions (replay the line after a miss) -> transcript. S.stories[id] = {best, of, at, plays}.
+let STORIES = null;
+async function loadStories() {
+  if (STORIES) return STORIES;
+  try { STORIES = (await (await fetch("data/stories.json")).json()).stories; } catch { STORIES = []; }
+  return STORIES;
+}
+const wordsKnown = () => Object.keys(S.words || {}).length;
+async function appendStories() {
+  if (C.course.id !== "de-a1") return;
+  const box = document.createElement("div"); view().appendChild(box);
+  const st = await loadStories(); if (!st.length || !box.isConnected) return;
+  const open = st.filter(x => wordsKnown() >= x.minWords), next = st.find(x => wordsKnown() < x.minWords);
+  const fresh = open.filter(x => !(S.stories || {})[x.id]);
+  box.innerHTML = `<button class="card partylink" id="stc"><span style="font-size:28px">🎧</span><span class="grow"><b>Stories</b>
+    <div class="tiny muted">${open.length ? `${open.length} of ${st.length} open${fresh.length ? ` · ${fresh.length} new` : ""} · optional listening practice` : `First story unlocks at ${st[0].minWords} words (you know ${wordsKnown()})`}</div></span>
+    ${fresh.length ? `<span class="pbadge">${fresh.length}</span>` : ""}<span>›</span></button>`;
+  box.querySelector("#stc").onclick = () => (location.hash = "#/stories");
+}
+async function storiesView() {
+  const st = await loadStories(), n = wordsKnown(), done = S.stories || {};
+  view().innerHTML = `<div class="row"><h1 class="grow">🎧 Stories</h1>${userChip()}</div>
+    <p class="muted small" style="margin-top:0">Short scenes to train your ear. Listen first without the text, answer a few questions, then read along. Optional: no XP, and your course progress doesn't change.</p>
+    ${st.map(x => { const open = n >= x.minWords, r = done[x.id];
+      return `<button class="card storyrow ${open ? "" : "locked"}" data-s="${x.id}" ${open ? "" : "disabled"}><span class="sc">${open ? x.scene : "🔒"}</span>
+        <span class="grow"><b>${esc(x.title)}</b><div class="tiny muted">${esc(x.titleEn)} · ${x.lines.length} lines</div>
+        <div class="tiny ${open ? "muted" : ""}">${open ? (r ? `✓ Best ${r.best}/${r.of}` : "New") : `Unlocks at ${x.minWords} words · ${x.minWords - n} to go`}</div></span>${open ? "<span>›</span>" : ""}</button>`; }).join("")}`;
+  view().querySelectorAll("[data-s]").forEach(b => (b.onclick = () => (location.hash = "#/story/" + b.dataset.s)));
+  wireTop();
+}
+async function storyView(id) {
+  const st = await loadStories(), x = st.find(y => y.id === id);
+  if (!x || wordsKnown() < x.minWords) { location.hash = "#/stories"; return; }
+  document.body.classList.add("in-lesson");
+  const el = new Audio(); let slow = false, playing = false, plays = 0, stopFlag = 0;
+  const stopPlay = () => { stopFlag++; el.pause(); playing = false; };
+  const clip = (a, onEnd) => { el.onended = onEnd; el.onerror = onEnd; el.src = `audio/${a}.mp3`; el.play().catch(onEnd); };
+  const playLines = (idxs, onLine, onDone) => {           // play lines in order with natural pauses
+    stopPlay(); stopAudio(); const my = ++stopFlag; playing = true; let k = 0;
+    const step = () => { if (my !== stopFlag) return; if (k >= idxs.length) { playing = false; return onDone && onDone(); }
+      const i = idxs[k], ln = x.lines[i]; onLine && onLine(i, k);
+      clip(slow ? ln.s : ln.a, () => { if (my !== stopFlag) return; const nxt = x.lines[idxs[k + 1]]; k++;
+        setTimeout(step, !nxt ? 0 : nxt.sp === ln.sp ? 450 : 750); }); };
+    step();
+  };
+  const top = (pct, label) => `<div class="lesson-top"><button class="x" id="sx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${label}</span></div>`;
+  const leave = () => { stopPlay(); location.hash = "#/stories"; };
+  const wireX = () => (view().querySelector("#sx").onclick = leave);
+  // 1. scene + new words
+  const intro = () => {
+    view().innerHTML = top(5, "1 / 4") + `<div class="reader story"><div style="font-size:56px;text-align:center">${x.scene}</div>
+      <div class="q-title" style="text-align:center">${esc(x.title)}</div><div class="muted" style="text-align:center">${esc(x.titleEn)}</div>
+      ${x.pre.length ? `<div class="sys-h" style="margin-top:18px">New words first</div>${x.pre.map((w, i) => `<button class="card stword" data-w="${i}"><span>🔊</span><span class="grow"><b>${esc(w.de)}</b><div class="small muted">${esc(w.en)}</div></span></button>`).join("")}`
+        : `<p class="muted small" style="text-align:center;margin-top:18px">You know every word in this story.</p>`}
+      <p class="muted small" style="margin-top:14px">Next you'll hear the story without the text. Listen for who, what, when and how much.</p></div>
+      <div class="lesson-foot"><button class="btn" id="go" style="margin:0">🎧 Listen</button></div>`;
+    view().querySelectorAll("[data-w]").forEach(b => (b.onclick = () => play(x.pre[+b.dataset.w].a, x.pre[+b.dataset.w].de)));
+    view().querySelector("#go").onclick = listen; wireX();
+  };
+  // 2. listen without text
+  const listen = () => {
+    view().innerHTML = top(30, "2 / 4") + `<div class="reader story" style="text-align:center"><div style="font-size:56px">${x.scene}</div>
+      <div class="q-title">Listen</div><div class="muted small">No text yet. Play it as often as you like.</div>
+      <button class="playbig" id="pl" aria-label="Play the story">▶</button><div class="tiny muted" id="pos">${x.lines.length} lines</div>
+      <label class="slowtog"><input type="checkbox" id="slow" ${slow ? "checked" : ""}> 🐢 Slow</label></div>
+      <div class="lesson-foot"><button class="btn" id="go" style="margin:0" ${plays ? "" : "disabled"}>Questions ›</button></div>`;
+    const pl = view().querySelector("#pl"), pos = view().querySelector("#pos"), go = view().querySelector("#go");
+    view().querySelector("#slow").onchange = e => { slow = e.target.checked; };
+    pl.onclick = () => { if (playing) { stopPlay(); pl.textContent = "▶"; return; }
+      pl.textContent = "■"; playLines(x.lines.map((_, i) => i), (i, k) => (pos.textContent = `line ${k + 1} of ${x.lines.length}`),
+        () => { plays++; pl.textContent = "↻"; pos.textContent = `played ${plays}×`; go.disabled = false; }); };
+    go.onclick = () => { stopPlay(); ask(0, []); }; wireX();
+  };
+  // 3. questions
+  const ask = (k, res) => {
+    if (k >= x.q.length) return transcript(res);
+    const q = x.q[k], right = q.t === "mc" ? q.a : (q.a ? 1 : 0);
+    const opts = q.t === "mc" ? q.o.map((o, i) => [i, o]) : [[1, "True"], [0, "False"]];
+    view().innerHTML = top(45 + 35 * k / x.q.length, "3 / 4") + `<div class="reader quiz"><div class="r-eyebrow">${x.scene} ${esc(x.title)} · question ${k + 1} of ${x.q.length}</div>
+      <div class="q-title qq">${esc(q.q)}</div><div class="opts ${q.t === "tf" ? "tf" : ""}">${opts.map(([i, o]) => `<button class="opt" data-k="${i}">${esc(o)}</button>`).join("")}</div><div id="fb"></div></div>
+      <div class="lesson-foot"><button class="btn" id="qn" disabled style="margin:0">Choose an answer</button></div>`;
+    const nb = view().querySelector("#qn");
+    view().querySelectorAll(".opt").forEach(b => (b.onclick = () => {
+      if (res[k] != null) return;
+      const ok = +b.dataset.k === right; res[k] = ok;
+      view().querySelectorAll(".opt").forEach(o => { o.disabled = true; o.classList.add(+o.dataset.k === right ? "right" : o === b ? "wrong" : "dim"); });
+      const ln = x.lines[q.line];
+      view().querySelector("#fb").innerHTML = `<div class="qfb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Right" : "✗ Not quite"}</b>
+        ${ok ? "" : `<div><button class="btn ghost sm" id="hear">🔊 Hear that part</button></div>`}</div>`;
+      const h = view().querySelector("#hear"); if (h) h.onclick = () => playLines([q.line]);
+      if (!ok) playLines([q.line]);
+      nb.disabled = false; nb.textContent = k + 1 < x.q.length ? "Next ›" : "Read along ›";
+      nb.onclick = () => { stopPlay(); ask(k + 1, res); };
+    }));
+    wireX();
+  };
+  // 4. transcript + result (no XP)
+  const transcript = res => {
+    const got = res.filter(Boolean).length;
+    S.stories = S.stories || {}; const r = S.stories[x.id] || { best: 0, of: x.q.length, plays: 0 };
+    r.best = Math.max(r.best, got); r.of = x.q.length; r.at = today(); r.plays += plays; S.stories[x.id] = r; save();
+    view().innerHTML = top(100, "4 / 4") + `<div class="reader story"><div class="q-title">${got} of ${x.q.length} right ${got === x.q.length ? "🏆" : ""}</div>
+      <div class="row" style="justify-content:space-between;align-items:center"><div class="muted small">Now read along. Tap a line to hear it again.</div><label class="slowtog" style="margin:0"><input type="checkbox" id="slow" ${slow ? "checked" : ""}> 🐢</label></div>
+      <div class="tlines">${x.lines.map((l, i) => `<button class="tline" data-l="${i}"><span class="tiny muted">${esc(l.sp)}</span><div><b>${esc(l.de)}</b></div><div class="small muted">${esc(l.en)}</div></button>`).join("")}</div></div>
+      <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="pa" style="margin:0">▶ Play all</button><button class="btn grow" id="dn" style="margin:0">Done</button></div></div>`;
+    const mark = i => view().querySelectorAll(".tline").forEach(t => t.classList.toggle("on", +t.dataset.l === i));
+    view().querySelectorAll(".tline").forEach(t => (t.onclick = () => playLines([+t.dataset.l], mark, () => mark(-1))));
+    view().querySelector("#slow").onchange = e => { slow = e.target.checked; };
+    view().querySelector("#pa").onclick = () => playLines(x.lines.map((_, i) => i), mark, () => mark(-1));
+    view().querySelector("#dn").onclick = leave; wireX();
+  };
+  intro();
 }
 
 // ------------------------------------------------------------------ party (feedback mazhar-2c70)

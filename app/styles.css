@@ -1054,3 +1054,14 @@ details.ans[open] summary{margin-bottom:6px}
 .preq,.prow{display:flex;align-items:center;gap:8px}
 .preq+.preq{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .btn.sm{width:auto;margin:0;padding:8px 12px;font-size:13px}
+
+/* stories (feedback mazhar-02ba) */
+.storyrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.storyrow .sc{font-size:30px;width:40px;text-align:center}
+.storyrow.locked{opacity:.55;cursor:default}
+.stword{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer;margin-bottom:8px}
+.playbig{width:110px;height:110px;border-radius:50%;border:3px solid var(--blue,#4fb3ff);background:var(--card);color:var(--ink);font-size:42px;margin:24px auto 8px;display:grid;place-items:center;cursor:pointer}
+.slowtog{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-weight:700;cursor:pointer}
+.tlines{display:flex;flex-direction:column;gap:8px;margin:12px 0 130px}
+.tline{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+.tline.on{border-color:var(--blue,#4fb3ff)}
