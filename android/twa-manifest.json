@@ -1,6 +1,6 @@
 {
   "packageId": "de.com.levelup.app",
-  "host": "app.level-up.com.de",
+  "host": "levelrise.org",
   "name": "LevelUp",
   "launcherName": "LevelUp",
   "display": "standalone",
@@ -13,18 +13,18 @@
   "backgroundColor": "#070A1C",
   "enableNotifications": false,
   "startUrl": "/?src=apk",
-  "iconUrl": "https://dev.level-up.com.de/icons/icon-512.png",
-  "maskableIconUrl": "https://dev.level-up.com.de/icons/icon-512-maskable.png",
+  "iconUrl": "https://levelrise.org/icons/icon-512.png",
+  "maskableIconUrl": "https://levelrise.org/icons/icon-512-maskable.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "/Users/mazhar/.levelup-android/levelup-release.keystore",
     "alias": "levelup"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionName": "1.1.0",
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "unknown",
-  "webManifestUrl": "https://dev.level-up.com.de/manifest.webmanifest",
+  "webManifestUrl": "https://levelrise.org/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
@@ -33,7 +33,7 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://app.level-up.com.de/",
+  "fullScopeUrl": "https://levelrise.org/",
   "minSdkVersion": 24,
   "orientation": "portrait",
   "fingerprints": [],
@@ -43,5 +43,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "1.1.0"
 }

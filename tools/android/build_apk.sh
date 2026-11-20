@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the LevelUp Android app (TWA) and puts it on the website:
 #   app/download/levelup.apk          the sideloadable APK (download button in the web app)
-#   app/.well-known/assetlinks.json   proves the APK owns app.level-up.com.de (no URL bar)
+#   app/.well-known/assetlinks.json   proves the APK owns levelrise.org (no URL bar)
 # Toolchain + signing key live in ~/.levelup-android (JDK 17, Android SDK, Bubblewrap, keystore).
 # Usage: tools/android/build_apk.sh            (bump versionCode in android/twa-manifest.json for updates)
 # KEEP ~/.levelup-android/levelup-release.keystore + keystore-password.txt BACKED UP: without them no update installs.
@@ -13,7 +13,7 @@ export JAVA_HOME="$T/jdk/Contents/Home" ANDROID_HOME="$T/sdk"
 export BUBBLEWRAP_KEYSTORE_PASSWORD="$PW" BUBBLEWRAP_KEY_PASSWORD="$PW"
 
 # Chrome reads the web manifest from the app's own host
-sed -i '' "s|https://dev.level-up.com.de/manifest.webmanifest|https://app.level-up.com.de/manifest.webmanifest|" "$ROOT/android/app/build.gradle"
+sed -i '' -E "s|https://[a-z0-9.-]+/manifest.webmanifest|https://levelrise.org/manifest.webmanifest|" "$ROOT/android/app/build.gradle"
 
 cd "$ROOT/android"
 BT="$T/sdk/build-tools/36.1.0"

@@ -1383,7 +1383,7 @@ function wireApk(root = view()) {
   if (x) x.onclick = () => { try { localStorage.setItem("a1.apkHide", "1"); } catch { /* ignore */ } root.querySelector("#apkb")?.remove(); toast("You can still get the app in Settings"); };
 }
 function apkSheet() {
-  const appUrl = "https://app.level-up.com.de";
+  const appUrl = "https://levelrise.org";
   sheet(`<h2 style="margin-top:0">📱 LevelUp for Android</h2>
     ${IS_ANDROID ? "" : `<p class="note">This is an Android app. Open <b>${appUrl}</b> on your Android phone to install it there (or download it here and copy it over).</p>`}
     <ol class="small" style="padding-left:20px;line-height:1.5">

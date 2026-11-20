@@ -1,11 +1,11 @@
 ---
 name: deploy
-description: Push LevelUp to GitHub and deploy it to the dev droplet (https://dev.level-up.com.de) with levelup-deploy, then check it is live. Use whenever the user asks to deploy, ship, release, push and deploy, "run deploy", or update the droplet / live app.
+description: Push LevelUp to GitHub and deploy it to the dev droplet (https://levelrise.org) with levelup-deploy, then check it is live. Use whenever the user asks to deploy, ship, release, push and deploy, "run deploy", or update the droplet / live app.
 ---
 
 # Deploy LevelUp to the droplet
 
-Live = the DigitalOcean droplet only (`ssh levelup-droplet`, app behind Caddy at https://dev.level-up.com.de).
+Live = the DigitalOcean droplet only (`ssh levelup-droplet`, app behind Caddy at https://levelrise.org).
 The droplet pulls from GitHub itself over a forwarded SSH agent, so the order is always: commit → push → deploy → verify.
 
 ## 1. Pre-flight (local)
@@ -66,9 +66,9 @@ Check with `rsync -azn --itemize-changes app/audio/ levelup-droplet:LevelUp/app/
 
 ```bash
 ssh levelup-droplet 'systemctl is-active levelup; git -C LevelUp log -1 --oneline'
-curl -s -o /dev/null -w "%{http_code}\n" https://dev.level-up.com.de/              # 200
-curl -s -o /dev/null -w "%{http_code}\n" https://dev.level-up.com.de/api/auth/me   # 401 (logged out) = server up
-curl -s https://dev.level-up.com.de/sw.js | head -2                                # shows the new SHELL version
+curl -s -o /dev/null -w "%{http_code}\n" https://levelrise.org/              # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://levelrise.org/api/auth/me   # 401 (logged out) = server up
+curl -s https://levelrise.org/sw.js | head -2                                # shows the new SHELL version
 ```
 
 - The droplet's commit must equal local `git rev-parse --short HEAD`.

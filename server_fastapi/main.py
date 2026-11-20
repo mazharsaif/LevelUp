@@ -476,7 +476,7 @@ def api_404(rest: str):
     return err("not found", 404)
 
 
-# Android app (TWA): Digital Asset Links proves app.level-up.com.de belongs to the APK, so it opens without a URL bar.
+# Android app (TWA): Digital Asset Links proves levelrise.org belongs to the APK, so it opens without a URL bar.
 @app.get("/.well-known/assetlinks.json", include_in_schema=False)
 def assetlinks():
     return FileResponse(os.path.join(APP, ".well-known", "assetlinks.json"), media_type="application/json")

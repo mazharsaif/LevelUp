@@ -1,6 +1,6 @@
 // Generates the Android (TWA) project in android/ from the web manifest.
 // Run: node tools/android/gen_twa.mjs   (needs ~/.levelup-android/tools with @bubblewrap/cli installed)
-// The APK opens https://app.level-up.com.de; icons are read from ICONS_FROM (any live copy of the app).
+// The APK opens https://levelrise.org (main domain from 11-20); icons are read from ICONS_FROM (any live copy of the app).
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import os from "node:os";
@@ -9,8 +9,8 @@ import path from "node:path";
 const require = createRequire(path.join(os.homedir(), ".levelup-android/tools/node_modules/"));
 const { TwaManifest, TwaGenerator, ConsoleLog } = require("@bubblewrap/core");
 
-const HOST = "app.level-up.com.de";
-const ICONS_FROM = process.env.ICONS_FROM || "https://dev.level-up.com.de";
+const HOST = "levelrise.org";
+const ICONS_FROM = process.env.ICONS_FROM || "https://levelrise.org";
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const OUT = path.join(ROOT, "android");
 

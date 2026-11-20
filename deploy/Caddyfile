@@ -3,7 +3,7 @@
 # Apply changes:  sudo cp Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
 # Logs:           journalctl -u caddy -f
 #
-# New app = new block:  name.level-up.com.de { reverse_proxy 127.0.0.1:<port> }
+# New app = new block:  name.levelrise.org { reverse_proxy 127.0.0.1:<port> }
 # (plus a DNS A record for "name" in Cloudflare)
 
 # Shared settings for every app
@@ -17,33 +17,15 @@
 	}
 }
 
-# LevelUp, dev copy (manual deploys via levelup-deploy)
-dev.level-up.com.de {
-	import common
-	reverse_proxy 127.0.0.1:8000
-}
-
-# LevelUp for the Android app (the APK opens this address) and the APK download.
-# Same app and data as dev for now; the APK is tied to this name, so keep it stable.
-app.level-up.com.de {
-	import common
-	reverse_proxy 127.0.0.1:8000
-}
-
-# New main domain (bought 11-20 because of the level-up.com.de issues). Same app and data as dev.
-# Needs Cloudflare DNS: A "@" and A "www" -> 168.144.78.71 (DNS only, grey cloud), SSL/TLS = Full (strict).
+# LevelUp, main site (from 11-20). The Android app (APK) opens this address too, so keep it stable.
+# Cloudflare DNS: A "@" and A "www" -> 168.144.78.71 (DNS only, grey cloud).
 levelrise.org {
 	import common
 	reverse_proxy 127.0.0.1:8000
 }
 
-www.levelrise.org {
+# Every other name sends visitors to the main site, keeping the path (old APK, old links, bookmarks).
+www.levelrise.org, level-up.com.de, dev.level-up.com.de, app.level-up.com.de {
 	import common
 	redir https://levelrise.org{uri} permanent
-}
-
-# Old main domain: sends visitors to dev until the main copy exists
-level-up.com.de {
-	import common
-	redir https://dev.level-up.com.de{uri} temporary
 }
