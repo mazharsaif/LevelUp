@@ -320,11 +320,191 @@ def get_users(request: Request):
 
 @app.get("/api/states", response_model=dict[str, dict | None], tags=["progress"])
 def get_states(request: Request, c: str = CourseQ):
-    """Every learner's progress for one course (used by the Party comparison; login required)."""
+    """Progress for one course of you and your party members (the Party comparison; login required)."""
     denied = need(request)
     if denied:
         return denied
-    return {u["id"]: read_state(u["id"], c) for u in users()}
+    who = me(request)
+    p = party_of(load_parties(), who)
+    ids = p["members"] if p else [who]
+    return {uid: read_state(uid, c) for uid in ids if user_ok(uid)}
+
+
+# ---------- parties: up to 10 learners who compare progress ----------
+# parties.json = {"<id>": {"name", "members": [uid], "requests": [{"uid", "at"}], "created"}}
+# A learner is in at most one party. Joining = request, then any member accepts.
+PARTIES_FILE = os.path.join(DATA, "parties.json")
+PARTY_MAX = 10
+_party_lock = threading.Lock()
+
+
+def load_parties() -> dict:
+    try:
+        with open(PARTIES_FILE) as f:
+            return json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def save_parties(d: dict) -> None:
+    tmp = PARTIES_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(d, f, indent=1)
+    os.replace(tmp, PARTIES_FILE)
+
+
+def party_of(d: dict, uid: str) -> dict | None:
+    return next((dict(p, id=k) for k, p in d.items() if uid in p["members"]), None)
+
+
+class PartyIn(BaseModel):
+    name: str = Field(..., min_length=2, max_length=40)
+
+
+class PartyUid(BaseModel):
+    uid: str = Field(..., pattern=ID_RE)
+
+
+def party_view(d: dict, who: str) -> dict:
+    names = {u["id"]: u["name"] for u in users()}
+    mine = party_of(d, who)
+    out = {"max": PARTY_MAX, "mine": None, "parties": []}
+    for k, p in sorted(d.items(), key=lambda kv: kv[1]["name"].lower()):
+        out["parties"].append({"id": k, "name": p["name"], "count": len(p["members"]), "full": len(p["members"]) >= PARTY_MAX,
+                               "requested": any(r["uid"] == who for r in p.get("requests", []))})
+    if mine:
+        out["mine"] = {"id": mine["id"], "name": mine["name"],
+                       "members": [{"id": m, "name": names.get(m, m)} for m in mine["members"]],
+                       "requests": [{"id": r["uid"], "name": names.get(r["uid"], r["uid"]), "at": r["at"]} for r in mine.get("requests", [])]}
+    return out
+
+
+@app.get("/api/parties", tags=["parties"])
+def get_parties(request: Request):
+    """All parties (name, member count), your party with its members and join requests. Login required."""
+    denied = need(request)
+    if denied:
+        return denied
+    return party_view(load_parties(), me(request))
+
+
+@app.post("/api/parties", tags=["parties"], responses={409: {"model": ErrorOut}})
+def create_party(request: Request, body: PartyIn):
+    """Start a party (you become its first member)."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _party_lock:
+        d = load_parties()
+        if party_of(d, who):
+            return err("you are already in a party", 409)
+        if any(p["name"].strip().lower() == body.name.strip().lower() for p in d.values()):
+            return err("that name is taken", 409)
+        pid = re.sub(r"[^a-z0-9]+", "-", body.name.lower()).strip("-")[:24] or "party"
+        base, n = pid, 2
+        while pid in d:
+            pid, n = f"{base}-{n}", n + 1
+        for p in d.values():                                    # starting your own party withdraws your requests
+            p["requests"] = [r for r in p.get("requests", []) if r["uid"] != who]
+        d[pid] = {"name": body.name.strip(), "members": [who], "requests": [], "created": date.today().isoformat()}
+        save_parties(d)
+        return party_view(d, who)
+
+
+@app.post("/api/parties/{pid}/request", tags=["parties"], responses={404: {"model": ErrorOut}, 409: {"model": ErrorOut}})
+def request_join(request: Request, pid: str = Path(..., pattern=ID_RE)):
+    """Ask to join a party; any member can accept."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _party_lock:
+        d = load_parties()
+        if pid not in d:
+            return err("no such party", 404)
+        if party_of(d, who):
+            return err("you are already in a party", 409)
+        p = d[pid]
+        if len(p["members"]) >= PARTY_MAX:
+            return err("that party is full", 409)
+        if not any(r["uid"] == who for r in p.setdefault("requests", [])):
+            p["requests"].append({"uid": who, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+            save_parties(d)
+        return party_view(d, who)
+
+
+@app.post("/api/parties/{pid}/cancel", tags=["parties"])
+def cancel_request(request: Request, pid: str = Path(..., pattern=ID_RE)):
+    """Withdraw your join request."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _party_lock:
+        d = load_parties()
+        if pid in d:
+            d[pid]["requests"] = [r for r in d[pid].get("requests", []) if r["uid"] != who]
+            save_parties(d)
+        return party_view(d, who)
+
+
+def _answer(request: Request, pid: str, uid: str, accept: bool):
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _party_lock:
+        d = load_parties()
+        p = d.get(pid)
+        if not p or who not in p["members"]:
+            return err("you are not in that party", 403)
+        if not any(r["uid"] == uid for r in p.get("requests", [])):
+            return err("no such request", 404)
+        if accept:
+            if len(p["members"]) >= PARTY_MAX:
+                return err("the party is full", 409)
+            if party_of(d, uid):
+                p["requests"] = [r for r in p["requests"] if r["uid"] != uid]
+                save_parties(d)
+                return err("they already joined another party", 409)
+            p["members"].append(uid)
+            for q in d.values():                                # one party per learner: drop their other requests
+                q["requests"] = [r for r in q.get("requests", []) if r["uid"] != uid]
+        else:
+            p["requests"] = [r for r in p["requests"] if r["uid"] != uid]
+        save_parties(d)
+        return party_view(d, who)
+
+
+@app.post("/api/parties/{pid}/accept", tags=["parties"], responses={403: {"model": ErrorOut}, 404: {"model": ErrorOut}, 409: {"model": ErrorOut}})
+def accept_request(request: Request, body: PartyUid, pid: str = Path(..., pattern=ID_RE)):
+    """Any member accepts a join request (up to 10 members)."""
+    return _answer(request, pid, body.uid, True)
+
+
+@app.post("/api/parties/{pid}/decline", tags=["parties"], responses={403: {"model": ErrorOut}, 404: {"model": ErrorOut}})
+def decline_request(request: Request, body: PartyUid, pid: str = Path(..., pattern=ID_RE)):
+    """Any member declines a join request."""
+    return _answer(request, pid, body.uid, False)
+
+
+@app.post("/api/parties/{pid}/leave", tags=["parties"])
+def leave_party(request: Request, pid: str = Path(..., pattern=ID_RE)):
+    """Leave your party (an empty party is removed)."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _party_lock:
+        d = load_parties()
+        p = d.get(pid)
+        if p and who in p["members"]:
+            p["members"].remove(who)
+            if not p["members"]:
+                del d[pid]
+            save_parties(d)
+        return party_view(d, who)
 
 
 @app.get("/api/state/{uid}", response_model=StateEnvelope, responses={404: {"model": ErrorOut}}, tags=["progress"])

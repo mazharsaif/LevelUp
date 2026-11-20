@@ -1041,3 +1041,16 @@ body.theme-sl .qfb.ok{background:rgba(40,160,90,.15)}body.theme-sl .qfb.no{backg
 details.ans{margin-top:12px;border:1.5px dashed var(--line);border-radius:10px;padding:8px 12px}
 details.ans summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--muted, #888)}
 details.ans[open] summary{margin-bottom:6px}
+
+/* party tab (feedback mazhar-2c70) */
+#tabs .ti{position:relative}
+.pbadge{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--red,#e5484d);color:#fff;font-size:11px;font-weight:800;line-height:1}
+.pbadge[hidden]{display:none}
+#tabs .pbadge{position:absolute;top:-4px;right:-10px}
+.pbadge.inl{vertical-align:middle;margin-left:4px}
+.partylink{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.pmembers{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pmem{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.preq,.prow{display:flex;align-items:center;gap:8px}
+.preq+.preq{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.btn.sm{width:auto;margin:0;padding:8px 12px;font-size:13px}

@@ -68,6 +68,7 @@ function route() {
   if (!USER || !S) return whoView();
   if (!syncHero()) return heroPickView();
   if (!picked()) return courseView();
+  if (h === "#/party") { document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party")); return partyView(); }
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (!S.setup) return setupView();
   const [, name, arg] = h.split("/");
@@ -621,7 +622,9 @@ function progressView() {
       ${S.penLog.slice(-4).reverse().map(p => `<div class="muted tiny">${fmtDate(p.d)} · −${p.xp} XP · ${esc(p.why)}</div>`).join("")}</div>` : ""}</div>
 `;
   const v = view();
-  v.insertAdjacentHTML("beforeend", `<div id="cmp"></div>`); wireTop(); fillCompare(); wireCalendar();
+  v.insertAdjacentHTML("beforeend", `<button class="card partylink" id="gop"><span style="font-size:26px">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party, or join one</div></span><span>›</span></button>`);
+  v.querySelector("#gop").onclick = () => (location.hash = "#/party");
+  wireTop(); wireCalendar();
   v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
 }
 
@@ -815,9 +818,12 @@ function seHome() {
     <div class="bgrid">${brs.map(b => { const ns = treeNodes(b.id), d = ns.filter(n => nodeDone(n.id)).length, nx = nextNode(b);
       return `<button class="bcard" data-b="${b.id}" style="--c:${b.color}" aria-label="${esc(b.title)}: ${d} of ${ns.length} skills"><div class="row" style="justify-content:space-between">${ringSVG(branchFrac(b), b.color, b.icon)}<span class="tiny muted">${d}/${ns.length}</span></div>
         <div class="bc-t">${esc(b.title)}</div><div class="tiny muted">${nx ? `Next: ${esc(nx.title)}` : d === ns.length ? "👑 Complete" : ""}</div></button>`; }).join("")}</div>
+    <button class="card partylink" id="gop" style="margin-top:14px"><span style="font-size:26px">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party</div></span><span class="pbadge" hidden></span><span>›</span></button>
     ${soon.length ? `<div class="sec-h">Coming soon</div><div class="soontags">${soon.map(b => `<button class="soontag" data-s="${b.id}">${b.icon} ${esc(b.title)}</button>`).join("")}</div>` : ""}`;
   wireTop();
   view().querySelectorAll(".bcard").forEach(b => (b.onclick = () => (location.hash = "#/branch/" + b.dataset.b)));
+  view().querySelector("#gop").onclick = () => (location.hash = "#/party");
+  if (PARTY && PARTY.mine && PARTY.mine.requests.length) { const pb = view().querySelector("#gop .pbadge"); pb.textContent = PARTY.mine.requests.length; pb.hidden = false; }
   view().querySelectorAll(".soontag").forEach(b => (b.onclick = () => { const s = T.branches.find(x => x.id === b.dataset.s);
     sheet(`<div style="font-size:20px;font-weight:800">${s.icon} ${esc(s.title)}</div><p class="muted small" style="margin:4px 0 0">Coming soon. Planned skills:</p>
       <ol class="planned">${(s.planned || []).map(p => `<li>${esc(p)}</li>`).join("")}</ol><button class="btn ghost" id="close">Close</button>`, el => (el.querySelector("#close").onclick = closeSheet)); }));
@@ -1634,10 +1640,12 @@ function userSheet() {
 }
 async function fillCompare() {
   const box = view().querySelector("#cmp");
-  const people = USERS.filter(u => !u.demo || u.id === USER); // demo profiles stay out of the comparison
-  if (!box || people.length < 2) return;
-  const all = await fetchAllStates();
+  if (!box) return;
+  const all = await fetchAllStates();                       // the server returns you and your party members only
   all[USER] = S; // always show the freshest local numbers for the current user
+  const people = Object.keys(all).map(id => USERS.find(u => u.id === id) || { id, name: id, color: "#888" });
+  if (people.length < 2) return;                          // keep the "when someone joins" hint
+  if (courseInfo(COURSE).type === "tree") return treeCompare(box, people, all);
   const rows = people.map(u => ({ u, s: summary(all[u.id]) }));
   const best = k => Math.max(...rows.map(r => (r.s ? r.s[k] : -1)));
   const cell = (r, k, fmt) => !r.s ? `<td class="muted">–</td>` : `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${fmt(r.s[k], r.s)}</b></td>`;
@@ -1654,6 +1662,83 @@ async function fillCompare() {
     <tr><td>A1 complete</td>${rows.map(r => cell(r, "pct", v => `${v.toFixed(1)}%`)).join("")}</tr>
     <tr><td>Pace (lessons)</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b style="color:${r.s.gapLessons >= -1 ? "var(--green)" : "var(--amber)"}">${pacefmt(r.s.gapLessons)}</b></td>`).join("")}</tr>
     </table></div>`;
+}
+
+// ------------------------------------------------------------------ party (feedback mazhar-2c70)
+// Parties live on the server (api/parties): up to 10 learners; join by request, any member accepts.
+// The Party tab shows your party (members, requests, comparison) or every party with "Request to join".
+let PARTY = null;
+async function partyApi(path = "", body, method = "POST") {
+  const r = await fetch("api/parties" + path, body === undefined && method === "GET" ? { cache: "no-store" } : { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+  return j;
+}
+const partyOK = () => AUTH === "on" && !isGuest();
+async function refreshParty() {
+  if (!partyOK()) return null;
+  try { PARTY = await partyApi("", undefined, "GET"); } catch { return PARTY; }
+  const reqs = PARTY.mine ? PARTY.mine.requests : [];
+  document.querySelectorAll('#tabs a[data-tab="party"] .pbadge').forEach(b => { b.textContent = reqs.length || ""; b.hidden = !reqs.length; });
+  const key = `a1.partySeen.${USER}`, seen = (() => { try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; } })();
+  const fresh = reqs.filter(r => !seen.includes(r.id + r.at));
+  if (fresh.length && location.hash !== "#/party") toast(`👥 ${fresh.map(r => r.name).join(", ")} ${fresh.length > 1 ? "want" : "wants"} to join ${PARTY.mine.name}. Open Party to accept.`);
+  try { localStorage.setItem(key, JSON.stringify(reqs.map(r => r.id + r.at))); } catch { /* ignore */ }
+  return PARTY;
+}
+async function partyView() {
+  const tree = courseInfo(COURSE).type === "tree";
+  if (tree) document.body.classList.add("in-lesson");
+  const head = `${tree ? `<button class="link" id="pback">‹ ${esc(C.course.title)}</button>` : ""}<div class="row"><h1 class="grow">Party</h1>${userChip()}</div>`;
+  if (!partyOK()) { view().innerHTML = head + `<div class="card"><p>Parties need an account, so your party can see your progress.</p>${isGuest() ? `<p class="muted small">You are using LevelUp as a guest. Sign up to join a party; your progress comes with you.</p>` : ""}</div>`; wirePartyTop(); return; }
+  view().innerHTML = head + `<div class="loading">Loading parties…</div>`; wirePartyTop();
+  let P;
+  try { P = await refreshParty(); if (!P) throw new Error(); } catch { view().innerHTML = head + `<div class="card">Couldn't load parties. Check your connection and try again.</div>`; wirePartyTop(); return; }
+  const act = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); } catch (e) { toast(e.message); } partyView(); };
+  if (P.mine) {
+    const m = P.mine;
+    view().innerHTML = head + `<div class="card"><div class="sys-h">Your party</div><div style="font-size:20px;font-weight:800">👥 ${esc(m.name)}</div>
+        <div class="tiny muted">${m.members.length} of ${P.max} members · any member can accept new people</div>
+        <div class="pmembers">${m.members.map(x => `<span class="pmem">${avatar(x.id, true)}<span>${esc(x.name)}${x.id === USER ? " (you)" : ""}</span></span>`).join("")}</div></div>
+      ${m.requests.length ? `<div class="card"><div class="sys-h">Join requests <span class="pbadge inl">${m.requests.length}</span></div>${m.requests.map(r => `<div class="preq"><span class="grow"><b>${esc(r.name)}</b><div class="tiny muted">asked ${fmtDate(r.at.slice(0, 10))}</div></span>
+          <button class="btn sm" data-acc="${r.id}" ${m.members.length >= P.max ? "disabled" : ""}>Accept</button><button class="btn ghost sm" data-dec="${r.id}">Decline</button></div>`).join("")}</div>` : ""}
+      <div id="cmp"></div>
+      <button class="link" id="leave" style="margin-top:6px">Leave ${esc(m.name)}</button>`;
+    view().querySelectorAll("[data-acc]").forEach(b => (b.onclick = () => act(() => partyApi(`/${m.id}/accept`, { uid: b.dataset.acc }), "Accepted. Welcome to the party!")));
+    view().querySelectorAll("[data-dec]").forEach(b => (b.onclick = () => act(() => partyApi(`/${m.id}/decline`, { uid: b.dataset.dec }))));
+    view().querySelector("#leave").onclick = () => sheet(`<h2 style="margin-top:0">Leave ${esc(m.name)}?</h2><p class="muted">You'll stop seeing each other's progress. You can ask to join again later.</p>
+      <button class="btn" id="ly">Leave the party</button><button class="btn ghost" id="ln">Stay</button>`, el => {
+        el.querySelector("#ln").onclick = closeSheet;
+        el.querySelector("#ly").onclick = () => { closeSheet(); act(() => partyApi(`/${m.id}/leave`), `You left ${m.name}.`); };
+      });
+    wirePartyTop(); fillCompare();
+    if (m.members.length < 2) view().querySelector("#cmp").innerHTML = `<div class="card muted small">When someone joins, you'll compare XP, streaks and progress here. Tell friends to open Party and request to join <b>${esc(m.name)}</b>.</div>`;
+    return;
+  }
+  view().innerHTML = head + `<p class="muted small" style="margin-top:0">A party is up to ${P.max} learners who see each other's progress. Ask to join one; any member can let you in. Or start your own.</p>
+    <div class="sec-h">Parties</div>
+    ${P.parties.length ? P.parties.map(p => `<div class="card prow"><span class="grow"><b>👥 ${esc(p.name)}</b><div class="tiny muted">${p.count} of ${P.max} members${p.full ? " · full" : ""}</div></span>
+      ${p.requested ? `<button class="btn ghost sm" data-can="${p.id}">Requested · cancel</button>` : `<button class="btn sm" data-req="${p.id}" ${p.full ? "disabled" : ""}>Request to join</button>`}</div>`).join("") : `<div class="card muted small">No parties yet. Start the first one.</div>`}
+    <div class="sec-h">Start a party</div>
+    <div class="card"><input id="pname" maxlength="40" placeholder="Party name, e.g. Family" style="width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)">
+      <button class="btn" id="pnew" style="margin-top:10px">Start party</button></div>`;
+  view().querySelectorAll("[data-req]").forEach(b => (b.onclick = () => act(() => partyApi(`/${b.dataset.req}/request`), "Request sent. A member will let you in.")));
+  view().querySelectorAll("[data-can]").forEach(b => (b.onclick = () => act(() => partyApi(`/${b.dataset.can}/cancel`))));
+  view().querySelector("#pnew").onclick = () => { const n = view().querySelector("#pname").value.trim(); if (n.length < 2) return toast("Give your party a name (2+ letters)."); act(() => partyApi("", { name: n }), `${n} started. Invite people to request to join.`); };
+  wirePartyTop();
+}
+function wirePartyTop() {
+  const b = view().querySelector("#pback"); if (b) b.onclick = () => (location.hash = "#/today");
+  wireTop();
+}
+function treeCompare(box, people, all) {
+  const row = id => { const st = all[id] || {}, t = today(); return { xp: Object.values(st.xp || {}).reduce((a, b) => a + b, 0), today: (st.xp || {})[t] || 0,
+    skills: Object.keys(st.tree || {}).length, practice: Object.values(st.quiz || {}).filter(q => q.xp).length }; };
+  const rows = people.map(u => ({ u, s: row(u.id) })), best = k => Math.max(...rows.map(r => r.s[k]));
+  const cell = (r, k) => `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${r.s[k]}</b></td>`;
+  box.innerHTML = `<div class="card"><div class="sys-h">${esc(C.course.title)}</div><table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
+    <tr><td>XP today</td>${rows.map(r => cell(r, "today")).join("")}</tr><tr><td>Total XP</td>${rows.map(r => cell(r, "xp")).join("")}</tr>
+    <tr><td>Skills learned</td>${rows.map(r => cell(r, "skills")).join("")}</tr><tr><td>Practice passed</td>${rows.map(r => cell(r, "practice")).join("")}</tr></table></div>`;
 }
 
 // ------------------------------------------------------------------ boot
@@ -1675,6 +1760,7 @@ async function fillCompare() {
   setCourse(courseInfo(startCourse).status === "ready" ? startCourse : COURSE);
   try { await loadContent(); } catch (e) { view().innerHTML = `<div class="loading">Could not load lessons. Check your internet connection, then reload.</div>`; return; }
   if (USER) await switchUser(USER);
+  refreshParty(); setInterval(() => USER && refreshParty(), 5 * 60 * 1000);
   window.addEventListener("hashchange", route);
   window.addEventListener("popstate", onPopState);
   armBack();
