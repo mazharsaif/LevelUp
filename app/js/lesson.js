@@ -1,7 +1,7 @@
 // Exercise engine: vocab lessons, reviews, grammar practice, phrase sections.
 import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR, nameSpellQuestion } from "./store.js";
 import { play, blip, stopAudio, playSoon } from "./audio.js";
-import { heroHTML, applyAura, auraName, STAGES, stageFor, form } from "./hero.js";
+import { rankEmblem, applyAura, auraName, STAGES, stageFor } from "./hero.js";
 
 // ---------- tiny helpers ----------
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -850,8 +850,8 @@ function finish() {
     ${lvAfter < lvBefore ? `<div class="levelup" style="color:#ff8ea3;text-shadow:0 0 14px #ff4d6d">LEVEL DOWN</div><p class="muted">Level ${lvBefore} → ${lvAfter}: forgotten words count less until you recall them again.</p>` : ""}
     ${r.kind === "review" ? `<p class="small muted">Again ${r.grades[1]} · Hard ${r.grades[2]} · Good ${r.grades[3]} · Easy ${r.grades[4]}</p>` : ""}
     ${lvAfter > lvBefore ? `<div class="levelup">LEVEL UP!</div><p class="muted" style="letter-spacing:2px">LEVEL ${lvBefore} → <b style="color:#9fd6ff">${lvAfter}</b></p>
-      <div class="hero-done">${heroHTML(lvAfter, "big")}${stageFor(lvAfter) > stageFor(lvBefore)
-        ? evolveCard(form(stageFor(lvAfter)))
+      <div class="hero-done">${rankEmblem(lvAfter, "big")}${stageFor(lvAfter) > stageFor(lvBefore)
+        ? evolveCard(STAGES[stageFor(lvAfter)].r)
         : `<div class="hero-cap">Your aura grows stronger · <b>${auraName(lvAfter)}</b></div>`}</div>` : ""}<div class="cheer-art">${cheer.art}</div>
     <h1>${perfect ? "Perfect!" : r.kind === "review" ? "Review done!" : r.lessonDone ? "Lesson complete!" : r.bitOf ? `Part ${r.bitOf[0]} of ${r.bitOf[1]} done!` : "Well done!"}</h1>
     <p class="cheer">${esc(cheer.line)}</p>
@@ -877,12 +877,8 @@ function finish() {
 }
 let NEXT_HOOK = null; // () => {label, go} | null, set by the app (Quest Mode path order)
 export const setNextHook = f => { NEXT_HOOK = f; };
-function evolveCard(f) {
-  return `<div class="evolve">✦ Your form has evolved ✦<br><b>${f.name}</b> · ${f.r}-Rank</div>
-    <div class="formcard"><div class="row" style="justify-content:center;gap:8px"><span class="fde">${esc(f.de)}</span>
-      <button class="spk sm" data-t="${esc(f.de)}" aria-label="Hear it in German">🔊</button></div>
-      <div class="fmean">🇬🇧 <b>${esc(f.name)}</b> – ${esc(f.en)}</div>
-      <div class="fmean">🇩🇪 <b>${esc(f.de)}</b> – ${esc(f.deMean)}</div></div>`;
+function evolveCard(r) {
+  return `<div class="evolve">✦ Rank up ✦<br><b>${r}-Rank</b></div>`;
 }
 const CHEERS = {
   perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – even the dictionary is impressed."], ["🚀", "Not a single slip. Your brain should be in a museum."],

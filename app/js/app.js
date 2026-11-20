@@ -5,7 +5,7 @@ import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COUR
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
-import { heroHTML, applyAura, loadAvatars, aura, auraName, AURA_FULL_LEVEL, STAGES, stageFor, form, setHeroStyle, heroStyle, HERO_STYLES } from "./hero.js";
+import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -66,7 +66,6 @@ function route() {
   document.body.classList.remove("in-lesson");
   applyTheme();
   if (!USER || !S) return whoView();
-  if (!syncHero()) return heroPickView();
   if (!picked()) return courseView();
   if (h === "#/party") { document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party")); return partyView(); }
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "branch" && arg ? treeView(arg) : seHome(); }
@@ -651,7 +650,6 @@ function settingsView() {
     <button class="link" id="xph">How is XP measured?</button></div>
   <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
     <label class="f">Theme</label><select id="th">${themeOptions(S.settings.theme || "system")}</select>
-    <label class="f">Hero</label><select id="hero">${Object.entries(HERO_STYLES).map(([k, n]) => `<option value="${k}" ${heroStyle() === k ? "selected" : ""}>${k === "f" ? "🗡️" : "⚔️"} ${n}</option>`).join("")}</select>
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
     <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label>
@@ -694,7 +692,6 @@ function settingsView() {
   v.querySelector("#gm").onchange = e => { setS("goalMode", e.target.value); if (e.target.value === "manual" && !S.settings.dailyGoal) setS("dailyGoal", goalFor()); settingsView(); };
   v.querySelector("#qm").onchange = e => { setS("quest", e.target.checked); if (e.target.checked) S.penChecked = addDays(today(), -1), save(); toast(e.target.checked ? "Quest Mode on" : "Quest Mode off – skill map"); route(); };
   v.querySelector("#th").onchange = e => { setS("theme", e.target.value); applyTheme(); settingsView(); };
-  v.querySelector("#hero").onchange = e => { setHero(e.target.value); toast(`${HERO_STYLES[e.target.value]} selected`); settingsView(); };
   v.querySelector("#hi").onchange = e => setS("hindi", e.target.checked);
   v.querySelector("#ap").onchange = e => setS("autoplay", e.target.checked);
   v.querySelector("#snd").onchange = e => setS("sound", e.target.checked);
@@ -1199,31 +1196,6 @@ async function openReader(br, node, partIdx) {
   draw();
 }
 
-// ------------------------------------------------------------------ hero choice (Hunter / Huntress), per learner
-const heroKey = () => `a1.hero.${USER}`;
-// returns false when this learner hasn't picked a hero yet
-function syncHero() {
-  let h = S.settings.hero;
-  if (!h) { try { h = localStorage.getItem(heroKey()); } catch { /* ignore */ } if (h) { S.settings.hero = h; save(); } } // carry the choice into other courses
-  setHeroStyle(h || "m");
-  return !!h;
-}
-function setHero(h) {
-  S.settings.hero = h; save();
-  try { localStorage.setItem(heroKey(), h); } catch { /* ignore */ }
-  setHeroStyle(h);
-}
-function heroPickView(back = false) {
-  document.body.classList.add("in-lesson");
-  const lv = S && S.setup ? level(progress().total).lv : 1, cur = S.settings.hero;
-  view().innerHTML = `<div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Choose your hero</div>
-    <h1>Hallo ${esc(userInfo(USER).name)}!</h1><p class="muted">Pick the hero who levels up with you. You can change it any time in Settings.</p></div>
-    <div class="heropick">${Object.entries(HERO_STYLES).map(([k, name]) => `<button class="hp ${cur === k ? "cur" : ""}" data-h="${k}">${heroHTML(lv, "big", k)}
-      <b>${name}</b><span class="muted small">${k === "f" ? "Heldin" : "Held"}</span></button>`).join("")}</div>
-    ${back ? `<button class="btn ghost" id="hb" style="margin-top:14px">Back</button>` : ""}`;
-  view().querySelectorAll(".hp").forEach(b => (b.onclick = () => { setHero(b.dataset.h); toast(`${HERO_STYLES[b.dataset.h]} selected`); route(); }));
-  const hb = view().querySelector("#hb"); if (hb) hb.onclick = () => route();
-}
 
 // ------------------------------------------------------------------ Hunter System theme
 function applyTheme() {
@@ -1255,10 +1227,10 @@ function themeSheet() {
   });
 }
 const gearBtn = () => `<button class="gear" id="gear" aria-label="Settings">⚙️</button>`;
-const RANK_TITLE = { E: "E-Rank Hunter", D: "D-Rank Hunter", C: "C-Rank Hunter", B: "B-Rank Hunter", A: "A-Rank Hunter", S: "S-Rank Hunter" };
+const RANK_TITLE = { E: "E-Rank", D: "D-Rank", C: "C-Rank", B: "B-Rank", A: "A-Rank", S: "S-Rank" };
 function playerBar() {
   const L = level(progress().total), rk = rank(progress().total);
-  return `<div class="player sl-only">${heroHTML(L.lv, "sm")}<div class="rank ${rk.r}">${rk.r}</div>
+  return `<div class="player sl-only">${rankEmblem(L.lv, "sm", rk.r)}
     <div class="grow"><div class="lv">Level <b>${L.lv}</b> · ${RANK_TITLE[rk.r]}</div>
     <div class="hbar" style="margin-top:4px"><div style="width:${100 * L.frac}%"></div></div>
     <div class="tiny muted" style="margin-top:2px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1}`}</div></div>
@@ -1291,10 +1263,10 @@ function statusWindow(pr, pc, r) {
   const acc = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
   const nG = chaptersDone(), nP = C.content.phrases.filter(p => S.done[p.id]).length;
   return `<div class="card sl-only"><div class="sys-h">Status</div>
-    ${heroHTML(L.lv, "big")}<div class="hero-cap">Form: <b>${form(stageFor(L.lv)).name}</b> (${esc(form(stageFor(L.lv)).de)}) · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
-    <div class="row" style="margin-bottom:10px"><div class="rank ${rk.r}" style="width:58px;height:58px;font-size:32px">${rk.r}</div>
+    ${rankEmblem(L.lv, "big", rk.r)}<div class="hero-cap">${RANK_TITLE[rk.r]} · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
+    <div class="row" style="margin-bottom:10px">
       <div class="grow" style="min-width:0"><div style="font-size:22px;font-weight:700;letter-spacing:1px;overflow-wrap:anywhere">${esc(userInfo(USER).name.toUpperCase())}</div>
-      <div class="muted small">Title: ${RANK_TITLE[rk.r]}${rk.next ? ` · ${rk.next}-Rank at ${rk.nextAt}% of A1` : " · highest rank"}</div></div>
+      <div class="muted small">${rk.next ? `Next: ${rk.next}-Rank at ${rk.nextAt}% of A1` : "Highest rank"}</div></div>
       <div style="text-align:right"><div class="lv">Level</div><div style="font-size:34px;font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:14px">/${A1_LEVEL}</span>`}</div></div></div>
     <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
     <div class="statgrid">
@@ -1412,7 +1384,7 @@ const XP_HELP = `<h2 style="margin-top:0">⚡ How XP works</h2>
   <b>Streak</b> = days in a row you reach your daily XP goal (with Quest Mode off: any XP that day; days before 20 Nov 2026 count with any XP). XP is added per day to your progress on the server, which also feeds the Party comparison.</p>
   <p class="small"><b>💎 Diamonds</b>: +${QUEST_GEMS} for clearing all three daily quests. Streak milestones (7, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 365 days) give a gift box – tap it to open: Common 15–30 💎, Rare 40–80, Epic 100–180, Legendary 250–400.</p>
   <p class="small muted">XP measures effort. Your A1 % measures how much of the course you've covered.</p>
-  <p class="small"><b>Level</b> follows your A1 %, not XP: level 1 at the start, <b>level 100 = A1 reached</b>: every lesson done and remembered (about one level per lesson). After that you keep levelling: every ${POST_A1_XP} XP from reviews and practice adds another level (101, 102 …). Your hunter rank (E → S) and the purple aura grow with it.</p>
+  <p class="small"><b>Level</b> follows your A1 %, not XP: level 1 at the start, <b>level 100 = A1 reached</b>: every lesson done and remembered (about one level per lesson). After that you keep levelling: every ${POST_A1_XP} XP from reviews and practice adds another level (101, 102 …). Your rank (E → S) and its purple aura grow with it.</p>
   <p class="small"><b>Levels can drop.</b> Each learned word only counts fully while you keep it alive: once a review is overdue it counts 1/14 less every day (down to 25 %), and a word you mark "Again" counts half until you recall it. Catch up on reviews to win the levels back.</p>
   <p class="small"><b>Reviews</b> use active recall with SM-2 spacing (like Anki): recall the answer first, then rate yourself. Good pushes the next review further out (≈1 → 3 → 8 → 20 → 50 days); Again brings the word back in the same session and restarts it.</p>`;
 
@@ -1940,7 +1912,6 @@ function treeCompare(box, people, all) {
     const it = nextPick(); if (!it) return null;
     return { label: `${itemName(it)}${bitCount(it) > 1 ? ` · part ${Math.min(bitsDone(it) + 1, bitCount(it))} of ${bitCount(it)}` : ""}`, go: () => startItem(it) };
   });
-  loadAvatars();
   await loadCourses();
   await checkAuth();
   await loadUsers();

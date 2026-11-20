@@ -26,7 +26,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - `app/js/store.js`: state, sync, SRS (SM-2), progress/A1 %, memory decay, penalties, level/rank, diamonds/gifts, lesson bits, week plan, auto daily goal.
 - `app/js/lesson.js`: exercise engine (all step types), review recall, finish screen (XP/combo/cheers/level-up/evolution card).
 - `app/js/app.js`: router and views: who/setup, Today, Path, Lessons, Words, Progress, Settings, grammar reader, sheets, treasure.
-- `app/js/hero.js`: aura (0→1 by level), particles layer `#aura-fx`, hero SVG (6 forms), custom avatar images via `app/avatars/manifest.json`.
+- `app/js/hero.js`: aura (0→1 by level), particles layer `#aura-fx`, rank emblem (no character since 11-20).
 - `app/js/audio.js`: mp3 clips `app/audio/<sha1-12>.mp3` with a speechSynthesis fallback (token guard against stale clips).
 - `app/styles.css`: base plus themes `theme-sl` (Hunter), `theme-sl3` (Mid), `theme-sl2` (Simple), `theme-calm`, `theme-ez` (Eurozeit partner theme = `theme-calm theme-ez`, block at the end of the file), classic (no class).
 - `tools/export_data.py` → `app/data/content.json` plus `tools/audio_manifest.json` (2,720 clips).
@@ -47,8 +47,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Daily goal**: auto by default = remaining lesson XP ÷ days to target + review allowance (20–300, set once per day); manual option.
 - **Weeks**: Monday-start, from the user's start date to target date; each lesson goes into the week where the linear pace reaches it.
 - **Diamonds**: +5 for a cleared daily quest; streak gift boxes at 7/14/21/30/45/60/75/90/120/150/180/365 days.
-- **Hero choice**: Hunter (`m`) or Huntress (`f`, long hair, flared battle-dress, star clip, feminine German form names via `form(i)`). Picked once after login (`heroPickView`), changeable on the course picker chip and in Settings. Stored in `settings.hero` + `localStorage a1.hero.<user>` (copied into other courses).
-- **Hero**: original "Quill Sentinel" (faceted figure, quill-staff, rune circle) with 6 forms by rank: Novice/Initiate/Adept/Seeker/Vanguard/Sovereign, each with a German name and meaning (shown when the form evolves).
+- **Rank emblem** (11-20, replaced the Hunter/Huntress character, hero picker and Settings hero option): `rankEmblem(lv, size, r)` in hero.js = the rank letter E→S with a purple halo that grows with the level (`--a` = aura 0→1); top bar, Status card, level-up screen ("✦ Rank up ✦"). Titles are "E-Rank" … "S-Rank". `settings.hero` and app/avatars are unused leftovers.
 
 ## State (2026-11-20)
 - **SSH Keys & Deploys branch** (`keys`, 11-20): 5 skills (spine → deploy-only key ∥ read-only deploy key → auto-deploy & mobile), tree_check passes on 8899. SW v28. The setup it describes (restricted key, deploy key, Actions workflow) is not done yet.
@@ -130,6 +129,7 @@ Content comes from `../German Learning/legacy/Data/Iteration_v3/_source` (the bo
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-20: hunter character removed: rank emblem E→S with a growing purple aura, no hero picker. SW v42.
 - 11-20: iPhone install: `offerIos()` banner/Settings card/`iosSheet()` (Safari → ••• → Share → Add to Home Screen → Add), hidden once opened from the home screen; picture guide `app/download/levelup-iphone-guide.pdf` (6 phone-sized pages, drawn mock-ups; source + render script in tools/ios_guide/); invite = one message with website, APK and iOS-guide PDF links (no attachment: WhatsApp drops the text when a file rides along). PDF: edge to edge (`preferCSSPageSize`, pages 100vw/100vh, no blurred shadows: viewers drew them as boxes); check pages with pdf.js. SW v41.
 - 11-20: share text + link preview: `SHARE_TEXT` in app.js (invite via navigator.share, text carries the site link + APK link), og: and description meta tags in index.html (WhatsApp preview), manifest description. SW v37.
 - 11-20: maths concept checks (feedback mazhar-cad4 follow-up): 246 questions, ~5 per skill for all 49, aimed at foundation misconceptions; new types `asn` (always/sometimes/never) and `step` (tap the first wrong line); `gap` = earlier skill behind the mistake → "🧱 Foundations to revisit" on the result screen (links route to that skill's sheet). Sources `tools/quiz_src/cc_math_*.py` → `content/math/<br>/NN.c.json` → chapter `concept`, node `cc`; `S.cc` best score, +5 XP once at 80 %. tree_check covers it. Deployed v2026.11.20.06. Follow-up: a saved chapter whose question count differs from the skill map is fetched again (`loadChapter(br, ch, fresh)`), SW v35.
