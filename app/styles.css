@@ -748,10 +748,15 @@ body.theme-sl .coursechip{border-radius:3px;border:1px solid rgba(120,190,255,.5
 body.theme-sl2 .coursechip{border-radius:999px}
 body.theme-calm .coursechip{border-width:1.5px}
 /* top row: name and course chips shrink with "…" so the ⚡/💎 chip always fits on a phone */
-.userchip,.coursechip{white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden}.coursechip{max-width:52%;flex-shrink:4}
+.userchip,.coursechip{white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden}
 .userchip .nm,.coursechip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* phones: the course chip is just the flag + ▾ (tap still switches course), so the name gets the room */
-@media (max-width:460px){.coursechip .nm{display:none}.coursechip{flex:none;max-width:none}}
+/* redesign 11-20: learner = avatar only (+ small ▾ badge); course chip = big icon + name, takes the free room */
+.userchip.avonly{position:relative;padding:3px;gap:0;flex:none;overflow:visible}
+.userchip.avonly .av.sm{width:34px;height:34px;font-size:16px}
+.userchip.avonly .caret{position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--card);border:1.5px solid var(--line);font-size:9px;line-height:14px;text-align:center;color:var(--ink)}
+.coursechip{flex:0 1 auto;max-width:none;min-width:0;gap:4px;padding:5px 12px 5px 8px;font-size:15px}
+.coursechip .ci{font-size:21px;line-height:1;flex:none}
+.coursechip .caret{flex:none;font-size:11px;opacity:.75}
 #syncst:empty{display:none} /* an empty status slot still took a gap */
 @media (max-width:430px){.gemchip{margin-left:0;padding:4px 7px;gap:2px}.gemchip b{font-size:15px}.gemchip .sep{margin:0 2px}.userchip{padding-right:7px;gap:4px}}
 .userchip>*:not(.nm),.gemchip,#syncst{flex:none}

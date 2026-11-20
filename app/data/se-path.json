@@ -162,6 +162,16 @@
       "reading": "data/se/cicd/",
       "intro": 0,
       "order": 13
+    },
+    {
+      "id": "keys",
+      "title": "SSH Keys & Deploys",
+      "icon": "🔑",
+      "color": "#E36BFF",
+      "status": "open",
+      "reading": "data/se/keys/",
+      "intro": 0,
+      "order": 14
     }
   ],
   "nodes": [
@@ -5076,6 +5086,288 @@
           ],
           "a": 5,
           "b": 6
+        }
+      ]
+    },
+    {
+      "id": "keys.basics",
+      "branch": "keys",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🗝️",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "How SSH keys work",
+      "short": "Pairs, agent, forwarding",
+      "learn": [
+        "Tell the private key from the public key, and which one may travel",
+        "Explain how authorized_keys decides who may log in",
+        "Say what the SSH agent gives to programs (and what it never gives)",
+        "Describe what agent forwarding lets the remote host do"
+      ],
+      "concepts": [
+        "Key pair",
+        "authorized_keys",
+        "SSH agent",
+        "Agent forwarding"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The key pair"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The server's list: authorized_keys",
+            "The SSH agent"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Agent forwarding",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "keys.radius",
+      "branch": "keys",
+      "n": 2,
+      "level": 1,
+      "col": 1,
+      "icon": "💥",
+      "req": [
+        "keys.basics"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "Blast radius",
+      "short": "Why the personal key stays home",
+      "learn": [
+        "List what the personal key can do beyond deploying",
+        "Explain why a cloud sandbox raises the risk",
+        "Recognise prompt injection as a way secrets leak",
+        "Apply least privilege: one small key per job"
+      ],
+      "concepts": [
+        "Blast radius",
+        "Least privilege",
+        "Prompt injection",
+        "Key rotation"
+      ],
+      "exercises": [
+        "Threat-model it",
+        "Myth or fact",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What your personal key opens today"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Why a cloud sandbox changes the risk"
+          ],
+          "a": 2,
+          "b": 2
+        },
+        {
+          "t": [
+            "The rule: one small key per job",
+            "Self-check"
+          ],
+          "a": 3,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "keys.deployonly",
+      "branch": "keys",
+      "n": 3,
+      "level": 2,
+      "col": 0,
+      "icon": "🔘",
+      "req": [
+        "keys.radius"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Deploy-only key",
+      "short": "command= and restrict",
+      "learn": [
+        "Write an authorized_keys line that forces one command",
+        "Explain what restrict turns off",
+        "Create and test a deploy-only key for levelup-deploy",
+        "Know the limits: protect main, from= and a deploy user"
+      ],
+      "concepts": [
+        "command=",
+        "restrict",
+        "SSH_ORIGINAL_COMMAND",
+        "Forced command"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Attack ↔ defence",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Options in authorized_keys"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Making the key",
+            "What the forced command can see"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Limits worth knowing",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ]
+    },
+    {
+      "id": "keys.readonly",
+      "branch": "keys",
+      "n": 4,
+      "level": 2,
+      "col": 2,
+      "icon": "📥",
+      "req": [
+        "keys.radius"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Read-only deploy key",
+      "short": "Droplet pulls on its own",
+      "learn": [
+        "Explain how a GitHub deploy key differs from an account key",
+        "Set up a read-only deploy key on the droplet",
+        "Use IdentitiesOnly to pick the right key",
+        "Turn off agent forwarding safely"
+      ],
+      "concepts": [
+        "Deploy key",
+        "Read-only",
+        "IdentitiesOnly",
+        "ssh config"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What a deploy key is"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Setting it up"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "What changed",
+            "Self-check"
+          ],
+          "a": 4,
+          "b": 6
+        }
+      ]
+    },
+    {
+      "id": "keys.auto",
+      "branch": "keys",
+      "n": 5,
+      "level": 3,
+      "col": 1,
+      "icon": "📱",
+      "req": [
+        "keys.deployonly",
+        "keys.readonly"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Auto-deploy & mobile",
+      "short": "Actions deploys, phone ships",
+      "learn": [
+        "Trace a merge on main through to a running deploy",
+        "Write a GitHub Actions deploy job with secrets and known_hosts",
+        "Choose between Remote Control and a cloud session",
+        "Ship a fix from your phone with the Mac switched off"
+      ],
+      "concepts": [
+        "GitHub Actions",
+        "Secrets",
+        "known_hosts",
+        "Remote Control",
+        "Cloud session"
+      ],
+      "exercises": [
+        "Scenario",
+        "Fill the code",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The flow"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "The workflow file"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "Developing from your phone",
+            "Self-check"
+          ],
+          "a": 4,
+          "b": 7
         }
       ]
     }

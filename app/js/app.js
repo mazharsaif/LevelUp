@@ -147,12 +147,15 @@ function markDone(it, date = today()) {
   save();
 }
 
+// top row: the learner is just their avatar (name in the menu it opens); the course gets the room, icon + name
+const userChip = () => `<button class="userchip avonly" id="uc" aria-label="${esc(userInfo(USER).name)}: switch learner">${avatar(USER, true)}<span class="caret" aria-hidden="true">▾</span></button>`;
+const courseChip = () => `<button class="coursechip" id="cc" aria-label="Course: ${esc(C.course.title)}. Change course"><span class="ci">${esc(C.course.icon)}</span><span class="nm">${esc(C.course.short || C.course.title)}</span><span class="caret" aria-hidden="true">▾</span></button>`;
 // ------------------------------------------------------------------ today
 function topBar() {
-  if (!questMode()) return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button>
+  if (!questMode()) return `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}${courseChip()}
     <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span><span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>${playerBar()}`;
   const g = goalFor(), x = xpToday(), p = Math.min(100, Math.round(100 * x / g));
-  return `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button><button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button>
+  return `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}${courseChip()}
     <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span>${gemChip()}</div>${playerBar()}<div class="top classic-only">
     <div class="ring" id="xpring" style="--p:${p};cursor:pointer"><div>${x}<br><span class="tiny muted">/${g} XP</span></div></div>
     <div class="grow"><div style="font-weight:800;font-size:18px">${x >= g ? "Daily goal done ✅" : "Today's goal"}</div>
@@ -575,7 +578,7 @@ function progressView() {
     <div class="hbar"><div style="width:${100 * val / max}%;background:${color}"></div></div></div>`;
   const projTxt = pc.actual >= 99.9 ? "Done 🎓" : pc.projected ? fmtDate(pc.projected, { day: "numeric", month: "short", year: "numeric" }) : "—";
   const late = pc.projected && pc.projected > S.settings.targetDate;
-  view().innerHTML = `<div class="row"><h1 class="grow">Progress</h1><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
+  view().innerHTML = `<div class="row"><h1 class="grow">Progress</h1>${userChip()}</div>
   ${statusWindow(pr, pc, r)}
   <div class="card" style="display:flex;gap:16px;align-items:center">
     <div class="ring big" style="--p:${pr.total}"><div>${pr.total.toFixed(0)}%<small>of A1</small></div></div>
@@ -625,7 +628,7 @@ function progressView() {
 // ------------------------------------------------------------------ settings
 function settingsView() {
   const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
-  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
+  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1>${userChip()}</div>
   <div class="card"><div class="sys-h">Mode</div><div style="font-weight:800">⚔️ Quest Mode</div>
     <label class="toggle">Follow the quest system <input type="checkbox" id="qm" ${questMode() ? "checked" : ""}></label>
     <p class="muted small" style="margin:6px 0 0">${questMode() ? "<b>On:</b> a guided day-by-day Path with a daily goal, daily quests, 💎 diamonds and streak gifts. Missed review days cost XP."
@@ -737,7 +740,7 @@ function courseView() {
   const groups = {};
   COURSES.forEach(c => (groups[c.group || "Courses"] = groups[c.group || "Courses"] || []).push(c));
   const sm = S && S.setup ? summary(S) : null;
-  view().innerHTML = `${gearBtn()}<div class="row" style="margin-bottom:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button></div>
+  view().innerHTML = `${gearBtn()}<div class="row" style="margin-bottom:8px">${userChip()}</div>
     <div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Select a path</div><h1>What do you want to study?</h1>
     <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p></div>
     ${Object.entries(groups).map(([g, cs]) => `<h3>${esc(g)}</h3><div class="courses">${cs.map(c => {
@@ -791,8 +794,8 @@ function ringSVG(frac, color, icon, s = 46) {
     <circle cx="${s / 2}" cy="${s / 2}" r="${r}" class="hring on" style="stroke:${color}" stroke-dasharray="${(Cc * frac).toFixed(1)} ${Cc.toFixed(1)}" transform="rotate(-90 ${s / 2} ${s / 2})"/>
     <text x="50%" y="${s / 2 + 6}" text-anchor="middle" font-size="${s * 0.38}">${icon}</text></svg>`;
 }
-const topRow = () => `<div class="row" style="margin-bottom:10px;gap:8px"><button class="userchip" id="uc">${avatar(USER, true)}<span class="nm">${esc(userInfo(USER).name)}</span> ▾</button>
-  <button class="coursechip" id="cc" aria-label="Change course">${esc(C.course.icon)} <span class="nm">${esc(C.course.title)}</span> ▾</button><span class="grow"></span>
+const topRow = () => `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}
+  ${courseChip()}<span class="grow"></span>
   <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>`;
 function seHome() {
   document.body.classList.add("in-lesson");
