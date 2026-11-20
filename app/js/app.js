@@ -1636,9 +1636,10 @@ function apkSheet() {
 const SHARE_TEXT = "LevelUp was made to learn German faster, because the usual apps felt too slow. It uses active recall: each word comes back for a quick test right before you'd forget it, timed by spaced-repetition research. And it's fast: no slow animations, no ads, no complicated reward system. Just short lessons that stick. Join me!";
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
-  const text = SHARE_TEXT;
-  try { if (navigator.share) { await navigator.share({ title: "LevelUp", text, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
-  try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Invite link copied"); }
+  // both links go inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview card
+  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}`;
+  try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(text); toast("Invite message copied"); }
   catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">
     <button class="btn" id="ok" style="margin-top:12px">Done</button>`, el => { el.querySelector("#invu").onfocus = e => e.target.select(); el.querySelector("#ok").onclick = closeSheet; }); }
 }
