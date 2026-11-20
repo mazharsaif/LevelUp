@@ -1668,18 +1668,29 @@ function iosGuideFile() {
 }
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
-  const guide = await Promise.race([iosGuideFile(), new Promise(r => setTimeout(() => r(null), 2500))]);
-  const withFile = !!(guide && navigator.canShare && navigator.canShare({ files: [guide] }));
-  // both links go inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview card
-  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". `
-    + (withFile ? "Step-by-step pictures in the attached PDF." : `Step-by-step pictures: ${new URL(IOS_GUIDE, url).href}`);
-  try {
-    if (withFile) { await navigator.share({ title: "LevelUp", text, files: [guide] }); return; }
-    if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; }
-  } catch (e) { if (e && e.name === "AbortError") return; }
+  // the message goes alone: WhatsApp drops the text when a file comes with it. Both links sit inside the text (no separate
+  // url field, so apps don't add it twice); the first link gives WhatsApp's preview card. The PDF is offered afterwards.
+  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}`
+    + `\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". Step-by-step pictures: ${new URL(IOS_GUIDE, url).href}`;
+  try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); offerGuideShare(); return; } }
+  catch (e) { if (e && e.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(text); toast("Invite message copied"); }
   catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">
     <button class="btn" id="ok" style="margin-top:12px">Done</button>`, el => { el.querySelector("#invu").onfocus = e => e.target.select(); el.querySelector("#ok").onclick = closeSheet; }); }
+}
+// second tap: the iOS instructions as a PDF file (a share needs its own tap, so it can't ride along with the message)
+async function offerGuideShare() {
+  const guide = await iosGuideFile();
+  if (!guide || !navigator.canShare || !navigator.canShare({ files: [guide] })) return;
+  sheet(`<h2 style="margin-top:0">📎 Also send the iOS instructions?</h2>
+    <p class="muted small">A short PDF with pictures showing iPhone users how to add LevelUp to their home screen. Send it to the same chat.</p>
+    <button class="btn" id="gpdf">Send the PDF</button><button class="btn ghost" id="gno">No thanks</button>`, el => {
+    el.querySelector("#gno").onclick = closeSheet;
+    el.querySelector("#gpdf").onclick = async () => {
+      try { await navigator.share({ title: "LevelUp iOS install instructions", files: [guide] }); closeSheet(); }
+      catch (e) { if (!e || e.name !== "AbortError") toast("Couldn't share the PDF. The link in the message works too."); }
+    };
+  });
 }
 async function doLogout() { closeSheet(); await logout(); unpick(); toast("Logged out"); location.hash = "#/today"; route(); }
 function passwordSheet() {
