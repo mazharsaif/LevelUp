@@ -1632,9 +1632,11 @@ function apkSheet() {
     el.querySelector("#apkdl").onclick = () => setTimeout(() => toast("Downloading… open it from your notifications"), 300);
   });
 }
+// sent with every invite (WhatsApp etc. put it above the link; the link preview comes from the og: tags in index.html)
+const SHARE_TEXT = "LevelUp was made to learn German faster, because the usual apps felt too slow. It uses active recall: each word comes back for a quick test right before you'd forget it, timed by spaced-repetition research. And it's fast: no slow animations, no ads, no complicated reward system. Just short lessons that stick. Join me!";
 async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
-  const text = "I'm levelling up with LevelUp: short daily lessons, spaced repetition and quests. Join me!";
+  const text = SHARE_TEXT;
   try { if (navigator.share) { await navigator.share({ title: "LevelUp", text, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Invite link copied"); }
   catch { sheet(`<h2 style="margin-top:0">Invite friends</h2><p class="muted small">Copy this link and send it:</p><input id="invu" readonly value="${esc(url)}" style="width:100%">

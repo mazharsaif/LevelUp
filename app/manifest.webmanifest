@@ -1,7 +1,7 @@
 {
   "name": "LevelUp",
   "short_name": "LevelUp",
-  "description": "Rank up in what you learn: German A1 today, more languages and subjects soon. Levels, ranks, quests and spaced-repetition reviews.",
+  "description": "Learn faster with active recall: reviews arrive right before you'd forget, timed by spaced-repetition research. Fast and simple, with no slow animations or complicated rewards. German A1, maths and software engineering.",
   "start_url": "./#/today",
   "scope": "./",
   "display": "standalone",
