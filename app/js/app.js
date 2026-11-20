@@ -6,6 +6,7 @@ import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startG
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
+import { RANKS } from "./store.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -74,7 +75,7 @@ function route() {
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
   const pt = document.querySelector('#tabs a[data-tab="path"]');
   if (pt) pt.innerHTML = questMode() ? `<span class="ti">🗺️</span><span>Path</span>` : `<span class="ti">🧩</span><span>Skills</span>`;
-  ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, grammar: () => grammarView(arg),
+  ({ today: todayView, path: pathView, lessons: lessonsView, settings: settingsView, words: wordsView, progress: progressView, ranks: ranksView, grammar: () => grammarView(arg),
      stories: storiesView, story: () => storyView(arg) }[name] || todayView)();
   window.scrollTo(0, 0);
 }
@@ -1226,11 +1227,45 @@ function themeSheet() {
     el.querySelector("#ok").onclick = closeSheet;
   });
 }
+// ------------------------------------------------------------------ ranks page (tap the rank emblem)
+// Same ranks for every language course: what you can do at each rank, its aura, and when you'll get there.
+const RANK_INFO = {
+  E: { name: "Newcomer", can: "Greet people, say goodbye, spell your name and count to 20." },
+  D: { name: "Explorer", can: "Introduce yourself: your name, where you're from, your job and your age." },
+  C: { name: "Speaker", can: "Talk about your family and your day, and tell the time." },
+  B: { name: "Traveller", can: "Shop, order food and drink, and ask what things cost." },
+  A: { name: "Local", can: "Make appointments, ask the way and fill in a simple form." },
+  S: { name: "A1 Master", can: "All of A1 learned and remembered: ready for the {lang} A1 exam." },
+};
+const lvAtPct = p => Math.max(1, Math.floor(1 + (p * (A1_LEVEL - 1)) / 100 + 1e-9));
+function ranksView() {
+  const pr = progress(), pc = pace(), L = level(pr.total), cur = rank(pr.total).r, ci = RANKS.findIndex(x => x[0] === cur);
+  const lang = ((C.course && C.course.title) || "A1").replace(/\s*A1$/, "");
+  const when = pct => { // at your recent pace, else on your plan
+    if (pc.actualPerDay > 0) return `at your pace about ${fmtDate(addDays(today(), Math.ceil((pct - pr.total) / pc.actualPerDay)))}`;
+    return `on your plan ${fmtDate(addDays(S.settings.startDate, Math.round((pct / 100) * pc.span)))}`;
+  };
+  const rows = RANKS.map(([r, pct], i) => {
+    const st = i < ci ? "done" : i === ci ? "me" : "lock", info = RANK_INFO[r];
+    const tag = st === "done" ? "✓ Reached" : st === "me" ? "You are here" : `${(pct - pr.total).toFixed(1)}% of A1 to go · ${when(pct)}`;
+    return `<div class="rstep ${st}">${rankEmblem(lvAtPct(pct), "md", r)}
+      <div class="grow" style="min-width:0"><div class="rs-h"><b class="rk-${r}">${r}-Rank</b> · ${esc(info.name)}</div>
+      <div class="rs-m">From ${pct}% of A1 · level ${lvAtPct(pct)} · Aura: ${auraName(lvAtPct(pct))}</div>
+      <div class="rs-c">${esc(info.can.replace("{lang}", lang))}</div><div class="rs-t">${tag}</div></div></div>`;
+  }).reverse().join("");
+  view().innerHTML = `<button class="link" id="rback">‹ Back</button><h1>Ranks</h1>
+    <div class="card"><div class="row" style="gap:14px">${rankEmblem(L.lv, "md", cur)}<div class="grow" style="min-width:0">
+      <div style="font-size:20px;font-weight:700">${cur}-Rank · ${esc(RANK_INFO[cur].name)}</div>
+      <div class="small muted">Level ${L.lv} · ${pr.total.toFixed(1)}% of A1 · Aura: ${auraName(L.lv)}</div></div></div>
+      <p class="small muted" style="margin:10px 0 0">Your rank is how much of ${esc(lang)} A1 you know: words you still remember (55%), grammar (30%) and phrases (15%). It climbs from E to S and the purple aura grows with every level. Forgotten words lower your %, so reviews keep your rank.</p></div>
+    <div class="rladder">${rows}</div>`;
+  view().querySelector("#rback").onclick = () => { if (window.history.length > 1) window.history.back(); else location.hash = "#/progress"; };
+}
 const gearBtn = () => `<button class="gear" id="gear" aria-label="Settings">⚙️</button>`;
 const RANK_TITLE = { E: "E-Rank", D: "D-Rank", C: "C-Rank", B: "B-Rank", A: "A-Rank", S: "S-Rank" };
 function playerBar() {
   const L = level(progress().total), rk = rank(progress().total);
-  return `<div class="player sl-only">${rankEmblem(L.lv, "sm", rk.r)}
+  return `<div class="player sl-only"><a href="#/ranks" class="emb-link" aria-label="${RANK_TITLE[rk.r]}: see all ranks">${rankEmblem(L.lv, "sm", rk.r)}</a>
     <div class="grow"><div class="lv">Level <b>${L.lv}</b> · ${RANK_TITLE[rk.r]}</div>
     <div class="hbar" style="margin-top:4px"><div style="width:${100 * L.frac}%"></div></div>
     <div class="tiny muted" style="margin-top:2px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1}`}</div></div>
@@ -1263,10 +1298,10 @@ function statusWindow(pr, pc, r) {
   const acc = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
   const nG = chaptersDone(), nP = C.content.phrases.filter(p => S.done[p.id]).length;
   return `<div class="card sl-only"><div class="sys-h">Status</div>
-    ${rankEmblem(L.lv, "big", rk.r)}<div class="hero-cap">${RANK_TITLE[rk.r]} · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
+    <a href="#/ranks" class="emb-link big" aria-label="${RANK_TITLE[rk.r]}: see all ranks">${rankEmblem(L.lv, "big", rk.r)}<span class="emb-i">i</span></a><div class="hero-cap">${RANK_TITLE[rk.r]} · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
     <div class="row" style="margin-bottom:10px">
       <div class="grow" style="min-width:0"><div style="font-size:22px;font-weight:700;letter-spacing:1px;overflow-wrap:anywhere">${esc(userInfo(USER).name.toUpperCase())}</div>
-      <div class="muted small">${rk.next ? `Next: ${rk.next}-Rank at ${rk.nextAt}% of A1` : "Highest rank"}</div></div>
+      <div class="muted small">${rk.next ? `Next: ${rk.next}-Rank at ${rk.nextAt}% of A1` : "Highest rank"} · <a href="#/ranks" class="link-in">All ranks ›</a></div></div>
       <div style="text-align:right"><div class="lv">Level</div><div style="font-size:34px;font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:14px">/${A1_LEVEL}</span>`}</div></div></div>
     <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
     <div class="statgrid">
