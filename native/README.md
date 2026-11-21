@@ -29,6 +29,7 @@ replaces the first version's hand-built Compose screens, which looked different 
 | `version()` | APK version name. |
 | `setWidgetData(json)` | Stores a progress summary (see core `WidgetSnapshot`) in SharedPreferences `levelup.widget` for widgets/reminders. Not called by the web yet. |
 | `retry()` | Used by the offline page. |
+| `micGranted()`, `requestMic()` | The web asks for the mic right after a language course is picked (`askMicForSpeakIt`, at most twice per device). |
 | `speechAvailable()`, `speechStart(id, lang, max)`, `speechStop(id)`, `speechAbort(id)` | 🎤 Speak it: a document-start script defines `webkitSpeechRecognition` on top of these (Android `SpeechRecognizer`, mic permission asked on first tap), so lesson.js runs unchanged. Events come back through `window.__luSpeech(id, "result"/"error"/"end", data)`. |
 
 File inputs (backup import) open Android's file picker.

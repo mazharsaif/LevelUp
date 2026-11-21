@@ -129,6 +129,10 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listen(id, lang, max)
         else { pendingListen = Triple(id, lang, max); askMic.launch(Manifest.permission.RECORD_AUDIO) }
     }
+    fun requestMic() {
+        if (pendingListen == null && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
+            askMic.launch(Manifest.permission.RECORD_AUDIO)
+    }
     private fun listen(id: String, lang: String, max: Int) {
         recId?.let { old -> recognizer?.cancel(); speechEvent(old, "end", "null") }
         val r = recognizer ?: SpeechRecognizer.createSpeechRecognizer(this).also { recognizer = it }
@@ -203,6 +207,9 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun saveFile(name: String, text: String) = a.runOnUiThread { a.save(name, text) }
         @JavascriptInterface fun retry() = a.runOnUiThread { a.retry() }
         @JavascriptInterface fun speechAvailable(): Boolean = SpeechRecognizer.isRecognitionAvailable(a)
+        @JavascriptInterface fun micGranted(): Boolean = ContextCompat.checkSelfPermission(a, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        /** asked after picking a language course, so Speak it doesn't interrupt a lesson with the dialog */
+        @JavascriptInterface fun requestMic() = a.runOnUiThread { a.requestMic() }
         @JavascriptInterface fun speechStart(id: String, lang: String, max: Int) = a.runOnUiThread { a.speechStart(id, lang, max) }
         @JavascriptInterface fun speechStop(id: String) = a.runOnUiThread { a.speechStop(id) }
         @JavascriptInterface fun speechAbort(id: String) = a.runOnUiThread { a.speechAbort(id) }

@@ -738,6 +738,18 @@ async function downloadAudio() {
 
 // ------------------------------------------------------------------ course picker (homepage: what to study)
 const pickKey = () => `a1.picked.${USER}`;
+// Native app: after picking a language course, ask for the microphone up front (for 🎤 Speak it) instead of mid-lesson.
+// At most twice per device (Android stops showing the dialog after two refusals anyway).
+function askMicForSpeakIt(cid) {
+  const N = window.LevelUpNative;
+  if (!N || !N.micGranted || courseInfo(cid).type !== "language" || (S && S.settings.speak === false)) return;
+  try {
+    if (N.micGranted()) return;
+    const n = +(localStorage.getItem("a1.micAsks") || 0); if (n >= 2) return;
+    localStorage.setItem("a1.micAsks", String(n + 1));
+    N.requestMic();
+  } catch { /* old APK or storage blocked */ }
+}
 function picked() { try { return sessionStorage.getItem(pickKey()) === COURSE; } catch { return true; } }
 function unpick() { try { sessionStorage.removeItem(pickKey()); } catch { /* ignore */ } }
 function markPicked() { try { sessionStorage.setItem(pickKey(), COURSE); } catch { /* ignore */ } }
@@ -761,6 +773,7 @@ function courseView() {
     if (b.dataset.c !== COURSE || !S) await switchCourse(b.dataset.c); else setCourse(b.dataset.c);
     markPicked(); document.body.classList.remove("in-lesson");
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
+    askMicForSpeakIt(b.dataset.c);
   }));
   view().querySelector("#gear").onclick = themeSheet;
 }
