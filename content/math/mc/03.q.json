@@ -1,0 +1,81 @@
+[
+ {
+  "t": "mf",
+  "q": "Pseudo-random numbers from a fixed seed are reproducible.",
+  "a": true,
+  "why": "Fact. The generator is deterministic: same seed, same sequence."
+ },
+ {
+  "t": "mc",
+  "q": "Which is the recommended way to get random numbers in modern numpy?",
+  "o": [
+   "np.random.seed() then np.random.rand()",
+   "rng = np.random.default_rng(seed) and pass rng around",
+   "random.random() in a loop",
+   "time.time() % 1"
+  ],
+  "a": 1,
+  "why": "An explicit Generator is isolated from other code's draws and reproducible."
+ },
+ {
+  "t": "mc",
+  "q": "Eight workers all use default_rng(1). What happens?",
+  "o": [
+   "they run independent streams",
+   "they repeat the same runs, and the MCSE is about √8 too small",
+   "the program crashes",
+   "results are more accurate"
+  ],
+  "a": 1,
+  "why": "All workers produce identical draws, so there are only one worker's worth of distinct runs."
+ },
+ {
+  "t": "num",
+  "q": "With 9 workers all using the same seed, by what factor is the reported MCSE too small?",
+  "a": 3,
+  "why": "There is only 1/9 of the claimed runs, so the true error is √9 = 3× the reported one."
+ },
+ {
+  "t": "mc",
+  "q": "How do you give 16 workers independent streams from one recorded number?",
+  "o": [
+   "seed each with 1 to 16",
+   "SeedSequence(seed).spawn(16)",
+   "reuse one generator in all processes",
+   "seed with the time"
+  ],
+  "a": 1,
+  "why": "spawn derives statistically independent child seeds from one parent seed."
+ },
+ {
+  "t": "mf",
+  "q": "Trying seeds until the new strategy wins, then reporting that run, is fine if the code is correct.",
+  "a": false,
+  "why": "Myth. Choosing the seed by its result is cherry-picking, like p-hacking."
+ },
+ {
+  "t": "mc",
+  "q": "Common random numbers help most when you estimate …",
+  "o": [
+   "a single mean",
+   "a difference between two similar scenarios",
+   "a seed",
+   "the number of workers"
+  ],
+  "a": 1,
+  "why": "Shared draws make the noise mostly cancel in the difference."
+ },
+ {
+  "t": "num",
+  "q": "CRN cut the MCSE of a difference from 1.03 to 0.40. About how many times more independent runs would match it?",
+  "a": 6.6,
+  "why": "Runs scale with the variance ratio: (1.03/0.40)² ≈ 6.6.",
+  "tol": 0.15
+ },
+ {
+  "t": "tf",
+  "q": "Python's random module is suitable for generating security tokens.",
+  "a": false,
+  "why": "False. Use the secrets module; simulation generators are predictable by design."
+ }
+]

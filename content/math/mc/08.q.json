@@ -1,0 +1,95 @@
+[
+ {
+  "t": "mc",
+  "q": "Why price a European call by simulation when Black–Scholes exists?",
+  "o": [
+   "simulation is more exact",
+   "to validate the code before pricing options with no formula",
+   "Black–Scholes is wrong",
+   "to avoid a seed"
+  ],
+  "a": 1,
+  "why": "Matching the formula builds trust for exotic options and portfolios."
+ },
+ {
+  "t": "num",
+  "q": "A simulated call price is 7.118 with MCSE 0.013; Black–Scholes gives 7.128. How many MCSEs apart? (1 decimal)",
+  "a": 0.8,
+  "why": "0.010/0.013 ≈ 0.8: well within noise.",
+  "tol": 0.1
+ },
+ {
+  "t": "mc",
+  "q": "A 1-day 99% VaR is …",
+  "o": [
+   "the average loss",
+   "the loss exceeded on about 1% of days",
+   "the worst possible loss",
+   "the expected shortfall"
+  ],
+  "a": 1,
+  "why": "VaR is a loss percentile; it says nothing about the size of losses beyond it."
+ },
+ {
+  "t": "mc",
+  "q": "Expected shortfall measures …",
+  "o": [
+   "the median loss",
+   "the average loss beyond the VaR",
+   "the daily volatility",
+   "the probability of a loss"
+  ],
+  "a": 1,
+  "why": "It describes how bad the tail is, which VaR ignores."
+ },
+ {
+  "t": "mc",
+  "q": "Why also simulate the null (no effect) for an A/B test?",
+  "o": [
+   "to speed it up",
+   "to check the real false positive rate under your analysis, such as peeking",
+   "to compute VaR",
+   "it is not needed"
+  ],
+  "a": 1,
+  "why": "Peeking and unusual metrics can inflate the false positive rate above 5%."
+ },
+ {
+  "t": "num",
+  "q": "Power: 0.65 from 2,000 simulated tests. What is its MCSE? (3 decimals)",
+  "a": 0.0107,
+  "why": "√(0.65 × 0.35 / 2,000) ≈ 0.011.",
+  "tol": 0.0005
+ },
+ {
+  "t": "num",
+  "q": "ECMWF's medium-range ensemble has one control and how many perturbed members?",
+  "a": 50,
+  "why": "51 forecasts in all: 1 control plus 50 perturbed members."
+ },
+ {
+  "t": "mc",
+  "q": "Why does an early path-traced render look grainy?",
+  "o": [
+   "low resolution",
+   "each pixel is a Monte Carlo estimate from few light paths",
+   "compression",
+   "the seed"
+  ],
+  "a": 1,
+  "why": "The grain is sampling noise, shrinking like 1/√(samples per pixel)."
+ },
+ {
+  "t": "mf",
+  "q": "Treating polling errors as independent across states makes the favourite's win probability too high.",
+  "a": true,
+  "why": "Fact. Independent errors cancel; shared errors keep upset scenarios alive."
+ },
+ {
+  "t": "num",
+  "q": "Main pump fails with p = 0.02; the plant also fails if both backups (0.10 each, independent) fail. Exact yearly failure probability? (4 decimals)",
+  "a": 0.0298,
+  "why": "1 − 0.98 × (1 − 0.01) = 0.0298.",
+  "tol": 0.0002
+ }
+]

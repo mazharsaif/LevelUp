@@ -43,6 +43,16 @@
       "status": "open",
       "reading": "data/math/alg/",
       "intro": 0
+    },
+    {
+      "id": "mc",
+      "title": "Monte Carlo",
+      "icon": "🎯",
+      "color": "#F25F5C",
+      "status": "open",
+      "reading": "data/math/mc/",
+      "intro": 0,
+      "order": 5
     }
   ],
   "nodes": [
@@ -2966,6 +2976,605 @@
       ],
       "quiz": 7,
       "cc": 5
+    },
+    {
+      "id": "mc.basics",
+      "branch": "mc",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🥧",
+      "req": [],
+      "mins": 7,
+      "chapter": 1,
+      "title": "What Monte Carlo is",
+      "short": "Sampling, 1/√N, MCSE",
+      "learn": [
+        "Write a quantity as an expected value",
+        "Explain why averages of random draws converge",
+        "Use the 1/√N law to plan accuracy",
+        "Report a result with its Monte Carlo error"
+      ],
+      "concepts": [
+        "Law of large numbers",
+        "MCSE",
+        "1/√N",
+        "Model error"
+      ],
+      "exercises": [
+        "Concept check",
+        "Fill the code",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The idea in one sentence",
+            "Why it works: the law of large numbers"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "The 1/√N law",
+            "Reporting a result"
+          ],
+          "a": 6,
+          "b": 10
+        },
+        {
+          "t": [
+            "Where the name comes from",
+            "Exercises"
+          ],
+          "a": 11,
+          "b": 13
+        },
+        {
+          "t": [
+            "Self-check"
+          ],
+          "a": 14,
+          "b": 15
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.build",
+      "branch": "mc",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🏗️",
+      "req": [
+        "mc.basics"
+      ],
+      "mins": 8,
+      "chapter": 2,
+      "title": "Building a simulation",
+      "short": "From question to model",
+      "learn": [
+        "Tie a simulation to a decision metric",
+        "Choose input distributions from data or experts",
+        "Link correlated inputs with a copula",
+        "Read percentiles, P(target) and drivers"
+      ],
+      "concepts": [
+        "Triangular / PERT",
+        "Copula",
+        "P50 and P80",
+        "Tornado chart",
+        "Validation"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Fill the code",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The seven steps",
+            "Modelling the system and choosing inputs"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "Dependence between inputs",
+            "A worked example: a project schedule"
+          ],
+          "a": 6,
+          "b": 9
+        },
+        {
+          "t": [
+            "Analysing the output",
+            "Validating"
+          ],
+          "a": 10,
+          "b": 12
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 13,
+          "b": 16
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.rng",
+      "branch": "mc",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🔢",
+      "req": [
+        "mc.basics"
+      ],
+      "mins": 7,
+      "chapter": 3,
+      "title": "Random numbers",
+      "short": "Seeds, streams, CRN",
+      "learn": [
+        "Use numpy's Generator API",
+        "Make runs reproducible with seeds",
+        "Spawn independent streams for workers",
+        "Compare scenarios with common random numbers"
+      ],
+      "concepts": [
+        "PRNG",
+        "Seed",
+        "SeedSequence.spawn",
+        "Common random numbers"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fix the code",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Pseudo-random generators",
+            "Seeds and reproducibility"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Parallel runs need independent streams",
+            "Common random numbers"
+          ],
+          "a": 5,
+          "b": 10
+        },
+        {
+          "t": [
+            "Testing your random setup",
+            "Exercises"
+          ],
+          "a": 11,
+          "b": 13
+        },
+        {
+          "t": [
+            "Self-check"
+          ],
+          "a": 14,
+          "b": 15
+        }
+      ],
+      "quiz": 9
+    },
+    {
+      "id": "mc.runs",
+      "branch": "mc",
+      "n": 4,
+      "level": 2,
+      "col": 1,
+      "icon": "📈",
+      "req": [
+        "mc.build",
+        "mc.rng"
+      ],
+      "mins": 7,
+      "chapter": 4,
+      "title": "How many runs?",
+      "short": "Convergence and error bars",
+      "learn": [
+        "Plan N for a target precision",
+        "Put error bars on probabilities",
+        "Bracket percentiles with order statistics",
+        "Size runs for rare events"
+      ],
+      "concepts": [
+        "Pilot run",
+        "Rule of three",
+        "Order statistics",
+        "Relative error"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario",
+        "Fill the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Error for a mean"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Error for a probability",
+            "Error for a percentile"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Running-estimate plots",
+            "Rare events",
+            "A practical procedure"
+          ],
+          "a": 7,
+          "b": 11
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 12,
+          "b": 15
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.vr",
+      "branch": "mc",
+      "n": 5,
+      "level": 3,
+      "col": 0,
+      "icon": "🚀",
+      "req": [
+        "mc.runs"
+      ],
+      "mins": 8,
+      "chapter": 5,
+      "title": "Variance reduction",
+      "short": "Same accuracy, fewer runs",
+      "learn": [
+        "Apply antithetic and control variates",
+        "Use stratified and Latin hypercube sampling",
+        "Use scrambled Sobol quasi-Monte Carlo",
+        "Estimate rare events by importance sampling"
+      ],
+      "concepts": [
+        "Antithetic variates",
+        "Control variate",
+        "Latin hypercube",
+        "Sobol",
+        "Importance sampling"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The idea and a test problem",
+            "Antithetic variates",
+            "Control variates"
+          ],
+          "a": 0,
+          "b": 5
+        },
+        {
+          "t": [
+            "Stratified and Latin hypercube sampling",
+            "Quasi-Monte Carlo"
+          ],
+          "a": 6,
+          "b": 9
+        },
+        {
+          "t": [
+            "Importance sampling for rare events",
+            "Which method when"
+          ],
+          "a": 10,
+          "b": 13
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 14,
+          "b": 17
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.mistakes",
+      "branch": "mc",
+      "n": 6,
+      "level": 3,
+      "col": 2,
+      "icon": "⚠️",
+      "req": [
+        "mc.runs"
+      ],
+      "mins": 9,
+      "chapter": 6,
+      "title": "Mistakes & myths",
+      "short": "What goes wrong, and why",
+      "learn": [
+        "Separate model bias from Monte Carlo noise",
+        "Spot the flaw of averages",
+        "Catch independence and thin-tail errors",
+        "Find unit, clipping and seed bugs"
+      ],
+      "concepts": [
+        "Flaw of averages",
+        "Jensen's inequality",
+        "Fat tails",
+        "False precision",
+        "ESS"
+      ],
+      "exercises": [
+        "Myth or fact",
+        "Spot the bug",
+        "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Bias is not fixed by more runs",
+            "The flaw of averages"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Wrong shapes and missing dependence",
+            "False precision and reporting errors"
+          ],
+          "a": 5,
+          "b": 9
+        },
+        {
+          "t": [
+            "Monte Carlo is not MCMC",
+            "Silent bugs: units, steps and plumbing"
+          ],
+          "a": 10,
+          "b": 13
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 14,
+          "b": 18
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.when",
+      "branch": "mc",
+      "n": 7,
+      "level": 4,
+      "col": 0,
+      "icon": "🧭",
+      "req": [
+        "mc.vr"
+      ],
+      "mins": 8,
+      "chapter": 7,
+      "title": "When to use it",
+      "short": "And its cousins",
+      "learn": [
+        "Decide simulation vs formula vs scenarios",
+        "Bootstrap a statistic from data",
+        "Run a permutation test",
+        "Tell MCMC and MCTS apart from Monte Carlo"
+      ],
+      "concepts": [
+        "Bootstrap",
+        "Permutation test",
+        "MCMC",
+        "Metropolis–Hastings",
+        "MCTS"
+      ],
+      "exercises": [
+        "Design decision",
+        "Match the terms",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "When simulation is the right tool",
+            "When it is not"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The bootstrap: resampling your data",
+            "Permutation tests"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "MCMC: sampling what you can't draw directly",
+            "Monte Carlo tree search",
+            "How the family fits together"
+          ],
+          "a": 8,
+          "b": 12
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 13,
+          "b": 16
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.uses",
+      "branch": "mc",
+      "n": 8,
+      "level": 4,
+      "col": 2,
+      "icon": "🌍",
+      "req": [
+        "mc.mistakes"
+      ],
+      "mins": 8,
+      "chapter": 8,
+      "title": "Real-world uses",
+      "short": "Finance to film",
+      "learn": [
+        "Price an option and check Black–Scholes",
+        "Read VaR and expected shortfall",
+        "Size an A/B test by simulation",
+        "Recognise ensembles, path tracing and forecasts"
+      ],
+      "concepts": [
+        "GBM",
+        "VaR",
+        "Power",
+        "Ensemble forecast",
+        "Path tracing"
+      ],
+      "exercises": [
+        "Scenario",
+        "Fill the code",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Finance: option pricing and value at risk"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Planning: projects, demand and inventory",
+            "Experiments: A/B tests and drug trials"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "Science and forecasting",
+            "The common pattern"
+          ],
+          "a": 8,
+          "b": 12
+        },
+        {
+          "t": [
+            "Exercises",
+            "Self-check"
+          ],
+          "a": 13,
+          "b": 16
+        }
+      ],
+      "quiz": 10
+    },
+    {
+      "id": "mc.boss",
+      "branch": "mc",
+      "n": 9,
+      "level": 5,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "mc.when",
+        "mc.uses"
+      ],
+      "mins": 7,
+      "chapter": 9,
+      "title": "Capstone case study",
+      "short": "A fixed-price bid, end to end",
+      "learn": [
+        "Build a correlated cost model",
+        "Turn outputs into a decision",
+        "Validate before presenting",
+        "Run the mistakes checklist"
+      ],
+      "concepts": [
+        "Case study",
+        "Checklist",
+        "Final test"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "The question",
+            "The simulation",
+            "The results"
+          ],
+          "a": 0,
+          "b": 6
+        },
+        {
+          "t": [
+            "Validating before presenting",
+            "The checklist"
+          ],
+          "a": 7,
+          "b": 9
+        },
+        {
+          "t": [
+            "Capstone exercise",
+            "Self-check"
+          ],
+          "a": 10,
+          "b": 13
+        }
+      ],
+      "quiz": 22
     }
   ]
 }

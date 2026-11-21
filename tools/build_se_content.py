@@ -184,7 +184,8 @@ def chapter_cards(md: str):
         rendered = render(kind, data)
         w = block_weight(kind, data, rendered)
         big = kind in ("code", "table", "img")
-        if cur and (cur_w + w > TARGET and cur_w >= MIN_FLUSH or (big and cur_w + w > TARGET * 1.6)):
+        follows_answer = kind == "code" and cur and cur[-1].startswith("<p><b>Answers.</b>")   # solution code stays with its answer
+        if cur and not follows_answer and (cur_w + w > TARGET and cur_w >= MIN_FLUSH or (big and cur_w + w > TARGET * 1.6)):
             # a lead-in ending with ":" belongs on the same card as the block it introduces
             lead = cur.pop() if len(cur) > 1 and kind != "p" and re.search(r":</p>$", cur[-1]) else None
             if lead:
@@ -242,7 +243,7 @@ def split_parts(cards, chapter_title=""):
     return parts
 
 
-ANSWERS = re.compile(r"<p><b>Answers\.</b>(.*?)</p>", re.S)
+ANSWERS = re.compile(r"<p><b>Answers\.</b>(.*?)</p>((?:<pre class=\"code\".*?</pre>)*)", re.S)   # + solution code right after it
 QTYPES = {"mc", "tf", "mf", "num", "asn", "step"}
 
 
@@ -334,7 +335,7 @@ def main():
             with open(os.path.join(bdir, name), encoding="utf-8") as f:
                 title, cards = chapter_cards(f.read())
             for c in cards:                                                    # self-check answers: hidden until tapped
-                c["html"] = ANSWERS.sub(r'<details class="ans"><summary>🔒 Answers: try the questions first, then tap to show</summary><p>\1</p></details>', c["html"])
+                c["html"] = ANSWERS.sub(r'<details class="ans"><summary>🔒 Answers: try the questions first, then tap to show</summary><p>\1</p>\2</details>', c["html"])
             n = str(int(m.group(1)))
             parts = split_parts(cards, title) if int(n) > 0 else []           # 00 = the branch's About: no parts
             parts_by_chapter[(branch, int(n))] = parts

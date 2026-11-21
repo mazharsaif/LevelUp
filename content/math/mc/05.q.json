@@ -1,0 +1,106 @@
+[
+ {
+  "t": "mc",
+  "q": "Compare variance reduction methods at …",
+  "o": [
+   "equal seed",
+   "equal cost (evaluations or time)",
+   "equal code length",
+   "equal N regardless of cost"
+  ],
+  "a": 1,
+  "why": "A method that halves variance but triples run time is a loss."
+ },
+ {
+  "t": "num",
+  "q": "A method halves variance but makes each run 3× slower. What is its efficiency relative to plain sampling at equal time? (ratio, below 1 means worse)",
+  "a": 0.667,
+  "why": "Plain sampling gets 3× the runs, cutting variance 3×; the method cuts it 2×: 2/3.",
+  "tol": 0.01
+ },
+ {
+  "t": "mc",
+  "q": "Antithetic variates pair each uniform draw u with …",
+  "o": [
+   "u²",
+   "1 − u",
+   "a new independent draw",
+   "u + 0.5"
+  ],
+  "a": 1,
+  "why": "The mirror draw; for normals the mirror of z is −z."
+ },
+ {
+  "t": "mf",
+  "q": "Antithetic variates always reduce variance.",
+  "a": false,
+  "why": "Myth. They help for monotone models; for a symmetric (non-monotone) function they can increase variance."
+ },
+ {
+  "t": "num",
+  "q": "A control variate has correlation 0.9 with the output. Variance falls to what fraction of the original?",
+  "a": 0.19,
+  "why": "Variance is multiplied by 1 − ρ² = 1 − 0.81.",
+  "tol": 0.01
+ },
+ {
+  "t": "mc",
+  "q": "A control variate must have …",
+  "o": [
+   "no correlation with the output",
+   "a known mean",
+   "a normal distribution",
+   "the same seed"
+  ],
+  "a": 1,
+  "why": "The correction uses C − E[C], so E[C] must be known exactly."
+ },
+ {
+  "t": "mc",
+  "q": "Latin hypercube sampling guarantees that …",
+  "o": [
+   "all inputs are independent",
+   "each input's N strata each get exactly one point",
+   "the error is zero",
+   "rare events are oversampled"
+  ],
+  "a": 1,
+  "why": "It stratifies every input separately and shuffles the strata across inputs."
+ },
+ {
+  "t": "mc",
+  "q": "Why scramble and repeat a Sobol (quasi-Monte Carlo) run?",
+  "o": [
+   "to make it faster",
+   "to get an honest error estimate from the spread",
+   "Sobol needs no repetition",
+   "to remove correlation"
+  ],
+  "a": 1,
+  "why": "One deterministic sequence gives no spread; independent scrambles do."
+ },
+ {
+  "t": "mc",
+  "q": "Which method suits estimating a 1-in-a-million loss probability?",
+  "o": [
+   "antithetic variates",
+   "importance sampling",
+   "more plain runs",
+   "Latin hypercube"
+  ],
+  "a": 1,
+  "why": "It samples where the event happens and reweights, saving orders of magnitude."
+ },
+ {
+  "t": "mc",
+  "q": "A warning sign of a bad importance sampling proposal is …",
+  "o": [
+   "all weights equal",
+   "a few draws carrying most of the total weight",
+   "an unbiased estimate",
+   "fast run time"
+  ],
+  "a": 1,
+  "why": "Heavy weights on a few draws mean the estimate can jump when a new large weight appears."
+ }
+]

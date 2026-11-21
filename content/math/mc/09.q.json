@@ -1,0 +1,210 @@
+[
+ {
+  "t": "mc",
+  "q": "Your P95 jumps noticeably every time you rerun with a new seed. What is most likely wrong?",
+  "o": [
+   "the model is biased",
+   "too few runs for that tail: few runs lie beyond the P95",
+   "the seed is invalid",
+   "nothing"
+  ],
+  "a": 1,
+  "why": "Tail percentiles need enough runs beyond them; plan N or use variance reduction."
+ },
+ {
+  "t": "mc",
+  "q": "Which method for estimating a 1-in-10,000 event within a few percent?",
+  "o": [
+   "plain sampling with 10,000 runs",
+   "importance sampling (or very many plain runs)",
+   "antithetic variates",
+   "the bootstrap"
+  ],
+  "a": 1,
+  "why": "Plain sampling needs about 100/p = 1 million runs for 10% error; importance sampling needs far fewer."
+ },
+ {
+  "t": "num",
+  "q": "Plain sampling: how many runs for 10% relative error on p = 1/10,000?",
+  "a": 1000000,
+  "why": "About 100 hits needed: N ≈ 100/p = 1,000,000."
+ },
+ {
+  "t": "mc",
+  "q": "A bid's plan uses most likely inputs and shows profit 62,400; the simulation's mean is 39,400. The gap is mainly …",
+  "o": [
+   "Monte Carlo noise",
+   "the flaw of averages: skew, a convex penalty and correlation",
+   "a seed problem",
+   "rounding"
+  ],
+  "a": 1,
+  "why": "With MCSE around 100, the gap is model structure, not noise."
+ },
+ {
+  "t": "num",
+  "q": "P(loss) = 0.182 with MCSE 0.0009. How many MCSEs above a 15% limit is it? (whole number)",
+  "a": 36,
+  "why": "(0.182 − 0.150)/0.0009 ≈ 36: no need for more runs.",
+  "tol": 1
+ },
+ {
+  "t": "mf",
+  "q": "If two scenarios differ by less than their MCSEs, the better-looking one should be chosen.",
+  "a": false,
+  "why": "Myth. The difference is noise; use common random numbers or more runs to resolve it."
+ },
+ {
+  "t": "mc",
+  "q": "You compare order quantities 1,100 and 1,200. The sharpest comparison uses …",
+  "o": [
+   "independent demand draws per quantity",
+   "the same demand draws for both (common random numbers)",
+   "different seeds chosen by result",
+   "the mean demand only"
+  ],
+  "a": 1,
+  "why": "Shared draws make the noise cancel in the difference."
+ },
+ {
+  "t": "num",
+  "q": "Price 25, cost 10, salvage 4. What is the newsvendor critical ratio (25 − 10)/(25 − 4)? (3 decimals)",
+  "a": 0.714,
+  "why": "15/21 ≈ 0.714: order up to that demand quantile.",
+  "tol": 0.005
+ },
+ {
+  "t": "mf",
+  "q": "Ordering the average demand maximises expected profit for a seasonal product.",
+  "a": false,
+  "why": "Myth. The best order is the demand quantile at the critical ratio, here about the 71st percentile."
+ },
+ {
+  "t": "mc",
+  "q": "Eight parallel workers give suspiciously smooth results and a tiny MCSE. First check?",
+  "o": [
+   "increase N",
+   "whether workers share a seed (count distinct first draws)",
+   "switch to Sobol",
+   "drop outliers"
+  ],
+  "a": 1,
+  "why": "Duplicated streams make runs repeat and the MCSE too small."
+ },
+ {
+  "t": "num",
+  "q": "A pilot gives s = 400. Runs needed for a 95% half-width of 10? (nearest hundred)",
+  "a": 6147,
+  "why": "(1.96 × 400 / 10)² = 78.4² ≈ 6,147.",
+  "tol": 50
+ },
+ {
+  "t": "num",
+  "q": "MCSE of a mean with outcome SD 400,000 and 500 runs? (nearest thousand)",
+  "a": 17889,
+  "why": "400,000/√500 ≈ 17,900.",
+  "tol": 150
+ },
+ {
+  "t": "mc",
+  "q": "Durations are drawn from a normal and negative values are clipped to 0. The fix is …",
+  "o": [
+   "clip at 1 instead",
+   "use a positive distribution such as lognormal or gamma",
+   "run more trials",
+   "use antithetics"
+  ],
+  "a": 1,
+  "why": "A distribution with the right support avoids silent bias from clipping."
+ },
+ {
+  "t": "mc",
+  "q": "Labour and materials overruns share a cause. The model should …",
+  "o": [
+   "simulate them independently",
+   "link them with correlation or a common shock",
+   "average them",
+   "use one fixed value"
+  ],
+  "a": 1,
+  "why": "Ignoring the common cause understates the tail of total cost."
+ },
+ {
+  "t": "mf",
+  "q": "A P50 cost is a sensible committed budget.",
+  "a": false,
+  "why": "Myth. It is exceeded half the time; commit to a stated percentile such as P80 and show the range."
+ },
+ {
+  "t": "mc",
+  "q": "Your MCMC posterior mean has a naive s/√N error bar. What should you use instead?",
+  "o": [
+   "the same, it is fine",
+   "an error bar based on effective sample size or batch means",
+   "the rule of three",
+   "the bootstrap of raw draws"
+  ],
+  "a": 1,
+  "why": "Autocorrelated draws carry less information than their count suggests."
+ },
+ {
+  "t": "mc",
+  "q": "A risk model's 99.9th percentile is reported from 5,000 runs. The main problem?",
+  "o": [
+   "too precise",
+   "it rests on about 5 runs beyond it",
+   "it is biased upward always",
+   "none"
+  ],
+  "a": 1,
+  "why": "0.1% of 5,000 is 5 runs: far too few to estimate that tail."
+ },
+ {
+  "t": "mc",
+  "q": "Before presenting, which check catches a logic bug fastest?",
+  "o": [
+   "a bigger N",
+   "set inputs to fixed values with a known answer",
+   "a new seed",
+   "a nicer histogram"
+  ],
+  "a": 1,
+  "why": "A deterministic case with a known result isolates the logic from randomness."
+ },
+ {
+  "t": "num",
+  "q": "You have 4 workers and spawn streams from SeedSequence(2026). How many numbers must you record to reproduce the whole run?",
+  "a": 1,
+  "why": "The parent seed reproduces every child stream."
+ },
+ {
+  "t": "mc",
+  "q": "A one-hour-per-run engineering model needs a tail probability. Best plan?",
+  "o": [
+   "100,000 plain runs",
+   "a fitted surrogate or a small designed experiment, with importance sampling where possible",
+   "a single run at average inputs",
+   "MCMC"
+  ],
+  "a": 1,
+  "why": "Expensive models need fewer, smarter runs; a single average-input run suffers the flaw of averages."
+ },
+ {
+  "t": "tf",
+  "q": "A small MCSE proves the model's inputs are right.",
+  "a": false,
+  "why": "False. MCSE measures computing error only, not whether the inputs or structure are right."
+ },
+ {
+  "t": "mc",
+  "q": "FiveThirtyEight's 'wins in 71% of simulations' means …",
+  "o": [
+   "the candidate gets 71% of the vote",
+   "the candidate won 71% of simulated elections",
+   "71% of polls favour the candidate",
+   "a 71% margin"
+  ],
+  "a": 1,
+  "why": "It is a win probability across simulated outcomes, not a vote share."
+ }
+]

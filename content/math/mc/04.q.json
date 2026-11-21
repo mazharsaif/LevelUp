@@ -1,0 +1,84 @@
+[
+ {
+  "t": "num",
+  "q": "A pilot gives s = 50. How many runs for a 95% half-width of 1? (nearest hundred)",
+  "a": 9604,
+  "why": "(1.96 × 50 / 1)² = 9,604."
+ },
+ {
+  "t": "num",
+  "q": "MCSE of an estimated probability p̂ = 0.2 with N = 4,000? (4 decimals)",
+  "a": 0.0063,
+  "why": "√(0.2 × 0.8 / 4,000) ≈ 0.0063.",
+  "tol": 0.0002
+ },
+ {
+  "t": "num",
+  "q": "For p near 0.5 and N = 10,000, what is the MCSE of p̂? (decimal)",
+  "a": 0.005,
+  "why": "√(0.25/10,000) = 0.005, so about ±1 point at 95%.",
+  "tol": 0.0003
+ },
+ {
+  "t": "num",
+  "q": "Zero failures in 10,000 runs. Approximate 95% upper bound on the probability (rule of three)? (decimal)",
+  "a": 0.0003,
+  "why": "3/N = 3/10,000.",
+  "tol": 2e-05
+ },
+ {
+  "t": "num",
+  "q": "You need p ≈ 0.0002 to within 10% relative error. Roughly how many runs?",
+  "a": 500000,
+  "why": "About 100 hits are needed, so N ≈ 100/p."
+ },
+ {
+  "t": "mc",
+  "q": "Why is a P99 estimate noisier than a P50 from the same runs?",
+  "o": [
+   "percentiles are biased",
+   "only about 1% of runs fall beyond the P99",
+   "the P99 uses a different seed",
+   "it is not noisier"
+  ],
+  "a": 1,
+  "why": "The far tail is informed by very few runs."
+ },
+ {
+  "t": "mc",
+  "q": "A running-mean plot shows sudden late jumps. The most likely cause is …",
+  "o": [
+   "a perfect model",
+   "a heavy tail: rare huge outcomes",
+   "too many runs",
+   "common random numbers"
+  ],
+  "a": 1,
+  "why": "Rare extreme values dominate the mean when they arrive."
+ },
+ {
+  "t": "mf",
+  "q": "A running estimate that has settled shows the answer is right.",
+  "a": false,
+  "why": "Myth. It shows the computation converged; a biased model settles on the wrong value."
+ },
+ {
+  "t": "mc",
+  "q": "How can you put an interval on a simulated P80?",
+  "o": [
+   "s/√N",
+   "order statistics or the spread across batches",
+   "there is no way",
+   "the rule of three"
+  ],
+  "a": 1,
+  "why": "The count of runs below the true quantile is binomial, and batch spread works for any statistic."
+ },
+ {
+  "t": "num",
+  "q": "Relative error for a rare probability is about 1/√(N p). With N p = 400 hits expected, what is it? (decimal)",
+  "a": 0.05,
+  "why": "1/√400 = 0.05, i.e. 5%.",
+  "tol": 0.002
+ }
+]

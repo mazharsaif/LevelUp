@@ -1,0 +1,82 @@
+[
+ {
+  "t": "mf",
+  "q": "Running more trials fixes a wrong model.",
+  "a": false,
+  "why": "Myth. More runs shrink only the noise; model bias stays the same however many runs you do."
+ },
+ {
+  "t": "mf",
+  "q": "Plugging average inputs into a model gives the average output.",
+  "a": false,
+  "why": "Myth. For a nonlinear model, f(average input) differs from the average of f: the flaw of averages."
+ },
+ {
+  "t": "mc",
+  "q": "Which inequality says a convex model's average output is at least its output at the average input?",
+  "o": [
+   "Chebyshev's",
+   "Jensen's",
+   "Markov's",
+   "Cauchy–Schwarz"
+  ],
+  "a": 1,
+  "why": "Jensen's inequality gives the direction of the flaw of averages."
+ },
+ {
+  "t": "num",
+  "q": "Stock 100 at cost 4, sell at 10, demand uniform on 50 to 150. Profit at average demand (100)?",
+  "a": 600,
+  "why": "10 × 100 − 4 × 100 = 600."
+ },
+ {
+  "t": "num",
+  "q": "Same shop: what is the true expected profit? (E[min(100, D)] = 87.5)",
+  "a": 475,
+  "why": "10 × 87.5 − 400 = 475, far below the 600 at average demand."
+ },
+ {
+  "t": "mc",
+  "q": "Two normal costs with SD 20 are positively correlated. Compared with independence, the mean of the total is …",
+  "o": [
+   "higher",
+   "lower",
+   "unchanged, but the P90 rises",
+   "zero"
+  ],
+  "a": 2,
+  "why": "Correlation does not change the mean of a sum, only its spread and tails."
+ },
+ {
+  "t": "mf",
+  "q": "A normal distribution is a safe default for financial losses.",
+  "a": false,
+  "why": "Myth. Losses have fat tails; a t with 3 degrees of freedom puts about 100× more probability beyond 4 SDs."
+ },
+ {
+  "t": "num",
+  "q": "P(loss) = 0.23 from 1,000 runs. What is the MCSE? (decimal)",
+  "a": 0.0133,
+  "why": "√(0.23 × 0.77 / 1,000) ≈ 0.013, so report 0.23 ± 0.03.",
+  "tol": 0.0005
+ },
+ {
+  "t": "num",
+  "q": "An MCMC chain has lag-1 autocorrelation 0.9. Effective sample size is about N divided by …",
+  "a": 19,
+  "why": "ESS ≈ N(1 − φ)/(1 + φ) = N × 0.1/1.9 = N/19.",
+  "tol": 0.5
+ },
+ {
+  "t": "mc",
+  "q": "Daily returns use the annual volatility 0.20 as the daily SD. The simulated yearly SD is about …",
+  "o": [
+   "0.20",
+   "0.013",
+   "3.2",
+   "0.05"
+  ],
+  "a": 2,
+  "why": "Variance adds over 252 days: 0.20 × √252 ≈ 3.2; the daily SD should be 0.20/√252."
+ }
+]
