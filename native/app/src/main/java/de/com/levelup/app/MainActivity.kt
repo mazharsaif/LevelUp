@@ -1,11 +1,16 @@
 package de.com.levelup.app
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
@@ -18,8 +23,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * The native app shows the SAME web app (levelrise.org: identical screens, icons, pop-ups) inside a WebView,
@@ -32,6 +40,15 @@ class MainActivity : ComponentActivity() {
     private val home: Uri by lazy { Uri.parse(BuildConfig.SERVER_URL) }
     private var fileCallback: ValueCallback<Array<Uri>>? = null
     private var pendingSave: String? = null
+    private var recognizer: SpeechRecognizer? = null
+    private var recId: String? = null
+    private var pendingListen: Triple<String, String, Int>? = null
+
+    private val askMic = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        val p = pendingListen; pendingListen = null
+        if (p == null) return@registerForActivityResult
+        if (ok) listen(p.first, p.second, p.third) else { speechEvent(p.first, "error", "\"app-denied\""); speechEvent(p.first, "end", "null") }
+    }
 
     private val pickFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         fileCallback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray()); fileCallback = null
@@ -63,6 +80,22 @@ class MainActivity : ComponentActivity() {
             // WebView has no Web Share API: route the invite through Android's share sheet
             WebViewCompat.addDocumentStartJavaScript(web, """
                 if (!navigator.share) navigator.share = d => { LevelUpNative.share([d && d.text, d && d.url].filter(Boolean).join("\n")); return Promise.resolve(); };
+                // WebView has no Web Speech recognition: give the page the same API, backed by Android's SpeechRecognizer
+                if (!window.SpeechRecognition && !window.webkitSpeechRecognition && LevelUpNative.speechAvailable()) {
+                  const live = {};
+                  window.webkitSpeechRecognition = class {
+                    constructor() { this.lang = "de-DE"; this.maxAlternatives = 5; this.interimResults = false; this._id = String(Math.random()).slice(2); }
+                    start() { live[this._id] = this; LevelUpNative.speechStart(this._id, this.lang, this.maxAlternatives || 5); }
+                    stop() { LevelUpNative.speechStop(this._id); }
+                    abort() { LevelUpNative.speechAbort(this._id); }
+                  };
+                  window.__luSpeech = (id, type, data) => {
+                    const r = live[id]; if (!r) return;
+                    if (type === "result") r.onresult && r.onresult({ results: [data.map(t => ({ transcript: t, confidence: 0 }))] });
+                    else if (type === "error") r.onerror && r.onerror({ error: data });
+                    else if (type === "end") { delete live[id]; r.onend && r.onend(); }
+                  };
+                }
             """.trimIndent(), setOf(home.scheme + "://" + home.authority))
         }
         web.webViewClient = object : WebViewClient() {
@@ -90,6 +123,55 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun load() = web.loadUrl(home.buildUpon().appendQueryParameter("src", "native").build().toString())
+
+    // ---- 🎤 speech recognition for "Speak it" (events go back to the page as onresult / onerror / onend) ----
+    fun speechStart(id: String, lang: String, max: Int) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listen(id, lang, max)
+        else { pendingListen = Triple(id, lang, max); askMic.launch(Manifest.permission.RECORD_AUDIO) }
+    }
+    private fun listen(id: String, lang: String, max: Int) {
+        recId?.let { old -> recognizer?.cancel(); speechEvent(old, "end", "null") }
+        val r = recognizer ?: SpeechRecognizer.createSpeechRecognizer(this).also { recognizer = it }
+        recId = id
+        r.setRecognitionListener(object : RecognitionListener {
+            override fun onResults(b: Bundle?) {
+                val list = b?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
+                if (list.isEmpty()) speechEvent(id, "error", "\"no-speech\"") else speechEvent(id, "result", JSONArray(list).toString())
+                finishListen(id)
+            }
+            override fun onError(code: Int) {
+                val e = when (code) {
+                    SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "no-speech"
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "app-denied"
+                    SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT, SpeechRecognizer.ERROR_SERVER -> "network"
+                    SpeechRecognizer.ERROR_AUDIO -> "audio-capture"
+                    SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED, SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "language-not-supported"
+                    else -> "aborted"
+                }
+                speechEvent(id, "error", JSONObject.quote(e)); finishListen(id)
+            }
+            override fun onReadyForSpeech(p: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(v: Float) {}
+            override fun onBufferReceived(b: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onPartialResults(b: Bundle?) {}
+            override fun onEvent(t: Int, b: Bundle?) {}
+        })
+        r.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, lang)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, lang)
+            .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, max.coerceIn(1, 10))
+            .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false))
+    }
+    private fun finishListen(id: String) { if (recId == id) recId = null; speechEvent(id, "end", "null") }
+    fun speechStop(id: String) { if (recId == id) recognizer?.stopListening() }
+    fun speechAbort(id: String) { if (recId == id) { recognizer?.cancel(); finishListen(id) } }
+    private fun speechEvent(id: String, type: String, json: String) =
+        web.evaluateJavascript("window.__luSpeech && __luSpeech(${JSONObject.quote(id)}, \"$type\", $json)", null)
+
+    override fun onDestroy() { recognizer?.destroy(); recognizer = null; super.onDestroy() }
 
     override fun onSaveInstanceState(out: Bundle) { super.onSaveInstanceState(out); web.saveState(out) }
     override fun onPause() { super.onPause(); CookieManager.getInstance().flush() }
@@ -120,6 +202,10 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun openExternal(url: String) = a.runOnUiThread { a.openExternal(url) }
         @JavascriptInterface fun saveFile(name: String, text: String) = a.runOnUiThread { a.save(name, text) }
         @JavascriptInterface fun retry() = a.runOnUiThread { a.retry() }
+        @JavascriptInterface fun speechAvailable(): Boolean = SpeechRecognizer.isRecognitionAvailable(a)
+        @JavascriptInterface fun speechStart(id: String, lang: String, max: Int) = a.runOnUiThread { a.speechStart(id, lang, max) }
+        @JavascriptInterface fun speechStop(id: String) = a.runOnUiThread { a.speechStop(id) }
+        @JavascriptInterface fun speechAbort(id: String) = a.runOnUiThread { a.speechAbort(id) }
         /** Progress summary for future widgets / reminders (JSON, see core WidgetSnapshot). */
         @JavascriptInterface fun setWidgetData(json: String) = WidgetStore.save(a, json)
     }

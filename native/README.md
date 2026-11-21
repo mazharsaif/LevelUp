@@ -29,6 +29,7 @@ replaces the first version's hand-built Compose screens, which looked different 
 | `version()` | APK version name. |
 | `setWidgetData(json)` | Stores a progress summary (see core `WidgetSnapshot`) in SharedPreferences `levelup.widget` for widgets/reminders. Not called by the web yet. |
 | `retry()` | Used by the offline page. |
+| `speechAvailable()`, `speechStart(id, lang, max)`, `speechStop(id)`, `speechAbort(id)` | 🎤 Speak it: a document-start script defines `webkitSpeechRecognition` on top of these (Android `SpeechRecognizer`, mic permission asked on first tap), so lesson.js runs unchanged. Events come back through `window.__luSpeech(id, "result"/"error"/"end", data)`. |
 
 File inputs (backup import) open Android's file picker.
 
@@ -46,7 +47,7 @@ Regenerate the goldens after changing web logic: `cd tools/golden && npm install
 
 ## Known limits of the WebView
 
-* **🎤 Speak it** is hidden: WebView has no Web Speech recognition. A bridge to Android's `SpeechRecognizer` can bring it back.
+* 🎤 Speak it uses Android's speech recognition (Google's, usually online); the phone needs the course language (de-DE, fr-FR) available in voice typing. Debug builds over plain http hide it (the web requires a secure context).
 * The `speechSynthesis` fallback (only for clips without an mp3) may be silent; mp3 audio plays normally.
 
 ## Reminders, alarms, widgets (next)

@@ -11,7 +11,7 @@ feature is the web's own. Only these differ:
 | Backup export | Works | Android save dialog via the bridge |
 | Backup import | Works | Android file picker |
 | APK / PDF downloads, other sites | Open in the browser | |
-| 🎤 Speak it | Hidden | WebView has no speech recognition; needs a SpeechRecognizer bridge |
+| 🎤 Speak it | Works (untested on a phone) | Android SpeechRecognizer behind the same Web Speech API; mic permission on first tap |
 | Text-to-speech fallback | May be silent | Only for clips without an mp3 |
 | Home-screen widgets | To do | Designs in docs/design/widgets/ |
 | Reminders, alarms | To do | |

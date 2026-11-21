@@ -429,7 +429,7 @@ function heardCheck(alts, target) {
   return { ...best, want, ok: best.miss <= (want.length >= 6 ? 1 : 0) };
 }
 const shownTarget = (target, hit) => { let k = 0; return esc(target).split(/(\s+)/).map(t => /\S/.test(t) && words(t).length ? `<span class="${hit[k++] ? "w-ok" : "w-miss"}">${t}</span>` : t).join(""); };
-const MIC_ERRORS = { "not-allowed": "Microphone blocked: allow it for this site in the browser settings.", "service-not-allowed": "Microphone blocked: allow it for this site in the browser settings.",
+const MIC_ERRORS = { "app-denied": "Microphone blocked: allow it for LevelUp Native in Android Settings → Apps → Permissions.", "language-not-supported": "Your phone's speech recognition doesn't support this language. Install it in Google voice typing settings, or skip.", "not-allowed": "Microphone blocked: allow it for this site in the browser settings.", "service-not-allowed": "Microphone blocked: allow it for this site in the browser settings.",
   "no-speech": "I didn't hear anything. Tap and speak again.", "audio-capture": "No microphone found.", network: "Speech recognition needs an internet connection." };
 function speak(s, lb) {
   lb.innerHTML = `<div class="q-title">🎤 Say it out loud</div>${enPrompt(s.p.en)}
