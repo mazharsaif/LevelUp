@@ -120,7 +120,7 @@ function setupView() {
   document.body.classList.add("in-lesson"); // hides the tab bar until setup is done
   const tgt = in3Months();
   view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>${L.code === "fr" ? "Bienvenue" : "Willkommen"}, ${esc(userInfo(USER).name)}! 👋</h1>
-  <p class="muted">${esc(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
+  <p class="muted">${courseIcon(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
   <div class="card">
     <label class="f">When do you want to finish A1?</label>
     <div class="row" style="align-items:center;gap:10px"><input type="date" id="tg" value="${tgt}" min="${addDays(today(), 1)}" style="flex:1"><b id="tgd" class="small" style="white-space:nowrap">${daysText(tgt)}</b></div>
@@ -163,9 +163,17 @@ function markDone(it, date = today()) {
   save();
 }
 
+// Flag emojis don't render on Windows (feedback 11-20: "DE / ES / FR" letters instead), so draw them as small SVGs.
+const FLAGS = {
+  "🇩🇪": `<rect width="6" height="4" fill="#000"/><rect y="1.333" width="6" height="1.334" fill="#DD0000"/><rect y="2.667" width="6" height="1.333" fill="#FFCE00"/>`,
+  "🇫🇷": `<rect width="2" height="4" fill="#0055A4"/><rect x="2" width="2" height="4" fill="#fff"/><rect x="4" width="2" height="4" fill="#EF4135"/>`,
+  "🇪🇸": `<rect width="6" height="4" fill="#AA151B"/><rect y="1" width="6" height="2" fill="#F1BF00"/>`,
+};
+const courseIcon = icon => FLAGS[icon]
+  ? `<svg class="flag" viewBox="0 0 6 4" role="img" aria-hidden="true" preserveAspectRatio="none">${FLAGS[icon]}</svg>` : esc(icon);
 // top row: the learner is just their avatar (name in the menu it opens); the course gets the room, icon + name
 const userChip = () => `<button class="userchip avonly" id="uc" aria-label="${esc(userInfo(USER).name)}: switch learner">${avatar(USER, true)}<span class="caret" aria-hidden="true">▾</span></button>`;
-const courseChip = () => `<button class="coursechip" id="cc" aria-label="Course: ${esc(C.course.title)}. Change course"><span class="ci">${esc(C.course.icon)}</span><span class="nm">${esc(C.course.short || C.course.title)}</span><span class="caret" aria-hidden="true">▾</span></button>`;
+const courseChip = () => `<button class="coursechip" id="cc" aria-label="Course: ${esc(C.course.title)}. Change course"><span class="ci">${courseIcon(C.course.icon)}</span><span class="nm">${esc(C.course.short || C.course.title)}</span><span class="caret" aria-hidden="true">▾</span></button>`;
 // ------------------------------------------------------------------ today
 function topBar() {
   if (!questMode()) return `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}${courseChip()}
@@ -777,8 +785,8 @@ function courseView() {
     ${Object.entries(groups).map(([g, cs]) => `<h3>${esc(g)}</h3><div class="courses">${cs.map(c => {
       const here = sm && c.id === COURSE, begun = here || (USER && c.status === "ready" && startedLocal(USER, c.id));
       return `<button class="course ${c.status !== "ready" ? "soon" : ""} ${c.id === COURSE ? "cur" : ""}" data-c="${c.id}" ${c.status !== "ready" ? "disabled" : ""} style="--c:${c.color || "#5aa9ff"}">
-        <span class="cicon">${esc(c.icon)}</span><span class="grow"><b>${esc(c.title)}</b>
-        <span class="muted small">${here ? `Lv ${sm.lv} · ${sm.rank}-Rank · ${sm.pct.toFixed(0)}% done` : esc(c.subtitle || "")}</span></span>
+        <span class="cicon">${courseIcon(c.icon)}</span><span class="grow"><b>${esc(c.title)}</b>
+        <span class="muted small">${esc(c.subtitle || "")}</span>${here ? `<span class="small cprog">Lv ${sm.lv} · ${sm.rank}-Rank · ${sm.pct.toFixed(0)}% done</span>` : ""}</span>
         <span class="cgo">${c.status === "ready" ? (begun ? "Continue ›" : "Start ›") : "Coming Soon"}</span></button>`; }).join("")}</div>`).join("")}`;
   wireTop();
   // started on another device (no copy on this phone): ask the server and switch the label
@@ -1315,11 +1323,20 @@ function questStatus(due) {
   ];
   return { q, all: q.every(i => i.ok), x, g };
 }
+// feedback 11-20: "are the daily quest targets enough to finish by the target date?" — say it on the card
+function questPace(g) {
+  const to = S.settings.targetDate, left = remainingXP(S);
+  if (!to || left <= 0) return "";
+  if (S.settings.goalMode !== "manual") return `<div class="small muted" style="text-align:center;margin-top:6px">🎯 Clearing this every day finishes A1 by <b>${fmtDate(to)}</b>, your target</div>`;
+  const end = addDays(today(), Math.ceil(left / Math.max(1, g - 3)) - 1), late = daysBetween(to, end);
+  return `<div class="small" style="text-align:center;margin-top:6px;color:${late > 0 ? "var(--red)" : "var(--muted)"}">🎯 At ${g} XP a day, A1 ≈ <b>${fmtDate(end, { day: "numeric", month: "short", year: "numeric" })}</b>${late > 0 ? `: ${late} days after your target. Switch to Auto in Settings to make it` : ", on time"}</div>`;
+}
 function dailyQuest(due) {
   const { q, all, x, g } = questStatus(due), paid = S.questDays && S.questDays[today()], hit = (S.hit || {})[today()], st = streak();
   return `<div class="card sl-only"><div class="sys-h"><span class="ex">!</span> Daily quest</div>
     <div class="small muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">TRAINING FOR ${esc((C.course && C.course.title) || "YOUR COURSE").toUpperCase()} HAS ARRIVED</div>
     ${q.map(i => `<div class="quest ${i.ok ? "ok" : ""}"><span class="box">${i.ok ? "✓" : ""}</span>${esc(i.txt)}<span class="v">${i.v}</span></div>`).join("")}
+    ${questPace(g)}
     <div class="small" style="text-align:center;margin-top:8px;letter-spacing:1px;color:${all ? "#57e3a0" : "var(--muted)"}">
       ${all ? `QUEST COMPLETE · 💎 +${QUEST_GEMS} ${paid ? "COLLECTED" : ""}` : `REWARD: 💎 ${QUEST_GEMS}`}</div>
     ${!hit && st > 0 ? `<div class="warn-line">⚠ Reach ${g} XP today to keep your 🔥 ${st}-day streak · <b id="tleft">${leftToday()}</b> left (${Math.max(0, g - x)} XP to go)</div>`

@@ -652,23 +652,17 @@ function gmc(s, lb) {
 
 // phrase flip card (self-rated)
 function flip(s, lb) {
+  // a teaching card (feedback 11-20, batul): meaning shown right away under the phrase, one Next button. Self-grading
+  // ("Still learning / I knew it") lives only in the recall reviews, so these cards don't count toward accuracy.
   const p = s.p;
   lb.innerHTML = `<div class="q-title">${esc(s.sec)}${p.grp ? ` · <span class="muted">${esc(p.grp)}</span>` : ""}</div>
     <div class="card flip" id="fc"><div class="row" style="justify-content:center"><div class="de">${esc(p.de)}</div></div>
-    <div class="en" id="en">Tap to see the meaning</div></div>
+    <div class="en" id="en" style="color:var(--ink)">${phone(esc(p.en))}</div></div>
     <div style="text-align:center"><button class="spk" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button></div>`;
   wireSpeakers(lb);
   if (S.settings.autoplay) play(p.a, p.de);
-  const f = foot(`<button class="btn blue" id="show">Show meaning</button>`);
-  const reveal = () => {
-    lb.querySelector("#en").innerHTML = phone(esc(p.en));
-    lb.querySelector("#en").style.color = "var(--ink)";
-    f.innerHTML = `<div class="row"><button class="btn ghost grow" id="no">Still learning</button><button class="btn grow" id="yes" style="margin-top:0">I knew it</button></div>`;
-    f.querySelector("#yes").onclick = () => { R.answered++; R.right++; next(); };
-    f.querySelector("#no").onclick = () => { R.answered++; next(); };
-  };
-  lb.querySelector("#fc").onclick = reveal;
-  f.querySelector("#show").onclick = reveal;
+  const f = foot(`<button class="btn" id="nx">Next</button>`);
+  f.querySelector("#nx").onclick = next;
 }
 // phrase MC (pre-built options)
 function read(s, lb) {
@@ -785,6 +779,8 @@ function say(s, lb) {
   };
   if (s.mode === "tiles") {
     const ans = lb.querySelector("#ans"), placed = [];
+    // Check unlocks only once enough words are placed (feedback 11-19, batul: a stray tap checked "Wie geht" half-built)
+    const need = Math.max(1, tokens(s.de).length); // the tiles are exactly these tokens plus a few distractors
     const draw = () => {
       ans.innerHTML = placed.map((i, k) => `<button class="tile-w" data-k="${k}">${esc(s.tiles[i])}</button>`).join("");
       ans.querySelectorAll(".tile-w").forEach(b => (b.onclick = () => {
@@ -792,7 +788,7 @@ function say(s, lb) {
         const i = placed.splice(+b.dataset.k, 1)[0];
         lb.querySelector(`#bank .tile-w[data-i="${i}"]`).classList.remove("used"); draw();
       }));
-      btn.disabled = !placed.length;
+      btn.disabled = placed.length < need;
     };
     lb.querySelectorAll("#bank .tile-w").forEach(b => (b.onclick = () => {
       if (b.classList.contains("used") || btn.dataset.done) return;

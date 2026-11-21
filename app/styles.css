@@ -1069,3 +1069,7 @@ details.ans[open] summary{margin-bottom:6px}
 
 /* setup: when each daily XP choice finishes A1 (feedback 11-21) */
 .choice small.eta{display:block;margin-top:2px;font-weight:700}.choice small.eta.ok{color:var(--green)}.choice small.eta.late{color:var(--red)}
+/* flag icons as SVG (Windows has no flag emojis) */
+svg.flag{display:inline-block;width:1.35em;height:.95em;vertical-align:-.1em;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.cicon svg.flag{width:34px;height:24px}
+.course .cprog{display:block;margin-top:2px;color:var(--ink);opacity:.85}
