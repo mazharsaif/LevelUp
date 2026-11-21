@@ -642,7 +642,8 @@ async def report_bug(request: Request, bug: BugIn):
            "category": bug.category, "text": bug.text, "ctx": bug.ctx}
     with open(os.path.join(BUGS, bid + ".json"), "w") as f:
         json.dump(rec, f, ensure_ascii=False, indent=1)
-    print(f"BUG {bid} [{bug.category}] {rec['ctx'].get('page', '?')}: {bug.text[:80]!r}", file=sys.stderr, flush=True)
+    app_kind = (rec["ctx"].get("env") or {}).get("app", "?") if isinstance(rec["ctx"].get("env"), dict) else "?"
+    print(f"BUG {bid} [{bug.category}] ({app_kind}) {rec['ctx'].get('page', '?')}: {bug.text[:80]!r}", file=sys.stderr, flush=True)
     return {"ok": True, "id": bid}
 
 

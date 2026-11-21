@@ -27,6 +27,7 @@ replaces the first version's hand-built Compose screens, which looked different 
 | `saveFile(name, text)` | Backup export through Android's save dialog (blob downloads don't work in WebView). |
 | `openExternal(url)` | Opens a link in the browser (also done automatically for other sites and `/download/…`). |
 | `version()` | APK version name. |
+| `deviceInfo()` | JSON for bug reports: APK version/code/id, manufacturer, brand, model, Android, SDK, WebView version, mic, speech, locale. |
 | `setWidgetData(json)` | Stores a progress summary (see core `WidgetSnapshot`) in SharedPreferences `levelup.widget` for widgets/reminders. Not called by the web yet. |
 | `retry()` | Used by the offline page. |
 | `micGranted()`, `requestMic()` | The web asks for the mic right after a language course is picked (`askMicForSpeakIt`, at most twice per device). |

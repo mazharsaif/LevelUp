@@ -202,6 +202,15 @@ class MainActivity : ComponentActivity() {
     /** Methods the page can call as `window.LevelUpNative.<name>(…)`. Runs on a binder thread, so hop to the UI thread. */
     class Bridge(private val a: MainActivity) {
         @JavascriptInterface fun version(): String = BuildConfig.VERSION_NAME
+        /** for bug reports: the real device (Chrome hides the model in its user agent) */
+        @JavascriptInterface fun deviceInfo(): String = JSONObject().apply {
+            put("appVersion", BuildConfig.VERSION_NAME); put("appVersionCode", BuildConfig.VERSION_CODE); put("appId", BuildConfig.APPLICATION_ID)
+            put("manufacturer", android.os.Build.MANUFACTURER); put("brand", android.os.Build.BRAND); put("model", android.os.Build.MODEL)
+            put("android", android.os.Build.VERSION.RELEASE); put("sdk", android.os.Build.VERSION.SDK_INT)
+            put("webview", WebViewCompat.getCurrentWebViewPackage(a)?.let { "${it.packageName} ${it.versionName}" } ?: JSONObject.NULL)
+            put("micGranted", micGranted()); put("speech", speechAvailable())
+            put("locale", java.util.Locale.getDefault().toLanguageTag())
+        }.toString()
         @JavascriptInterface fun share(text: String) = a.runOnUiThread { a.share(text) }
         @JavascriptInterface fun openExternal(url: String) = a.runOnUiThread { a.openExternal(url) }
         @JavascriptInterface fun saveFile(name: String, text: String) = a.runOnUiThread { a.save(name, text) }

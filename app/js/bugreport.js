@@ -38,7 +38,8 @@ function capture() {
     user: USER || null,
     course,
     lesson: lessonDebug(),
-    settings: S ? { theme: S.settings.theme, hero: S.settings.hero, goalMode: S.settings.goalMode } : null,
+    settings: S ? { theme: S.settings.theme, goalMode: S.settings.goalMode, quest: S.settings.quest !== false, speak: S.settings.speak !== false,
+      autoplay: S.settings.autoplay, sound: S.settings.sound, startDate: S.settings.startDate, targetDate: S.settings.targetDate } : null,
     viewport: `${innerWidth}x${innerHeight} @${devicePixelRatio}x`,
     scrollY: Math.round(scrollY),
     online: navigator.onLine,
@@ -53,6 +54,47 @@ function capture() {
 
 // The FastAPI server (port 8766) stores reports. If the app is opened from another server on the same Mac
 // (e.g. the old one on 8765, which has no /api/bugs), send the report to the FastAPI server instead.
+// Which app and which device the report comes from (feedback 11-21: app type, versions, device were missing).
+function appKind() {
+  if (window.LevelUpNative || /LevelUpNative\//.test(navigator.userAgent)) return "native-android";       // native Kotlin app (WebView)
+  let apk = /[?&]src=apk\b/.test(location.search) || document.referrer.startsWith("android-app://");
+  try { apk = apk || sessionStorage.getItem("a1.apk") === "1"; } catch { /* ignore */ }
+  if (apk) return "android-apk";                                                                          // TWA (web wrapper APK)
+  if (navigator.standalone === true) return "ios-home-screen";
+  if (matchMedia("(display-mode: standalone)").matches) return "installed-pwa";
+  return "browser";
+}
+const within = (p, ms = 1500) => Promise.race([Promise.resolve(p).catch(() => null), new Promise(r => setTimeout(() => r(null), ms))]);
+async function envInfo() {
+  const N = window.LevelUpNative, c = navigator.connection || {};
+  const [hints, storage, mic, shell] = await Promise.all([
+    within(navigator.userAgentData && navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion", "fullVersionList"])),
+    within(navigator.storage && navigator.storage.estimate && navigator.storage.estimate()),
+    within(navigator.permissions && navigator.permissions.query({ name: "microphone" }).then(p => p.state)),
+    within("caches" in window && caches.keys().then(ks => ks.filter(k => /shell/.test(k)).join(","))),
+  ]);
+  let native = null;
+  try { native = N && N.deviceInfo ? JSON.parse(N.deviceInfo()) : N ? { appVersion: N.version && N.version() } : null; } catch { /* old APK */ }
+  const mb = n => (n == null ? null : Math.round(n / 1048576));
+  return {
+    app: appKind(),
+    webVersion: window.__luVersion || null,                 // release the page was loaded with (/api/health at start)
+    swCache: shell || null,                                 // app-shell cache on this device, e.g. a1-shell-v50
+    swControlled: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
+    native,                                                 // native app: manufacturer, model, Android, APK version, mic, speech
+    device: hints ? { model: hints.model || null, platform: hints.platform, platformVersion: hints.platformVersion,
+      browser: (hints.fullVersionList || []).map(b => `${b.brand} ${b.version}`).filter(b => !/Not.A.Brand/i.test(b)).join(", ") } : null,
+    screen: `${screen.width}x${screen.height}`, touch: navigator.maxTouchPoints || 0,
+    cpuCores: navigator.hardwareConcurrency || null, memoryGB: navigator.deviceMemory || null,
+    language: navigator.language, languages: (navigator.languages || []).slice(0, 4),
+    timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return null; } })(),
+    colorScheme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    connection: c.effectiveType ? { type: c.type || null, effective: c.effectiveType, downlinkMbps: c.downlink, saveData: !!c.saveData } : null,
+    storageMB: storage ? { used: mb(storage.usage), quota: mb(storage.quota) } : null,
+    mic: native && native.micGranted != null ? (native.micGranted ? "granted" : "not granted") : mic,
+    speechRecognition: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+  };
+}
 function bugPort() { try { return localStorage.getItem("a1.bugPort") || "8766"; } catch { return "8766"; } }
 async function send(report) {
   const urls = ["api/bugs"];
@@ -103,7 +145,8 @@ function openBox() {
   setTimeout(() => { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 60);
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = "Sending…";
-    const ctx = $("#bug-inc").checked ? snap : { page: snap.page, url: snap.url, user: snap.user, course: snap.course, capturedAt: snap.capturedAt, userAgent: snap.userAgent, viewport: snap.viewport, errors: snap.errors };
+    const ctx = $("#bug-inc").checked ? { ...snap } : { page: snap.page, url: snap.url, user: snap.user, course: snap.course, capturedAt: snap.capturedAt, userAgent: snap.userAgent, viewport: snap.viewport, errors: snap.errors };
+    try { ctx.env = await envInfo(); } catch { /* never block a report */ }
     const report = { text: ta.value.trim(), category: kind(), ctx };
     setDraft(null); // sent or queued: either way it's safe
     try {

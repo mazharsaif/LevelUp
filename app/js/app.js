@@ -1984,7 +1984,7 @@ function treeCompare(box, people, all) {
   // at start; when the app comes back to the front and the server has a newer one, reload (never mid-lesson or with a sheet open).
   const serverVersion = () => fetch("api/health", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => j && j.version || null).catch(() => null);
   let bootVersion = null;
-  serverVersion().then(v => { bootVersion = v; });
+  serverVersion().then(v => { bootVersion = v; window.__luVersion = v; }); // __luVersion: in bug reports
   async function reloadIfUpdated() {
     const v = await serverVersion();
     if (!v) return false;
