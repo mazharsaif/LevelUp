@@ -1669,7 +1669,7 @@ async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
   // all links sit inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview
   // card. The iOS PDF is a link, not an attachment (WhatsApp drops the text when a file rides along).
-  const text = `${SHARE_TEXT}\n\n🌐 Open it: ${url}\n📱 Android app: ${new URL(APK_URL, url).href}`
+  const text = `${SHARE_TEXT}\n\n🌐 Web app (any phone or computer, nothing to install): ${url}\n📱 Android app (install the APK): ${new URL(APK_URL, url).href}`
     + `\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". Download the picture guide (PDF): ${new URL(IOS_GUIDE, url).href}`;
   try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } }
   catch (e) { if (e && e.name === "AbortError") return; }

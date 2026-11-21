@@ -135,6 +135,7 @@ German content comes from `../German Learning/legacy/Data/Iteration_v3/_source` 
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-21: invite labels both links: "Web app (nothing to install)" + "Android app (APK)". SW v44. Native Kotlin app started in native/ (parity list docs/native/parity.md), widget designs in docs/design/widgets/
 - 11-21: **French A1** course (own material in content/fr-a1, build_fr_content.py, fr-FR audio, language profiles in lang.js for TTS/🎤/articles/accents/gloss/labels; German unchanged). SW v44. Later: all 2,944 clips fetched, full fr + de test pass on 8899.
 - 11-21: Ranks page: tapping the rank emblem opens #/ranks (E→S with name, can-do line, aura and ETA; same for all language courses). SW v43.
 - 11-20: hunter character removed: rank emblem E→S with a growing purple aura, no hero picker. SW v42.
