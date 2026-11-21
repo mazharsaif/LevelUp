@@ -16,7 +16,7 @@ cd "$ROOT/native"
 OUT="app/build/outputs/apk/release"
 "$BT/zipalign" -f -p 4 "$OUT/app-release-unsigned.apk" "$OUT/aligned.apk"
 "$BT/apksigner" sign --ks "$T/levelup-release.keystore" --ks-key-alias levelup \
-  --ks-pass "pass:$PW" --key-pass "pass:$PW" --out "$ROOT/app/download/levelup-native.apk" "$OUT/aligned.apk"
+  --ks-pass "pass:$PW" --key-pass "pass:$PW" --v4-signing-enabled false --out "$ROOT/app/download/levelup-native.apk" "$OUT/aligned.apk"
 "$BT/apksigner" verify "$ROOT/app/download/levelup-native.apk"
 "$BT/aapt2" dump badging "$ROOT/app/download/levelup-native.apk" | head -1
 ls -la "$ROOT/app/download/levelup-native.apk"

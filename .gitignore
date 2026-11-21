@@ -25,4 +25,5 @@ android/build/
 android/app/build/
 android/local.properties
 android/*.apk
+app/download/*.idsig
 android/*.idsig
