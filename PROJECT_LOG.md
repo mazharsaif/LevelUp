@@ -139,6 +139,7 @@ German content comes from `../German Learning/legacy/Data/Iteration_v3/_source` 
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-21: native app update prompt: build_native.sh writes `app/download/native.json` (versionCode, name, notes via NOTES=); at start the web compares it with the APK's version (`checkNativeUpdate`, own overlay `#upd-root`, once per start) and offers the download. SW v56.
 - 11-21: Maths: Monte Carlo branch (`mc`, 9 skills incl. capstone boss, exercises with hidden solution code, 101 questions); build hides solution code after **Answers.**; tree_check ignores /api/health 404 on server.py. SW v55.
 - 11-21: feedback (guest, batul): SVG flags (`courseIcon`, Windows has no flag emojis); course card keeps its description (Goethe A1 …) + progress line; daily quest says when clearing it daily finishes A1 (`questPace`); phrase flip cards show the meaning at once with one Next button (no self-grading, not counted); Say-it tiles: Check unlocks only when all words are placed. SW v54.
 - 11-21: feedback (mazhar): native app pads below the status bar (clock covered the emblem); course picker shows Continue for every started course (`startedLocal/startedRemote`); setup shows when each daily XP choice finishes A1 and how far past the target date. SW v53.

@@ -18,5 +18,11 @@ OUT="app/build/outputs/apk/release"
 "$BT/apksigner" sign --ks "$T/levelup-release.keystore" --ks-key-alias levelup \
   --ks-pass "pass:$PW" --key-pass "pass:$PW" --v4-signing-enabled false --out "$ROOT/app/download/levelup-native.apk" "$OUT/aligned.apk"
 "$BT/apksigner" verify "$ROOT/app/download/levelup-native.apk"
+# what the app checks at start to offer an update (NOTES="…" adds a line about what's new)
+python3 - "$ROOT/app/download/native.json" "$CODE" "$VER" "${NOTES:-}" <<'PY'
+import json, sys
+p, code, ver, notes = sys.argv[1:5]
+json.dump({"versionCode": int(code), "versionName": ver + "-native-beta", "url": "download/levelup-native.apk", "notes": notes}, open(p, "w"), indent=1)
+PY
 "$BT/aapt2" dump badging "$ROOT/app/download/levelup-native.apk" | head -1
 ls -la "$ROOT/app/download/levelup-native.apk"

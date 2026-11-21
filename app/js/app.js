@@ -1667,6 +1667,32 @@ const standaloneApp = () => matchMedia("(display-mode: standalone)").matches || 
 const offerApk = () => !IN_APK && !IS_IOS && !standaloneApp();
 const APK_URL = "download/levelup.apk";
 const NATIVE_APK_URL = "download/levelup-native.apk"; // native Kotlin app, beta (installs next to the APK above)
+// Native app: when a newer APK is published (download/native.json, written by tools/android/build_native.sh), offer it
+// at start. Web-only changes never trigger this: they reach the native app by themselves. Asked once per app start.
+const verCode = v => { const m = String(v || "").match(/(\d{4})\.(\d{2})\.(\d{2})\.(\d{2})/); return m ? +(m[1] + m[2] + m[3] + m[4]) : 0; };
+async function checkNativeUpdate() {
+  const N = window.LevelUpNative;
+  if (!N || !N.version) return;
+  let mine = 0;
+  try { mine = (N.deviceInfo && JSON.parse(N.deviceInfo()).appVersionCode) || verCode(N.version()); } catch { mine = verCode(N.version()); }
+  if (!mine) return;
+  const r = await fetch("download/native.json", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).catch(() => null);
+  if (!r || !(r.versionCode > mine) || inLesson()) return;
+  try { if (sessionStorage.getItem("a1.nativeUpd") === String(r.versionCode)) return; sessionStorage.setItem("a1.nativeUpd", String(r.versionCode)); } catch { /* ignore */ }
+  // its own overlay (not sheet()): route() closes sheets, and start-up routes more than once
+  const box = document.createElement("div");
+  box.id = "upd-root";
+  box.innerHTML = `<div class="sheet-bg"><div class="sheet"><h2 style="margin-top:0">🚀 Update available</h2>
+    <p>A new version of LevelUp Native is ready: <b>${esc(r.versionName)}</b> (you have ${esc(N.version())}).</p>
+    ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ""}
+    <p class="muted small">Tap Update, open the downloaded file and tap Install. Your progress stays: it's saved on your account.</p>
+    <button class="btn" id="upd">Update now</button><button class="btn ghost" id="later" style="margin-top:8px">Later</button></div></div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector("#upd").onclick = () => { N.openExternal(new URL(r.url || NATIVE_APK_URL, location.href).href); close(); };
+  box.querySelector("#later").onclick = close;
+  box.querySelector(".sheet-bg").onclick = e => { if (e.target === e.currentTarget) close(); };
+}
 // iPhone: no APK, but Safari's "Add to Home Screen" installs LevelUp as a full-screen app (iosSheet explains it)
 const offerIos = () => IS_IOS && !standaloneApp();
 const IOS_GUIDE = "download/levelup-iphone-guide.pdf";
@@ -2039,5 +2065,6 @@ function treeCompare(box, people, all) {
     if (await refreshFromServer()) route();
   });
   route();
+  checkNativeUpdate();
   if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
