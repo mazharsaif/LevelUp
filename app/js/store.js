@@ -783,6 +783,8 @@ export function remainingParts(st = S) {
 // How many lesson parts a day keep you on track for the target date (1–8, frozen once per day)
 export function partsGoal(st = S) {
   goalFor(st);
+  // manual goal mode never freezes goalDay, so make today's record here (it used to crash on undefined)
+  if (!st.goalDay || st.goalDay.d !== today()) st.goalDay = { d: today(), v: goalFor(st), target: st.settings.targetDate, s: 0 }; // s:0 so auto mode recomputes
   if (st.goalDay.p == null) {
     const days = Math.max(1, daysBetween(today(), st.settings.targetDate) + 1);
     st.goalDay.p = Math.max(1, Math.min(8, Math.ceil(remainingParts(st) / days)));

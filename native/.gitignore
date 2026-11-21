@@ -1,0 +1,9 @@
+.gradle/
+build/
+*/build/
+local.properties
+.kotlin/
+tools/golden/node_modules/
+*.apk
+*.aab
+tools/golden/.cache/

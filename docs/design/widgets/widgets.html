@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LevelUp Widgets</title>
+<!--
+  LevelUp Android home-screen widget mockups (design only; Jetpack Glance later).
+  Self-contained: no external fonts or scripts. Every widget is drawn by the JS at the bottom from one data set,
+  at real launcher cell sizes (1 cell = 95 x 118 dp on a 412 dp-wide phone, widget = n*95-16 by m*118-16 dp; 1 CSS px = 1 dp).
+  See README.md next to this file for data fields, tap targets and Glance notes.
+-->
+<style>
+:root{
+  --page:#eceef2; --pageInk:#1f2328; --pageMuted:#5d6673; --pageCard:#fff; --pageLine:#d9dde3;
+  --cw:95px; --ch:118px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--page:#0e1116;--pageInk:#e6e9ee;--pageMuted:#98a1ad;--pageCard:#171b22;--pageLine:#2a3039}
+}
+:root[data-theme="dark"]{--page:#0e1116;--pageInk:#e6e9ee;--pageMuted:#98a1ad;--pageCard:#171b22;--pageLine:#2a3039}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--pageInk);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1320px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:28px;margin:0 0 6px} h2{font-size:22px;margin:44px 0 4px;padding-top:12px;border-top:1px solid var(--pageLine)}
+h3{font-size:15px;margin:22px 0 8px;color:var(--pageMuted);text-transform:uppercase;letter-spacing:1px}
+p.lead{color:var(--pageMuted);max-width:880px;margin:4px 0 12px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.toc a{padding:5px 12px;border-radius:999px;background:var(--pageCard);border:1px solid var(--pageLine);color:inherit;text-decoration:none;font-size:13px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.shot{display:inline-flex;flex-wrap:wrap;gap:22px;align-items:flex-start;padding:4px}
+figure{margin:0} figcaption{font-size:12.5px;color:var(--pageMuted);margin-top:6px;max-width:412px}
+figcaption b{color:var(--pageInk)}
+
+/* ---------- phone home screen ---------- */
+.home{width:412px;border-radius:28px;overflow:hidden;position:relative;padding:0 16px 14px;color:#fff;
+  font-family:Roboto,"Google Sans",system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.home.wp-night{background:
+  radial-gradient(420px 260px at 85% 8%,rgba(122,92,255,.45),transparent 70%),
+  radial-gradient(380px 300px at 0% 70%,rgba(40,110,255,.35),transparent 70%),
+  linear-gradient(170deg,#141a3a 0%,#0b1026 55%,#1a1035 100%)}
+.home.wp-night::after{content:"";position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.25)),
+  radial-gradient(260px 90px at 20% 100%,#0a0d1f 60%,transparent 61%),radial-gradient(300px 110px at 80% 100%,#0d1124 60%,transparent 61%)}
+.home.wp-day{color:#1d1b20;background:
+  radial-gradient(400px 260px at 90% 0%,rgba(255,206,160,.9),transparent 70%),
+  radial-gradient(420px 320px at 0% 80%,rgba(190,214,255,.9),transparent 70%),
+  linear-gradient(170deg,#fde9d9 0%,#eef1fb 55%,#e2ecf8 100%)}
+.home.wp-teal{color:#1d1b20;background:
+  radial-gradient(420px 280px at 100% 10%,rgba(160,220,205,.9),transparent 70%),
+  radial-gradient(360px 300px at 0% 90%,rgba(250,226,190,.9),transparent 70%),linear-gradient(170deg,#e4f3ee,#f6efe4)}
+.sb{height:30px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;padding:0 6px;position:relative;z-index:2}
+.sb .ic{display:flex;gap:6px;align-items:center;opacity:.9}
+.grid{display:grid;grid-template-columns:repeat(4,var(--cw));grid-auto-rows:var(--ch);position:relative;z-index:2;margin-top:6px}
+.cell{padding:8px;display:flex;align-items:stretch;justify-content:stretch}
+.cell>.w{flex:1}
+.app{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.wp-day .app,.wp-teal .app{text-shadow:none}
+.app i{width:54px;height:54px;border-radius:50%;display:block;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.dock{display:flex;justify-content:space-around;margin-top:8px;position:relative;z-index:2}
+.dock i{width:54px;height:54px;border-radius:50%;display:block}
+.search{height:50px;border-radius:25px;margin:12px 8px 2px;background:rgba(255,255,255,.16);position:relative;z-index:2;display:flex;align-items:center;padding:0 18px;gap:10px;font-size:14px;opacity:.95}
+.wp-day .search,.wp-teal .search{background:rgba(255,255,255,.7)}
+
+/* ---------- widget tokens (one class per visual variant x mode) ---------- */
+.w{position:relative;overflow:hidden;border-radius:var(--wr);background:var(--bg);color:var(--ink);font-family:var(--ff);
+  display:flex;flex-direction:column;padding:var(--pad,12px);min-width:0;min-height:0;line-height:1.15}
+.v-hunter{--wr:8px;--bg:linear-gradient(165deg,#0b1a38 0%,#070e20 60%,#0a0a24 100%);--ink:#dbeaff;--muted:#7f97b8;--hd:#eaf4ff;
+  --acc:#4a83ff;--acc2:#8a5cff;--onacc:#eaf4ff;--accbg:rgba(47,140,255,.18);--track:rgba(120,170,230,.16);--chip:rgba(47,140,255,.12);
+  --good:#57e3a0;--gold:#ffcc4d;--warn:#ffcc4d;--bad:#ff4d6d;--badbg:rgba(255,77,109,.14);
+  --m:#5aa9ff;--f:#ff6b8a;--n:#57e3a0;--pl:#b48cff;
+  --ff:"Roboto Condensed","Avenir Next Condensed","Arial Narrow",sans-serif;--hf:var(--ff);
+  box-shadow:0 0 0 1px rgba(110,170,255,.55),0 0 14px rgba(60,120,255,.35),inset 0 0 22px rgba(47,140,255,.14)}
+.v-hunter::before,.v-hunter::after{content:"";position:absolute;width:12px;height:12px;border:2px solid #8fd0ff;pointer-events:none;z-index:3}
+.v-hunter::before{top:3px;left:3px;border-right:0;border-bottom:0}
+.v-hunter::after{bottom:3px;right:3px;border-left:0;border-top:0}
+.v-hunter .lbl{text-shadow:0 0 8px rgba(47,140,255,.8)}
+.v-hunter .big,.v-hunter .hd{text-shadow:0 0 10px rgba(60,130,255,.75)}
+.v-hunter .btn{border:1px solid #79b6ff;box-shadow:0 0 12px rgba(80,140,255,.45),inset 0 0 10px rgba(80,140,255,.35);background:rgba(36,90,200,.55);border-radius:4px;text-transform:uppercase;letter-spacing:1.2px}
+.v-hunter .btn.sec{background:rgba(47,140,255,.08);border-color:rgba(120,180,255,.5);box-shadow:none}
+.v-hunter .btn.bad{background:rgba(190,30,70,.5);border-color:#ff8ea3;box-shadow:0 0 12px rgba(255,77,109,.45)}
+.v-hunter .btn.gold{background:rgba(150,110,20,.45);border-color:#ffd77a;box-shadow:0 0 12px rgba(255,204,77,.45)}
+.v-hunter .lbl{text-transform:uppercase;letter-spacing:1.6px}
+
+.v-calm.light{--wr:20px;--bg:#fffdf9;--ink:#22303c;--muted:#6b7682;--hd:#22303c;--acc:#2f6f73;--acc2:#c8704f;--onacc:#fff;--accbg:#dcecea;--track:#ebe5db;--chip:#f3eee6;
+  --good:#3f7d4e;--gold:#c98f2e;--warn:#c98f2e;--bad:#c0533d;--badbg:#f8e3dd;--m:#3d5a98;--f:#b5485d;--n:#3f7d4e;--pl:#7a5a9c;
+  --ff:Roboto,system-ui,sans-serif;--hf:"Iowan Old Style","Palatino Linotype",Georgia,"Noto Serif",serif;box-shadow:0 1px 3px rgba(60,40,20,.12)}
+.v-calm.dark{--wr:20px;--bg:#232a31;--ink:#e8e3da;--muted:#9aa3ad;--hd:#e8e3da;--acc:#5fb3ac;--acc2:#e0906f;--onacc:#10282a;--accbg:#22393a;--track:#353e48;--chip:#2b333b;
+  --good:#7fc28e;--gold:#e2b35e;--warn:#e2b35e;--bad:#e58a74;--badbg:#3a2724;--m:#8aa6e0;--f:#e48aa0;--n:#7fc28e;--pl:#b79ad8;
+  --ff:Roboto,system-ui,sans-serif;--hf:"Iowan Old Style","Palatino Linotype",Georgia,"Noto Serif",serif}
+.v-calm .btn{border-radius:12px}
+.v-calm .lbl{letter-spacing:1.2px;text-transform:uppercase}
+
+/* Material You: tokens as Glance's GlanceTheme / dynamic colour would hand them out (violet seed from the night wallpaper,
+   sandy-teal seed from the day wallpaper) */
+.v-you.light{--wr:24px;--bg:#f7f2fa;--ink:#1d1b20;--muted:#49454f;--hd:#1d1b20;--acc:#6750a4;--acc2:#7d5260;--onacc:#fff;--accbg:#eaddff;--track:#e8def8;--chip:#ece6f0;
+  --good:#386a20;--gold:#7d5700;--warn:#7d5700;--bad:#b3261e;--badbg:#f9dedc;--m:#1f5fbf;--f:#c0392b;--n:#2e7d32;--pl:#7b3fa0;
+  --ff:"Google Sans",Roboto,system-ui,sans-serif;--hf:var(--ff)}
+.v-you.light.seed-teal{--bg:#f4fbf8;--acc:#006a60;--accbg:#9ef2e4;--track:#cce8e2;--chip:#e3efec;--acc2:#4a6360}
+.v-you.dark{--wr:24px;--bg:#211f26;--ink:#e6e0e9;--muted:#cac4d0;--hd:#e6e0e9;--acc:#d0bcff;--acc2:#efb8c8;--onacc:#381e72;--accbg:#4f378b;--track:#4a4458;--chip:#2b2930;
+  --good:#9ed67f;--gold:#f3bd6e;--warn:#f3bd6e;--bad:#f2b8b5;--badbg:#601410;--m:#6ea8ff;--f:#ff7b72;--n:#5fd068;--pl:#c792ea;
+  --ff:"Google Sans",Roboto,system-ui,sans-serif;--hf:var(--ff)}
+.v-you .btn{border-radius:999px}
+.v-you .lbl{font-weight:600}
+
+/* transparent "glance" strip: text straight on the wallpaper */
+.v-clear{--wr:0;--bg:transparent;--ink:#fff;--muted:rgba(255,255,255,.85);--hd:#fff;--acc:#fff;--bad:#ffb4ab;--good:#c5f7b0;--gold:#ffe08a;--pad:4px 6px;
+  --ff:"Google Sans",Roboto,system-ui,sans-serif;--hf:var(--ff);text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.v-clear.onlight{--ink:#1d1b20;--muted:#3b3a40;--hd:#1d1b20;--bad:#b3261e;--good:#386a20;--gold:#7d5700;text-shadow:none}
+
+/* ---------- widget building blocks ---------- */
+.w .lbl{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.w .dots.sm .day i{width:17px;height:17px;font-size:9px}.w .dots.sm{gap:2px}
+.w .hd{font-family:var(--hf);color:var(--hd);font-weight:700}
+.w .big{font-family:var(--hf);color:var(--hd);font-weight:800}
+.w .mut{color:var(--muted)}
+.w .sm{font-size:12px} .w .xs{font-size:11px}
+.w .r{display:flex;align-items:center;gap:8px;min-width:0} .w .c{display:flex;flex-direction:column;min-width:0}
+.w .sp{flex:1}
+.w .tr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;font-weight:700;font-size:13px;
+  background:var(--acc);color:var(--onacc);white-space:nowrap;flex:none}
+.w .btn.sec{background:var(--accbg);color:var(--ink)}
+.w .btn.bad{background:var(--bad);color:#fff}
+.v-you.dark .btn.bad{color:#601410}
+.w .btn.gold{background:var(--gold);color:#fff}
+.v-calm.dark .btn.gold,.v-you.dark .btn.gold{color:#2a1c00}
+.w .btn.round{width:44px;height:44px;padding:0;border-radius:50%}
+.v-hunter .btn.round{border-radius:50%}
+.w .bar{height:8px;border-radius:99px;background:var(--track);overflow:hidden;flex:none}
+.w .bar>i{display:block;height:100%;border-radius:99px;background:var(--acc)}
+.v-hunter .bar>i{background:linear-gradient(90deg,#1d5fd1,#7b6bff);box-shadow:0 0 8px #4a83ff}
+.w .seg{display:flex;gap:4px;flex:none}.w .seg>i{flex:1;height:7px;border-radius:99px;background:var(--track)}
+.w .seg>i.on{background:var(--acc)}.w .seg>i.cur{background:var(--track);box-shadow:inset 0 0 0 2px var(--acc)}
+.v-hunter .seg>i.on{background:#4a83ff;box-shadow:0 0 6px #4a83ff}
+.w .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;background:var(--chip);font-size:11.5px;font-weight:700;white-space:nowrap;flex:none}
+.v-hunter .chip{border-radius:3px;border:1px solid rgba(110,170,255,.35)}
+.w .chip.bad{background:var(--badbg);color:var(--bad)}
+.w .q{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--track)}
+.w .q:last-child{border-bottom:0}
+.w .q .bx{width:16px;height:16px;border:1.5px solid var(--muted);border-radius:4px;flex:none;display:grid;place-items:center;font-size:11px;color:var(--good)}
+.v-hunter .q .bx{border-color:#6fb8ff;border-radius:2px}
+.w .q.ok .bx{border-color:var(--good);background:color-mix(in srgb,var(--good),transparent 80%)}
+.w .q .v{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.w .q.ok{color:var(--muted)}
+.w .stale{position:absolute;inset:0;background:color-mix(in srgb,var(--bg0,#000),transparent 100%);pointer-events:none}
+.w.is-stale .dimmable{opacity:.5;filter:grayscale(.6)}
+.w .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.w .card{background:var(--chip);border-radius:calc(var(--wr) * .6);padding:10px 12px}
+.v-hunter .card{border:1px solid rgba(110,170,255,.3);border-radius:4px;background:rgba(47,140,255,.07)}
+.w .art{font-weight:800}
+.w .art.m{color:var(--m)}.w .art.f{color:var(--f)}.w .art.n{color:var(--n)}.w .art.pl{color:var(--pl)}
+.w .astrip{position:absolute;left:0;top:0;bottom:0;width:6px}
+.w .dots{display:flex;justify-content:space-between;gap:4px}
+.w .day{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--muted);font-weight:700}
+.w .day i{width:24px;height:24px;border-radius:50%;background:var(--track);display:grid;place-items:center;font-style:normal;font-size:12px;color:var(--onacc)}
+.w .day i.hit{background:var(--acc)} .w .day i.miss{background:transparent;box-shadow:inset 0 0 0 1.5px var(--track)}
+.w .day i.today{background:transparent;box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc)}
+.w .day i.risk{background:transparent;box-shadow:inset 0 0 0 2px var(--bad);color:var(--bad)}
+.w .day i.frozen{background:var(--track)}
+.v-hunter .day i.hit{background:#2f6cff;box-shadow:0 0 8px #2f8cff}
+.w .day.now{color:var(--ink)}
+.w .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.w .cal i{aspect-ratio:1;border-radius:5px;background:var(--track);display:block}
+.v-hunter .cal i{border-radius:2px}
+.w .cal i.hit{background:var(--acc)} .w .cal i.part{background:color-mix(in srgb,var(--acc),transparent 60%)}
+.w .cal i.nx{background:transparent;box-shadow:inset 0 0 0 1px var(--track)} .w .cal i.today{background:transparent;box-shadow:inset 0 0 0 2px var(--acc)}
+.w .cal i.risk{background:transparent;box-shadow:inset 0 0 0 2px var(--bad)} .w .cal i.blank{visibility:hidden}
+.v-hunter .cal i.hit{background:#2f6cff;box-shadow:0 0 5px rgba(47,140,255,.8)}
+.w .ico{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.12em}
+.w .note{position:absolute;right:10px;top:9px;z-index:2}
+.anno{font-size:11px;color:var(--pageMuted)}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:10px 0 4px}
+.legend div{background:var(--pageCard);border:1px solid var(--pageLine);border-radius:12px;padding:10px 12px;font-size:13px}
+.legend b{display:block;margin-bottom:2px}
+</style>
+</head>
+<body>
+<main>
+  <h1>LevelUp home-screen widgets</h1>
+  <p class="lead">Design mockups for Android widgets (Jetpack Glance, later). Every widget sits on a phone home screen at real launcher cell sizes:
+    1 cell ≈ 95 × 118 dp on a 412 dp-wide phone, widget = n·95 − 16 by m·118 − 16 dp (2×1 = 174×102, 2×2 = 174×220, 4×1 = 364×102, 4×2 = 364×220, 4×4 = 364×456).
+    Data is Taha's-style German A1 progress: Level 23, D-Rank (Explorer), 22.4 % of A1, 🔥 12-day streak, 48 / 120 XP today, 1 / 3 parts, 14 words due.
+    Data fields, tap targets and Glance notes are in <code>README.md</code>.</p>
+  <div class="legend">
+    <div><b>A · Hunter</b>Matches <code>theme-sl</code>: navy panel, blue glow outline and corner brackets, condensed caps, purple aura on the emblem. Always dark. The glow outline is one static background drawable.</div>
+    <div><b>B · Calm</b>Matches <code>theme-calm</code>: warm paper / slate, deep teal, serif headings, flat. Light and dark.</div>
+    <div><b>C · Material You</b>Dynamic colour (<code>GlanceTheme</code>): tonal surfaces follow the wallpaper. Shown with a violet seed (night wallpaper) and a teal seed (day wallpaper). Article colours stay fixed (der blue, die red, das green).</div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+  <div id="out"></div>
+</main>
+
+<script>
+// ===================== data (real LevelUp content and mechanics) =====================
+const D = {
+  user: "Taha", course: "German A1",
+  xp: 48, goal: 120, parts: 1, pgoal: 3, due: 14, fading: 3, streak: 12, best: 18, gift: 14, diamonds: 85,
+  lv: 23, pct: 22.4, r: "D", rname: "Explorer", next: "C", nextName: "Speaker", nextPct: 25, rankFrom: 10, eta: "~9 days", aura: (23 - 1) / 99,
+  lesson: { kind: "vocab", n: 15, title: "Family", part: 2, of: 3, mins: 6,
+    words: [["f", "die Großmutter"], ["m", "der Großvater"], ["n", "das Kind"], ["f", "die Hochzeit"]] },
+  review: [{ g: "f", de: "die Abfahrt", en: "departure", hint: "AP-faa(r)t" }, { g: "m", de: "der Gruß", en: "greeting; regards" }, { g: "n", de: "das Hähnchen", en: "(roast) chicken" }, { g: "f", de: "die Vorwahl", en: "dialling code" }],
+  wotd: { g: "n", art: "das", w: "Kino", en: "cinema", pl: "die Kinos", hint: "KEE-noh", ex: "Wir sehen heute Abend im Kino einen schönen Film.", exEn: "We're watching a nice film at the cinema tonight." },
+  // last 7 days Mon..Sun (today = Sat), 1 hit 0 miss
+  week: [1, 1, 1, 1, 1, null, null],
+};
+const RANKC = { E: "#8a9bb5", D: "#57e3a0", C: "#5aa9ff", B: "#b48cff", A: "#ff6b8a", S: "#ffcc4d" };
+const RANKC_CALM = { E: "#6b7682", D: "#3f7d4e", C: "#3d5a98", B: "#7a5a9c", A: "#b5485d", S: "#c98f2e" };
+const RANK_NAME = { E: "Newcomer", D: "Explorer", C: "Speaker", B: "Traveller", A: "Local", S: "A1 Master" };
+const auraName = a => ["Faint", "Awakening", "Rising", "Strong", "Overflowing", "Sovereign"][Math.min(5, Math.floor(a * 5 + 1e-4))];
+
+// ===================== small drawing helpers =====================
+const I = { // simple line icons (vector drawables in the app)
+  play: '<svg class="ico" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
+  rev: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>',
+  cloud: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.2 9 4.5 4.5 0 0 0 7 18z"/><path d="M3 3l18 18"/></svg>',
+  lock: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  check: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  spk: '<svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  next: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  moon: '<svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5z"/></svg>',
+  cards: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="4" width="13" height="16" rx="2"/><path d="M4 7v11a2 2 0 0 0 2 2"/></svg>',
+};
+const fire = (on = true) => `<span style="${on ? "" : "filter:grayscale(1);opacity:.6"}">🔥</span>`;
+
+// progress ring (Glance: drawn into a Bitmap; Glance's CircularProgressIndicator is indeterminate only)
+function ring(p, sz, sw, inner = "", col = "var(--acc)", glow = false) {
+  const r = (sz - sw) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, p));
+  return `<div style="position:relative;width:${sz}px;height:${sz}px;flex:none">
+    <svg width="${sz}" height="${sz}" style="transform:rotate(-90deg);${glow ? "filter:drop-shadow(0 0 5px #4a83ff)" : ""}">
+      <circle cx="${sz / 2}" cy="${sz / 2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${sw}"/>
+      <circle cx="${sz / 2}" cy="${sz / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c * f} ${c}"/>
+    </svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">${inner}</div></div>`;
+}
+const bar = (p, col) => `<div class="bar"><i style="width:${Math.round(Math.max(0, Math.min(1, p)) * 100)}%;${col ? "background:" + col + ";box-shadow:none" : ""}"></i></div>`;
+const seg = (done, of, cur = true) => `<div class="seg">${Array.from({ length: of }, (_, k) => `<i class="${k < done ? "on" : k === done && cur ? "cur" : ""}"></i>`).join("")}</div>`;
+let uid = 0;
+// rank emblem = a pre-rendered bitmap per rank x aura step in the app (6 ranks x ~6 aura steps)
+function emblem(r, a, sz, v) {
+  const id = "h" + (uid++), col = v === "calm" ? RANKC_CALM[r] : RANKC[r];
+  const box = v === "you" ? 54 : 50, o = (100 - box) / 2, rx = v === "hunter" ? 4 : v === "calm" ? 12 : 31;
+  const hr = 30 + a * 32, hop = Math.min(1, (v === "calm" ? .7 : 1.5) * a);
+  const fill = v === "hunter" ? "rgba(6,12,28,.85)" : v === "calm" ? "color-mix(in srgb," + col + ",transparent 88%)" : "var(--accbg)";
+  const tcol = v === "you" ? "var(--ink)" : col;
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" style="flex:none;overflow:visible">
+    <defs><radialGradient id="${id}"><stop offset=".35" stop-color="#a066ff" stop-opacity=".95"/><stop offset=".65" stop-color="#7846e6" stop-opacity=".5"/><stop offset="1" stop-color="#7846e6" stop-opacity="0"/></radialGradient>
+    <filter id="${id}g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs>
+    <circle cx="50" cy="50" r="${hr}" fill="url(#${id})" opacity="${hop}"/>
+    ${v === "hunter" ? `<rect x="${o}" y="${o}" width="${box}" height="${box}" rx="${rx}" fill="none" stroke="${col}" stroke-width="5" filter="url(#${id}g)" opacity=".9"/>` : ""}
+    <rect x="${o}" y="${o}" width="${box}" height="${box}" rx="${rx}" fill="${fill}" stroke="${v === "you" ? "none" : col}" stroke-width="${v === "hunter" ? 2.5 : 2}"/>
+    ${v === "hunter" && a > .3 ? `<g fill="#c9a8ff" opacity="${(a - .3) * 1.2}"><circle cx="20" cy="70" r="1.6"/><circle cx="82" cy="30" r="1.3"/><circle cx="76" cy="80" r="1.8"/><circle cx="25" cy="24" r="1.2"/></g>` : ""}
+    <text x="50" y="51" text-anchor="middle" dominant-baseline="central" font-family="${v === "hunter" ? "Roboto Condensed,Avenir Next Condensed,Arial Narrow,sans-serif" : v === "calm" ? "Iowan Old Style,Georgia,serif" : "Google Sans,Roboto,sans-serif"}" font-weight="900" font-size="32" fill="${tcol}" ${v === "hunter" ? `style="filter:drop-shadow(0 0 3px ${col})"` : ""}>${r}</text>
+  </svg>`;
+}
+// LevelUp mark (progress-ring app icon: chevrons inside a ring)
+const mark = (sz = 14) => `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" style="flex:none"><circle cx="12" cy="12" r="9.5" fill="none" stroke="var(--track)" stroke-width="3"/><path d="M12 2.5a9.5 9.5 0 1 1-9 6.5" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round"/><path d="M8 14l4-4 4 4" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const head = (label, right = "") => `<div class="r" style="margin-bottom:6px">${mark()}<span class="lbl">${label}</span><span class="sp"></span>${right}</div>`;
+const staleBadge = (t = "3 h ago") => `<span class="badge">${I.cloud} ${t}</span>`;
+const wrap = (v, mode, inner, extra = "", cls = "") => `<div class="w v-${v} ${mode} ${cls}" style="${extra}">${inner}</div>`;
+
+// logged-out body shared by every data widget
+function signedOut(size, what) {
+  const small = size === "2x1" || size === "4x1";
+  if (small) return `<div class="r" style="height:100%">${ring(0, 44, 5, `<span style="font-size:18px;color:var(--muted)">${I.lock}</span>`)}<div class="c sp"><span class="hd tr" style="font-size:15px">${size === "2x1" ? "Sign in" : "Sign in to LevelUp"}</span><span class="sm mut tr">to see ${what}</span></div>${size === "4x1" ? `<span class="btn">Sign in</span>` : ""}</div>`;
+  return `${head("LevelUp")}<div class="c" style="flex:1;align-items:center;justify-content:center;text-align:center;gap:8px">
+    <span style="font-size:30px;color:var(--muted)">${I.lock}</span><span class="hd" style="font-size:17px">Sign in to LevelUp</span>
+    <span class="sm mut">to see ${what} here.</span></div><span class="btn" style="width:100%">Open LevelUp</span>`;
+}
+
+// ===================== 1. Today's quest =====================
+function quest(v, mode, size, st = "normal") {
+  if (st === "out") return wrap(v, mode, signedOut(size, "today's quest"));
+  const s = { xp: D.xp, goal: D.goal, parts: D.parts, pg: D.pgoal, due: D.due, streak: D.streak, left: "9 h 40 m left" };
+  if (st === "done") Object.assign(s, { xp: 136, parts: 3, due: 0, streak: 13 });
+  if (st === "risk") s.left = "2 h 20 m left";
+  const p = s.xp / s.goal, done = st === "done", risk = st === "risk", stale = st === "stale";
+  const col = done ? "var(--good)" : risk ? "var(--bad)" : "var(--acc)";
+  const glow = v === "hunter" && !done && !risk;
+  const rIn = (big) => done ? `<span style="font-size:${big ? 30 : 20}px;color:var(--good)">${I.check}</span>${big ? `<span class="xs mut">${s.xp} XP</span>` : ""}`
+    : `<span class="big" style="font-size:${big ? 28 : 17}px;line-height:1">${s.xp}</span><span class="xs mut">/ ${s.goal}${big ? " XP" : ""}</span>`;
+  const stk = (fs = 22) => `<span class="big" style="font-size:${fs}px;white-space:nowrap">${fire(!risk || true)} ${s.streak}</span>`;
+  const status = done ? `<span class="chip" style="color:var(--good)">${I.check} Quest cleared · +5 💎</span>`
+    : risk ? `<span class="chip bad">${I.moon} Streak at risk · ${s.left}</span>` : stale ? staleBadge() : "";
+  const qrows = () => `
+    <div class="q ${s.xp >= s.goal ? "ok" : ""}"><span class="bx">${s.xp >= s.goal ? "✓" : ""}</span>Earn ${s.goal} XP<span class="v">${Math.min(s.xp, s.goal)} / ${s.goal}</span></div>
+    <div class="q ${s.parts >= s.pg ? "ok" : ""}"><span class="bx">${s.parts >= s.pg ? "✓" : ""}</span>Clear ${s.pg} lesson parts<span class="v">${s.parts} / ${s.pg}</span></div>
+    <div class="q ${s.due === 0 ? "ok" : ""}"><span class="bx">${s.due === 0 ? "✓" : ""}</span>${s.due === 0 ? "Reviews done" : `Review ${s.due} due words`}<span class="v">${s.due === 0 ? "✓" : s.due}</span></div>`;
+  let h = "";
+  if (size === "2x1") {
+    h = `<div class="r dimmable" style="height:100%;gap:10px">${ring(p, 66, 7, rIn(false), col, glow)}
+      <div class="c sp" style="gap:3px">${stk(22)}<span class="xs mut tr">${done ? "Quest cleared" : risk ? `<b style="color:var(--bad)">${s.left}</b>` : `${s.due} due · ${s.parts}/${s.pg}`}</span></div></div>
+      ${stale ? `<div class="note">${staleBadge("3 h")}</div>` : ""}`;
+  } else if (size === "4x1") {
+    h = `<div class="r dimmable" style="height:100%;gap:12px">${ring(p, 66, 7, rIn(false), col, glow)}
+      <div class="c sp" style="gap:5px"><span class="lbl">${risk ? `<span style="color:var(--bad)">At risk · ${s.left}</span>` : done ? `<span style="color:var(--good)">Quest cleared ✦</span>` : stale ? "Daily quest · 3 h ago" : "Daily quest · 9 h 40 m"}</span>
+        <span class="hd" style="font-size:15px">${done ? `${s.xp} XP · ${s.pg} parts` : `${s.goal - s.xp} XP to go`}</span>${seg(s.parts, s.pg, !done)}</div>
+      <div class="c" style="align-items:center;gap:2px;padding:0 4px">${stk(24)}<span class="xs mut">streak</span></div>
+      <div class="c" style="align-items:center;gap:2px;padding-right:2px"><span class="big" style="font-size:24px">${s.due}</span><span class="xs mut">due</span></div></div>`;
+  } else if (size === "2x2") {
+    h = `${head("Today", stk(16))}
+      <div class="c dimmable" style="flex:1;align-items:center;justify-content:center">${ring(p, 104, 10, rIn(true), col, glow)}</div>
+      <div class="r dimmable" style="justify-content:space-between;margin-top:6px">${risk ? `<span class="chip bad" style="width:100%;justify-content:center">${I.moon} ${s.left}</span>`
+        : done ? `<span class="chip" style="width:100%;justify-content:center;color:var(--good)">Cleared · +5 💎</span>`
+        : `<span class="chip">▦ ${s.parts}/${s.pg} parts</span><span class="chip">${I.cards} ${s.due} due</span>`}</div>
+      ${stale ? `<div class="note" style="top:auto;bottom:44px;right:0;left:0;text-align:center">${staleBadge()}</div>` : ""}`;
+  } else if (size === "4x2" || size === "4x4") {
+    h = `${head("Daily quest · " + D.course, `<span class="chip">${stk(13)}<span class="mut" style="font-weight:600">days</span></span>`)}
+      <div class="r dimmable" style="gap:14px;flex:${size === "4x2" ? 1 : "none"}">${ring(p, 112, 11, rIn(true), col, glow)}<div class="c sp">${qrows()}</div></div>
+      <div class="r" style="margin-top:6px">${status || `<span class="xs mut">${s.left} · goal resets at midnight</span>`}<span class="sp"></span>
+        ${size === "4x2" ? (done ? `<span class="btn sec" style="height:30px">Keep going ${I.next}</span>` : `<span class="btn ${risk ? "bad" : ""}" style="height:30px">${I.play} ${risk ? "Save streak" : "Continue"}</span>`) : ""}</div>`;
+    if (size === "4x4") {
+      const L = D.lesson;
+      h += `<div class="card dimmable" style="margin-top:12px"><div class="lbl" style="margin-bottom:4px">${done ? "Up next (optional)" : "Next part"}</div>
+        <div class="r"><div class="c sp"><span class="hd tr" style="font-size:17px">Lesson ${L.n} · ${L.title}</span><span class="sm mut">Part ${L.part} of ${L.of} · ~${L.mins} min</span></div>
+        <span class="btn ${risk ? "bad" : ""}">${I.play} Start</span></div><div style="margin-top:8px">${seg(L.part - 1, L.of)}</div></div>
+        <div class="r dimmable" style="margin-top:10px;gap:10px"><span class="btn sec" style="flex:1">${I.cards} Review ${s.due || ""} ${s.due ? "words" : "done ✓"}</span><span class="btn sec" style="flex:1">◆ All ranks</span></div>
+        <div class="r dimmable" style="margin-top:12px;gap:10px">${emblem(D.r, D.aura, 46, v)}<div class="c sp" style="gap:4px">
+          <div class="r"><span class="hd" style="font-size:14px">${D.r}-Rank · ${D.rname}</span><span class="sp"></span><span class="xs mut">Lv ${D.lv} · ${D.pct} % of A1</span></div>${bar((D.pct - D.rankFrom) / (D.nextPct - D.rankFrom))}</div></div>
+        <div class="sp"></div>
+        <div class="dimmable">${weekStrip(st)}</div>`;
+    }
+  }
+  return wrap(v, mode, h, "", stale ? "is-stale" : "");
+}
+function weekStrip(st) {
+  const L = ["M", "T", "W", "T", "F", "S", "S"];
+  return `<div class="dots">${L.map((d, i) => {
+    let c = i < 5 ? "hit" : i === 5 ? (st === "done" ? "hit" : st === "risk" ? "risk" : "today") : "";
+    if (st === "broken" && i === 4) c = "miss";
+    const t = c === "hit" ? "✓" : c === "risk" ? "!" : "";
+    return `<div class="day ${i === 5 ? "now" : ""}"><i class="${c}">${t}</i>${d}</div>`;
+  }).join("")}</div>`;
+}
+
+// ===================== 2. Rank =====================
+function rankW(v, mode, size, st = "normal", R = null) {
+  if (st === "out") return wrap(v, mode, signedOut(size, "your rank"));
+  if (!R && st === "rankup") R = { r: "C", lv: 25, pct: 25.1, a: 24 / 99, from: 25, to: 45, next: "B", eta: "~3 weeks" };
+  R = R || { r: D.r, lv: D.lv, pct: D.pct, a: D.aura, from: D.rankFrom, to: D.nextPct, next: D.next, eta: D.eta };
+  const S = R.r === "S", p = S ? 1 : (R.pct - R.from) / (R.to - R.from), up = st === "rankup", stale = st === "stale";
+  const title = `${R.r}-Rank`, name = RANK_NAME[R.r];
+  const nextTxt = S ? "A1 reached" : `${(R.to - R.pct).toFixed(1)} % to ${R.next}-Rank`;
+  const bcol = S ? "var(--gold)" : null;
+  let h = "";
+  if (size === "2x1") {
+    h = `<div class="r dimmable" style="height:100%;gap:8px">${emblem(R.r, R.a, 70, v)}<div class="c sp" style="gap:4px">
+      <span class="big" style="font-size:20px">${up ? "Rank up!" : title}</span><span class="xs mut">Lv ${R.lv} · ${Math.floor(R.pct)} % A1</span>${bar(p, bcol)}</div></div>`;
+  } else if (size === "2x2") {
+    h = `${up ? `<div class="lbl" style="text-align:center;color:var(--gold)">✦ Rank up ✦</div>` : head("Rank", stale ? staleBadge("3 h") : `<span class="lbl">Lv ${R.lv}</span>`)}
+      <div class="c dimmable" style="flex:1;align-items:center;justify-content:center">${emblem(R.r, R.a, 100, v)}</div>
+      <div class="c dimmable" style="align-items:center;gap:3px;text-align:center"><span class="big tr" style="font-size:${v === "hunter" ? 18 : 15}px;max-width:100%">${title} · ${name}</span>
+        <span class="xs mut">${up ? `Level ${R.lv} · tap to see what's new` : `${R.pct.toFixed(1)} % of A1 · ${S ? "Lv " + R.lv : "next " + R.next}`}</span></div>
+      <div class="dimmable" style="margin-top:7px">${bar(p, bcol)}</div>`;
+  } else if (size === "4x1") {
+    h = `<div class="r dimmable" style="height:100%;gap:10px">${emblem(R.r, R.a, 76, v)}<div class="c sp" style="gap:4px">
+      <div class="r"><span class="big tr" style="font-size:19px">${title} · ${name}</span><span class="sp"></span>${stale ? staleBadge("3 h") : ""}</div>
+      <span class="xs mut">Level ${R.lv} · ${R.pct.toFixed(1)} % of A1 · ${nextTxt}</span>${bar(p, bcol)}</div>
+      <div class="c" style="align-items:center"><span class="lbl">LV</span><span class="big" style="font-size:28px;line-height:1">${R.lv}</span></div></div>`;
+  } else {
+    h = `${head(up ? "✦ Rank up ✦" : "Rank · " + D.course, stale ? staleBadge() : `<span class="lbl">Aura · ${auraName(R.a)}</span>`)}
+      <div class="r dimmable" style="flex:1;gap:12px">${emblem(R.r, R.a, 132, v)}<div class="c sp" style="gap:5px">
+        <span class="big" style="font-size:28px;line-height:1">${title}</span><span class="hd" style="font-size:15px">${name}</span>
+        <span class="sm mut">Level ${R.lv} · ${R.pct.toFixed(1)} % of A1</span>
+        ${bar(p, bcol)}<div class="r xs mut" style="justify-content:space-between"><span>${S ? "S" : R.r} ${S ? "" : R.from + " %"}</span><span>${S ? "100 %" : R.next + " " + R.to + " %"}</span></div>
+        <span class="sm" style="color:${up ? "var(--gold)" : "var(--ink)"}">${up ? "You can now talk about family and your day." : S ? "Ready for the A1 exam" : `${R.next}-Rank · ${RANK_NAME[R.next]} in ${R.eta}`}</span></div></div>`;
+  }
+  return wrap(v, mode, h, "", stale ? "is-stale" : "");
+}
+
+// ===================== 3. Continue =====================
+const KIND = { vocab: ["Aa", "Vocab"], grammar: ["§", "Grammar"], phrases: ["💬", "Phrases"], skill: ["∑", "Skill"], se: ["&lt;/&gt;", "Skill"] };
+function cont(v, mode, size, st = "normal", L = null) {
+  if (st === "out") return wrap(v, mode, signedOut(size, "your next lesson"));
+  L = L || Object.assign({ course: D.course, line: `Lesson ${D.lesson.n} · part ${D.lesson.part} of ${D.lesson.of}` }, D.lesson);
+  const done = st === "done", risk = st === "risk", stale = st === "stale";
+  const kb = `<div style="width:46px;height:46px;border-radius:${v === "hunter" ? 4 : 14}px;background:var(--accbg);display:grid;place-items:center;font-weight:800;font-size:17px;color:var(--acc);flex:none;${v === "hunter" ? "border:1px solid rgba(110,170,255,.45);color:#9fd0ff" : ""}">${KIND[L.kind][0]}</div>`;
+  const startBtn = (extra = "", lbl = "Start") => `<span class="btn ${risk ? "bad" : ""}" style="${extra}">${I.play} ${lbl}</span>`;
+  const top = done ? `<span style="color:var(--good)">Goal reached ✓ · one more?</span>` : risk ? `<span style="color:var(--bad)">${I.moon} Streak at risk · 2 h 20 m</span>` : stale ? `Offline · from 3 h ago` : `Continue · ${L.course}`;
+  let h = "";
+  if (size === "2x1") {
+    h = `<div class="r" style="height:100%;gap:8px"><div class="c sp" style="gap:3px"><span class="lbl tr">L${L.n} · ${L.part}/${L.of}</span>
+      <span class="hd tr" style="font-size:17px">${L.title}</span>${seg(L.part - 1, L.of)}</div><span class="btn round ${risk ? "bad" : ""}" style="font-size:18px">${I.play}</span></div>`;
+  } else if (size === "4x1") {
+    h = `<div class="r" style="height:100%;gap:12px">${kb}<div class="c sp" style="gap:4px"><span class="lbl tr">${top}</span>
+      <span class="hd tr" style="font-size:17px">${L.line}</span><span class="xs mut tr">${L.title} · ~${L.mins} min</span></div>${startBtn()}</div>`;
+  } else if (size === "2x2") {
+    h = `${head(KIND[L.kind][1] + (L.n ? " · L" + L.n : ""), stale ? staleBadge("3 h") : "")}
+      <div class="c" style="flex:1;justify-content:center;gap:6px">${done ? `<span class="xs" style="color:var(--good);font-weight:700">Goal reached ✓</span>` : risk ? `<span class="xs" style="color:var(--bad);font-weight:700">Streak at risk</span>` : ""}
+      <span class="hd" style="font-size:20px;line-height:1.1">${L.title}</span><span class="sm mut">Part ${L.part} of ${L.of} · ~${L.mins} min</span>${seg(L.part - 1, L.of)}</div>
+      ${startBtn("width:100%;margin-top:8px")}<span class="sm" style="text-align:center;margin-top:8px;font-weight:700;color:var(--acc)">${I.cards} Review ${D.due}</span>`;
+  } else {
+    h = `${head(top, stale ? staleBadge() : `<span class="lbl">~${L.mins} min</span>`)}
+      <div class="r" style="gap:12px;margin-top:2px">${kb}<div class="c sp" style="gap:3px"><span class="hd tr" style="font-size:20px">${L.n ? `Lesson ${L.n} · ${L.title}` : L.title}</span>
+      <span class="sm mut">${L.sub || `Part ${L.part} of ${L.of}`}</span></div></div>
+      <div style="margin:10px 0 8px">${seg(L.part - 1, L.of)}</div>
+      <div class="sm tr" style="flex:1">${L.words ? `<span class="mut">New: </span>` + L.words.map(([g, w]) => { const [a, ...r] = w.split(" "); return `<span class="art ${g}">${a}</span> ${r.join(" ")}`; }).join(" · ") : `<span class="mut">${L.preview || ""}</span>`}</div>
+      <div class="r" style="gap:10px">${startBtn("flex:1.4", done ? "One more part" : risk ? "Save streak" : "Start part " + L.part)}<span class="btn sec" style="flex:1">${I.cards} Review ${D.due}</span></div>`;
+  }
+  return wrap(v, mode, h, "", stale ? "is-stale" : "");
+}
+
+// ===================== 4. Review due =====================
+function rev(v, mode, size, st = "normal") {
+  if (st === "out") return wrap(v, mode, signedOut(size, "words due"));
+  const none = st === "none", pen = st === "penalty", stale = st === "stale", shown = st === "reveal";
+  const n = none ? 0 : D.due, w = D.review[0];
+  const countCol = pen ? "var(--bad)" : "var(--hd)";
+  let h = "";
+  if (size === "2x1") {
+    h = `<div class="r" style="height:100%;gap:10px"><div class="c sp"><span class="big" style="font-size:34px;line-height:1;color:${none ? "var(--good)" : countCol}">${none ? I.check : n}</span>
+      <span class="xs mut tr">${none ? "All caught up" : pen ? "due · −10 XP tonight" : "words due"}</span></div>${none ? "" : `<span class="btn round" style="font-size:18px">${I.rev}</span>`}</div>`;
+  } else if (size === "4x1") {
+    h = `<div class="r" style="height:100%;gap:12px">${ring(none ? 1 : .3, 58, 6, `<span class="big" style="font-size:${none ? 20 : 19}px;color:${none ? "var(--good)" : countCol}">${none ? I.check : n}</span>`, none ? "var(--good)" : pen ? "var(--bad)" : "var(--acc)")}
+      <div class="c sp" style="gap:3px">${none ? `<span class="hd" style="font-size:16px">All caught up</span><span class="xs mut">Next review in 3 h · die Vorwahl</span>`
+      : `<span class="lbl">${pen ? `<span style="color:var(--bad)">Missed yesterday · −10 XP</span>` : stale ? "Review · 3 h ago" : `Review · ${D.fading} fading`}</span>
+         <span class="hd tr" style="font-size:17px"><span class="art ${w.g}">${w.de.split(" ")[0]}</span> ${w.de.split(" ")[1]}  <span class="mut" style="font-weight:400">= ?</span></span><span class="xs mut">and ${n - 1} more · ~5 min</span>`}</div>
+      ${none ? "" : `<span class="btn ${pen ? "bad" : ""}">${I.rev} Review</span>`}</div>`;
+  } else if (size === "2x2") {
+    h = `${head("Review", stale ? staleBadge("3 h") : "")}
+      <div class="c" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:2px">
+        <span class="big" style="font-size:44px;line-height:1;color:${none ? "var(--good)" : countCol}">${none ? I.check : n}</span>
+        <span class="sm mut">${none ? "All caught up" : "words due"}</span>
+        ${none ? `<span class="xs mut" style="margin-top:6px">Next in 3 h</span>` : `<span class="chip ${pen ? "bad" : ""}" style="margin-top:8px">${pen ? "−10 XP if missed" : `${D.fading} fading`}</span>`}</div>
+      ${none ? `<span class="btn sec" style="width:100%">Practice anyway</span>` : `<span class="btn ${pen ? "bad" : ""}" style="width:100%">${I.rev} Review now</span>`}`;
+  } else {
+    const chips = D.review.slice(1).map(x => `<span class="chip"><span class="art ${x.g}">${x.de.split(" ")[0]}</span>&nbsp;${x.de.split(" ")[1]}</span>`).join("");
+    h = `${head(pen ? `<span style="color:var(--bad)">Missed yesterday · −10 XP · review now</span>` : `Review · ${D.course}`, stale ? staleBadge() : `<span class="lbl">${none ? "0" : n} due</span>`)}
+      ${none ? `<div class="c" style="flex:1;align-items:center;justify-content:center;text-align:center;gap:4px"><span style="font-size:34px;color:var(--good)">${I.check}</span>
+        <span class="hd" style="font-size:18px">All caught up</span><span class="sm mut">Next review in 3 h · 6 words due tomorrow</span></div>
+        <div class="r" style="gap:10px"><span class="btn sec" style="flex:1">Practice weak words</span></div>`
+      : `<div class="card" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px">
+          <div class="r"><span class="hd" style="font-size:24px"><span class="art ${w.g}">${w.de.split(" ")[0]}</span> ${w.de.split(" ")[1]}</span><span class="sp"></span><span class="btn round sec" style="width:34px;height:34px;font-size:14px">${I.spk}</span></div>
+          ${shown ? `<span class="hd" style="font-size:16px;color:var(--acc)">departure</span><span class="xs mut">How well did you know it?</span>` : `<span class="sm mut">${w.hint} · tap to show the meaning</span>`}</div>
+        <div class="r" style="gap:6px;margin-top:8px">${shown ? `<span class="btn bad" style="flex:1;height:32px">Again</span><span class="btn sec" style="flex:1;height:32px">Hard</span><span class="btn" style="flex:1;height:32px">Good</span><span class="btn sec" style="flex:1;height:32px">Easy</span>`
+          : `${chips}<span class="sp"></span><span class="xs mut">+${n - 4}</span>`}</div>
+        ${shown ? "" : `<span class="btn ${pen ? "bad" : ""}" style="width:100%;margin-top:8px">${I.rev} Review all ${n}</span>`}`}`;
+  }
+  return wrap(v, mode, h, "", stale ? "is-stale" : "");
+}
+
+// ===================== 5. Streak calendar =====================
+function streakW(v, mode, size, st = "normal") {
+  if (st === "out") return wrap(v, mode, signedOut(size, "your streak"));
+  const risk = st === "risk", done = st === "done", broken = st === "broken", stale = st === "stale";
+  const n = broken ? 0 : done ? 13 : 12;
+  const stNum = (fs) => `<span class="big" style="font-size:${fs}px;line-height:1;white-space:nowrap">${fire(!broken)} ${n}</span>`;
+  const sub = broken ? "Start a new streak today" : risk ? `<span style="color:var(--bad);font-weight:700">At risk · 2 h 20 m left</span>` : done ? "Today done ✓" : "day streak";
+  let h = "";
+  if (size === "2x1") {
+    h = `<div class="c" style="height:100%;justify-content:center;gap:8px"><div class="r">${stNum(24)}<span class="xs mut tr">${broken ? "new start" : risk ? `<b style="color:var(--bad)">at risk</b>` : "days"}</span></div>
+      <div class="r" style="gap:4px">${[1, 1, 1, 1, broken ? 0 : 1, done ? 1 : 2, 3].map(x => `<i style="flex:1;height:8px;border-radius:99px;background:${x === 1 ? "var(--acc)" : x === 2 ? (risk ? "var(--bad)" : "var(--track)") : "var(--track)"};${x === 2 ? "opacity:.9" : x === 3 ? "opacity:.4" : ""}"></i>`).join("")}</div></div>`;
+  } else if (size === "4x1") {
+    h = `<div class="r" style="height:100%;gap:12px"><div class="c" style="gap:2px;min-width:74px">${stNum(28)}<span class="xs mut tr">${broken ? "start again" : risk ? `<b style="color:var(--bad)">2 h 20 m left</b>` : done ? "today ✓" : "day streak"}</span></div>
+      <div class="sp">${weekStrip(broken ? "broken" : st)}</div></div>`;
+  } else if (size === "2x2") {
+    h = `${head("Streak", stale ? staleBadge("3 h") : `<span class="lbl">best ${D.best}</span>`)}
+      <div class="c" style="flex:1;align-items:center;justify-content:center;gap:4px;text-align:center">${stNum(40)}<span class="sm mut">${sub}</span></div>
+      ${weekStrip(broken ? "broken" : st).replace('class="dots"', 'class="dots sm"')}
+      <div class="xs mut" style="text-align:center;margin-top:7px">${broken ? "Hit today's goal to start" : `🎁 at ${D.gift} days · ${D.gift - n} to go`}</div>`;
+  } else {
+    // 5 weeks Monday-start, Mon Oct 19 .. Sun Nov 22 (today Sat Nov 21)
+    const cells = Array.from({ length: 35 }, (_, i) => i);
+    const todayIdx = 33; // Mon Oct 19 + 33 days = Sat Nov 21 (today)
+    const miss = new Set([3, 4, 11, 20]); // the 12 days before today are all goal days
+    const cal = cells.map(i => {
+      let c = i > todayIdx ? "nx" : i === todayIdx ? (done ? "hit" : risk ? "risk" : "today") : miss.has(i) ? "" : "hit";
+      if (broken && i === todayIdx - 1) c = "";
+      if (i === 15 || i === 7) c = c === "hit" ? "part" : c;
+      return `<i class="${c}"></i>`;
+    }).join("");
+    h = `${head("Streak · last 5 weeks", stale ? staleBadge() : `<span class="lbl">💎 ${D.diamonds}</span>`)}
+      <div class="r" style="flex:1;gap:16px;align-items:stretch"><div class="c" style="justify-content:center;gap:4px;min-width:104px">${stNum(38)}<span class="sm mut">${sub}</span>
+        <span class="xs mut" style="margin-top:8px">Best · ${D.best} days</span><span class="xs mut">${broken ? "Goal days · 26 of 32" : `🎁 at ${D.gift} · ${D.gift - n} to go`}</span></div>
+        <div class="c sp" style="gap:4px;justify-content:center"><div class="cal xs mut" style="font-size:9.5px;text-align:center">${["M", "T", "W", "T", "F", "S", "S"].map(x => `<span>${x}</span>`).join("")}</div><div class="cal">${cal}</div></div></div>`;
+  }
+  return wrap(v, mode, h, "", stale ? "is-stale" : "");
+}
+
+// ===================== 6. Word of the day =====================
+const WORDS = {
+  das: D.wotd,
+  die: { g: "f", art: "die", w: "Familie", en: "family", pl: "die Familien", hint: "fa-MEE-lee-e", ex: "Meine Familie lebt in Spanien.", exEn: "My family lives in Spain." },
+  der: { g: "m", art: "der", w: "Gruß", en: "greeting; regards", pl: "die Grüße", hint: "GROOS", ex: "Viele Grüße an Ihre Frau.", exEn: "Best regards to your wife." },
+  fr: { g: "f", art: "la", w: "capitale", en: "capital (city)", pl: "les capitales", hint: "kah-pee-TAHL", ex: "Paris est la capitale de la France.", exEn: "Paris is the capital of France.", course: "French A1" },
+};
+function wotd(v, mode, size, st = "das") {
+  const W = WORDS[st] || WORDS.das, learned = st === "der", cs = W.course || D.course;
+  const gname = { m: "masculine", f: "feminine", n: "neuter" }[W.g];
+  const strip = `<span class="astrip" style="background:var(--${W.g})"></span>`;
+  const playB = (sz = 44) => `<span class="btn round" style="width:${sz}px;height:${sz}px;font-size:${sz * .4}px">${I.spk}</span>`;
+  let h = "";
+  if (size === "2x1") {
+    h = `${strip}<div class="r" style="height:100%;gap:6px;padding-left:4px"><div class="c sp"><span class="art ${W.g} sm">${W.art}</span>
+      <span class="hd tr" style="font-size:20px">${W.w}</span><span class="xs mut tr">${W.en}</span></div>${playB(40)}</div>`;
+  } else if (size === "4x1") {
+    h = `${strip}<div class="r" style="height:100%;gap:12px;padding-left:6px"><div class="c sp" style="gap:3px"><span class="lbl">Word of the day · ${cs}</span>
+      <span class="hd tr" style="font-size:22px"><span class="art ${W.g}">${W.art}</span> ${W.w}</span><span class="sm mut tr">${W.en} · ${W.hint}</span></div>${playB()}</div>`;
+  } else if (size === "2x2") {
+    h = `${strip}<div class="c" style="height:100%;padding-left:4px">${head("Daily word")}
+      <div class="c" style="flex:1;justify-content:center;gap:3px"><span class="art ${W.g}" style="font-size:16px">${W.art}</span>
+      <span class="hd" style="font-size:26px;line-height:1.05">${W.w}</span><span class="sm mut">${W.en}</span></div>
+      <div class="r"><span class="xs mut tr sp">${W.hint}</span>${playB(42)}</div></div>`;
+  } else {
+    h = `${strip}<div class="c" style="height:100%;padding-left:6px">${head(W.course ? "Word · " + cs : "Word of the day", `<span class="chip">${learned ? "Learned ✓" : "New · Lesson 41"}</span>`)}
+      <div class="r" style="gap:10px;margin-top:2px"><div class="c sp"><span class="hd" style="font-size:28px;line-height:1.1"><span class="art ${W.g}">${W.art}</span> ${W.w}</span>
+        <span class="sm mut">${W.en} · ${gname} · pl. ${W.pl}</span></div>${playB(48)}</div>
+      <div class="card" style="margin-top:10px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px"><span class="sm" style="font-weight:600">${W.ex}</span><span class="xs mut">${W.exEn}</span></div>
+      <div class="r" style="margin-top:8px"><span class="xs mut">${W.hint}</span><span class="sp"></span><span class="btn sec" style="height:30px">${learned ? "Review it" : "Learn it"}</span><span class="btn sec" style="height:30px;margin-left:6px">Next ${I.next}</span></div></div>`;
+  }
+  return wrap(v, mode, h, "padding-left:16px");
+}
+
+// ===================== 7. Extras =====================
+function glanceStrip(mode, st = "normal") {
+  const on = mode === "light" ? "onlight" : "";
+  const t = { normal: [`Sat 21 Nov`, `${fire()} 12 · 72 XP to go · 14 words due`], risk: [`<span style="color:var(--bad)">Streak at risk · 2 h 20 m left</span>`, `${fire()} 12 · 72 XP to go · tap to save it`],
+    done: [`Sat 21 Nov`, `<span style="color:var(--good)">✓ Quest cleared</span> · ${fire()} 13 · +5 💎`], stale: [`Sat 21 Nov`, `${fire()} 12 · 72 XP to go · <span style="opacity:.8">${I.cloud} 3 h ago</span>`] }[st];
+  return wrap("clear", on, `<div class="c" style="height:100%;justify-content:center;gap:2px"><span style="font-size:22px;font-weight:500">${t[0]}</span><span style="font-size:15px">${t[1]}</span></div>`);
+}
+function iconRing(v, mode, st = "normal") { // 1x1: the app icon's ring = today's XP, streak count underneath
+  const p = st === "done" ? 1 : D.xp / D.goal, col = st === "done" ? "var(--good)" : st === "risk" ? "var(--bad)" : "var(--acc)";
+  return wrap(v, mode, `<div class="c" style="height:100%;align-items:center;justify-content:center;gap:4px">${ring(p, 50, 6, `<span style="font-size:15px;line-height:1">${st === "done" ? `<span style="color:var(--good)">${I.check}</span>` : st === "risk" ? "⚠️" : "🔥"}</span>`, col, v === "hunter")}
+    <span class="big" style="font-size:13px">${st === "done" ? 13 : 12} d</span></div>`, "--pad:6px");
+}
+function quick(v, mode) { // 2x1 two big actions
+  return wrap(v, mode, `<div class="r" style="height:100%;gap:8px"><div class="c" style="flex:1;height:100%;border-radius:calc(var(--wr)*.6);background:var(--acc);color:var(--onacc);align-items:center;justify-content:center;gap:3px">
+      <span style="font-size:20px">${I.play}</span><span style="font-weight:800;font-size:12px">Part 2/3</span></div>
+    <div class="c" style="flex:1;height:100%;border-radius:calc(var(--wr)*.6);background:var(--accbg);align-items:center;justify-content:center;gap:3px">
+      <span style="font-size:20px;color:var(--acc)">${I.rev}</span><span style="font-weight:800;font-size:12px">14 due</span></div></div>`, "--pad:8px");
+}
+
+// ===================== home screen + layout =====================
+const APPS = [["Phone", "#3ddc84"], ["Messages", "#4c8bf5"], ["Chrome", "#f4b400"], ["Camera", "#9aa0a6"], ["Photos", "#ea4335"], ["Maps", "#34a853"], ["Gmail", "#d93025"], ["LevelUp", "#2f6cff"], ["Clock", "#5f6368"], ["Play", "#01875f"]];
+let ai = 0;
+function home({ wp = "night", time = "14:20", rows, items, label, dock = false, fill = true }) {
+  const occ = Array.from({ length: rows }, () => [0, 0, 0, 0]);
+  items.forEach(it => { for (let r = it.r; r < it.r + it.h; r++) for (let c = it.c; c < it.c + it.w; c++) occ[r][c] = 1; });
+  let cells = items.map(it => `<div class="cell" style="grid-column:${it.c + 1}/span ${it.w};grid-row:${it.r + 1}/span ${it.h}">${it.html}</div>`).join("");
+  if (fill) occ.forEach((row, r) => row.forEach((o, c) => { if (!o) { const a = APPS[(ai++) % APPS.length]; cells += `<div class="app" style="grid-column:${c + 1};grid-row:${r + 1}"><i style="background:${a[1]}"></i>${a[0]}</div>`; } }));
+  return `<figure><div class="home wp-${wp}"><div class="sb"><span>${time}</span><span class="ic">▲ ◉ ▮ 82%</span></div>
+    <div class="grid" style="grid-template-rows:repeat(${rows},var(--ch))">${cells}</div>
+    ${dock ? `<div class="dock">${["#3ddc84", "#4c8bf5", "#f4b400", "#9aa0a6"].map(c => `<i style="background:${c}"></i>`).join("")}</div><div class="search">G &nbsp;Search</div>` : ""}
+    </div>${label ? `<figcaption>${label}</figcaption>` : ""}</figure>`;
+}
+const SZ = { "1x1": [1, 1], "2x1": [2, 1], "2x2": [2, 2], "4x1": [4, 1], "4x2": [4, 2], "4x4": [4, 4] };
+const it = (r, c, size, html) => ({ r, c, w: SZ[size][0], h: SZ[size][1], html });
+const WP = { hunter: { dark: "night", light: "day" }, calm: { dark: "night", light: "teal" }, you: { dark: "night", light: "day" } };
+
+const sections = [];
+function section(id, title, lead, blocks) { sections.push({ id, title, lead, blocks }); }
+// block = {h3, shot(name), figs:[html...]}
+
+// ---------- overview ----------
+section("overview", "Overview: a full home screen", "Three widgets together as a learner would place them. Left: Hunter on a night wallpaper. Right: Material You, light, on a day wallpaper.", [
+  { h3: "Hunter · dark", shot: "overview", figs: [
+    home({ wp: "night", rows: 6, dock: true, items: [it(0, 0, "4x1", glanceStrip("dark")), it(1, 0, "2x2", rankW("hunter", "dark", "2x2")), it(1, 2, "2x2", quest("hunter", "dark", "2x2")), it(3, 0, "4x1", cont("hunter", "dark", "4x1")), it(4, 0, "4x1", streakW("hunter", "dark", "4x1"))], label: "<b>Hunter</b> · 4×1 glance strip, Rank 2×2, Today's quest 2×2, Continue 4×1, Streak 4×1" }),
+    home({ wp: "day", rows: 6, dock: true, items: [it(0, 0, "4x1", glanceStrip("light")), it(1, 0, "4x2", quest("you", "light", "4x2")), it(3, 0, "2x2", rev("you", "light", "2x2")), it(3, 2, "2x2", wotd("you", "light", "2x2"))], label: "<b>Material You · light</b> · glance strip, Today's quest 4×2, Review 2×2, Word of the day 2×2" }),
+    home({ wp: "teal", rows: 6, dock: true, items: [it(0, 0, "4x2", cont("calm", "light", "4x2")), it(2, 0, "2x2", rankW("calm", "light", "2x2")), it(2, 2, "2x2", streakW("calm", "light", "2x2")), it(4, 0, "4x1", wotd("calm", "light", "4x1"))], label: "<b>Calm · light</b> · Continue 4×2, Rank 2×2, Streak 2×2, Word of the day 4×1" }),
+  ] },
+]);
+
+// ---------- generic per-widget blocks ----------
+function sizesBlock(fn, v, mode, name, extra = {}) {
+  const wp = WP[v][mode];
+  return { h3: `Sizes · ${v === "you" ? "Material You" : v[0].toUpperCase() + v.slice(1)} · ${mode}`, shot: `${name}-sizes-${v}-${mode}`, figs: [
+    home({ wp, rows: 5, items: [it(0, 0, "4x1", fn(v, mode, "4x1")), it(1, 0, "2x1", fn(v, mode, "2x1")), it(2, 0, "2x2", fn(v, mode, "2x2")), it(2, 2, "2x2", fn(v, mode, "2x2", extra.alt2x2 || "normal")), it(4, 0, "2x1", fn(v, mode, "2x1", extra.alt2x1 || "normal"))], label: `4×1 · 2×1 · 2×2 ${extra.lbl2 || ""}` }),
+    home({ wp, rows: 5, items: [it(0, 0, "4x2", fn(v, mode, "4x2")), it(2, 0, "4x2", fn(v, mode, "4x2", extra.alt4x2 || "normal")), it(4, 0, "4x1", fn(v, mode, "4x1", extra.alt4x1 || "normal"))], label: `4×2 · 4×2 ${extra.lbl4 || ""}` }),
+  ] };
+}
+function variantsBlock(fn, name, size = "4x2", small = "2x2", st = "normal") {
+  const rowsBig = SZ[size][1], rowsSmall = SZ[small][1];
+  const figs = [["hunter", "dark"], ["calm", "light"], ["calm", "dark"], ["you", "light"], ["you", "dark"]].map(([v, m]) =>
+    home({ wp: WP[v][m], rows: rowsBig + rowsSmall, fill: true, items: [it(0, 0, size, fn(v, m, size, st)), it(rowsBig, 0, small, fn(v, m, small, st)), it(rowsBig, 2, small === "2x2" ? "2x2" : small, fn(v, m, small, st))].slice(0, small === "2x2" ? 2 : 2),
+      label: `<b>${v === "you" ? "Material You" : v[0].toUpperCase() + v.slice(1)}</b> · ${m}` }));
+  return { h3: "Variants (A Hunter · B Calm light/dark · C Material You light/dark)", shot: `${name}-variants`, figs };
+}
+function statesBlock(fn, name, states, v = "hunter", mode = "dark", sizes = ["4x2", "2x2"]) {
+  const figs = states.map(([st, lbl, time]) => {
+    const items = [it(0, 0, sizes[0], fn(v, mode, sizes[0], st))];
+    const r0 = SZ[sizes[0]][1];
+    if (sizes[1]) items.push(it(r0, 0, sizes[1], fn(v, mode, sizes[1], st)));
+    if (sizes[2]) items.push(it(r0, 2, sizes[2], fn(v, mode, sizes[2], st)));
+    const rows = r0 + (sizes[1] ? SZ[sizes[1]][1] : 0);
+    return home({ wp: WP[v][mode], time: time || "14:20", rows, items, label: `<b>${lbl}</b>` });
+  });
+  return { h3: `States · ${v === "you" ? "Material You" : v[0].toUpperCase() + v.slice(1)} · ${mode}`, shot: `${name}-states-${v}-${mode}`, figs };
+}
+const QSTATES = [["normal", "Normal · afternoon"], ["done", "Goal reached"], ["risk", "Streak at risk · evening (21:40)", "21:40"], ["stale", "Offline / stale data (last sync 3 h ago)"], ["out", "Not signed in"]];
+
+section("quest", "1 · Today's quest", "Streak, XP today vs the daily goal (ring), lesson parts vs the parts goal, words due. The core daily nudge; 4×4 adds the next part, quick actions and the week.", [
+  sizesBlock(quest, "hunter", "dark", "quest", { alt2x2: "done", lbl2: "(+ goal reached)", alt4x2: "risk", lbl4: "(+ streak at risk)", alt2x1: "risk" }),
+  variantsBlock(quest, "quest"),
+  statesBlock(quest, "quest", QSTATES),
+  statesBlock(quest, "quest", QSTATES, "you", "light", ["4x1", "2x2", "2x1"]),
+  { h3: "4×4 · Today (big)", shot: "quest-4x4", figs: [
+    home({ wp: "night", rows: 4, items: [it(0, 0, "4x4", quest("hunter", "dark", "4x4"))], label: "<b>Hunter</b> · normal" }),
+    home({ wp: "night", time: "21:40", rows: 4, items: [it(0, 0, "4x4", quest("hunter", "dark", "4x4", "risk"))], label: "<b>Hunter</b> · streak at risk (21:40)" }),
+    home({ wp: "day", rows: 4, items: [it(0, 0, "4x4", quest("you", "light", "4x4", "done"))], label: "<b>Material You · light</b> · goal reached" }),
+    home({ wp: "night", rows: 4, items: [it(0, 0, "4x4", quest("calm", "dark", "4x4", "stale"))], label: "<b>Calm · dark</b> · offline / stale" }),
+  ] },
+]);
+
+const R_STAGES = [
+  { r: "E", lv: 4, pct: 3.1, a: 3 / 99, from: 0, to: 10, next: "D", eta: "~5 days" },
+  { r: "C", lv: 31, pct: 30.4, a: 30 / 99, from: 25, to: 45, next: "B", eta: "~3 weeks" },
+  { r: "A", lv: 78, pct: 77.2, a: 77 / 99, from: 70, to: 95, next: "S", eta: "~6 weeks" },
+  { r: "S", lv: 100, pct: 100, a: 1, from: 95, to: 100, next: "S", eta: "" },
+];
+section("rank", "2 · Rank", "The rank letter (E→S) in its frame with the purple aura that grows with the level, level, % of A1 and the bar to the next rank. Tap opens #/ranks.", [
+  sizesBlock(rankW, "hunter", "dark", "rank", { alt2x2: "rankup", lbl2: "(+ just ranked up)", alt4x2: "stale", lbl4: "(+ stale)" }),
+  variantsBlock(rankW, "rank"),
+  { h3: "Aura grows with the level (E-Rank Lv 4 · D Lv 23 · C Lv 31 · A Lv 78 · S Lv 100)", shot: "rank-aura", figs: ["hunter", "you"].map(v => {
+    const m = v === "hunter" ? "dark" : "dark";
+    return home({ wp: "night", rows: 4, fill: false, items: [it(0, 0, "2x2", rankW(v, m, "2x2", "normal", R_STAGES[0])), it(0, 2, "2x2", rankW(v, m, "2x2", "normal", R_STAGES[1])), it(2, 0, "2x2", rankW(v, m, "2x2", "normal", R_STAGES[2])), it(2, 2, "2x2", rankW(v, m, "2x2", "normal", R_STAGES[3]))], label: `<b>${v === "you" ? "Material You · dark" : "Hunter"}</b> · E, C, A, S` });
+  }).concat([home({ wp: "night", rows: 4, fill: false, items: [0, 1, 2, 3].map(i => it(i, 0, "4x1", rankW("hunter", "dark", "4x1", "normal", R_STAGES[i]))), label: "<b>Hunter</b> · 4×1 at E, C, A, S" })]) },
+  statesBlock(rankW, "rank", [["normal", "Normal"], ["rankup", "Just ranked up (until the app is opened)"], ["stale", "Offline / stale"], ["out", "Not signed in"]], "hunter", "dark", ["4x1", "2x2", "2x1"]),
+]);
+
+const MATHS = { kind: "skill", course: "Mathematics", n: 0, title: "Linear equations", sub: "Algebra · skill 3 · part 1 of 3", part: 1, of: 3, mins: 8, line: "Algebra · part 1 of 3", preview: "Solve 3x + 5 = 20 · balance both sides" };
+const SE = { kind: "se", course: "Software Engineering", n: 0, title: "How DNS works", sub: "Networking & HTTPS · part 2 of 3", part: 2, of: 3, mins: 7, line: "Networking · part 2 of 3", preview: "A records, CNAME, TTL · dig levelrise.org" };
+section("continue", "3 · Continue", "The next lesson part with a Start button that opens straight into it, plus a Review N button. Works for every course: language lessons and skill-tree parts.", [
+  sizesBlock(cont, "hunter", "dark", "continue", { alt2x2: "risk", lbl2: "(+ streak at risk)", alt4x2: "done", lbl4: "(+ goal reached)" }),
+  variantsBlock(cont, "continue"),
+  { h3: "Other courses (Mathematics, Software Engineering)", shot: "continue-courses", figs: [
+    home({ wp: "night", rows: 4, items: [it(0, 0, "4x2", cont("hunter", "dark", "4x2", "normal", MATHS)), it(2, 0, "4x1", cont("hunter", "dark", "4x1", "normal", SE)), it(3, 0, "4x1", cont("hunter", "dark", "4x1", "normal", MATHS))], label: "<b>Hunter</b> · Maths 4×2, SE 4×1, Maths 4×1" }),
+    home({ wp: "day", rows: 4, items: [it(0, 0, "4x2", cont("you", "light", "4x2", "normal", SE)), it(2, 0, "2x2", cont("you", "light", "2x2", "normal", MATHS)), it(2, 2, "2x2", cont("you", "light", "2x2", "normal", SE))], label: "<b>Material You · light</b> · SE 4×2, Maths and SE 2×2" }),
+  ] },
+  statesBlock(cont, "continue", QSTATES, "hunter", "dark", ["4x1", "2x2", "2x1"]),
+]);
+
+section("review", "4 · Review due", "How many words are due (SM-2), one word preview, quick Review button. The 4×2 can run an inline quick review (tap to reveal → Again/Hard/Good/Easy) with Glance action callbacks.", [
+  sizesBlock(rev, "hunter", "dark", "review", { alt2x2: "penalty", lbl2: "(+ missed-review warning)", alt4x2: "reveal", lbl4: "(+ inline quick review, answer shown)", alt2x1: "none" }),
+  variantsBlock(rev, "review"),
+  statesBlock(rev, "review", [["normal", "Words due"], ["reveal", "Inline review · answer shown"], ["none", "All caught up"], ["penalty", "Missed yesterday · penalty warning"], ["stale", "Offline / stale"], ["out", "Not signed in"]], "hunter", "dark", ["4x2", "4x1"]),
+  statesBlock(rev, "review", [["normal", "Words due"], ["none", "All caught up"], ["penalty", "Penalty warning"]], "you", "dark", ["4x1", "2x2", "2x1"]),
+]);
+
+section("streak", "5 · Streak calendar", "Days the daily goal was hit: the week (Mon-start, like the app) or the last 5 weeks, the streak, best streak and the next gift box.", [
+  sizesBlock(streakW, "hunter", "dark", "streak", { alt2x2: "risk", lbl2: "(+ at risk)", alt4x2: "done", lbl4: "(+ today done)", alt4x1: "risk" }),
+  variantsBlock(streakW, "streak"),
+  statesBlock(streakW, "streak", [["normal", "Today not yet hit (afternoon)"], ["done", "Today done"], ["risk", "At risk (21:40)", "21:40"], ["broken", "Streak lost"], ["stale", "Offline / stale"], ["out", "Not signed in"]], "hunter", "dark", ["4x2", "4x1"]),
+]);
+
+section("word", "6 · Word of the day", "A German word with its article colour (der blue, die red, das green), English, pronunciation hint and a play-audio button. Works offline and signed out (bundled content); learned words come up as a quick refresher, new ones as a teaser.", [
+  sizesBlock(wotd, "hunter", "dark", "word", { alt2x2: "die", lbl2: "(+ die)", alt4x2: "der", lbl4: "(+ der, learned)", alt2x1: "der", alt4x1: "fr" }),
+  variantsBlock(wotd, "word"),
+  { h3: "Articles and courses", shot: "word-articles", figs: [
+    home({ wp: "night", rows: 4, fill: false, items: [it(0, 0, "2x2", wotd("you", "dark", "2x2", "der")), it(0, 2, "2x2", wotd("you", "dark", "2x2", "die")), it(2, 0, "2x2", wotd("you", "dark", "2x2", "das")), it(2, 2, "2x2", wotd("you", "dark", "2x2", "fr"))], label: "<b>Material You · dark</b> · der, die, das, French A1 (la)" }),
+    home({ wp: "teal", rows: 4, fill: false, items: [it(0, 0, "2x2", wotd("calm", "light", "2x2", "der")), it(0, 2, "2x2", wotd("calm", "light", "2x2", "die")), it(2, 0, "4x2", wotd("calm", "light", "4x2", "fr"))], label: "<b>Calm · light</b> · der, die, French 4×2" }),
+  ] },
+]);
+
+section("extras", "7 · Extras", "Small extras worth having: an At-a-glance style transparent 4×1 (text on the wallpaper; third-party apps can't add to Google's own At a Glance, and Android phones have no third-party lock-screen widgets, so this is the closest), a 1×1 icon ring (today's XP in the app icon's ring + streak) and a 2×1 quick-actions pair.", [
+  { h3: "Glance strip 4×1 · states", shot: "extras-glance", figs: [
+    home({ wp: "night", rows: 4, fill: false, items: [it(0, 0, "4x1", glanceStrip("dark", "normal")), it(1, 0, "4x1", glanceStrip("dark", "risk")), it(2, 0, "4x1", glanceStrip("dark", "done")), it(3, 0, "4x1", glanceStrip("dark", "stale"))], label: "<b>Dark wallpaper</b> · normal, at risk (evening), cleared, stale", time: "21:40" }),
+    home({ wp: "day", rows: 4, fill: false, items: [it(0, 0, "4x1", glanceStrip("light", "normal")), it(1, 0, "4x1", glanceStrip("light", "risk")), it(2, 0, "4x1", glanceStrip("light", "done")), it(3, 0, "4x1", glanceStrip("light", "stale"))], label: "<b>Light wallpaper</b> · same four states (text colour follows the wallpaper)" }),
+  ] },
+  { h3: "1×1 icon ring and 2×1 quick actions", shot: "extras-small", figs: [
+    home({ wp: "night", rows: 3, items: [it(0, 0, "1x1", iconRing("hunter", "dark")), it(0, 1, "1x1", iconRing("hunter", "dark", "risk")), it(0, 2, "1x1", iconRing("hunter", "dark", "done")), it(1, 0, "2x1", quick("hunter", "dark")), it(1, 2, "2x1", quick("you", "dark")), it(2, 0, "1x1", iconRing("you", "dark")), it(2, 1, "1x1", iconRing("calm", "dark"))], label: "<b>Dark</b> · 1×1 ring (normal, at risk, done), 2×1 quick actions (Hunter, You)" }),
+    home({ wp: "day", rows: 3, items: [it(0, 0, "1x1", iconRing("you", "light")), it(0, 1, "1x1", iconRing("you", "light", "risk")), it(0, 2, "1x1", iconRing("you", "light", "done")), it(1, 0, "2x1", quick("you", "light")), it(1, 2, "2x1", quick("calm", "light")), it(2, 0, "1x1", iconRing("calm", "light"))], label: "<b>Light</b> · Material You and Calm" }),
+  ] },
+]);
+
+// ---------- render page ----------
+document.getElementById("toc").innerHTML = sections.map(s => `<a href="#${s.id}">${s.title}</a>`).join("");
+document.getElementById("out").innerHTML = sections.map(s => `<section id="${s.id}"><h2>${s.title}</h2><p class="lead">${s.lead}</p>
+  ${s.blocks.map(b => `<h3>${b.h3}</h3><div class="shot" data-shot="${b.shot}">${b.figs.join("")}</div>`).join("")}</section>`).join("");
+</script>
+</body>
+</html>

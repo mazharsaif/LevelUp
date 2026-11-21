@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The LevelUp progress-ring icon (app/icons/icon-maskable.svg), drawn as a vector: 80 % ring, three chevrons, star at the ring's tip. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.8" android:scaleY="0.8">
+        <path android:pathData="M256,88 A168,168 0 1,1 255.9,88" android:strokeColor="#1AFFFFFF" android:strokeWidth="22" android:fillColor="#00000000" />
+        <path android:pathData="M256,88 A168,168 0 1,1 96.2,204.1" android:strokeColor="#FF9A6DFF" android:strokeWidth="22" android:strokeLineCap="round" android:fillColor="#00000000" />
+        <path android:pathData="M186,339 L256,293 L326,339" android:strokeColor="#FF4D96FF" android:strokeWidth="30" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+        <path android:pathData="M186,279 L256,233 L326,279" android:strokeColor="#FF9A6DFF" android:strokeWidth="30" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+        <path android:pathData="M186,219 L256,173 L326,219" android:strokeColor="#FFFFC94D" android:strokeWidth="30" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+        <path android:pathData="M96.4,173.6 L105.4,194.6 L126.4,203.6 L105.4,212.6 L96.4,233.6 L87.4,212.6 L66.4,203.6 L87.4,194.6 Z" android:fillColor="#FFFFFFFF" />
+    </group>
+</vector>

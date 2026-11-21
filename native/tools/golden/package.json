@@ -1,0 +1,8 @@
+{
+  "name": "levelup-golden",
+  "private": true,
+  "type": "module",
+  "description": "Runs the real web store.js / lesson.js in node (jsdom) and writes golden JSON for the Kotlin tests",
+  "scripts": { "gen": "node gen.mjs" },
+  "dependencies": { "jsdom": "25.0.1" }
+}
