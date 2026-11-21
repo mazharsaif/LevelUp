@@ -46,7 +46,7 @@
     },
     {
       "id": "mc",
-      "title": "Monte Carlo",
+      "title": "Monte Carlo Simulations",
       "icon": "🎯",
       "color": "#F25F5C",
       "status": "open",
@@ -2985,7 +2985,7 @@
       "col": 1,
       "icon": "🥧",
       "req": [],
-      "mins": 7,
+      "mins": 11,
       "chapter": 1,
       "title": "What Monte Carlo is",
       "short": "Sampling, 1/√N, MCSE",
@@ -3009,34 +3009,36 @@
       "parts": [
         {
           "t": [
-            "The idea in one sentence",
-            "Why it works: the law of large numbers"
+            "Start with a coin"
           ],
           "a": 0,
-          "b": 5
+          "b": 3
         },
         {
           "t": [
-            "The 1/√N law",
-            "Reporting a result"
+            "Averages tell you probabilities and more",
+            "Estimating π with darts"
           ],
-          "a": 6,
-          "b": 10
+          "a": 4,
+          "b": 9
         },
         {
           "t": [
-            "Where the name comes from",
-            "Exercises"
+            "How fast it gets accurate",
+            "Reporting a result",
+            "Where the name comes from"
           ],
-          "a": 11,
-          "b": 13
+          "a": 10,
+          "b": 15
         },
         {
           "t": [
+            "In plain words",
+            "Exercises",
             "Self-check"
           ],
-          "a": 14,
-          "b": 15
+          "a": 16,
+          "b": 20
         }
       ],
       "quiz": 10
@@ -3051,7 +3053,7 @@
       "req": [
         "mc.basics"
       ],
-      "mins": 8,
+      "mins": 12,
       "chapter": 2,
       "title": "Building a simulation",
       "short": "From question to model",
@@ -3076,35 +3078,37 @@
       "parts": [
         {
           "t": [
-            "The seven steps",
-            "Modelling the system and choosing inputs"
+            "A first simulation: your commute",
+            "The seven steps"
           ],
           "a": 0,
-          "b": 5
+          "b": 6
         },
         {
           "t": [
-            "Dependence between inputs",
-            "A worked example: a project schedule"
+            "Modelling the system and choosing inputs",
+            "Dependence between inputs"
           ],
-          "a": 6,
-          "b": 9
-        },
-        {
-          "t": [
-            "Analysing the output",
-            "Validating"
-          ],
-          "a": 10,
+          "a": 7,
           "b": 12
+        },
+        {
+          "t": [
+            "A worked example: a project schedule",
+            "Analysing the output",
+            "Validating",
+            "In plain words"
+          ],
+          "a": 13,
+          "b": 19
         },
         {
           "t": [
             "Exercises",
             "Self-check"
           ],
-          "a": 13,
-          "b": 16
+          "a": 20,
+          "b": 23
         }
       ],
       "quiz": 10
@@ -3119,7 +3123,7 @@
       "req": [
         "mc.basics"
       ],
-      "mins": 7,
+      "mins": 9,
       "chapter": 3,
       "title": "Random numbers",
       "short": "Seeds, streams, CRN",
@@ -3143,37 +3147,39 @@
       "parts": [
         {
           "t": [
-            "Pseudo-random generators",
-            "Seeds and reproducibility"
+            "A shuffled deck you can replay",
+            "Pseudo-random generators in numpy"
           ],
           "a": 0,
-          "b": 4
+          "b": 3
         },
         {
           "t": [
-            "Parallel runs need independent streams",
-            "Common random numbers"
+            "Seeds and reproducibility",
+            "Parallel runs need independent streams"
           ],
-          "a": 5,
-          "b": 10
+          "a": 4,
+          "b": 8
         },
         {
           "t": [
+            "Common random numbers",
             "Testing your random setup",
-            "Exercises"
+            "In plain words"
           ],
-          "a": 11,
+          "a": 9,
           "b": 13
         },
         {
           "t": [
+            "Exercises",
             "Self-check"
           ],
           "a": 14,
-          "b": 15
+          "b": 17
         }
       ],
-      "quiz": 9
+      "quiz": 10
     },
     {
       "id": "mc.runs",
@@ -3186,7 +3192,7 @@
         "mc.build",
         "mc.rng"
       ],
-      "mins": 7,
+      "mins": 8,
       "chapter": 4,
       "title": "How many runs?",
       "short": "Convergence and error bars",
@@ -3210,35 +3216,37 @@
       "parts": [
         {
           "t": [
+            "Think of an opinion poll",
             "Error for a mean"
           ],
           "a": 0,
-          "b": 3
+          "b": 5
         },
         {
           "t": [
             "Error for a probability",
-            "Error for a percentile"
+            "Error for a percentile",
+            "Running-estimate plots"
           ],
-          "a": 4,
-          "b": 6
+          "a": 6,
+          "b": 10
         },
         {
           "t": [
-            "Running-estimate plots",
             "Rare events",
-            "A practical procedure"
+            "A practical procedure",
+            "In plain words"
           ],
-          "a": 7,
-          "b": 11
+          "a": 11,
+          "b": 14
         },
         {
           "t": [
             "Exercises",
             "Self-check"
           ],
-          "a": 12,
-          "b": 15
+          "a": 15,
+          "b": 18
         }
       ],
       "quiz": 10
@@ -3253,7 +3261,7 @@
       "req": [
         "mc.runs"
       ],
-      "mins": 8,
+      "mins": 9,
       "chapter": 5,
       "title": "Variance reduction",
       "short": "Same accuracy, fewer runs",
@@ -3278,36 +3286,38 @@
       "parts": [
         {
           "t": [
+            "Why smarter sampling helps",
             "The idea and a test problem",
-            "Antithetic variates",
-            "Control variates"
+            "Antithetic variates"
           ],
           "a": 0,
-          "b": 5
+          "b": 4
         },
         {
           "t": [
+            "Control variates",
             "Stratified and Latin hypercube sampling",
             "Quasi-Monte Carlo"
           ],
-          "a": 6,
-          "b": 9
+          "a": 5,
+          "b": 10
         },
         {
           "t": [
             "Importance sampling for rare events",
-            "Which method when"
+            "Which method when",
+            "In plain words"
           ],
-          "a": 10,
-          "b": 13
+          "a": 11,
+          "b": 15
         },
         {
           "t": [
             "Exercises",
             "Self-check"
           ],
-          "a": 14,
-          "b": 17
+          "a": 16,
+          "b": 19
         }
       ],
       "quiz": 10
@@ -3322,7 +3332,7 @@
       "req": [
         "mc.runs"
       ],
-      "mins": 9,
+      "mins": 10,
       "chapter": 6,
       "title": "Mistakes & myths",
       "short": "What goes wrong, and why",
@@ -3351,31 +3361,32 @@
             "The flaw of averages"
           ],
           "a": 0,
-          "b": 4
+          "b": 6
         },
         {
           "t": [
             "Wrong shapes and missing dependence",
             "False precision and reporting errors"
           ],
-          "a": 5,
-          "b": 9
+          "a": 7,
+          "b": 11
         },
         {
           "t": [
             "Monte Carlo is not MCMC",
-            "Silent bugs: units, steps and plumbing"
+            "Silent bugs: units, steps and plumbing",
+            "In plain words"
           ],
-          "a": 10,
-          "b": 13
+          "a": 12,
+          "b": 16
         },
         {
           "t": [
             "Exercises",
             "Self-check"
           ],
-          "a": 14,
-          "b": 18
+          "a": 17,
+          "b": 21
         }
       ],
       "quiz": 10
@@ -3390,7 +3401,7 @@
       "req": [
         "mc.vr"
       ],
-      "mins": 8,
+      "mins": 9,
       "chapter": 7,
       "title": "When to use it",
       "short": "And its cousins",
@@ -3433,18 +3444,19 @@
           "t": [
             "MCMC: sampling what you can't draw directly",
             "Monte Carlo tree search",
-            "How the family fits together"
+            "How the family fits together",
+            "In plain words"
           ],
           "a": 8,
-          "b": 12
+          "b": 13
         },
         {
           "t": [
             "Exercises",
             "Self-check"
           ],
-          "a": 13,
-          "b": 16
+          "a": 14,
+          "b": 17
         }
       ],
       "quiz": 10
@@ -3459,7 +3471,7 @@
       "req": [
         "mc.mistakes"
       ],
-      "mins": 8,
+      "mins": 9,
       "chapter": 8,
       "title": "Real-world uses",
       "short": "Finance to film",
@@ -3500,7 +3512,7 @@
         {
           "t": [
             "Science and forecasting",
-            "The common pattern"
+            "In plain words"
           ],
           "a": 8,
           "b": 12
@@ -3527,7 +3539,7 @@
         "mc.when",
         "mc.uses"
       ],
-      "mins": 7,
+      "mins": 8,
       "chapter": 9,
       "title": "Capstone case study",
       "short": "A fixed-price bid, end to end",
@@ -3550,28 +3562,35 @@
       "parts": [
         {
           "t": [
-            "The question",
+            "The question"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
             "The simulation",
             "The results"
           ],
-          "a": 0,
+          "a": 3,
           "b": 6
         },
         {
           "t": [
             "Validating before presenting",
-            "The checklist"
+            "The checklist",
+            "In plain words"
           ],
           "a": 7,
-          "b": 9
+          "b": 10
         },
         {
           "t": [
             "Capstone exercise",
             "Self-check"
           ],
-          "a": 10,
-          "b": 13
+          "a": 11,
+          "b": 14
         }
       ],
       "quiz": 22

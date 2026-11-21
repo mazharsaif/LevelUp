@@ -1,6 +1,14 @@
 ## How to use this track
 
-This track teaches Monte Carlo simulation to someone who already works with data: how to build a simulation, how many runs it needs, how to make it faster, when to use it, and above all what goes wrong. It assumes Python with numpy and the ideas from **Probability & Statistics** (distributions, standard error, the central limit theorem, confidence intervals). The whole track is about an hour of reading.
+**Monte Carlo Simulations** teaches you to answer questions about uncertainty by playing them out many times on a computer: how to build a simulation, how many runs it needs, how to make it faster, when to use it, and above all what goes wrong. It starts from zero: school maths (averages, percentages, squares and square roots) and basic Python are enough for the first skills. Every new word is explained when it first appears, and each skill starts with a short "Key word" table.
+
+The track is a ramp. Skills 1 to 3 build intuition with coins, dice and a commute. Skills 4 to 6 add the working tools: error bars, faster sampling and the classic mistakes. Skills 7 to 9 reach university level, with the related methods, real industry uses and a full case study. By the end you should be able to design, run, check and defend a simulation at work. Plan on a bit over an hour of reading, plus the exercises.
+
+| Key word | Plain meaning |
+|---|---|
+| Monte Carlo simulation | Answering a question by playing it out many times at random and averaging |
+| Run | One random play-through |
+| numpy | The Python library for fast arrays of numbers, used in every example |
 
 ### What you will be able to do
 
@@ -30,26 +38,91 @@ The first skill is the core idea. The tree then splits: the left path is buildin
 | P50, P80 | the 50th and 80th percentiles of a simulated output |
 | rng | a numpy random generator from `np.random.default_rng` |
 
-Code is short numpy that you can paste and run. Every number quoted in the text comes from running that code with the seed shown. Each skill ends with a self-check, and the answers are hidden behind a tap.
+Code is short numpy that you can paste and run (start each session with `import numpy as np`). Every number quoted in the text comes from running that code with the seed shown. Each skill ends with a self-check, and the answers are hidden behind a tap.
 
 ## 1. What Monte Carlo is
 
-This skill covers the core idea of Monte Carlo: estimating a number by random sampling, why it works, how fast it gets accurate, and how to report a result with its uncertainty. Every later skill builds on these few facts.
+This skill explains the one idea behind every Monte Carlo simulation: when a question is hard to work out on paper, you can play it out many times at random and average the results. You only need school maths and a little Python.
 
-### The idea in one sentence
+| Key word | Plain meaning |
+|---|---|
+| Simulation | A program that plays out a situation, like a game of dice, so you can watch what happens |
+| Run (or trial) | One play-through of the simulation |
+| Random variable | A number whose value depends on chance, like the result of a die roll |
+| Expected value | The long-run average of a random variable over very many tries |
+| Standard deviation (SD) | How far a typical result lands from the average |
+| Standard error | How far an average of many runs is likely to be from the true answer |
 
-A **Monte Carlo** estimate is an average over random draws. If a quantity can be written as an expected value, E[f(X)], you can estimate it by drawing X many times, computing f each time and averaging:
+### Start with a coin
 
-```
-estimate = (f(x₁) + ... + f(x_N)) / N
-```
+Suppose you want to know the chance that a coin lands heads, but you are not allowed to reason about it. You can still find out. Flip it and count.
 
-That covers far more than it seems. A probability is an expected value (the average of a 0/1 indicator). A percentile is a feature of the output distribution. An integral over a region is an expected value times the region's size. So "what is the chance the project finishes by March", "what is this option worth" and "what is the area under this curve" are all the same kind of problem.
+Say you flip 10 times and get: H T H H T H H T H H. That is 7 heads out of 10, so your estimate is 7/10 = 0.7. Not great: the true answer is 0.5.
 
-The classic toy example estimates π. Throw random points into the unit square. The share that lands inside the quarter circle x² + y² ≤ 1 is π/4.
+Now flip more. The more flips you make, the closer the share of heads gets to 0.5. A computer can "flip" millions of times in a second:
 
 ```python
 import numpy as np
+rng = np.random.default_rng(1)
+for n in [10, 100, 10_000, 1_000_000]:
+    flips = rng.integers(0, 2, n)
+    print(n, flips.mean())
+```
+
+Each flip is 0 (tails) or 1 (heads), so the average of the flips is the share of heads. The output:
+
+| Flips | Share of heads |
+|---|---|
+| 10 | 0.50 |
+| 100 | 0.51 |
+| 10,000 | 0.5002 |
+| 1,000,000 | 0.500009 |
+
+That is the whole method. **Monte Carlo = make random draws, compute the result of each, and average.** The rest of this track is about doing it well.
+
+The line `rng = np.random.default_rng(1)` creates a random number generator. The `1` is a **seed**: it makes the "random" numbers the same every time you run the code, so you can check the output. Skill 3 explains seeds properly.
+
+### Averages tell you probabilities and more
+
+A die is a good next example. Roll it many times and average the numbers. The average settles near 3.5, because each face 1 to 6 is equally likely and (1 + 2 + 3 + 4 + 5 + 6)/6 = 3.5.
+
+```python
+rng = np.random.default_rng(5)
+rolls = rng.integers(1, 7, 100_000)
+print(rolls[:8])     # first 8 rolls
+print(rolls.mean())  # near 3.5
+six = rolls == 6     # True/False
+print(six.mean())    # near 1/6
+```
+
+The first eight rolls are 5, 5, 1, 5, 3, 4, 4, 2. The average of all 100,000 is 3.498. The share of sixes is 0.167, close to the true 1/6.
+
+Three ideas hide in this code:
+
+- The die result is a **random variable**: a number that depends on chance.
+- 3.5 is its **expected value**: the long-run average. Mathematicians write it E[X], read "the expected value of X". E[X] is not a value you expect on one roll (you can never roll 3.5). It is the average over very many rolls.
+- `rolls == 6` gives True or False for each roll, which numpy counts as 1 or 0. A 0/1 variable like this is called an **indicator**. The average of an indicator is the share of times it was 1, which is a **probability**.
+
+So one tool, averaging, answers "what is the typical value?" and "how likely is this event?". That is why Monte Carlo is so general.
+
+Now a question that is a little harder by hand. In a board game you roll two dice and need 10 or more. How often does that happen?
+
+```python
+rng = np.random.default_rng(3)
+d = rng.integers(1, 7, (100_000, 2))
+total = d.sum(axis=1)
+print((total >= 10).mean())
+```
+
+The simulation says 0.166. Counting by hand: 6 of the 36 equally likely pairs give 10 or more (4+6, 5+5, 6+4, 5+6, 6+5, 6+6), so the exact answer is 6/36 ≈ 0.167. Here you could count. In real problems with dozens of uncertain inputs you can't, but the simulation works the same way.
+
+### Estimating π with darts
+
+A classic example. Draw a square with sides of length 1, and a quarter circle of radius 1 inside it. The quarter circle covers π/4 of the square (about 78.5%). Throw darts at random into the square. The share that land inside the circle estimates π/4, so 4 × that share estimates π.
+
+A point (x, y) is inside the circle when x² + y² ≤ 1.
+
+```python
 rng = np.random.default_rng(42)
 n = 100_000
 x = rng.random(n)
@@ -60,57 +133,63 @@ se = 4 * hit.std(ddof=1) / n**0.5
 print(f"{est:.4f} ± {se:.4f}")
 ```
 
-This prints `3.1378 ± 0.0052`. The true value 3.1416 is within one standard error. Note the shape of the result: **an estimate and its error, never an estimate alone.**
+This prints `3.1378 ± 0.0052`. The true value 3.1416 is within that margin. The number after ± is the **standard error**, explained next. Note the shape of the answer: **an estimate and its likely error, never an estimate alone.**
 
-### Why it works: the law of large numbers
+In general, if each run produces a number f (a profit, a time, a 0/1 "did it happen"), the Monte Carlo estimate is the average of the N values of f. In symbols this estimates E[f(X)], "the long-run average of f". You will see that notation in later skills.
 
-The **law of large numbers** says the average of independent draws converges to the expected value as N grows. Monte Carlo is that theorem used as a tool. You do not need a formula for the answer; you only need to be able to **generate one scenario** and compute its outcome.
+### How fast it gets accurate
 
-The **central limit theorem** tells you more: for large N the estimate is roughly normal around the true value, with standard deviation
+Why does averaging work? The **law of large numbers** says that the average of many independent random results gets closer and closer to the expected value as you add more of them. Independent means one result does not affect the next, like separate coin flips.
+
+How close? Two quantities answer that:
+
+- The **standard deviation** (SD), written s, measures how spread out the single results are. For one die roll it is about 1.7: a typical roll lands about 1.7 away from 3.5.
+- The **standard error** of the average measures how far the average of N results is likely to be from the truth. It is
 
 ```
-MCSE = s / √N
+standard error = s / √N
 ```
 
-where s is the standard deviation of the individual outcomes f(xᵢ). This is the **Monte Carlo standard error** (MCSE). It is exactly the standard error of a sample mean from the statistics track. The "sample" is simply your N simulation runs.
+For 100,000 die rolls: 1.71 / √100,000 ≈ 0.0054. The average 3.498 is indeed within about 0.005 of 3.5. In simulation this is called the **Monte Carlo standard error** (MCSE). It is exactly the standard error of a sample mean from the statistics track: your N runs are the sample.
 
-### The 1/√N law
+The **central limit theorem** adds one more fact: for large N, the average is spread around the truth in a bell-curve (normal) shape. So about 95% of the time the average lands within 1.96 standard errors of the truth. That gives the familiar 95% interval: estimate ± 1.96 × MCSE.
 
-Because the error shrinks like 1/√N, accuracy is expensive:
+The √N is the catch. Here is the π example with more and more darts (seed 7):
 
-| Runs N | π estimate (seed 7) | MCSE |
+| Darts N | π estimate | MCSE |
 |---|---|---|
 | 100 | 3.0800 | 0.1692 |
 | 10,000 | 3.1620 | 0.0163 |
 | 1,000,000 | 3.1437 | 0.0016 |
 
-Each 100× more runs buys one more correct digit (10× smaller error). Two consequences matter in practice:
+**100 times more runs give 10 times less error**, one more correct digit. Doubling the runs only cuts the error by about 29% (1/√2 ≈ 0.71). So if a result is too noisy, more runs is the slow fix. Skill 5 shows faster ones.
 
-- **Doubling the runs only cuts the error by about 29%** (1/√2 ≈ 0.71). If a result is too noisy, more runs is the slow fix; a better estimator (the variance reduction skill) is often the fast one.
-- **The rate does not depend on the number of inputs.** A grid over 10 uncertain inputs with 10 points each needs 10¹⁰ evaluations. Monte Carlo's error is still s/√N whether there are 2 inputs or 200. This is why simulation wins in high dimensions, where grids and exact integration become impossible.
-
-The error depends on s, the spread of the outcomes, as much as on N. Two simulations with the same N can have very different accuracy.
+One good surprise: the error rate does not depend on how many uncertain inputs the model has. Trying every combination of 10 inputs at 10 values each needs 10¹⁰ evaluations. Monte Carlo's error is still s/√N with 2 inputs or 200. That is why simulation wins when many things are uncertain at once.
 
 ### Reporting a result
 
-A Monte Carlo result is a statistical estimate, so report it like one:
+A simulation result is an estimate, so report it like one:
 
-- **Give the estimate with its MCSE or a 95% interval**: "expected cost 41.2 days (MCSE 0.01)" or "P(late) = 0.58 ± 0.003".
+- **Give the estimate with its MCSE or a 95% interval**: "expected cost 41.2 days (MCSE 0.01)" or "P(late) = 0.58 ± 0.003". P(late) means "the probability of being late".
 - **Round to the error.** With MCSE 0.0052, writing 3.13784 claims digits you do not have. Write 3.138 or 3.14.
-- **Say what N and seed you used**, so anyone can reproduce it.
-- **Keep the two kinds of uncertainty apart.** The MCSE measures only how well you computed the model's answer. It says nothing about whether the model is right. A model with wrong inputs gives a precisely computed wrong answer.
+- **Say what N and seed you used**, so anyone can repeat it.
+- **Keep two kinds of uncertainty apart.** The MCSE measures only how well you computed the model's answer. It says nothing about whether the model is right. A model with wrong inputs gives a precisely computed wrong answer.
 
-That last point is the most important sentence in this track. Simulation error you can drive to zero with more runs. Model error does not move at all.
+That last point is the most important sentence in this track. More runs shrink the computing error. They do nothing for a wrong model.
 
 ### Where the name comes from
 
-The method was conceived at Los Alamos in 1946, when Stanislaw Ulam, playing solitaire while recovering from an illness, asked what fraction of games could be won and realised that playing many random games was easier than combinatorics. John von Neumann wrote the first plan for running it on an electronic computer (ENIAC) in a 1947 letter. Nicholas Metropolis suggested the name, after the Monte Carlo casino, and Metropolis and Ulam published "The Monte Carlo Method" in 1949. The first uses were neutron transport problems for nuclear weapons. Random sampling to estimate numbers is older (Buffon's needle, 1777), but the computer made it a method.
+The method was conceived at Los Alamos in 1946. Stanislaw Ulam, playing solitaire while recovering from an illness, wondered how often a game could be won, and realised that playing many random games was easier than the combinatorics. John von Neumann wrote the first plan for running it on an electronic computer (ENIAC) in a 1947 letter. Nicholas Metropolis suggested the name, after the Monte Carlo casino, and Metropolis and Ulam published "The Monte Carlo Method" in 1949. Random sampling to estimate numbers is older (Buffon's needle, 1777), but the computer made it a method.
+
+### In plain words
+
+To answer a question about chance, play it out at random many times and average the results. The average gets close to the true answer, and the error shrinks like 1 over the square root of the number of runs. Always report the error with the answer, and remember it says nothing about whether the model itself is right.
 
 ### Exercises
 
-**Exercise 1. Watch the error shrink.** Estimate π with one million points. Compute the running estimate after every point, then print the absolute error after 100, 10,000 and 1,000,000 points. Multiply each error by √N. If the 1/√N law holds, that product should stay roughly constant (near the outcome SD, 4√(p(1 − p)) ≈ 1.64).
+**Exercise 1. Watch the error shrink.** Estimate π with one million darts. Compute the running estimate after every dart, then print the error after 100, 10,000 and 1,000,000 darts. Multiply each error by √N. If the s/√N rule holds, that product should stay roughly constant, near the SD of one dart's result (4 × √(p(1 − p)) ≈ 1.64, with p = π/4).
 
-**Answers.** With seed 1 the errors are 0.102, 0.0148 and 0.0016, and error × √N is 1.02, 1.48 and 1.60: roughly constant, as the law predicts. Any single error is random, so expect the products to bounce around 1.6 rather than match it.
+**Answers.** With seed 1 the errors are 0.102, 0.0148 and 0.0016, and error × √N is 1.02, 1.48 and 1.60: roughly constant, as the rule predicts. Any single error is random, so expect the products to bounce around 1.6 rather than match it.
 
 ```python
 rng = np.random.default_rng(1)
@@ -124,9 +203,9 @@ for m in (100, 10_000, n):
     print(m, err, err * m**0.5)
 ```
 
-**Exercise 2. An integral with no simple formula.** Estimate the area under e^(−x²) from 0 to 1 by averaging e^(−U²) over 100,000 uniform draws. Report the estimate with its MCSE, and check it against the true value 0.746824.
+**Exercise 2. An area with no simple formula.** Estimate the area under the curve e^(−x²) between x = 0 and x = 1. Draw 100,000 random numbers u between 0 and 1 and average e^(−u²). Report the estimate with its MCSE and compare with the true value 0.746824.
 
-**Answers.** With seed 2 the estimate is 0.7463 with MCSE 0.0006, so the truth is within one standard error. The integral over [0, 1] is just E[f(U)] for U uniform on [0, 1].
+**Answers.** With seed 2 the estimate is 0.7463 with MCSE 0.0006, so the truth is within one standard error. Why it works: the area under a curve over [0, 1] equals the curve's average height, and averaging at random points estimates that average height.
 
 ```python
 rng = np.random.default_rng(2)
@@ -138,17 +217,60 @@ se = f.std(ddof=1) / n**0.5
 
 ### Self-check
 
-1. You estimate a probability with N = 10,000 runs and get an MCSE of 0.004. How many runs do you need for an MCSE of 0.001?
-2. A colleague reports "mean loss 1,284,512.37" from 500 runs with an outcome standard deviation of 400,000. What is the MCSE, and how should the number be reported?
-3. Why does Monte Carlo beat a grid for a model with 20 uncertain inputs?
-4. Your simulation's MCSE is tiny. Does that mean the answer is accurate?
-5. Write P(cost > budget) as an expected value.
+1. You flip a coin 20 times and get 13 heads. What is your estimate of P(heads)?
+2. What is the expected value of one roll of a fair die, and can a single roll equal it?
+3. An indicator is 1 when a project is late and 0 otherwise. Its average over 1,000 runs is 0.3. What does 0.3 mean?
+4. To cut the standard error by 10 times, how many times more runs do you need?
+5. Your simulation's MCSE is tiny. Does that mean the answer is right?
 
-**Answers.** 1: Error falls with √N, so 4× smaller error needs 16× the runs: 160,000. 2: MCSE = 400,000/√500 ≈ 17,900, so report about 1.28 million ± 0.04 million (95%), not to the cent. 3: A grid's cost grows exponentially with the number of inputs, while the Monte Carlo error is s/√N whatever the dimension. 4: No. It means the model's answer is computed precisely. Whether the model and its inputs are right is a separate question. 5: E[1(cost > budget)], the average of an indicator that is 1 when the run is over budget and 0 otherwise.
+**Answers.** 1: 13/20 = 0.65. 2: 3.5; no, a die only shows whole numbers, so 3.5 is a long-run average, not a possible roll. 3: The estimated probability of being late is 30%. 4: 100 times, because the error shrinks with the square root of N. 5: No. It means the model's answer is computed precisely. Whether the model and its inputs are right is a separate question.
 
 ## 2. Building a simulation
 
-This skill covers the steps from a vague question to a working simulation: define the output, model the system, choose input distributions, link inputs that move together, run, analyse and validate. Most of the value, and most of the errors, sit in the steps before any random number is drawn.
+This skill shows how to turn a real question into a working simulation, step by step: decide what you want to know, write down how things combine, describe what is uncertain, run it, read the results and check them. Most of the value, and most of the mistakes, come before any random number is drawn.
+
+| Key word | Plain meaning |
+|---|---|
+| Distribution | The list of possible values of an uncertain quantity and how likely each one is |
+| Uniform distribution | Every value in a range is equally likely, like a bus that comes at any moment in the next 10 minutes |
+| Triangular distribution | Values between a minimum and a maximum, most likely near a chosen "most likely" value |
+| Histogram | A bar chart of how often each range of results came up |
+| Percentile (P80) | The value that 80% of runs come in at or below |
+| Correlation | How strongly two quantities rise and fall together, from −1 to +1 |
+
+### A first simulation: your commute
+
+You leave home at 8:00 for a meeting at 8:35. How likely are you to be on time?
+
+The trip has three parts:
+
+- A 5-minute walk to the stop. This never changes.
+- The wait for the bus: anywhere from 0 to 10 minutes, all equally likely. That is a **uniform** distribution.
+- The ride: usually about 20 minutes, never under 15, up to 30 in heavy traffic. That is a **triangular** distribution with minimum 15, most likely 20 and maximum 30.
+
+A quick guess with "typical" values says 5 + 5 + 20 = 30 minutes, so you would always make it. The simulation tells a different story:
+
+```python
+rng = np.random.default_rng(8)
+n = 100_000
+walk = 5  # minutes, fixed
+wait = rng.uniform(0, 10, n)
+ride = rng.triangular(15, 20, 30, n)
+trip = walk + wait + ride
+print(trip.mean())
+print(np.percentile(trip, [50, 80]))
+print((trip <= 35).mean())
+```
+
+| Result | Value |
+|---|---|
+| Average trip | 31.7 minutes |
+| P50 (half of trips are shorter) | 31.6 minutes |
+| P80 (80% of trips are shorter) | 35.3 minutes |
+| Chance of arriving by 8:35 | 0.78 |
+| Chance of the "typical" 30 minutes or less | 0.36 |
+
+So you are late about one day in five. The typical-values guess misses because the ride can run 10 minutes long but only 5 short. Notice the pattern used in every simulation here: one array of 100,000 possible values per input, then the same arithmetic you would do for a single day.
 
 ### The seven steps
 
@@ -162,13 +284,13 @@ This skill covers the steps from a vague question to a working simulation: defin
 | 6. Analyse | What does the output distribution say? | Mean, percentiles, P(target), drivers |
 | 7. Validate | Does the model match known answers or history? | Checks, back-tests |
 
-Start from step 1. A simulation without a decision attached tends to grow forever. "Simulate our supply chain" is not a question; "how much safety stock keeps stock-outs below 2% of weeks" is.
+In the commute, step 1 was "chance of arriving by 8:35", step 2 was "walk + wait + ride", and step 3 was the uniform and triangular choices. Start from step 1. A simulation without a decision attached tends to grow forever. "Simulate our supply chain" is not a question; "how much safety stock keeps stock-outs below 2% of weeks" is.
 
 ### Modelling the system and choosing inputs
 
-The model is ordinary deterministic code: given one set of inputs, compute one outcome. Write and test it with fixed inputs first, then make the inputs random. Keep it **vectorised**: each input is an array of N draws, and the model works on whole arrays at once. In numpy this is often 100× faster than a Python loop over runs.
+The model is ordinary code with no randomness in it: given one set of inputs, compute one outcome (a **deterministic** model). Write and test it with fixed inputs first, then make the inputs random. Keep it **vectorised**: each input is an array of N draws, and the model works on whole arrays at once, as `walk + wait + ride` did. In numpy this is often 100× faster than a Python loop over runs.
 
-For each uncertain input, pick a distribution that matches what you actually know:
+For each uncertain input, pick a distribution that matches what you actually know. Some new names appear here: a **lognormal** is a skewed shape for positive amounts, a **Poisson** counts events such as arrivals per hour, and a **Bernoulli** is a single yes/no event.
 
 | What you have | Good choice | Notes |
 |---|---|---|
@@ -178,15 +300,17 @@ For each uncertain input, pick a distribution that matches what you actually kno
 | Counts of rare events per period | Poisson | Arrivals, defects, claims |
 | A yes/no event with a probability | Bernoulli | Risk events: "supplier fails, 10%" |
 | Only a plausible range | Uniform | Honest when you know nothing more |
-| Values with fat tails (returns, losses) | Student-t, or mixtures | Normal underweights extremes |
+| Values with fat tails, where extremes are common (returns, losses) | Student-t, a bell shape with heavier tails | The normal bell curve underweights extremes |
 
-Two cautions. First, experts' "min" and "max" are usually too narrow. People anchor on the plan, so ask for a P10 and P90 rather than absolute bounds, and widen if in doubt. Second, do not fit a fancy distribution to 15 data points: the extra parameters fit noise. With little data, a simple shape and an honest range beat a precise-looking fit.
+Two cautions. Experts' "min" and "max" are usually too narrow, so ask for a P10 and P90 and widen if in doubt. And do not fit a fancy distribution to 15 data points: with little data, a simple shape and an honest range beat a precise-looking fit.
 
 ### Dependence between inputs
 
-If inputs move together, simulating them independently is wrong, usually in the dangerous direction. Cost overruns in labour and materials share causes (scope creep, inflation). Ignoring that makes the total look safer than it is.
+Back to the commute. On a rainy day the bus comes late **and** the ride is slow. Wait and ride move together. If you simulate them as unrelated, bad waits and bad rides rarely land on the same day, and the late tail looks smaller than it really is.
 
-The simplest tool is a **correlation** between inputs. To give correlated inputs any marginal shape you like, use a **Gaussian copula**: draw correlated normals, turn them into uniforms with the normal CDF, then feed each uniform through the inverse CDF of the distribution you want.
+The same happens at work. Cost overruns in labour and materials share causes (scope creep, inflation). Ignoring that makes the total look safer than it is.
+
+The simplest tool is a **correlation** between inputs. To give linked inputs any shapes you like, use a **Gaussian copula**. In plain words: draw pairs of linked bell-curve numbers, turn each into a "position" between 0 and 1 (its percentile), then read off the value at that same percentile in each input's own distribution. Two inputs that are both at their 90th percentile on the same run are "bad together". In code, `norm.cdf` turns a bell-curve number into its percentile, and a distribution's `ppf` turns a percentile back into a value.
 
 ```python
 from scipy.stats import norm
@@ -197,11 +321,11 @@ u = norm.cdf(z)  # linked uniforms
 # then: x = dist.ppf(u[:, 0]), etc.
 ```
 
-Each input keeps its own distribution, and they now rise and fall together (a correlation of 0.7 in z becomes about 0.69 after mapping to two triangular inputs). A Gaussian copula has weak tail dependence: in a real crisis things fail together more than it allows. For risk work, a Student-t copula or explicit common shocks (one "bad market" draw that hits several inputs) are safer.
+Each input keeps its own distribution, and they now rise and fall together (a correlation of 0.7 in z becomes about 0.69 after mapping to two triangular inputs). In a real crisis things fail together even more than a Gaussian copula allows, so risk work often uses a Student-t copula or a shared "bad market" shock that hits several inputs at once.
 
 ### A worked example: a project schedule
 
-A product launch has four tasks. Build and content run in parallel after design; testing follows. Each estimate is triangular (min, most likely, max) in days. The plan, using the most likely values, says 10 + max(20, 12) + 5 = **35 days**.
+Now a work-sized version of the commute. A product launch has four tasks. Build and content run in parallel after design; testing follows. Each estimate is triangular (min, most likely, max) in days. The plan, using the most likely values, says 10 + max(20, 12) + 5 = **35 days**.
 
 ```python
 import numpy as np
@@ -226,7 +350,7 @@ print((total <= 40).mean())
 | P(done by day 40) | 0.42 |
 | P(done by day 35, the plan) | 0.07 |
 
-The 35-day plan is met only about 7% of the time. Two effects cause it. The estimates are right-skewed (overruns are bigger than underruns), and the `max` of two parallel tasks is pushed up by whichever one is late. Even plugging each task's **mean** into the formula gives 40.7, still below the true mean of 41.2, because `max` is nonlinear. This is the flaw of averages, covered in the mistakes skill.
+The 35-day plan is met only about 7% of the time, the commute surprise again. Two effects cause it. The estimates are right-skewed (overruns are bigger than underruns), and the `max` of two parallel tasks is pushed up by whichever one is late. Even plugging each task's **mean** into the formula gives 40.7, still below the true mean of 41.2, because `max` is nonlinear. This is the flaw of averages, covered in the mistakes skill.
 
 ### Analysing the output
 
@@ -235,7 +359,7 @@ Look at the whole distribution, not just the mean:
 - **Histogram** of the output: shape, skew, a long tail, a second peak.
 - **Percentiles** (P10, P50, P80, P90): planning numbers. Commit to a P80 date, not the P50.
 - **P(target)**: the probability of hitting a deadline or budget, with its MCSE.
-- **Sensitivity**: which inputs drive the output? A quick measure is the rank correlation of each input with the output, shown as a **tornado chart** (bars sorted by size).
+- **Sensitivity**: which inputs drive the output? A quick measure is the **rank correlation** of each input with the output: replace every value by its rank (1st, 2nd, 3rd...) and correlate the ranks. Show it as a **tornado chart**, bars sorted by size.
 
 ```python
 def rank(v):
@@ -256,6 +380,10 @@ Validation is the step most often skipped. Before trusting a simulation:
 - **Check a special case against a formula** (a sum of normals has a known mean and variance).
 - **Back-test against history**: did past projects land inside the simulated P10 to P90 about 80% of the time? If 9 out of 10 finished beyond your P90, your inputs are too narrow.
 - **Watch for impossible values**: negative durations, probabilities above 1, stock below zero.
+
+### In plain words
+
+Write the situation as ordinary code first, then replace each uncertain number with many random draws from a sensible distribution, and link inputs that move together. Read the whole spread of results, not one "typical" answer, and check the model against cases you already know.
 
 ### Exercises
 
@@ -298,23 +426,37 @@ for rho in (0, 0.5, 0.9):
 
 ### Self-check
 
-1. Why should you write and test the model with fixed inputs before adding randomness?
-2. An expert gives "best case 10, worst case 20 days". What two adjustments would you consider?
-3. Labour and materials overruns are simulated independently, but both rise with scope creep. Is the simulated P90 total cost too high or too low?
-4. In the schedule example, why is the mean of the total (41.2) above the total computed from the mean of each task (40.7)?
-5. Which percentile is a better committed deadline, P50 or P80, and why?
+1. In the commute, why does the "typical" 30-minute trip happen only 36% of the time?
+2. Why should you write and test the model with fixed inputs before adding randomness?
+3. An expert gives "best case 10, worst case 20 days". What two adjustments would you consider?
+4. Labour and materials overruns are simulated independently, but both rise with scope creep. Is the simulated P90 total cost too high or too low?
+5. In the schedule example, why is the mean of the total (41.2) above the total computed from the mean of each task (40.7)?
+6. Which percentile is a better committed deadline, P50 or P80, and why?
 
-**Answers.** 1: So that bugs in the logic are found with known answers, separately from randomness. 2: Ask for a most likely value (triangular or PERT) and widen the range, since stated extremes are usually too narrow; ask for a P10 and P90 instead. 3: Too low: positive correlation fattens the upper tail of a sum. 4: The total uses `max`, a convex function, so the average of max is at least the max of averages (Jensen's inequality). 5: P80: at P50 you miss half the time; P80 leaves a stated buffer for risk.
+**Answers.** 1: The ride can run 10 minutes long but only 5 short, so its average (21.7) is above its most likely value (20); add a random wait and most trips take longer than 30. 2: So that bugs in the logic are found with known answers, separately from randomness. 3: Ask for a most likely value (triangular or PERT) and widen the range, since stated extremes are usually too narrow; ask for a P10 and P90 instead. 4: Too low: positive correlation fattens the upper tail of a sum. 5: The total uses `max`, which is pushed up by whichever parallel task runs late, so averaging the inputs first misses that effect (the flaw of averages, skill 6). 6: P80: at P50 you miss half the time; P80 leaves a stated buffer for risk.
 
 ## 3. Random numbers done right
 
-This skill covers where a simulation's randomness comes from: pseudo-random generators, seeds and reproducibility, independent streams for parallel runs, and common random numbers for comparing scenarios. Getting these wrong produces bugs that look like results.
+This skill covers where a simulation's randomness comes from: how a computer makes "random" numbers, how seeds make results repeatable, how to split work across several processors safely, and how to compare two options fairly. Mistakes here produce bugs that look like results.
 
-### Pseudo-random generators
+| Key word | Plain meaning |
+|---|---|
+| Pseudo-random numbers | Numbers made by a fixed recipe that look random but can be replayed exactly |
+| Generator | The object that hands out those numbers, `rng` in numpy |
+| Seed | The starting number for the recipe; the same seed gives the same sequence |
+| Stream | One generator's sequence of numbers |
+| Worker | One of several processes or machines sharing a big simulation |
+| Common random numbers | Feeding two scenarios the same random draws so they can be compared fairly |
 
-Computers generate **pseudo-random** numbers: a deterministic algorithm turns a starting state (the **seed**) into a long sequence that passes statistical tests for randomness. Same seed, same sequence. That is a feature: it makes a simulation exactly reproducible.
+### A shuffled deck you can replay
 
-In numpy, use the Generator API:
+Imagine a card dealer who shuffles by a fixed, secret routine. Start from the same deck order and you get the same "random" deal every time. Start from a different order and you get a different deal. Watching only the cards, you cannot tell it from a fair shuffle.
+
+A computer's random numbers work like that dealer. A **pseudo-random generator** is a recipe that turns a starting number, the **seed**, into a long sequence that looks random. Same seed, same sequence. That sounds like a weakness, but it is a feature: you can rerun a simulation and get exactly the same answer, which makes results checkable and bugs findable.
+
+### Pseudo-random generators in numpy
+
+In numpy, create one generator and ask it for numbers:
 
 ```python
 import numpy as np
@@ -324,7 +466,7 @@ z = rng.normal(0, 1, 5)  # N(0, 1)
 k = rng.poisson(3.0, 5)  # counts
 ```
 
-`default_rng` uses the PCG64 algorithm. It is fast, has a period of 2¹²⁸ and good statistical quality. The older `np.random.seed()` with `np.random.rand()` uses one hidden global state (Mersenne Twister). It still works, but any library call that also draws from it silently shifts your sequence. Pass an explicit `rng` object into every function that needs randomness instead.
+`rng.random` gives numbers between 0 and 1, all equally likely. `rng.normal` gives bell-curve numbers, and `rng.poisson` gives counts. `default_rng` uses the PCG64 recipe. It is fast, passes strict statistical tests, and only repeats itself after 2¹²⁸ numbers, far more than any simulation uses. The older `np.random.seed()` with `np.random.rand()` uses one hidden generator shared by all code (Mersenne Twister). It still works, but any library call that also draws from it silently shifts your sequence. Pass an explicit `rng` object into every function that needs randomness instead.
 
 Pseudo-random generators are for simulation, not security. For tokens and passwords use the `secrets` module.
 
@@ -332,16 +474,18 @@ Pseudo-random generators are for simulation, not security. For tokens and passwo
 
 | Situation | What to do |
 |---|---|
-| Exploring, no need to repeat | `default_rng()` with no seed (fresh entropy from the OS) |
+| Exploring, no need to repeat | `default_rng()` with no seed (a fresh random seed from the operating system) |
 | A result you will report | Fix a seed and record it with N and the code version |
 | Tests of simulation code | Fixed seed, so a failure can be replayed |
 | Checking a result is not a fluke | Rerun with several different seeds; results should agree within MCSE |
 
 Recording the seed does not make a result true; it makes it **checkable**. If changing the seed moves your answer by more than about two MCSEs, either the MCSE is computed wrongly or the runs are not independent.
 
-Never choose the seed by looking at the output. Trying seeds until the answer looks good is cherry-picking: it is p-hacking with a random number generator. Pick the seed before running, and if you rerun, report all runs.
+Never choose the seed by looking at the output. Trying seeds until the answer looks good is cherry-picking: it is p-hacking (trying analyses until one looks significant) with a random number generator. Pick the seed before running, and if you rerun, report all runs.
 
 ### Parallel runs need independent streams
+
+Suppose four friends help you flip coins for an experiment, but all four secretly use the same pre-recorded list of flips. You collect four copies of one list and think you have four times the data. That is the bug in this section.
 
 When you split N runs across workers, each worker needs its **own, independent** stream. The classic bug is giving every worker the same seed:
 
@@ -368,6 +512,8 @@ Give `rngs[i]` (or `kids[i]`) to worker i. One recorded parent seed reproduces t
 The same bug hides in other places: forked processes that inherit a copied generator state, a function that creates `default_rng(0)` internally on every call, or a batch job restarted with the same seed and appended to earlier results.
 
 ### Common random numbers
+
+To test which of two running shoes is faster, you would not have one runner try shoe A on a calm day and shoe B in a storm. You would test both in the same weather, so the weather cancels out. Common random numbers do this for simulations.
 
 Often the question is a **difference**: is policy B better than policy A? If you simulate A and B with independent random draws, the noise in both adds up. With **common random numbers** (CRN) you feed both scenarios the **same** random inputs. Their noise is then mostly shared and cancels in the difference.
 
@@ -400,6 +546,10 @@ To make CRN work in bigger models, keep the random inputs **synchronised**: draw
 - **Seed sensitivity**: rerun with 5 seeds. Spread of the estimates should be about one MCSE.
 - **Duplicate check in parallel runs**: no two workers' first draws should be equal.
 - **Known-answer test**: simulate something with a closed form (mean of an exponential, P(Z > 1.96)) through your full pipeline.
+
+### In plain words
+
+Computer randomness is a replayable recipe started by a seed. Record the seed so anyone can repeat your result, give every worker its own independent stream, and when comparing options, feed them the same random draws so luck cancels out.
 
 ### Exercises
 
@@ -450,7 +600,20 @@ print(a == sim(rng2, 1000))
 
 ## 4. How many runs?
 
-This skill covers how to decide N: the Monte Carlo standard error for means, probabilities and percentiles, how to plan N for a target precision, how to read a running-estimate plot, and why rare events need far more runs than you expect.
+This skill covers how to decide how many runs a simulation needs: how big the error is for averages, probabilities and percentiles, how to plan the number of runs for a precision you choose, how to read a convergence plot, and why rare events need far more runs than you expect.
+
+| Key word | Plain meaning |
+|---|---|
+| Precision | How small the error is; "±0.01" is more precise than "±0.1" |
+| Half-width | The ± part of an interval: estimate ± half-width |
+| Pilot run | A small first run used to measure the spread before the real run |
+| Tail | The far ends of a distribution, where rare extreme results live |
+| Rare event | Something with a small probability, like 1 in 1,000 |
+| Relative error | The error as a share of the estimate itself, e.g. 10% |
+
+### Think of an opinion poll
+
+A poll of 1,000 people gives a margin of about ±3 points. A poll of 4,000 gives about ±1.5. Pollsters know that quadrupling the sample halves the margin. A simulation is a poll of possible futures, and the same arithmetic decides how many runs you need. Skill 1 gave the rule: error = s/√N. This skill turns it around: pick the error you can live with, then solve for N.
 
 ### Error for a mean
 
@@ -528,6 +691,8 @@ A plot that settles shows the computation has converged. It does not show the an
 
 ### Rare events
 
+Imagine looking for a 1-in-1,000 event by flipping through 1,000 runs. Often you see it once, sometimes zero or two or three times. One sighting more or less changes your estimate by 100%. To pin it down you need to see it many times, which means very many runs.
+
 For a small probability, what matters is the **relative** error:
 
 ```
@@ -546,12 +711,11 @@ For a one-in-a-million event, plain Monte Carlo needs about 100 million runs. Th
 
 ### A practical procedure
 
-1. Run a pilot (say 1,000 to 10,000 runs) and estimate s, or p, or the tail count.
-2. Decide the precision the **decision** needs. If the choice flips only when P(late) crosses 50% and you are at 80%, ±2 points is plenty.
-3. Compute N from the formulas above, with a safety margin.
-4. Run, then report the estimate with its MCSE or interval and rerun with a second seed as a check.
+Run a pilot, decide the precision the **decision** needs (if you are at P(late) = 80% and the choice flips at 50%, ±2 points is plenty), compute N with a margin, then report the estimate with its MCSE and rerun once with another seed. Precision beyond what the decision needs is wasted compute; precision below it is a coin toss dressed up as analysis.
 
-Precision beyond what the decision needs is wasted compute; precision below it is a coin toss dressed up as analysis.
+### In plain words
+
+Decide how precise the answer must be for the decision, measure the spread with a small pilot, and compute the runs from N = (1.96 × s / half-width)². Probabilities need about 10,000 runs for ±1 point, tails need more, and a rare event needs about 100 sightings, so roughly 100/p runs.
 
 ### Exercises
 
@@ -596,6 +760,19 @@ rel = (ph*(1 - ph)/N)**.5 / ph
 ## 5. Variance reduction and smarter sampling
 
 This skill covers ways to get the same accuracy from far fewer runs: antithetic variates, control variates, stratified and Latin hypercube sampling, quasi-Monte Carlo and importance sampling. Since the error is s/√N, cutting s by 10 is worth 100× more runs.
+
+| Key word | Plain meaning |
+|---|---|
+| Variance | The SD squared; the "noise power" of a result |
+| Estimator | The recipe that turns runs into an answer, e.g. "average the runs" |
+| Unbiased | Right on average: the estimator neither over- nor undershoots in the long run |
+| Stratify | Split the range into slices and sample each slice on purpose |
+| Low-discrepancy sequence | Points placed to fill space evenly, not at random |
+| Importance weight | A correction factor for sampling some outcomes more often than they really happen |
+
+### Why smarter sampling helps
+
+Pure random sampling is wasteful in a simple way: by chance, points clump in some places and leave gaps in others. A pollster who wants a fair picture of a country does not phone 1,000 random numbers and hope; she makes sure each region is represented. Every method in this skill is a version of that idea: put the samples where they teach you most, or pair them so their luck cancels, while keeping the answer right on average.
 
 ### The idea and a test problem
 
@@ -699,6 +876,10 @@ Importance sampling is powerful and fragile. A proposal with **lighter tails** t
 
 Try the cheap ones first: antithetics and a control variate are a few lines of code. Always measure the variance before and after; never assume a method helped.
 
+### In plain words
+
+You can beat the 1/√N grind by sampling cleverly: pair opposite draws, correct with a related quantity whose answer you know, spread points evenly, or aim samples at the rare region and reweight them. Always compare at equal cost and measure the variance before and after.
+
 ### Exercises
 
 **Exercise 1. Antithetics on an option.** Price a call (S₀ = 100, K = 105, r = 3%, σ = 20%, T = 1 year) with 200,000 plain normal draws and with 100,000 antithetic pairs (z and −z). Both use 200,000 evaluations. Compare the variance of the two estimates.
@@ -750,6 +931,15 @@ print(f.mean(), f.std() / n**.5)
 
 This skill covers the errors that make Monte Carlo results wrong while looking authoritative: bad models, the flaw of averages, ignored correlation, thin tails, false precision, seed games, MCMC confusion and silent bugs. Each one has fooled experienced teams, and none is fixed by running more trials.
 
+| Key word | Plain meaning |
+|---|---|
+| Bias | A systematic error: the answer is off in the same direction however many runs you do |
+| Noise | Random error that shrinks as you add runs |
+| Nonlinear | A model where doubling an input does not simply double the output (caps, thresholds, max) |
+| Fat tails | Extreme values happen far more often than a bell curve predicts |
+| Autocorrelation | Each value depends on the previous one, so values are not independent |
+| Effective sample size (ESS) | How many independent draws a set of dependent draws is worth |
+
 ### Bias is not fixed by more runs
 
 Total error has two parts:
@@ -770,7 +960,7 @@ Spend effort where the bias lives: the model's structure, the input ranges, the 
 
 ### The flaw of averages
 
-Sam Savage named this in his book *The Flaw of Averages* (2009): **plans based on average inputs are wrong on average.** For a nonlinear model f,
+Picture a person who wades across a river because it is "on average three feet deep". The average hides the deep middle. Sam Savage built a book on this image, *The Flaw of Averages* (2009): **plans based on average inputs are wrong on average.** For a nonlinear model f,
 
 ```
 f(average input) ≠ average of f(input)
@@ -828,6 +1018,10 @@ The common mistake is treating MCMC draws as independent. Successive draws are *
 
 The single most effective habit: **test against a known answer.** Turn randomness off and check the deterministic case, run a special case with a closed form (Black–Scholes, a sum of normals) through the same code, and back-test against history where you have it.
 
+### In plain words
+
+Most simulation failures are not about the random numbers. They come from a wrong model, averaged inputs fed into a nonlinear model, missing links between inputs, bell curves for wild risks, too many decimals, and unit or clipping bugs. More runs fix none of these; checks against known answers catch most of them.
+
 ### Exercises
 
 **Exercise 1. Spot the bug (flaw of averages).** Price is normal(50, 10), demand normal(1,000, 300), and you can sell at most 1,200 units. A colleague computes revenue as `rev(price.mean(), qty.mean())`. What is the right expected revenue, and why is theirs off?
@@ -883,6 +1077,15 @@ print(r.sum(1).std())
 ## 7. When to use it, and its cousins
 
 This skill covers when Monte Carlo is the right tool and when a formula or a simple sensitivity table is better, then separates the related methods that share the name or the idea: the bootstrap, permutation tests, MCMC and Monte Carlo tree search.
+
+| Key word | Plain meaning |
+|---|---|
+| Closed form | A formula you can write down and compute directly |
+| Resampling | Drawing again from your own data, with replacement |
+| Posterior | In Bayesian statistics, what you believe about an unknown after seeing the data |
+| Markov chain | A sequence where each step depends only on the step before |
+| Rollout | A quick simulated play-out of a game from some position |
+| Surrogate model | A fast approximate model fitted to a slow one |
 
 ### When simulation is the right tool
 
@@ -984,6 +1187,10 @@ The mean of the kept draws is 0.663, close to 0.667. But the draws are autocorre
 | MCMC | A target known up to a constant | No (a chain) | Posterior summaries |
 | MCTS | Simulated game continuations | Yes, guided by a tree | Which move to make |
 
+### In plain words
+
+Simulate when there is no formula, many uncertain inputs interact, or you need the whole spread and its tail; use the formula when one exists. The bootstrap resamples data, permutation tests shuffle labels, MCMC walks a chain to sample a posterior, and tree search samples game play-outs to pick moves.
+
 ### Exercises
 
 **Exercise 1. Bootstrap a skewed mean.** Draw 40 customer spends from a lognormal (μ = 3, σ = 1) with seed 14. Compute a 95% bootstrap percentile interval for the mean with 10,000 resamples, and compare it with the t interval.
@@ -1023,6 +1230,15 @@ ess = (s.std(ddof=1) / se)**2
 ## 8. Real-world uses
 
 This skill covers where Monte Carlo does real work: pricing and risk in finance, project and demand planning, experiment design, reliability, weather, physics, film rendering, election forecasts and drug trials. Seeing the same pattern in each makes it easier to build your own.
+
+| Key word | Plain meaning |
+|---|---|
+| Option | A contract giving the right, not the duty, to buy or sell at a set price later |
+| Value at risk (VaR) | A loss level that is exceeded only on a small share of days, such as 1% |
+| Expected shortfall | The average loss on those worst days |
+| Power | The chance an experiment detects an effect that is really there |
+| Ensemble | A set of forecasts run from slightly different starting points |
+| Path tracing | Rendering an image by following random light paths |
 
 ### Finance: option pricing and value at risk
 
@@ -1088,18 +1304,9 @@ Power is 0.65 (MCSE 0.011), against 0.64 from the normal formula. The point of s
 
 **Election and sports forecasts.** Forecasters combine poll averages with the uncertainty of polling errors, including errors **shared** across states, then simulate the election many times; FiveThirtyEight's 2020 presidential model, for example, simulated it 40,000 times and reported how often each candidate won. "Wins in 71% of simulations" is a probability, not a predicted vote share. The correlated error is crucial: if state errors are independent, the national outcome looks far more certain than it is. Sports models simulate the remaining fixtures of a season to get title and relegation odds in the same way.
 
-### The common pattern
+### In plain words
 
-| Use | Random inputs | Output | Typical extra technique |
-|---|---|---|---|
-| Option pricing | Price paths | Discounted payoff mean | Antithetics, control variates, QMC |
-| VaR, ES | Correlated returns | Loss percentiles | Fat-tailed shocks, importance sampling |
-| Project risk | Task durations, risk events | P50, P80 dates | Correlation, sensitivity ranking |
-| Inventory | Demand, lead times | Fill rate, cost | Common random numbers |
-| A/B power | Simulated users | Detection rate | Simulating the null too |
-| Weather | Initial state, physics | Ensemble spread | Small N, expensive model |
-| Path tracing | Light paths | Pixel colour | Importance sampling, denoising |
-| Elections | Polling errors | Win probability | Correlated errors across regions |
+The same recipe runs through finance, planning, experiments, weather, physics, film and elections: describe what is uncertain, simulate many possible worlds, and read off averages, percentiles and probabilities. Each field adds a favourite trick, such as checking against a known formula, linking errors that move together, or aiming samples at the rare cases.
 
 ### Exercises
 
@@ -1147,6 +1354,14 @@ print(fail.mean())
 ## 9. Capstone: a full case study
 
 This skill ties the track together in one realistic decision, from question to recommendation, and ends with a checklist of the mistakes to avoid. Work through it as a review: each step points back to the skill where it was taught.
+
+| Key word | Plain meaning |
+|---|---|
+| Fixed-price bid | A promise to deliver for a set price, so overruns come out of your profit |
+| Penalty | A charge for every day the project runs late |
+| Decision rule | A limit agreed in advance, such as "at most a 15% chance of a loss" |
+| Back-test | Checking a model's predictions against what actually happened before |
+| Newsvendor | The classic problem of how much stock to order before demand is known |
 
 ### The question
 
@@ -1237,6 +1452,10 @@ Before this goes to the partners:
 | Was a known-answer test and a back-test run? | 2, 6, 8 | Bugs and model bias |
 | Is the method right (formula, bootstrap, MCMC)? | 7 | Simulating what has a formula; naive MCMC errors |
 | Is the P50 labelled as a median, not as the plan? | 6 | Committing to a coin flip |
+
+### In plain words
+
+A good simulation starts from a decision, models the real structure and links between inputs, reports estimates with their errors, is checked against known answers and history, and ends with a clear recommendation that shows the risk, not just one number.
 
 ### Capstone exercise
 

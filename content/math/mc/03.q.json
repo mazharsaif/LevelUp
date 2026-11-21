@@ -1,9 +1,21 @@
 [
  {
   "t": "mf",
-  "q": "Pseudo-random numbers from a fixed seed are reproducible.",
+  "q": "Running the same code with the same seed gives the same 'random' numbers.",
   "a": true,
-  "why": "Fact. The generator is deterministic: same seed, same sequence."
+  "why": "Fact. The generator is a fixed recipe: same seed, same sequence, like replaying a recorded shuffle."
+ },
+ {
+  "t": "mc",
+  "q": "A seed is …",
+  "o": [
+   "a type of distribution",
+   "the starting number for the generator's recipe",
+   "the number of runs",
+   "the error of the estimate"
+  ],
+  "a": 1,
+  "why": "Change the seed and you get a different but equally random-looking sequence."
  },
  {
   "t": "mc",
@@ -15,37 +27,37 @@
    "time.time() % 1"
   ],
   "a": 1,
-  "why": "An explicit Generator is isolated from other code's draws and reproducible."
+  "why": "An explicit generator is isolated from other code's draws and repeatable."
  },
  {
   "t": "mc",
   "q": "Eight workers all use default_rng(1). What happens?",
   "o": [
    "they run independent streams",
-   "they repeat the same runs, and the MCSE is about √8 too small",
+   "they repeat the same runs, so you have one worker's worth of data",
    "the program crashes",
    "results are more accurate"
   ],
   "a": 1,
-  "why": "All workers produce identical draws, so there are only one worker's worth of distinct runs."
+  "why": "Like four friends using one recorded list of coin flips: copies, not new data."
  },
  {
   "t": "num",
-  "q": "With 9 workers all using the same seed, by what factor is the reported MCSE too small?",
+  "q": "With 9 workers all using the same seed, by what factor is the reported standard error too small?",
   "a": 3,
-  "why": "There is only 1/9 of the claimed runs, so the true error is √9 = 3× the reported one."
+  "why": "There is only 1/9 of the claimed data, so the true error is √9 = 3× the reported one."
  },
  {
   "t": "mc",
   "q": "How do you give 16 workers independent streams from one recorded number?",
   "o": [
-   "seed each with 1 to 16",
+   "seed each with the time",
    "SeedSequence(seed).spawn(16)",
-   "reuse one generator in all processes",
-   "seed with the time"
+   "reuse one generator in every process",
+   "seed them all with 0"
   ],
   "a": 1,
-  "why": "spawn derives statistically independent child seeds from one parent seed."
+  "why": "spawn derives independent child seeds from one parent seed."
  },
  {
   "t": "mf",
@@ -55,26 +67,26 @@
  },
  {
   "t": "mc",
-  "q": "Common random numbers help most when you estimate …",
+  "q": "Common random numbers are like testing two running shoes …",
   "o": [
-   "a single mean",
-   "a difference between two similar scenarios",
-   "a seed",
-   "the number of workers"
+   "on different days",
+   "in the same weather, so the weather cancels out",
+   "with different runners",
+   "only once"
   ],
   "a": 1,
-  "why": "Shared draws make the noise mostly cancel in the difference."
+  "why": "Both scenarios see the same random draws, so luck cancels in the difference."
  },
  {
   "t": "num",
-  "q": "CRN cut the MCSE of a difference from 1.03 to 0.40. About how many times more independent runs would match it?",
+  "q": "Common random numbers cut the standard error of a difference from 1.03 to 0.40. About how many times more independent runs would match it?",
   "a": 6.6,
   "why": "Runs scale with the variance ratio: (1.03/0.40)² ≈ 6.6.",
   "tol": 0.15
  },
  {
   "t": "tf",
-  "q": "Python's random module is suitable for generating security tokens.",
+  "q": "Simulation random numbers are suitable for passwords and security tokens.",
   "a": false,
   "why": "False. Use the secrets module; simulation generators are predictable by design."
  }

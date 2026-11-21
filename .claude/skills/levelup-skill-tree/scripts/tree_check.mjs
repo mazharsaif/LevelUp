@@ -73,13 +73,21 @@ if (P > 1) {
   if (!(await pg.$(".partrow"))) await click(`.tnode[data-id="${first.id}"]`);
   await click(`.partrow[data-p="${P - 1}"]`); await wait(400); await readThrough(); await wait(400);
   for (let k = 0; k < P; k++) {
+    if (await pg.$(".reader.quiz .qq")) break;
     if ((await states())[first.id] === "done") break;
     if (!(await pg.$("#read"))) await click(`.tnode[data-id="${first.id}"]`);
     await click("#read"); await wait(400); await readThrough(); await wait(1500);   // the last part ends with the skill-learned screen
+    if (await pg.$(".reader.quiz .qq")) break;                                        // ...and then the practice opens by itself
   }
 } else {
   await click("#read"); await wait(500); await pg.screenshot({ path: `${OUT}/3_reader.png` });
   await readThrough();
+}
+// since 11-21 a skill's practice questions (or else its concept check) open by themselves after the last part
+if (first.quiz || first.cc) {
+  await wait(800);
+  if (!(await pg.$(".reader.quiz .qq"))) fails.push("practice / concept check did not start automatically after finishing the skill");
+  else { await pg.screenshot({ path: `${OUT}/5a_auto_practice.png` }); await click("#qx"); await wait(500); }
 }
 await pg.evaluate(() => document.getElementById("sheet-root")?.querySelector("#close")?.click());
 await wait(400); st = await states();
@@ -106,7 +114,10 @@ if (first.quiz) {
   await pg.screenshot({ path: `${OUT}/7b_quiz_result.png` });
   const res = await pg.evaluate(() => document.querySelector(".quiz .q-title")?.textContent);
   if (res !== `${quiz.length} of ${quiz.length} right`) fails.push(`quiz result screen says "${res}"`);
-  await click("#qb"); await wait(400);
+  if (first.cc && !(await pg.$("#qcc"))) fails.push("quiz result should offer the concept check next");
+  if (await pg.$("#qb")) await click("#qb");
+  else { await click("#qcc"); await wait(600); if (!(await pg.$(".reader.quiz .qq"))) fails.push("Concept check › did not open the concept check"); await click("#qx"); }
+  await wait(400);
   await pg.evaluate(() => document.getElementById("sheet-root")?.querySelector("#close")?.click()); await wait(200);
   const xp1 = await pg.evaluate(() => +document.querySelector(".gemchip b")?.textContent || 0);
   if (xp1 - xp0 !== 5) fails.push(`quiz pass should give +5 XP, gave ${xp1 - xp0}`);

@@ -3,37 +3,67 @@
   "t": "mc",
   "q": "What is the first step in building a simulation?",
   "o": [
-   "choose N",
-   "define the question and the output metric tied to a decision",
+   "choose the number of runs",
+   "decide the question and the number that answers it",
    "pick a seed",
    "draw a histogram"
   ],
   "a": 1,
-  "why": "Without a decision and a metric, a simulation tends to grow without answering anything."
+  "why": "Without a clear question, such as 'chance of arriving by 8:35', a simulation never ends."
  },
  {
   "t": "mc",
-  "q": "An expert gives a minimum, a most likely value and a maximum. A natural input distribution is …",
+  "q": "The bus comes at any moment in the next 10 minutes, all moments equally likely. Which distribution is that?",
   "o": [
    "normal",
-   "triangular or PERT",
+   "uniform from 0 to 10",
+   "Poisson",
+   "triangular"
+  ],
+  "a": 1,
+  "why": "Uniform: every value in the range is equally likely."
+ },
+ {
+  "t": "num",
+  "q": "Walk 5 minutes, a typical 5-minute wait and a typical 20-minute ride. What total does the 'typical values' guess give?",
+  "a": 30,
+  "why": "5 + 5 + 20 = 30 minutes."
+ },
+ {
+  "t": "mc",
+  "q": "Why do most simulated commutes take longer than the 30-minute typical guess?",
+  "o": [
+   "the seed was unlucky",
+   "the ride can run 10 minutes long but only 5 short, so long trips pull the total up",
+   "uniform waits are always long",
+   "the code has a bug"
+  ],
+  "a": 1,
+  "why": "Skewed inputs make the average larger than the most likely value."
+ },
+ {
+  "t": "mc",
+  "q": "P80 = 35.3 minutes means …",
+  "o": [
+   "80% of trips take exactly 35.3 minutes",
+   "80% of trips take 35.3 minutes or less",
+   "the trip is late 80% of the time",
+   "the average trip is 35.3"
+  ],
+  "a": 1,
+  "why": "A percentile is the value that the given share of runs come in at or below."
+ },
+ {
+  "t": "mc",
+  "q": "An expert gives a minimum, a most likely value and a maximum. A natural distribution is …",
+  "o": [
+   "normal",
+   "triangular (or PERT)",
    "Poisson",
    "Bernoulli"
   ],
   "a": 1,
   "why": "Triangular and PERT are built from exactly those three numbers."
- },
- {
-  "t": "mc",
-  "q": "Which distribution suits a task duration that is positive and right-skewed?",
-  "o": [
-   "normal",
-   "lognormal",
-   "uniform on [−1, 1]",
-   "Bernoulli"
-  ],
-  "a": 1,
-  "why": "A lognormal is never negative and has a long right tail."
  },
  {
   "t": "mf",
@@ -43,27 +73,15 @@
  },
  {
   "t": "mc",
-  "q": "A Gaussian copula lets you …",
+  "q": "On rainy days the bus is late AND the ride is slow, but you simulate them as unrelated. The late tail looks …",
   "o": [
-   "make every input normal",
-   "link inputs with a chosen correlation while keeping each input's own distribution",
-   "remove the need for a seed",
-   "compute the MCSE"
+   "bigger than reality",
+   "smaller than reality",
+   "exactly right",
+   "the same as the average"
   ],
   "a": 1,
-  "why": "Correlated normals become linked uniforms, which feed each input's inverse CDF."
- },
- {
-  "t": "mc",
-  "q": "Two inputs share a cause but are simulated independently. The P90 of their sum is …",
-  "o": [
-   "too high",
-   "too low",
-   "unchanged",
-   "exactly the mean"
-  ],
-  "a": 1,
-  "why": "Positive correlation fattens the upper tail of a sum, so ignoring it understates the P90."
+  "why": "Bad waits and bad rides then rarely coincide, so very late days are understated."
  },
  {
   "t": "num",
@@ -73,38 +91,14 @@
  },
  {
   "t": "mc",
-  "q": "In the schedule example, why did the 35-day plan succeed only about 7% of the time?",
-  "o": [
-   "the seed was unlucky",
-   "skewed estimates and the max of parallel tasks push the total up",
-   "N was too small",
-   "triangular distributions are biased"
-  ],
-  "a": 1,
-  "why": "Overruns are larger than underruns, and max takes whichever parallel task is late."
- },
- {
-  "t": "mc",
-  "q": "A quick way to rank which inputs drive the output is …",
-  "o": [
-   "the seed",
-   "rank correlation of each input with the output (a tornado chart)",
-   "the MCSE",
-   "the mean of each input"
-  ],
-  "a": 1,
-  "why": "Sorted rank correlations show where better estimates or risk reduction pay off."
- },
- {
-  "t": "mc",
   "q": "Past projects finished beyond your P90 in 9 out of 10 cases. What does that tell you?",
   "o": [
-   "N was too small",
+   "too few runs",
    "the input ranges are far too narrow",
    "the model is validated",
    "the seed is wrong"
   ],
   "a": 1,
-  "why": "A calibrated P90 is exceeded about 10% of the time; 90% means the inputs understate risk."
+  "why": "A sound P90 is exceeded about 10% of the time; 90% means the inputs understate risk."
  }
 ]

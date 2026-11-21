@@ -1112,6 +1112,8 @@ async function openQuiz(br, node, only, mode = "quiz") {
     wrong.forEach(k => { const g = gapNode(QS[k]); if (g) gaps[g.id] = (gaps[g.id] || 0) + 1; });
     const gapIds = Object.keys(gaps).sort((a, b) => gaps[b] - gaps[a]);
     xp ? addXP(xp) : save();
+    // after the practice run, go straight on to the concept check if this skill has one not done yet (feedback 11-21)
+    const nextCC = mode === "quiz" && full && node.cc && !(S.cc || {})[node.id];
     view().innerHTML = `<div class="reader quiz" style="text-align:center;padding-top:40px"><div style="font-size:54px">${got === Q.length ? "🏆" : got >= Math.ceil(QUIZ_PASS * Q.length) ? "🎯" : "💪"}</div>
       <div class="q-title" style="margin-top:6px">${got} of ${Q.length} right</div>
       <div class="muted small">${xp ? `+${xp} XP · ${M.label.toLowerCase()} passed` : got === Q.length ? "Perfect." : wrong.length ? "Have another go at the ones you missed." : ""}</div>
@@ -1119,13 +1121,14 @@ async function openQuiz(br, node, only, mode = "quiz") {
       ${gapIds.length ? `<div class="card" style="text-align:left;margin-top:18px"><div style="font-weight:800">🧱 Foundations to revisit</div>
         <div class="tiny muted" style="margin:2px 0 8px">Your misses come from these earlier skills. A quick reread usually fixes the rest.</div>
         ${gapIds.map(id => { const g = C.content.nodes.find(x => x.id === id); return `<button class="partrow" data-gap="${id}"><span class="pn">${g.icon}</span><span class="grow"><b>${esc(g.title)}</b></span><span class="tiny muted">${gaps[id]} miss${gaps[id] > 1 ? "es" : ""} ›</span></button>`; }).join("")}</div>` : ""}</div>
-      <div class="lesson-foot"><div class="row" style="gap:10px">${wrong.length ? `<button class="btn ghost grow" id="qr" style="margin:0">Retry ${wrong.length} missed</button>` : ""}<button class="btn grow" id="qb" style="margin:0">Back to the skill</button></div></div>`;
+      <div class="lesson-foot"><div class="row" style="gap:10px">${wrong.length ? `<button class="btn ghost grow" id="qr" style="margin:0">Retry ${wrong.length} missed</button>` : ""}${nextCC ? `<button class="btn grow" id="qcc" style="margin:0">Concept check ›</button>` : `<button class="btn grow" id="qb" style="margin:0">Back to the skill</button>`}</div></div>`;
     const qr = view().querySelector("#qr"); if (qr) qr.onclick = () => openQuiz(br, node, wrong, mode);
     view().querySelectorAll("[data-gap]").forEach(b => (b.onclick = () => {
       const g = C.content.nodes.find(x => x.id === b.dataset.gap), h = "#/branch/" + g.branch;
       pendingSheet = g.id; if (location.hash === h) treeView(g.branch); else location.hash = h;
     }));
-    view().querySelector("#qb").onclick = () => { treeView(); nodeSheet(node.id); };
+    const qb = view().querySelector("#qb"); if (qb) qb.onclick = () => { treeView(); nodeSheet(node.id); };
+    const qcc = view().querySelector("#qcc"); if (qcc) qcc.onclick = () => openQuiz(br, node, null, "cc");
   };
   draw();
 }
@@ -1223,6 +1226,10 @@ async function openReader(br, node, partIdx) {
         S.tree[node.id] = today(); addXP(T.xpPerSkill);
         const left = treeNodes(node.branch).filter(x => !nodeDone(x.id)).length;
         toast(left ? `${node.icon} ${node.title} learned! +${T.xpPerSkill} XP` : `👑 Branch complete! You mastered ${br.title}`);
+        // feedback 11-21: the skill's practice questions start by themselves (no hunting for them in the skill sheet),
+        // then its concept check; only the first time (not passed yet)
+        if (node.quiz && !((S.quiz || {})[node.id] || {}).xp) return openQuiz(br, node);
+        if (node.cc && !(S.cc || {})[node.id]) return openQuiz(br, node, null, "cc");
       } else save();
       treeView();
     };

@@ -1,87 +1,77 @@
 [
  {
   "t": "mc",
-  "q": "A Monte Carlo estimate is best described as …",
+  "q": "In plain words, a Monte Carlo simulation …",
   "o": [
-   "an exact answer from a formula",
-   "an average over random draws of a model",
-   "the most likely scenario",
-   "a grid search over inputs"
+   "finds an exact answer with algebra",
+   "plays a situation out many times at random and averages the results",
+   "picks the single most likely outcome",
+   "tries every possible combination of inputs"
   ],
   "a": 1,
-  "why": "It estimates an expected value E[f(X)] by averaging f over many random draws of X."
+  "why": "Random play-throughs, then an average: that is the whole method."
  },
  {
   "t": "num",
-  "q": "Outcomes have SD σ = 2. What is the MCSE of their mean with N = 10,000 runs?",
-  "a": 0.02,
-  "why": "MCSE = σ/√N = 2/100 = 0.02.",
-  "tol": 0.0005
+  "q": "You flip a coin 20 times and get 13 heads. What is your estimate of P(heads)? (decimal)",
+  "a": 0.65,
+  "why": "The share of heads: 13/20 = 0.65.",
+  "tol": 0.001
  },
  {
   "t": "num",
-  "q": "How many times more runs do you need to halve the Monte Carlo standard error?",
+  "q": "What is the expected value (long-run average) of one roll of a fair six-sided die?",
+  "a": 3.5,
+  "why": "(1 + 2 + 3 + 4 + 5 + 6)/6 = 21/6 = 3.5.",
+  "tol": 0.001
+ },
+ {
+  "t": "mf",
+  "q": "The expected value of a die roll is a number you will often roll.",
+  "a": false,
+  "why": "Myth. You can never roll 3.5; the expected value is a long-run average, not a likely single result."
+ },
+ {
+  "t": "mc",
+  "q": "An indicator is 1 when a project is late and 0 otherwise. Its average over 1,000 runs is 0.3. This means …",
+  "o": [
+   "the project is 0.3 days late",
+   "the estimated probability of being late is 30%",
+   "30 runs were late",
+   "the error is 0.3"
+  ],
+  "a": 1,
+  "why": "The average of a 0/1 variable is the share of 1s, which estimates a probability."
+ },
+ {
+  "t": "num",
+  "q": "Two dice: how many of the 36 equally likely pairs give a total of 10 or more?",
+  "a": 6,
+  "why": "4+6, 5+5, 6+4, 5+6, 6+5, 6+6: six pairs, so P = 6/36 ≈ 0.167."
+ },
+ {
+  "t": "tf",
+  "q": "The law of large numbers says the average of many independent random results gets closer to the expected value.",
+  "a": true,
+  "why": "True: that is why averaging many runs works."
+ },
+ {
+  "t": "num",
+  "q": "How many times more runs do you need to halve the standard error?",
   "a": 4,
-  "why": "Error falls like 1/√N, so halving it needs √N to double: 4× the runs."
+  "why": "The error shrinks with √N, so halving it needs √N to double: 4× the runs."
  },
  {
   "t": "num",
-  "q": "How many times more runs give 10× more precision (one more correct digit)?",
-  "a": 100,
-  "why": "10× smaller error needs √N to grow 10×, so N grows 100×."
- },
- {
-  "t": "num",
-  "q": "10,000 runs give MCSE 0.004. How many runs give MCSE 0.001?",
-  "a": 160000,
-  "why": "4× smaller error needs 16× the runs: 16 × 10,000."
+  "q": "Single results have SD 2. What is the standard error of their average over N = 10,000 runs?",
+  "a": 0.02,
+  "why": "s/√N = 2/√10,000 = 2/100 = 0.02.",
+  "tol": 0.0005
  },
  {
   "t": "mf",
   "q": "A million runs guarantee an accurate answer.",
   "a": false,
-  "why": "Myth. Runs shrink only the sampling noise; a wrong model or wrong inputs give a precisely computed wrong answer."
- },
- {
-  "t": "tf",
-  "q": "The Monte Carlo error rate 1/√N does not depend on the number of uncertain inputs.",
-  "a": true,
-  "why": "True: that is why simulation beats grids, whose cost grows exponentially with the number of inputs."
- },
- {
-  "t": "mc",
-  "q": "P(cost > budget) can be estimated by simulation because it equals …",
-  "o": [
-   "the median cost",
-   "E[1(cost > budget)], the mean of an indicator",
-   "the budget divided by the mean cost",
-   "the MCSE"
-  ],
-  "a": 1,
-  "why": "A probability is the average of a 0/1 outcome, so it is an expected value like any other."
- },
- {
-  "t": "mc",
-  "q": "With MCSE 0.0052, how should an estimate of 3.13784 be reported?",
-  "o": [
-   "3.13784",
-   "about 3.138 ± 0.010 (95%)",
-   "3",
-   "3.1378400"
-  ],
-  "a": 1,
-  "why": "Round to the error and give the interval: extra digits are noise."
- },
- {
-  "t": "mc",
-  "q": "Who suggested the name 'Monte Carlo' for the method at Los Alamos?",
-  "o": [
-   "Enrico Fermi",
-   "Nicholas Metropolis",
-   "Alan Turing",
-   "Carl Friedrich Gauss"
-  ],
-  "a": 1,
-  "why": "Metropolis named it after the Monte Carlo casino; Ulam conceived the method in 1946 and von Neumann planned it for ENIAC."
+  "why": "Myth. More runs shrink only the computing error; a wrong model or wrong inputs give a precisely computed wrong answer."
  }
 ]
