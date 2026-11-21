@@ -1,4 +1,5 @@
 // State per user (saved on the Mac via server.py, cached in the browser), spaced repetition, A1 progress / pace maths.
+import { setLang } from "./lang.js";
 export const C = { content: null, course: null, word: {}, item: {}, grammar: {}, phrases: {} };
 
 // ---------- courses (German A1 now; more languages / subjects later) ----------
@@ -19,6 +20,7 @@ export async function loadContent(courseId = COURSE) {
   const r = await fetch(info.content || "data/content.json");
   const c = await r.json();
   C.content = c; C.course = info; COURSE = info.id;
+  setLang(c.lang || info.lang || "de"); // target-language profile (field `de` holds the target language in every file)
   C.word = {}; C.item = {}; C.grammar = {}; C.phrases = {};
   _w = null; _plan = null; _planKey = "";
   (c.words || []).forEach(w => (C.word[w.id] = w));
@@ -260,7 +262,7 @@ export const blank = () => ({
   bits: {},       // path item id -> [date per finished bit]
   tree: {},       // skill-tree courses: node id -> date learned
   parts: {},      // skill-tree courses: node id -> {part index -> date finished}
-  say: {},        // phrase (German) -> times produced correctly in "Say it in German"
+  say: {},        // phrase (target language) -> times produced correctly in "Say it in …"
   hit: {},        // date -> daily XP goal reached that day (counts for the streak in Quest Mode)
   time: {},       // date -> [seconds active in the app, seconds of that in lessons]
 });

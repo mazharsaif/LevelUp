@@ -7,6 +7,7 @@ import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
 import { RANKS } from "./store.js";
+import { L } from "./lang.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -118,7 +119,7 @@ const daysText = to => { const n = daysBetween(today(), to); return n > 0 ? `${n
 function setupView() {
   document.body.classList.add("in-lesson"); // hides the tab bar until setup is done
   const tgt = in3Months();
-  view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>Willkommen, ${esc(userInfo(USER).name)}! 👋</h1>
+  view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>${L.code === "fr" ? "Bienvenue" : "Willkommen"}, ${esc(userInfo(USER).name)}! 👋</h1>
   <p class="muted">${esc(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
   <div class="card">
     <label class="f">When do you want to finish A1?</label>
@@ -397,7 +398,7 @@ function grammarView(id) {
   <div class="small muted" style="font-weight:800">📐 GRAMMAR · CHAPTER ${g.num}${P ? ` · PART ${it.part + 1} OF ${it.of}` : ""}</div><h1>${esc(P ? P.t : g.title)}</h1>
   ${P ? `<div class="gparts">${Array.from({ length: it.of }, (_, k) => `<span class="${S.done[`${g.id}.${k + 1}`] ? "ok" : ""} ${k === it.part ? "cur" : ""}"></span>`).join("")}</div>
     ${P.t.startsWith(g.title) ? "" : `<p class="small muted" style="margin-top:4px">${esc(g.title)}</p>`}` : ""}
-  ${first ? `<p class="small">🎬 ${esc(g.watch)}</p><p>${esc(g.intro)}</p>` : ""}
+  ${first ? `${g.watch ? `<p class="small">🎬 ${esc(g.watch)}</p>` : ""}<p>${esc(g.intro)}</p>` : ""}
   <div class="gram">${personalize(P ? P.html : g.body + (g.after || ""))}</div>
   ${last ? `${g.ex.length ? "<h2>Examples</h2>" : ""}${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
     <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
@@ -426,7 +427,7 @@ const WORD_SORTS = [["topic", "By topic"], ["recent", "Newest learned"], ["weak"
 const openTopics = () => new Set(JSON.parse(lsGet("a1.wordsOpen") || "[]"));
 const topicName = t => String(t || "Other").replace(/^A\d*\.\s*/, "");
 // "die (Kredit-)Karte" → "kredit-karte", "(ein)hundert" → "einhundert": alphabetical by the word itself
-const azKey = de => de.replace(/^(der|die|das)\s+/i, "").replace(/[()]/g, "").toLowerCase();
+const azKey = de => de.replace(/^(der|die|das|le|la|les)\s+|^l['’]/i, "").replace(/[()]/g, "").toLowerCase();
 function sortWords(list) {
   const s = id => S.words[id], far = "9999";
   const by = {
@@ -434,14 +435,14 @@ function sortWords(list) {
     weak: (a, b) => (s(a.id) ? health(s(a.id)) : 2) - (s(b.id) ? health(s(b.id)) : 2) || (s(b.id)?.lapses || 0) - (s(a.id)?.lapses || 0),
     strong: (a, b) => (s(b.id)?.ivl ?? -1) - (s(a.id)?.ivl ?? -1),
     due: (a, b) => (s(a.id)?.due || far).localeCompare(s(b.id)?.due || far),
-    az: (a, b) => azKey(a.de).localeCompare(azKey(b.de), "de"),
+    az: (a, b) => azKey(a.de).localeCompare(azKey(b.de), L.code),
   }[wf.sort];
   return by ? [...list].sort(by) : list;
 }
 function wordsView() {
   const r = retention();
   view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} learned · ${r.mastered} mastered</p>
-    <input class="search" id="q" placeholder="Search German or English…" value="${esc(wf.q)}">
+    <input class="search" id="q" placeholder="Search ${L.name} or English…" value="${esc(wf.q)}">
     <div class="seg" id="seg">${[["all", "All"], ["due", "Due"], ["learning", "Learning"], ["known", "Known"], ["mastered", "Mastered"], ["new", "New"], ["core", "★ Core"]]
       .map(([k, l]) => `<button data-f="${k}" class="${wf.f === k ? "on" : ""}">${l}</button>`).join("")}</div>
     <div class="row wtools"><label class="small muted" for="ws">Sort</label><select id="ws" class="wsort">${WORD_SORTS.map(([v, l]) => `<option value="${v}" ${wf.sort === v ? "selected" : ""}>${l}</option>`).join("")}</select>
@@ -454,7 +455,7 @@ function wordsView() {
   const draw = () => {
     const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());
     const list = C.content.words.filter(w => {
-      if (q && !w.de.toLowerCase().includes(q) && !w.en.toLowerCase().includes(q)) return false;
+      if (q && !(L.fold ? L.fold(w.de.toLowerCase()).includes(L.fold(q)) : w.de.toLowerCase().includes(q)) && !w.en.toLowerCase().includes(q)) return false;
       if (wf.f === "all") return true;
       if (wf.f === "due") return due.has(w.id);
       if (wf.f === "core") return w.core;
@@ -1549,7 +1550,7 @@ function introView() {
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:4vh"><img src="icons/icon.svg" alt="" width="72" height="72" style="border-radius:18px"><div class="brand">LevelUp</div>
     <h1>Level up in languages and skills</h1><p class="muted">Short daily lessons that turn into real knowledge, one level at a time.</p></div>
     <div class="card">
-      ${f("📚", "Courses", "German A1 today (821 words, 20 grammar chapters, everyday phrases) and a Software Engineering skill tree. More languages and subjects are coming.")}
+      ${f("📚", "Courses", "German A1 (821 words, 20 grammar chapters, everyday phrases), French A1 for the DELF A1, a Software Engineering skill tree and Mathematics. More languages and subjects are coming.")}
       ${f("🧠", "Spaced repetition", "Every word comes back for review just before you would forget it. Words you know well return less often, hard ones more often.")}
       ${f("🎯", "Targets that fit you", "Pick a finish date and the app sets your daily goal. Choose Quest Mode (levels, ranks, streaks, diamonds, daily quests) or a plain mode with just the lessons.")}
       ${f("🔊", "Hear and speak", "Native-style audio for every word and phrase, and optional speaking practice.")}

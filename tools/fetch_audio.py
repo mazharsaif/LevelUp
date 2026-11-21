@@ -1,6 +1,8 @@
-"""Download German pronunciation audio for every word, example and phrase (Microsoft neural TTS).
+"""Download pronunciation audio for every word, example and phrase (Microsoft neural TTS).
 
-Run:  uv run tools/fetch_audio.py [--engine edge|azure] [--voice de-DE-KatjaNeural] [--out DIR] [--limit N]
+Run:  uv run tools/fetch_audio.py [--lang de|fr] [--engine edge|azure] [--voice de-DE-KatjaNeural] [--out DIR] [--limit N]
+  --lang fr: French A1 (tools/audio_manifest_fr.json from build_fr_content.py, voice fr-FR-DeniseNeural).
+             French ids include the voice in the hash, so they never collide with German clips in app/audio.
   edge  (default): edge-tts, free but unofficial (personal use only; see PROJECT_LOG "Before selling").
   azure: licensed Azure AI Speech, same voices. Needs env AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.
   --out: write somewhere else (e.g. a fresh folder to regenerate everything with Azure, then swap it in).
@@ -15,7 +17,12 @@ def arg(name, default=None):
     return sys.argv[sys.argv.index(name) + 1] if name in sys.argv else default
 
 OUT = os.path.abspath(arg("--out", os.path.join(ROOT, "app", "audio")))
-VOICE = arg("--voice", "de-DE-KatjaNeural")
+LANG = arg("--lang", "de")
+LANGS = {"de": ("audio_manifest.json", "de-DE-KatjaNeural"), "fr": ("audio_manifest_fr.json", "fr-FR-DeniseNeural")}
+if LANG not in LANGS:
+    sys.exit("--lang must be de or fr")
+MANIFEST, DEFAULT_VOICE = LANGS[LANG]
+VOICE = arg("--voice", DEFAULT_VOICE)
 ENGINE = arg("--engine", "edge")
 LIMIT = int(arg("--limit", "0"))
 if ENGINE == "azure":
@@ -28,7 +35,7 @@ else:
     sys.exit("--engine must be edge or azure")
 
 def azure_tts(text, rate, path):
-    ssml = (f'<speak version="1.0" xml:lang="de-DE"><voice name="{VOICE}">'
+    ssml = (f'<speak version="1.0" xml:lang="{VOICE[:5]}"><voice name="{VOICE}">'
             f'<prosody rate="{rate}">{escape(text)}</prosody></voice></speak>')
     req = urllib.request.Request(
         f"https://{AZ_REGION}.tts.speech.microsoft.com/cognitiveservices/v1", data=ssml.encode("utf-8"),
@@ -64,7 +71,7 @@ async def one(sem, aid, text, stats):
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
-    manifest = json.load(open(os.path.join(ROOT, "tools", "audio_manifest.json")))
+    manifest = json.load(open(os.path.join(ROOT, "tools", MANIFEST)))
     if LIMIT:
         manifest = dict(list(manifest.items())[:LIMIT])
     stats = {"ok": 0, "skip": 0, "fail": []}

@@ -1,24 +1,24 @@
 // Exercise engine: vocab lessons, reviews, grammar practice, phrase sections.
 import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR, nameSpellQuestion } from "./store.js";
 import { play, blip, stopAudio, playSoon } from "./audio.js";
+import { L } from "./lang.js";
 import { rankEmblem, applyAura, auraName, STAGES, stageFor } from "./hero.js";
 
 // ---------- tiny helpers ----------
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 export const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = (a, n) => shuffle(a).slice(0, n);
-const ART = { m: "der", f: "die", n: "das", pl: "die" };
-
+// target-language article handling comes from the course's language profile (lang.js)
 export function deHTML(w) {
-  const m = w.g && w.de.match(/^(der|die|das) (.*)$/);
-  return m ? `<span class="art ${w.g}">${m[1]}</span> ${esc(m[2])}` : esc(w.de);
+  const m = w.g && L.splitArt(w.de);
+  return m ? `<span class="art ${w.g}">${esc(m[0])}</span>${m[2]}${esc(m[1])}` : esc(w.de);
 }
-const nounOnly = w => w.de.replace(/^(der|die|das) /, "");
-const canGender = w => w.g && /^(der|die|das) [^\s/()]+$/.test(w.de);
+const nounOnly = w => { const m = L.splitArt(w.de); return m ? m[1] : w.de; };
+const canGender = w => L.canGender ? L.canGender(w) : w.g && /^(der|die|das) [^\s/()]+$/.test(w.de);
+const keysHTML = () => `<div class="uml${L.keys.length > 5 ? " many" : ""}">${L.keys.map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`;
 
 export function norm(s) {
-  return String(s).toLowerCase().normalize("NFC")
-    .replace(/ß/g, "ss").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue")
+  return L.norm(String(s).toLowerCase().normalize("NFC"))
     .replace(/[…‑–—\-.,!?;:„“"'’()]/g, " ").replace(/\s+/g, " ").trim();
 }
 function lev(a, b) {
@@ -35,12 +35,17 @@ export function checkTyped(input, answers) {
   for (const a of answers) {
     const y = norm(a);
     if (x === y) return { ok: true };
+    if (L.fold && L.fold(x) === L.fold(y)) return { ok: true, note: "Watch the accents: " + a };
+    // French le / la differ by one letter: a wrong article must not pass as a typo
+    const m = L.fold && L.splitArt(a);
+    if (m && L.artStrip.test(x) && L.fold(x.replace(L.artStrip, "")) === L.fold(norm(m[1]))) return { ok: false, note: `Wrong article – it's ${a}` };
     if (y.length >= 5 && lev(x, y) === 1) return { ok: true, note: "Small typo – correct: " + a };
   }
   for (const a of answers) {
-    const m = a.match(/^(der|die|das) (.+)$/);
-    if (m && norm(m[2]) === x) return { ok: false, note: `Don't forget the article: ${m[1]} ${m[2]}` };
-    if (m && norm(m[2]) === x.replace(/^(der|die|das) /, "")) return { ok: false, note: `Wrong article – it's ${m[1]} ${m[2]}` };
+    const m = L.splitArt(a);
+    const f = L.fold || (t => t), bare = f(x.replace(L.artStrip, ""));
+    if (m && f(norm(m[1])) === f(x)) return { ok: false, note: `Don't forget the article: ${a}` };
+    if (m && f(norm(m[1])) === bare) return { ok: false, note: `Wrong article – it's ${a}` };
   }
   return { ok: false };
 }
@@ -73,7 +78,7 @@ const baseDe = de => norm(String(de).replace(/\([^)]*\)/g, ""));
 // other words that are an equally correct German answer for this English prompt
 function sameMeaningDe(w) {
   const first = [...meanings(w.en)][0];
-  return C.content.words.filter(x => x.id !== w.id && first && meanings(x.en).has(first)).map(x => x.type_ans || x.de);
+  return [...(w.alt || []), ...C.content.words.filter(x => x.id !== w.id && first && meanings(x.en).has(first)).map(x => x.type_ans || x.de)];
 }
 
 function distractors(w, field, n = 3) {
@@ -94,11 +99,12 @@ function distractors(w, field, n = 3) {
 
 // ---------- word card ----------
 export function wordCard(w, { examples = 3 } = {}) {
-  const g = w.g ? `<span class="gtag ${w.g}">${w.g === "pl" ? "PLURAL" : ART[w.g].toUpperCase()}</span>` : "";
+  const g = w.g && L.gtag[w.g] ? `<span class="gtag ${w.g}">${L.gtag[w.g]}</span>` : "";
   const meta = [];
+  if (w.fem) meta.push(`<div><b>Feminine:</b> ${esc(w.fem)}</div>`);
   if (w.pl) meta.push(`<div><b>Plural:</b> ${esc(w.pl)}</div>`);
   if (w.forms) meta.push(`<div><b>Forms:</b> ${esc(w.forms)}</div>`);
-  if (w.perf) meta.push(`<div><b>Perfekt:</b> ${esc(w.perf)}</div>`);
+  if (w.perf) meta.push(`<div><b>${L.perfLabel}:</b> ${esc(w.perf)}</div>`);
   if (w.labels) meta.push(`<div class="chips">${w.labels.map(l => `<span class="chip">${esc(l)}</span>`).join("")}</div>`);
   const ex = (w.ex || []).slice(0, examples).map(e => `
     <div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
@@ -139,13 +145,13 @@ function hardStep(w, i) {
 }
 
 // ---- sentences from the word list's examples ----
-const TOKEN_OK = /^[A-Za-zÄÖÜäöüß0-9,.!?'’ \-–]+$/;
+const TOKEN_OK = { test: x => L.letters.test(x) };
 const tokens = de => de.replace(/[.,!?]/g, " ").split(/\s+/).filter(Boolean);
 function sentenceFor(w, maxTok = 8) {
   const ok = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && !/[()…=/]/.test(e.de) && tokens(e.de).length >= 3 && tokens(e.de).length <= maxTok);
   return ok.length ? ok[Math.floor(Math.random() * ok.length)] : null;
 }
-const coreWord = w => w.de.replace(/^(der|die|das) /, "").replace(/\s*\(.*$/, "").trim();
+const coreWord = w => nounOnly(w).replace(/\s*\(.*$/, "").trim();
 function clozeFor(w) {
   const core = coreWord(w);
   if (!core || /\s|\//.test(core)) return null;
@@ -204,7 +210,7 @@ function buildFor(w, pool) {
 // ---- "Say it in German": the learner gets a situation (English) and produces the whole phrase ----
 // Stage 0 (new phrase): word bubbles. Once they've got it right: a mix of bubbles and typing it out,
 // with typing more likely the more often they've succeeded (S.say[phrase] = successes).
-const isSentence = x => /^[A-ZÄÖÜ0-9]/.test(x) && /[.!?]$/.test(x);
+const isSentence = x => /^[\p{Lu}0-9]/u.test(x) && /[.!?]$/.test(x);
 export function sayItems(p) {
   if (/[…()=]/.test(p.de)) return [];
   const de = p.de.split(/\s+\/\s+/), notes = [...p.en.matchAll(/\(([^)]*)\)/g)].map(m => m[1]);
@@ -264,6 +270,7 @@ function checkSay(input, answers) {
   for (const a of answers) {
     const y = norm(a);
     if (x === y) return { ok: true };
+    if (L.fold && L.fold(x) === L.fold(y)) return { ok: true, note: "Watch the accents: " + a };
     if (y.length >= 5 && lev(x, y) <= Math.max(1, Math.floor(y.length / 12))) return { ok: true, note: "Small typo – correct: " + a };
   }
   return { ok: false };
@@ -371,7 +378,7 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
   if (first) R.firstTry[key] = ok;
   if (!s.retry) { R.answered++; if (ok) R.right++; }
   R.combo = ok ? R.combo + 1 : 0; R.best = Math.max(R.best, R.combo);
-  const comboMsg = ok && COMBO[R.combo] ? COMBO[R.combo] : "";
+  const comboMsg = ok && COMBO[R.combo] ? COMBO[R.combo].replace("{lang}", L.name) : "";
   if (!ok && s.w) R.wrongIds.add(s.w.id);
   const sayKey = s.t === "say" ? s.de : s.sayDe;
   if (sayKey && !s.retry) (R.say = R.say || {})[sayKey] = ok;
@@ -384,7 +391,7 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
   if (s.w && s.t !== "listen" && (s.t !== "mc" || s.dir === "en_de" || !ok)) play(s.w.a, s.w.de);
   const f = document.createElement("div");
   f.className = "feedback " + (ok ? "ok" : "bad");
-  f.innerHTML = `<h3>${ok ? pick(["Super!", "Richtig!", "Sehr gut!", "Genau!", "Prima!"], 1)[0] : "Not quite"}</h3>
+  f.innerHTML = `<h3>${ok ? pick(L.praise, 1)[0] : "Not quite"}</h3>
     ${correctHTML && !ok ? `<p>Correct answer: <b>${correctHTML}</b></p>` : ""}
     ${note ? `<p>${esc(note)}</p>` : ""}
     ${comboMsg ? `<p class="combo">${comboMsg}</p>` : ""}
@@ -398,17 +405,18 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
   f.querySelector("#go").focus();
 }
 
-const COMBO = { 3: "🔥 3 in a row – nice!", 5: "🔥 5 in a row – you're on fire!", 8: "⚡ 8 in a row – unstoppable!", 12: "🌟 12 in a row – are you secretly German?", 20: "🚀 20 in a row – legendary focus!" };
+const COMBO = { 3: "🔥 3 in a row – nice!", 5: "🔥 5 in a row – you're on fire!", 8: "⚡ 8 in a row – unstoppable!", 12: "🌟 12 in a row – are you secretly {lang}?", 20: "🚀 20 in a row – legendary focus!" };
 
-// ---------- 🎤 Speak it: optional pronunciation practice (Chrome Web Speech API, de-DE) ----------
+// ---------- 🎤 Speak it: optional pronunciation practice (Chrome Web Speech API, language from the course: de-DE, fr-FR) ----------
 // It checks the words it heard, not the sounds: every word of the phrase must be heard (one may be missing in phrases of
 // 6+ words), so "wie geht es Ihnen" doesn't pass for "Wie geht es dir?". Never counts toward accuracy; +1 XP when understood.
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 export const speakAvailable = () => !!SpeechRec && window.isSecureContext;
 export const speakOn = () => speakAvailable() && S && S.settings.speak !== false;
 export const speakable = p => !!p && !/[…()]/.test(p.de) && p.de.length <= 70;
-const NUM = ["null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf"];
-const words = t => norm(String(t).replace(/[’']s\b/g, " es")).replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean).map(w => (/^\d+$/.test(w) && NUM[+w] ? norm(NUM[+w]) : w));
+// digits the recogniser writes ("3") count as the number word; French "vingt-deux" → two words, like the target
+const words = t => norm(L.speechPre(String(t))).replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean)
+  .flatMap(w => (/^\d+$/.test(w) && L.numWord(+w) ? norm(L.numWord(+w)).split(" ") : [w])).map(w => (L.fold ? L.fold(w) : w));
 // best of the recogniser's alternatives: which of the phrase's words were heard, and whether that's enough
 function heardCheck(alts, target) {
   const want = words(target);
@@ -435,7 +443,7 @@ function speak(s, lb) {
   f.querySelector("#skip").onclick = () => { if (rec) rec.abort(); next(); };
   mic.onclick = () => {
     rec = new SpeechRec();
-    rec.lang = "de-DE"; rec.interimResults = false; rec.maxAlternatives = 5;
+    rec.lang = L.bcp; rec.interimResults = false; rec.maxAlternatives = 5;
     mic.disabled = true; mic.textContent = "Listening…";
     rec.onresult = e => {
       const alts = [...e.results[0]].map(a => a.transcript), r = heardCheck(alts, s.p.de);
@@ -446,7 +454,7 @@ function speak(s, lb) {
       if (r.ok) {
         if (!s.paid) { s.paid = true; addXP(1); }
         blip(true);
-        f.innerHTML = `<div class="feedback ok" style="position:static"><h3>Verstanden! 🎉</h3><p>+1 XP for speaking.</p><button class="btn" id="go">Continue</button></div>`;
+        f.innerHTML = `<div class="feedback ok" style="position:static"><h3>${L.understood} 🎉</h3><p>+1 XP for speaking.</p><button class="btn" id="go">Continue</button></div>`;
         f.querySelector("#go").onclick = next;
       } else heard.innerHTML += `<br><span class="muted">${tries < 2 ? "Close! Listen once more and try again." : "Good effort. Try again, or skip: there's no penalty."}</span>`;
     };
@@ -489,7 +497,7 @@ function mc(s, lb) {
     if (S.settings.autoplay) play(w.a, w.de);
     options(lb, opts.map(o => esc(o.en)), ci, ok => answered(s, ok, { correctHTML: esc(w.en) }));
   } else {
-    lb.innerHTML = `<div class="q-title">Choose the German</div>${enPrompt(w.en)}`;
+    lb.innerHTML = `<div class="q-title">Choose the ${L.name}</div>${enPrompt(w.en)}`;
     options(lb, opts.map(o => esc(o.de)), ci, ok => answered(s, ok, { correctHTML: esc(w.de) }));
   }
 }
@@ -504,19 +512,18 @@ function listen(s, lb) {
 }
 
 function gender(s, lb) {
-  const w = s.w, art = ART[w.g];
-  lb.innerHTML = `<div class="q-title">der, die or das?</div>
-    <div class="prompt"><div class="big">___ ${esc(nounOnly(w))}</div></div><p class="muted">${esc(w.en)}</p>`;
-  const arts = ["der", "die", "das"];
-  options(lb, arts.map(a => `<span class="art ${{ der: "m", die: "f", das: "n" }[a]}">${a}</span>`), arts.indexOf(art),
-    ok => answered(s, ok, { correctHTML: deHTML(w), note: w.g === "pl" ? "Plural-only noun → die" : "" }), "g3");
+  const w = s.w, G = L.genderQ(w);
+  lb.innerHTML = `<div class="q-title">${G.title}</div>
+    <div class="prompt"><div class="big">___ ${esc(G.shown || nounOnly(w))}</div></div><p class="muted">${esc(w.en)}</p>`;
+  options(lb, G.opts.map((a, i) => `<span class="art ${G.cls[i]}">${a}</span>`), G.opts.indexOf(G.ans),
+    ok => answered(s, ok, { correctHTML: deHTML(w), note: G.note }), G.opts.length === 3 ? "g3" : "g2");
 }
 
 function type(s, lb) {
   const w = s.w;
-  lb.innerHTML = `<div class="q-title">Write this in German</div>${enPrompt(w.en)}
-    <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${w.g ? "with der / die / das" : "Type in German"}">
-    <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`;
+  lb.innerHTML = `<div class="q-title">Write this in ${L.name}</div>${enPrompt(w.en)}
+    <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${w.g ? L.artHint : "Type in " + L.name}">
+    ${keysHTML()}`;
   const inp = lb.querySelector("#inp");
   lb.querySelectorAll(".uml button").forEach(b => (b.onclick = () => { inp.value += b.dataset.c; inp.focus(); upd(); }));
   const f = foot(`<button class="btn" id="chk" disabled>Check</button>`);
@@ -568,7 +575,7 @@ function match(s, lb) {
 function gq(s, lb) {
   lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:19px;font-weight:700">${esc(s.q.q)}</div></div>
     <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer">
-    <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`;
+    ${keysHTML()}`;
   const inp = lb.querySelector("#inp");
   lb.querySelectorAll(".uml button").forEach(b => (b.onclick = () => { inp.value += b.dataset.c; inp.focus(); }));
   const f = foot(`<button class="btn" id="chk">Check</button>`);
@@ -586,12 +593,12 @@ const fmtIvl = d => d < 1 ? "<1d" : d < 30 ? `${d}d` : d < 365 ? `${Math.round(d
 function recall(s, lb) {
   const w = s.w;
   const promptHTML = s.dir === "de_en"
-    ? `<div class="q-title">What does this German word mean? <span class="muted small">(think of it, then check)</span></div>
+    ? `<div class="q-title">What does this ${L.name} word mean? <span class="muted small">(think of it, then check)</span></div>
        <div class="prompt"><button class="spk" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button><div class="big">${deHTML(w)}</div></div>`
-    : `<div class="q-title">${s.dir === "type" ? "Type the German" : "Recall the German"} ${w.g ? '<span class="muted small">(with der / die / das)</span>' : ""}</div>
+    : `<div class="q-title">${s.dir === "type" ? "Type the " + L.name : "Recall the " + L.name} ${w.g ? `<span class="muted small">(${L.artHint})</span>` : ""}</div>
        ${enPrompt(w.en)}`;
-  lb.innerHTML = promptHTML + (s.dir === "type" ? `<input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type in German">
-    <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>` :
+  lb.innerHTML = promptHTML + (s.dir === "type" ? `<input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type in ${L.name}">
+    ${keysHTML()}` :
     `<p class="muted small r-hint" style="text-align:center;margin-top:30px">Say the answer out loud or in your head first – that's what makes it stick.</p>`);
   wireSpeakers(lb);
   if (s.dir === "de_en" && S.settings.autoplay) play(w.a, w.de);
@@ -678,38 +685,38 @@ function read(s, lb) {
 }
 
 // ---------- tap a German word in a question to see what it means (Batul's request) ----------
-// Meanings come from the word list; common forms the list doesn't hold (ist, den, mir, zum…) come from FORMS.
-const FORMS = { ist: "is", bin: "am", bist: "are", sind: "are", seid: "are", war: "was", hat: "has", habe: "have", hast: "have", habt: "have",
-  den: "the", dem: "the", des: "of the", einen: "a, an", einem: "a, an", eines: "of a", du: "you", mich: "me", mir: "(to) me",
-  dich: "you", dir: "(to) you", uns: "us", euch: "you (plural)", im: "in the", am: "at the, on the", zum: "to the", zur: "to the",
-  vom: "from the", beim: "at the", ins: "into the" };
-let _gIdx = null;
+// Meanings come from the word list; common forms the list doesn't hold (ist, den, mir, zum… / est, du, au…) come from L.forms.
+let _gIdx = null, _gFor = null;
+const ART_RE = () => (L.code === "fr" ? /^(le|la|les)\s+|^l['’]/i : /^(der|die|das)\s+/i);
 function glossIndex() {
-  if (_gIdx) return _gIdx;
-  _gIdx = new Map();
-  const add = (k, w) => { k = k.replace(/^(der|die|das)\s+/i, "").replace(/^-+|-+$/g, "").trim().toLowerCase(); if (k && !/\s/.test(k) && !_gIdx.has(k)) _gIdx.set(k, w); };
+  if (_gIdx && _gFor === C.content) return _gIdx;
+  _gIdx = new Map(); _gFor = C.content;
+  const art = ART_RE(), strip = k => k.trim().replace(art, "");
+  const add = (k, w) => { k = strip(k).replace(/^-+|-+$/g, "").trim().toLowerCase(); if (k && !/\s/.test(k) && !_gIdx.has(k)) _gIdx.set(k, w); };
   for (const w of C.content.words) {
     const parts = String(w.de).replace(/[()]/g, ",").split(/[\/,]/);
-    if (parts.some(k => /\s/.test(k.replace(/^\s*(der|die|das)\s+/i, "").trim()))) continue;   // phrases ("Berlin, zwölfter Vierter …") are not single words
+    if (parts.some(k => /\s/.test(strip(k).trim()))) continue;   // phrases ("Berlin, zwölfter Vierter …") are not single words
     parts.forEach(k => add(k, w));
-    if (w.pl) String(w.pl).split(/[\/,]/).forEach(k => add(k, w));
+    [w.pl, w.fem].filter(Boolean).forEach(x => String(x).split(/[\/,]/).forEach(k => add(k, w)));
   }
   return _gIdx;
 }
 const firstMeaning = en => String(en).split(/;/)[0].trim();
 function glossOf(tok, first) {
-  const t = tok.replace(/[^\p{L}ß]/gu, ""), low = t.toLowerCase(), idx = glossIndex();
+  // French: "l'école" → "école", "aujourd'hui" stays whole; "allez-vous" → "allez"
+  let src = tok;
+  if (L.code === "fr") { const m = tok.match(/^(?:l|d|j|m|t|s|n|c|qu)['’](.+)$/i); if (m && !/^aujourd/i.test(tok)) src = m[1]; src = src.split("-")[0]; }
+  const t = src.replace(/[^\p{L}ß'’]/gu, "").replace(/['’]$/, ""), low = t.toLowerCase(), idx = glossIndex();
   if (!t) return null;
-  if (!first && /^Ihr(e|en|em|er|es)?$/.test(t)) return "your (formal)";
-  if (!first && t === "Sie") return "you (formal)";
-  const hit = k => idx.get(k);
+  const formal = L.formal(t, first); if (formal) return formal;
+  const hit = k => idx.get(k) || idx.get(k.replace(/’/g, "'"));
   let w = hit(low);
-  if (!w && FORMS[low]) return FORMS[low];
-  for (const suf of ["en", "em", "er", "es", "e", "n", "s", "st", "t"]) {
+  if (!w && L.forms[low]) return L.forms[low];
+  for (const suf of L.suffixes) {
     if (w) break;
-    if (low.endsWith(suf) && low.length - suf.length >= 3) { const st = low.slice(0, -suf.length); w = hit(st) || hit(st + "en") || hit(st + "n"); }
+    if (low.endsWith(suf) && low.length - suf.length >= 3) { const st = low.slice(0, -suf.length); w = L.stemTry(st).map(hit).find(Boolean); }
   }
-  if (!w) w = hit(low + "en") || hit(low + "n");
+  if (!w) w = L.bare(low).map(hit).find(Boolean);
   return w ? `${w.de} = ${firstMeaning(w.en)}` : null;
 }
 // a German token as HTML; known words get a dotted underline and show their meaning when tapped
@@ -756,19 +763,19 @@ function build(s, lb) {
     const ok = got.length === s.ans.length && got.every((g, i) => norm(g) === norm(s.ans[i]));
     play(s.ex.a, s.ex.de);
     answered({ ...s, key: "b:" + s.ex.de }, ok, { correctHTML: esc(s.ex.de), allowOverride: s.ans.length > 1,
-      note: ok || s.ans.length < 2 ? "" : "German word order can vary – if yours is also correct, tap “I was right”." });
+      note: ok || s.ans.length < 2 ? "" : `${L.name} word order can vary – if yours is also correct, tap “I was right”.` });
   };
 }
-// Say it in German: build the whole phrase from word bubbles, or type it out
+// Say it in German / French: build the whole phrase from word bubbles, or type it out
 function say(s, lb) {
   const hint = [s.ctx, s.note].filter(Boolean).map(esc).join(" · ");
-  lb.innerHTML = `<div class="q-title">Say it in German</div>
+  lb.innerHTML = `<div class="q-title">Say it in ${L.name}</div>
     ${enPrompt(s.en, hint)}
     ${s.mode === "tiles"
       ? `<div class="answer-line" id="ans"></div><div class="tiles-bank" id="bank">${s.tiles.map((t, i) => `<button class="tile-w" data-i="${i}">${esc(t)}</button>`).join("")}</div>`
       : `<div class="muted small" style="margin-bottom:6px">Type the whole sentence</div>
-         <input class="type" id="inp" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type in German">
-         <div class="uml">${["ä", "ö", "ü", "ß"].map(c => `<button data-c="${c}">${c}</button>`).join("")}</div>`}`;
+         <input class="type" id="inp" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type in ${L.name}">
+         ${keysHTML()}`}`;
   const f = foot(`<button class="btn" id="chk" disabled>Check</button>`), btn = f.querySelector("#chk");
   const finishSay = (ok, note = "", got = "") => {
     const sib = !ok && (s.sibs || []).find(x => norm(x.de) === norm(got));
@@ -887,7 +894,8 @@ const CHEERS = {
   ok: [["🌱", "Every mistake is a word you'll remember better. Weiter so!"], ["🧗", "Progress, not perfection. You're climbing!"], ["☕", "Good effort – a quick review tomorrow will lock it in."]],
 };
 function cheerFor(acc, perfect) {
-  const set = perfect ? CHEERS.perfect : acc >= 80 ? CHEERS.great : CHEERS.ok;
+  const CH = L.cheers || CHEERS;
+  const set = perfect ? CH.perfect : acc >= 80 ? CH.great : CH.ok;
   const [art, line] = set[Math.floor(Math.random() * set.length)];
   return { art, line };
 }
@@ -964,7 +972,7 @@ export function startGrammarPractice(g, item) {
 export function startPhrases(sec, item, bit = 0) {
   const all = sec.items, idx = item ? bitsOf(item)[bit] : all.map((_, i) => i), items = idx.map(i => all[i]);
   const others = p => { const o = []; for (const x of shuffle(all)) if (o.length < 3 && x !== p && !overlaps(x.en, p.en) && norm(x.de) !== norm(p.de) && !o.some(y => overlaps(y.en, x.en))) o.push(x); return o; };
-  const q = (p, listen) => ({ t: "read", p, listen: listen && !!p.a, title: listen ? "What does this mean?" : "How do you say this in German?", others: others(p) });
+  const q = (p, listen) => ({ t: "read", p, listen: listen && !!p.a, title: listen ? "What does this mean?" : `How do you say this in ${L.name}?`, others: others(p) });
   const steps = [];
   const repeat = !!(item && (S.done[item.id] || ((S.bits || {})[item.id] || [])[bit])); // this part was finished before
   // 🎤 speaking practice for up to 2 phrases per part (optional; skipped when the mic or the setting is off)

@@ -1,5 +1,6 @@
-// Plays the pre-downloaded neural voice clips; falls back to the phone's German speech engine.
+// Plays the pre-downloaded neural voice clips; falls back to the phone's speech engine in the course language.
 import { S } from "./store.js";
+import { L } from "./lang.js";
 
 const player = new Audio();
 player.preload = "auto";
@@ -7,7 +8,7 @@ let voice = null;
 
 function pickVoice() {
   if (!("speechSynthesis" in window)) return null;
-  const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith("de"));
+  const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith(L.code));
   return vs.find(v => /google/i.test(v.name)) || vs[0] || null;
 }
 if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => (voice = pickVoice());
@@ -16,7 +17,8 @@ function tts(text) {
   if (!("speechSynthesis" in window) || !text) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "de-DE"; u.rate = 0.9;
+  u.lang = L.bcp; u.rate = 0.9;
+  if (voice && !voice.lang.toLowerCase().startsWith(L.code)) voice = null; // course switched language
   voice = voice || pickVoice();
   if (voice) u.voice = voice;
   speechSynthesis.speak(u);
