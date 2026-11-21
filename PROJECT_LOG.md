@@ -138,6 +138,7 @@ German content comes from `../German Learning/legacy/Data/Iteration_v3/_source` 
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-21: auto-reload: when the app comes back to the front and /api/health has a newer version (not mid-lesson, no sheet open, once per version), it reloads. SW v47.
 - 11-21: native beta APK (side by side with the TWA) + third invite link. SW v46.
 - 11-21: native Android app (native/, all screens, golden-tested core) + widget designs; partsGoal manual-mode crash fixed. SW v45.
 - 11-21: invite labels both links: "Web app (nothing to install)" + "Android app (APK)". SW v44. Native Kotlin app started in native/ (parity list docs/native/parity.md), widget designs in docs/design/widgets/

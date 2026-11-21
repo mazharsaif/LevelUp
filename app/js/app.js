@@ -1966,8 +1966,24 @@ function treeCompare(box, people, all) {
     if (await checkAuth() === "on" && !localStorage.getItem("a1.user")) { signOut(); toast("Please log in again"); route(); }
   });
   window.addEventListener("a1:sync", () => { const e = document.getElementById("syncst"); if (e) e.textContent = syncText(); });
+  // Android resumes the app without reloading, so after a deploy it kept running old code. Remember the server version
+  // at start; when the app comes back to the front and the server has a newer one, reload (never mid-lesson or with a sheet open).
+  const serverVersion = () => fetch("api/health", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => j && j.version || null).catch(() => null);
+  let bootVersion = null;
+  serverVersion().then(v => { bootVersion = v; });
+  async function reloadIfUpdated() {
+    const v = await serverVersion();
+    if (!v) return false;
+    if (!bootVersion) { bootVersion = v; return false; }
+    if (v === bootVersion || inLesson() || sheetRoot().innerHTML) return false;
+    try { if (sessionStorage.getItem("a1.reloadedFor") === v) return false; sessionStorage.setItem("a1.reloadedFor", v); } catch { /* ignore */ }
+    location.reload();
+    return true;
+  }
   document.addEventListener("visibilitychange", async () => {
-    if (document.visibilityState === "visible" && !inLesson() && await refreshFromServer()) route();
+    if (document.visibilityState !== "visible" || inLesson()) return;
+    if (await reloadIfUpdated()) return;
+    if (await refreshFromServer()) route();
   });
   route();
   if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
