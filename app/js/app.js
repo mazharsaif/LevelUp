@@ -1620,6 +1620,10 @@ function forgotSheet(user = "") {
 // Inside the APK the start URL carries ?src=apk (native app: ?src=native + LevelUpNative in the user agent) (and the first page has an android-app:// referrer): no download offer there.
 const IN_APK = (() => {
   const hit = /[?&]src=(apk|native)\b/.test(location.search) || document.referrer.startsWith("android-app://") || /LevelUpNative\//.test(navigator.userAgent);
+  try {
+    const v = new URLSearchParams(location.search).get("v"); // APK version in the TWA start URL (from 11-21), for bug reports
+    if (v && /[?&]src=apk\b/.test(location.search)) localStorage.setItem("a1.apkVersion", v);
+  } catch { /* ignore */ }
   try { if (hit) sessionStorage.setItem("a1.apk", "1"); return hit || sessionStorage.getItem("a1.apk") === "1"; } catch { return hit; }
 })();
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);

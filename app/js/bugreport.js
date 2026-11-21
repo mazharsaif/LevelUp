@@ -81,6 +81,7 @@ async function envInfo() {
     webVersion: window.__luVersion || null,                 // release the page was loaded with (/api/health at start)
     swCache: shell || null,                                 // app-shell cache on this device, e.g. a1-shell-v50
     swControlled: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
+    apkVersion: (() => { if (appKind() !== "android-apk") return null; try { return new URLSearchParams(location.search).get("v") || localStorage.getItem("a1.apkVersion") || "before 2026.11.21"; } catch { return null; } })(),
     native,                                                 // native app: manufacturer, model, Android, APK version, mic, speech
     device: hints ? { model: hints.model || null, platform: hints.platform, platformVersion: hints.platformVersion,
       browser: (hints.fullVersionList || []).map(b => `${b.brand} ${b.version}`).filter(b => !/Not.A.Brand/i.test(b)).join(", ") } : null,

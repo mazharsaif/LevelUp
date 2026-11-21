@@ -22,11 +22,14 @@ VERSION="${VERSION:-$("$ROOT/tools/next_version.sh")}"
 [[ "$VERSION" =~ ^20[0-9]{2}\.[01][0-9]\.[0-3][0-9]\.[0-9]{2}$ ]] || { echo "VERSION must be YYYY.MM.DD.NN, got $VERSION" >&2; exit 1; }
 CODE="${VERSION//./}"
 sed -i '' -E "s/versionCode [0-9]+/versionCode $CODE/; s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" "$ROOT/android/app/build.gradle"
+# the start URL carries the APK version so the web app (bug reports) knows which APK it runs in
+sed -i '' -E "s|launchUrl: '/\?src=apk[^']*'|launchUrl: '/?src=apk\&v=$VERSION'|" "$ROOT/android/app/build.gradle"
 python3 - "$ROOT/android/twa-manifest.json" "$VERSION" "$CODE" <<'PY'
 import json, sys
 p, v, c = sys.argv[1], sys.argv[2], int(sys.argv[3])
 m = json.load(open(p))
 m["appVersionName"], m["appVersionCode"], m["appVersion"] = v, c, v
+m["startUrl"] = f"/?src=apk&v={v}"
 json.dump(m, open(p, "w"), indent=2)
 open(p, "a").write("\n")
 PY
@@ -35,7 +38,7 @@ echo "APK version $VERSION (versionCode $CODE)"
 cd "$ROOT/android"
 BT="$T/sdk/build-tools/36.1.0"
 # Gradle straight away (bubblewrap build asks questions; this is the same build without prompts)
-./gradlew --quiet assembleRelease
+./gradlew --quiet clean assembleRelease
 "$BT/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app-release-aligned.apk
 "$BT/apksigner" sign --ks "$T/levelup-release.keystore" --ks-key-alias levelup \
   --ks-pass "pass:$PW" --key-pass "pass:$PW" --out app-release-signed.apk app-release-aligned.apk

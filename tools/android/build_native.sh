@@ -12,7 +12,7 @@ PW="$(cat "$T/keystore-password.txt")"
 VER="${VERSION:-$("$ROOT/tools/next_version.sh" 2>/dev/null | sed 's/^v//' || date +%Y.%m.%d.01)}"
 CODE="$(echo "$VER" | tr -d . )"
 cd "$ROOT/native"
-./gradlew -q :app:assembleRelease -Plu.versionCode="$CODE" -Plu.versionName="$VER-native"
+./gradlew -q clean :app:assembleRelease -Plu.versionCode="$CODE" -Plu.versionName="$VER-native"
 OUT="app/build/outputs/apk/release"
 "$BT/zipalign" -f -p 4 "$OUT/app-release-unsigned.apk" "$OUT/aligned.apk"
 "$BT/apksigner" sign --ks "$T/levelup-release.keystore" --ks-key-alias levelup \
