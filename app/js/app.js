@@ -1613,6 +1613,7 @@ const IS_ANDROID = /Android/i.test(navigator.userAgent);
 const standaloneApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const offerApk = () => !IN_APK && !IS_IOS && !standaloneApp();
 const APK_URL = "download/levelup.apk";
+const NATIVE_APK_URL = "download/levelup-native.apk"; // native Kotlin app, beta (installs next to the APK above)
 // iPhone: no APK, but Safari's "Add to Home Screen" installs LevelUp as a full-screen app (iosSheet explains it)
 const offerIos = () => IS_IOS && !standaloneApp();
 const IOS_GUIDE = "download/levelup-iphone-guide.pdf";
@@ -1669,7 +1670,7 @@ async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
   // all links sit inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview
   // card. The iOS PDF is a link, not an attachment (WhatsApp drops the text when a file rides along).
-  const text = `${SHARE_TEXT}\n\n🌐 Web app (any phone or computer, nothing to install): ${url}\n📱 Android app (install the APK): ${new URL(APK_URL, url).href}`
+  const text = `${SHARE_TEXT}\n\n🌐 Web app (any phone or computer, nothing to install): ${url}\n📱 Android app (install the APK): ${new URL(APK_URL, url).href}\n🧪 Android native app (beta, installs next to the other one): ${new URL(NATIVE_APK_URL, url).href}`
     + `\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". Download the picture guide (PDF): ${new URL(IOS_GUIDE, url).href}`;
   try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } }
   catch (e) { if (e && e.name === "AbortError") return; }

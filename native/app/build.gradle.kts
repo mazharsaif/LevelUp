@@ -14,8 +14,8 @@ android {
         minSdk = 24
         targetSdk = 35
         // higher than every TWA build (they use the calendar version digits, e.g. 2026112001)
-        versionCode = 2026112150
-        versionName = "2026.11.21-native"
+        versionCode = (project.findProperty("lu.versionCode") as String?)?.toInt() ?: 2026112150
+        versionName = (project.findProperty("lu.versionName") as String?) ?: "2026.11.21-native"
         buildConfigField("String", "SERVER_URL", "\"https://levelrise.org\"")
         manifestPlaceholders["appLabel"] = "LevelUp"
         manifestPlaceholders["cleartext"] = "false"
@@ -32,7 +32,11 @@ android {
         }
         release {
             isMinifyEnabled = false
-            // signing: ~/.levelup-android/levelup-release.keystore, configured on the command line when a release is made (not in this file)
+            // Beta (11-21): own id so it installs NEXT TO the TWA app (de.com.levelup.app) while it's tested on phones.
+            // Drop the suffix once the native app replaces the TWA. Signed by tools/android/build_native.sh.
+            applicationIdSuffix = ".native"
+            versionNameSuffix = "-beta"
+            manifestPlaceholders["appLabel"] = "LevelUp Native"
         }
     }
 

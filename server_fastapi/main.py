@@ -687,6 +687,16 @@ def apk():
                         headers={"Cache-Control": "no-cache"})
 
 
+# The native Android app (beta, installs next to the TWA app), built by tools/android/build_native.sh.
+@app.get("/download/levelup-native.apk", include_in_schema=False)
+def apk_native():
+    path = os.path.join(APP, "download", "levelup-native.apk")
+    if not os.path.isfile(path):
+        return err("no native APK built yet", 404)
+    return FileResponse(path, media_type="application/vnd.android.package-archive", filename="LevelUp-Native.apk",
+                        headers={"Cache-Control": "no-cache"})
+
+
 # The app itself (index.html, JS, CSS, audio). Mounted last so /api and /docs win.
 app.mount("/", StaticFiles(directory=APP, html=True), name="app")
 

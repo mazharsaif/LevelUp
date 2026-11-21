@@ -817,7 +817,7 @@ fun SettingsScreen(app: AppState) {
 fun shareApp(app: AppState) {
     val url = "https://levelrise.org/"
     val text = "LevelUp was made to learn German faster, because the usual apps felt too slow. It uses active recall: each word comes back for a quick test right before you'd forget it, timed by spaced-repetition research. And it's fast: no slow animations, no ads, no complicated reward system. Just short lessons that stick. Join me!" +
-        "\n\n🌐 Web app (any phone or computer, nothing to install): $url\n📱 Android app (install the APK): ${url}download/levelup.apk" +
+        "\n\n🌐 Web app (any phone or computer, nothing to install): $url\n📱 Android app (install the APK): ${url}download/levelup.apk\n🧪 Android native app (beta, installs next to the other one): ${url}download/levelup-native.apk" +
         "\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then \"Add to Home Screen\". Download the picture guide (PDF): ${url}download/levelup-iphone-guide.pdf"
     val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, text)
     runCatching { app.g.ctx.startActivity(android.content.Intent.createChooser(send, "Invite friends").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }.onFailure { app.toast("No app to share with") }
