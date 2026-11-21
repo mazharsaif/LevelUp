@@ -700,6 +700,7 @@ function settingsView() {
   const spk = v.querySelector("#spk"); if (spk) spk.onchange = e => setS("speak", e.target.checked);
   v.querySelector("#dl").onclick = downloadAudio;
   v.querySelector("#ex").onclick = () => {
+    if (window.LevelUpNative) return window.LevelUpNative.saveFile(`deutsch-a1-backup-${today()}.json`, exportState()); // native app: Android save dialog
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([exportState()], { type: "application/json" }));
     a.download = `deutsch-a1-backup-${today()}.json`; a.click();
@@ -1603,9 +1604,9 @@ function forgotSheet(user = "") {
 }
 // Share / invite: the phone's share sheet (WhatsApp, SMS, …) when available, else copy the link.
 // ------------------------------------------------------------------ Android app (APK download for browser visitors)
-// Inside the APK the start URL carries ?src=apk (and the first page has an android-app:// referrer): no download offer there.
+// Inside the APK the start URL carries ?src=apk (native app: ?src=native + LevelUpNative in the user agent) (and the first page has an android-app:// referrer): no download offer there.
 const IN_APK = (() => {
-  const hit = /[?&]src=apk\b/.test(location.search) || document.referrer.startsWith("android-app://");
+  const hit = /[?&]src=(apk|native)\b/.test(location.search) || document.referrer.startsWith("android-app://") || /LevelUpNative\//.test(navigator.userAgent);
   try { if (hit) sessionStorage.setItem("a1.apk", "1"); return hit || sessionStorage.getItem("a1.apk") === "1"; } catch { return hit; }
 })();
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);

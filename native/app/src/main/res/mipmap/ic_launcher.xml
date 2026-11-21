@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Android 7–7.1 (no adaptive icons): the same art on its background -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item><shape android:shape="rectangle"><corners android:radius="12dp" /><solid android:color="@color/icon_bg" /></shape></item>
-    <item android:drawable="@drawable/ic_launcher_fg" />
-</layer-list>

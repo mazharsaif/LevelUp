@@ -1,113 +1,58 @@
-# LevelUp native (Android, Kotlin + Jetpack Compose)
+# LevelUp native (Android)
 
-A second client for the same LevelUp server and the **same progress files** as the web app in `../app/`
-(which stays the main client). Feature status: `../docs/native/parity.md`.
+A native Android app that shows **the same web app** (levelrise.org) inside a WebView, so screens, icons and
+pop-ups are identical to the PWA by construction. Native code adds only what the web can't do. Since 11-21 this
+replaces the first version's hand-built Compose screens, which looked different from the web.
 
-```
-native/
-  core/          pure Kotlin (JVM) port of app/js/store.js + the logic of lesson.js, lang.js, hero.js, the tree code
-                 of app.js, and the account/sync half of store.js (ApiClient + SyncEngine, OkHttp)
-  app/           the Android app (Compose UI, audio, speech, WorkManager sync, widget snapshot)
-  tools/golden/  node scripts that run the REAL web modules on fixture states and write golden JSON for the tests
-```
+* `app/`: `MainActivity` (WebView + the `LevelUpNative` bridge) and `WidgetStore`. Icons are copied from the TWA (`android/`).
+* `core/`: pure-Kotlin port of `store.js` / `lesson.js` + the sync client, golden-tested against the real JS.
+  Not used by the UI; it's there for widgets, reminders and alarms, which need progress numbers without the page.
 
-## Build, install, run
+## How it works
 
-Toolchain: `~/.levelup-android/` (JDK 17, SDK). Every shell needs:
+* Opens `SERVER_URL/?src=native` (release: https://levelrise.org, debug: http://10.0.2.2:8899 = the Mac's test
+  server from an emulator; override with `-Plevelup.server=http://<mac-ip>:8899` for a phone).
+* User agent ends with `LevelUpNative/<version>`; the web uses it (and `?src=native`) to hide APK download offers.
+* Offline: the web's service worker caches the app after the first start (WebView supports service workers).
+  With no network on the very first start a small "You're offline · Try again" page shows.
+* Web updates arrive instantly (same as the PWA); only native changes need a new APK.
+* Back gesture → `history.back()` in the page (sheets close, "Quit this lesson?", "swipe back again"); at the
+  first page it closes the app.
 
-```sh
-export JAVA_HOME=~/.levelup-android/jdk/Contents/Home ANDROID_HOME=~/.levelup-android/sdk
-echo "sdk.dir=$ANDROID_HOME" > local.properties   # once (git-ignored)
-./gradlew :app:assembleDebug          # → app/build/outputs/apk/debug/app-debug.apk
-./gradlew test                        # all unit tests (JVM)
-$ANDROID_HOME/platform-tools/adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
+## Bridge (`window.LevelUpNative`)
 
-* **Debug** = `de.com.levelup.app.dev` ("LevelUp dev"), installs next to the TWA app. Server: `http://10.0.2.2:8899`
-  (the Mac seen from the emulator; cleartext allowed in debug only). Other server at build time:
-  `./gradlew :app:assembleDebug -Plevelup.server=http://192.168.1.20:8899`, or at run time: login screen →
-  "Debug · server" (stored as `server.url`).
-* **Release** = `de.com.levelup.app` (same id as the TWA in `../android/`, so it can later install over it),
-  server `https://levelrise.org`, `versionCode 2026112150` (above the TWA's calendar codes). **No signing is
-  configured and no release has been built.** When it's time: sign with `~/.levelup-android/levelup-release.keystore`
-  (same key as the TWA, or Android refuses the update), passing the passwords on the command line / env, never in a file.
-* Content: the course files (`app/data/courses.json`, `content.json`, `fr-a1.json`, `se-path.json`, `math-path.json`,
-  `stories.json`) are copied into the APK at build time (`copyWebData` task) so the first start works offline;
-  the app refreshes them from the server. Reading chapters (`data/se|math/<branch>/NN.json`) and audio clips
-  (`audio/<id>.mp3`) download on demand and stay on the phone (Branch screen: Download all / Remove;
-  Settings: Download all audio).
-
-## Tests
-
-```sh
-./gradlew test                                   # golden + engine tests; server tests are skipped
-# with the local test server (never the live site):
-cd ../server_fastapi && A1_DATA=$(mktemp -d) LU_MASTER_PASSWORD=admin uv run main.py 8899   # in another shell
-LU_TEST_SERVER=http://127.0.0.1:8899 ./gradlew test
-```
-
-| Suite | What it checks |
+| Method | Use |
 |---|---|
-| `core` `GoldenStoreTest` (7) | German + French: path expansion (grammar parts via jsoup, spread, I/II numbering), item weights, and for 6 fixture states each (fresh, early, manual goal + penalties, Quest Mode off, an old Leitner/pre-xp2/5-phrase-bits save, A1 complete): normalize (incl. migrations), progress, memory, retention, history, pace, level, rank, streak, XP, due words, auto goal, parts goal, nextPick, planParts, week plan, summary, checkMissed, checkRewards; SM-2 grade sequences, completeBit/completeItem. Expected values come from the real `store.js`. |
-| `core` `GoldenLessonTest` (2) | norm, checkTyped (typos, articles, accents), checkSay, meanings/overlaps (1,900 pairs), sameMeaningDe, answerVariants, sayItems, glossOf (~3,000 tokens), speakable, numWord (de + fr), spellDE, bitsOf, nextIvl. |
-| `core` `EngineTest` (6) | JSON round trip, a vocab part passed/failed (retry, pass mark, XP), review grades + relearn, phrase/grammar steps, tree reader + quiz XP, widget snapshot. |
-| `core` `SyncIntegrationTest` (1) | against 8899: login (wrong + master password), cookie kept, load, save, unknown fields survive a second device, **409** → newer copy taken, 403 on someone else's file, per-course files, logout. |
-| `app` `AppFlowTest` (2, Robolectric) | the real Compose screens on the JVM against 8899: intro → login → course picker → setup → Today → a whole vocab part through the UI → finish screen → progress reached the server → every tab, Ranks, Stories → Software Engineering home, branch, reader, practice. And guest mode + French A1. |
+| `share(text)` | Android share sheet. A document-start script also defines `navigator.share` with it (WebView lacks the Web Share API), so the invite works unchanged. |
+| `saveFile(name, text)` | Backup export through Android's save dialog (blob downloads don't work in WebView). |
+| `openExternal(url)` | Opens a link in the browser (also done automatically for other sites and `/download/…`). |
+| `version()` | APK version name. |
+| `setWidgetData(json)` | Stores a progress summary (see core `WidgetSnapshot`) in SharedPreferences `levelup.widget` for widgets/reminders. Not called by the web yet. |
+| `retry()` | Used by the offline page. |
 
-Regenerate the goldens after changing the web logic (they are the contract):
+File inputs (backup import) open Android's file picker.
+
+## Build, test
 
 ```sh
-cd tools/golden && npm install && node gen.mjs          # writes core/src/test/resources/golden/*.json
-node webread.mjs <progress.json> [course]               # does the web store.js still load a file the app wrote?
+export JAVA_HOME=<~/.levelup-android/jdk/…/Contents/Home> ANDROID_HOME=~/.levelup-android/sdk
+./gradlew :app:assembleDebug        # de.com.levelup.app.dev, "LevelUp dev", installs next to everything
+./gradlew test                      # core golden + engine tests (server tests skip without LU_TEST_SERVER)
+LU_TEST_SERVER=http://127.0.0.1:8899 ./gradlew test   # with the scratch server (never the live site)
+../tools/android/build_native.sh    # signed beta → app/download/levelup-native.apk (de.com.levelup.app.native, "LevelUp Native")
 ```
 
-`gen.mjs` copies `app/js` to `tools/golden/.cache/js` (exporting a few private helpers there); it never changes `app/`.
+Regenerate the goldens after changing web logic: `cd tools/golden && npm install && node gen.mjs`.
 
-## Architecture
+## Known limits of the WebView
 
-* **State = the raw progress JSON.** `core/Js.kt` parses into LinkedHashMaps/ArrayLists with every number a
-  Double, and writes numbers the way `JSON.stringify` does. `Store` works on that object directly (same field
-  names as store.js), so fields the native app doesn't know are written back untouched and both clients can
-  share one file. All "today" logic goes through a `DayClock` (tests pin 2026-11-21).
-* **`Store`** = store.js (normalize + migrations, XP/streak, penalties, level/rank, diamonds/gifts, SM-2, memory
-  decay, A1 %, pace, week plan, auto goal, parts goal, nextPick/planParts, bits, name spelling).
-  **`Text`** = lesson.js/lang.js text logic. **`Builder`/`LessonRun`/`Lessons`** = the step builders, the run
-  (`answered`, retries, combo, override, review grades) and the XP rules on finish (pass mark 60 %).
-  **`Tree`** = skill-tree courses (parts, reader positions, continue target, quizzes with gap nodes).
-* **`SyncEngine`** = the account/sync half of store.js with the same rules: newest of server/local copy wins, a
-  newer local copy is uploaded, **409 → take the server's newer copy**, 401/403 keeps the change pending and asks
-  for a login, offline keeps it pending. Local cache keys are the web's localStorage names (`a1.state.<uid>[@course]`,
-  `a1.user`, `a1.guest`, …) in SharedPreferences. Network runs on IO threads; every read/write of the state hops
-  to the UI thread (`MainRunner`), where the screens change it.
-* **App**: `AppGraph` (no UI: prefs, API, store, sync, content, audio, widgets) and `AppState` (Compose state +
-  actions: boot, login/guest, course switch, navigation stack, sheets, toasts, lesson runs, debounced push 600 ms,
-  bug reports, party, time tracking). Screens read `app.tick` and redraw after every change.
-* **Audio**: MediaPlayer with clips cached in `filesDir/audio`, on-demand download, TTS fallback in the course
-  language, a token so late clips never play over newer ones. **Speak it**: the system speech recogniser
-  (`RecognizerIntent`, no mic permission needed), same word check as the web.
+* **🎤 Speak it** is hidden: WebView has no Web Speech recognition. A bridge to Android's `SpeechRecognizer` can bring it back.
+* The `speechSynthesis` fallback (only for clips without an mp3) may be silent; mp3 audio plays normally.
 
-## Reminders, alarms, widgets (later)
+## Reminders, alarms, widgets (next)
 
-Everything they need is already computed and stored; nothing has to load a course:
-
-* `WidgetSnapshot` (core): user, course, day, `streak`, `xpToday`, `xpGoal`, `dueWords`, `level`, `rank`,
-  `aura` (0..1), `pctA1`, `nextTitle` (next lesson part / skill), `partsToday`, `partsGoal`, `questMode`,
-  `goalReached`, `updatedAt`.
-* `WidgetSnapshotRepository` (app/sync/Background.kt): written ~1 s after every save, course switch and login,
-  cleared on logout. Read it with `LevelUpApp.graph(ctx).widgets.load()` or the `snapshot` StateFlow, or register
-  in `listeners` (e.g. to call `AppWidgetManager.updateAppWidget` / Glance `updateAll`). Stored in
-  SharedPreferences `levelup.widget` → `snapshot` (JSON), so a widget receiver or an alarm can read it cold.
-* `SyncWorker` (WorkManager): one-off upload of offline changes (network constraint, backoff) and a 6-hourly
-  periodic job (`levelup-sync-periodic`): the natural place to refresh widgets and (re)schedule reminders.
-* Reminders/alarms: add `POST_NOTIFICATIONS` (Android 13+) and, for exact alarms, `SCHEDULE_EXACT_ALARM` /
-  `USE_EXACT_ALARM` in the manifest (comment marks the spot); schedule from the snapshot (`goalReached`,
-  `streak`, `dueWords`) in the periodic job and after `widgets.save`. Widget designs: `../docs/design/widgets/`.
-
-## Found while porting
-
-* Web bug: `partsGoal()` throws in **manual goal mode** when `goalDay` was never set (`goalFor` returns early),
-  so Today's daily quest can crash for manual-goal learners. The Kotlin port creates the missing `goalDay`.
-* Grammar parts with no pass mark: a grammar part counts at any accuracy (web behaviour, alpha review B1); kept
-  as is for parity.
-* Compose note: with Kotlin 2.x strong skipping, composables taking `AppState` are skipped unless they read
-  `app.tick`; the UI test caught this (login never left the login screen).
+* Widgets: Jetpack Glance, designs in `../docs/design/widgets/`. Data: the page calls
+  `LevelUpNative.setWidgetData(JSON)` after each save (to add in app.js), or a WorkManager job loads the
+  progress file through `core` (`Sync`/`Store`) and builds a `WidgetSnapshot` with the app closed.
+* Reminders/alarms: `POST_NOTIFICATIONS` (Android 13+), `SCHEDULE_EXACT_ALARM`; schedule from the snapshot
+  (`goalReached`, `streak`, `dueWords`); a bridge method lets Settings set the reminder time.
