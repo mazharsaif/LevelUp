@@ -23,7 +23,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import org.json.JSONArray
@@ -66,7 +70,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         web = WebView(this)
-        setContentView(web)
+        // Android 15 draws apps behind the status and navigation bars: keep the page below the clock/battery and above
+        // the gesture bar (feedback 11-21: the clock covered the rank emblem), and above the keyboard
+        val root = FrameLayout(this).apply { setBackgroundColor(0xFF04060C.toInt()); addView(web) }
+        setContentView(root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            v.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, ime.bottom))
+            WindowInsetsCompat.CONSUMED
+        }
+        WindowCompat.getInsetsController(window, root).apply { isAppearanceLightStatusBars = false; isAppearanceLightNavigationBars = false }
         web.setBackgroundColor(0xFF04060C.toInt())
         with(web.settings) {
             javaScriptEnabled = true

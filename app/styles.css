@@ -1066,3 +1066,6 @@ details.ans[open] summary{margin-bottom:6px}
 .tlines{display:flex;flex-direction:column;gap:8px;margin:12px 0 130px}
 .tline{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
 .tline.on{border-color:var(--blue,#4fb3ff)}
+
+/* setup: when each daily XP choice finishes A1 (feedback 11-21) */
+.choice small.eta{display:block;margin-top:2px;font-weight:700}.choice small.eta.ok{color:var(--green)}.choice small.eta.late{color:var(--red)}

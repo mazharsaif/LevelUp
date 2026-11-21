@@ -1,4 +1,4 @@
-import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
+import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, startedLocal, startedRemote, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
   importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
@@ -127,12 +127,25 @@ function setupView() {
     <p class="muted small" style="margin:6px 0 0">Your pace counts from today (${fmtDate(today())}).</p>
     <label class="f">Daily goal</label>
     <div class="choices" id="dg" role="radiogroup">${[["auto", "Auto", "Recommended · sets the goal so you reach A1 by your date"], [10, "Casual", "10 XP a day"], [20, "Regular", "20 XP a day"], [30, "Serious", "30 XP a day"], [45, "Intense", "45 XP a day"]]
-      .map(([v, l, d], i) => `<label class="choice"><input type="radio" name="dg" value="${v}" ${i ? "" : "checked"}><span><b>${l}</b><small>${d}</small></span></label>`).join("")}</div>
+      .map(([v, l, d], i) => `<label class="choice"><input type="radio" name="dg" value="${v}" ${i ? "" : "checked"}><span><b>${l}</b><small>${d}</small><small class="eta" data-g="${v}"></small></span></label>`).join("")}</div>
     <p class="muted small" style="margin:6px 0 0">⚡ <b>1 XP ≈ one new word learned.</b> Each finished part adds +2 (+1 if perfect) and a whole lesson +5. Reviews give a little (+1 per 5 words recalled) and forgetting costs XP. 20 XP ≈ one new lesson a day.</p>
   </div>
   <button class="btn" id="go">Start learning</button>`;
   view().querySelector("#sw").onclick = () => { if (isGuest()) { leaveGuest(); return route(); } if (AUTH === "on") return doLogout(); signOut(); route(); };
-  view().querySelector("#tg").oninput = e => (view().querySelector("#tgd").textContent = e.target.value ? daysText(e.target.value) : "");
+  // feedback 11-21: next to each XP choice, when it would finish A1 and whether that overshoots the target date
+  const etas = () => {
+    const to = view().querySelector("#tg").value || tgt, left = remainingXP(S);
+    view().querySelectorAll(".eta").forEach(el => {
+      const g = el.dataset.g;
+      if (g === "auto") { const st = { ...S, settings: { ...S.settings, targetDate: to } }; el.textContent = `≈ ${autoGoal(st)} XP a day to finish by ${fmtDate(to)}`; el.className = "eta ok"; return; }
+      const end = addDays(today(), Math.ceil(left / Math.max(1, +g - 3)) - 1), late = daysBetween(to, end); // ~3 XP a day goes to reviews
+      el.textContent = late > 0 ? `⚠ Finishes ≈ ${fmtDate(end, { day: "numeric", month: "short", year: "numeric" })}: ${late} day${late === 1 ? "" : "s"} after your date`
+        : `✓ Finishes ≈ ${fmtDate(end, { day: "numeric", month: "short", year: "numeric" })}${late < 0 ? ` (${-late} day${late === -1 ? "" : "s"} early)` : ""}`;
+      el.className = "eta " + (late > 0 ? "late" : "ok");
+    });
+  };
+  etas();
+  view().querySelector("#tg").oninput = e => { view().querySelector("#tgd").textContent = e.target.value ? daysText(e.target.value) : ""; etas(); };
   view().querySelector("#go").onclick = () => {
     S.settings.targetDate = view().querySelector("#tg").value || tgt;
     S.settings.startDate = today();
@@ -762,12 +775,17 @@ function courseView() {
     <div style="text-align:center;padding:4vh 0 10px"><div class="sysbanner">Select a path</div><h1>What do you want to study?</h1>
     <p class="muted">Pick a course. Each one keeps its own level, rank and progress.</p></div>
     ${Object.entries(groups).map(([g, cs]) => `<h3>${esc(g)}</h3><div class="courses">${cs.map(c => {
-      const here = sm && c.id === COURSE;
+      const here = sm && c.id === COURSE, begun = here || (USER && c.status === "ready" && startedLocal(USER, c.id));
       return `<button class="course ${c.status !== "ready" ? "soon" : ""} ${c.id === COURSE ? "cur" : ""}" data-c="${c.id}" ${c.status !== "ready" ? "disabled" : ""} style="--c:${c.color || "#5aa9ff"}">
         <span class="cicon">${esc(c.icon)}</span><span class="grow"><b>${esc(c.title)}</b>
         <span class="muted small">${here ? `Lv ${sm.lv} · ${sm.rank}-Rank · ${sm.pct.toFixed(0)}% done` : esc(c.subtitle || "")}</span></span>
-        <span class="cgo">${c.status === "ready" ? (here ? "Continue ›" : "Start ›") : "Coming Soon"}</span></button>`; }).join("")}</div>`).join("")}`;
+        <span class="cgo">${c.status === "ready" ? (begun ? "Continue ›" : "Start ›") : "Coming Soon"}</span></button>`; }).join("")}</div>`).join("")}`;
   wireTop();
+  // started on another device (no copy on this phone): ask the server and switch the label
+  view().querySelectorAll(".course[data-c]:not([disabled])").forEach(async b => {
+    const go = b.querySelector(".cgo");
+    if (go && /Start/.test(go.textContent) && await startedRemote(USER, b.dataset.c) && b.isConnected) go.textContent = "Continue ›";
+  });
   view().querySelectorAll(".course[data-c]:not([disabled])").forEach(b => (b.onclick = async () => {
     b.disabled = true;
     if (b.dataset.c !== COURSE || !S) await switchCourse(b.dataset.c); else setCourse(b.dataset.c);

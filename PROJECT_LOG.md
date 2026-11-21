@@ -138,6 +138,7 @@ German content comes from `../German Learning/legacy/Data/Iteration_v3/_source` 
 - **Python 3.13** everywhere (repo `.python-version`, droplet via uv). Server code: `X | None`, typed helpers, ruff E,F,W,UP,I,B clean (`uvx ruff check --target-version py313 --line-length 130 server_fastapi/`).
 
 ## Changelog (newest first, one line per session)
+- 11-21: feedback (mazhar): native app pads below the status bar (clock covered the emblem); course picker shows Continue for every started course (`startedLocal/startedRemote`); setup shows when each daily XP choice finishes A1 and how far past the target date. SW v53.
 - 11-21: TWA APK rebuilt (2026.11.21.08): start URL `/?src=apk&v=<version>` so bug reports get `env.apkVersion`; both APKs clean-built. SW v52.
 - 11-21: bug reports capture app type, web/APK versions, device (native: real model), language, timezone, connection, storage, mic. SW v51.
 - 11-21: native app asks for the mic after a language course is picked. SW v50.
