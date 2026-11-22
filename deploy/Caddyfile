@@ -29,3 +29,13 @@ www.levelrise.org, level-up.com.de, dev.level-up.com.de, app.level-up.com.de {
 	import common
 	redir https://levelrise.org{uri} permanent
 }
+
+# StayLit: static clock that keeps the screen awake. Files: /var/www/staylit (synced by staylit-deploy).
+# Cloudflare DNS: A "staylit" -> 168.144.78.71 (DNS only, grey cloud).
+staylit.levelrise.org {
+	import common
+	root * /var/www/staylit
+	file_server
+	@sw path /sw.js
+	header @sw Cache-Control "no-cache"
+}
