@@ -1120,3 +1120,25 @@ body.theme-sl .aa{background:rgba(47,140,255,.12);border-color:#2f8cff;color:#8f
 body.theme-sl .tour-bubble{background:#0d1530;border-color:#2f8cff;box-shadow:0 0 18px rgba(47,140,255,.45)}
 body.theme-sl .tour-bubble::before{background:#0d1530 !important;border-color:#2f8cff !important}
 body.theme-sl .tour-hole{outline-color:#57b8ff}
+/* "How LevelUp works" guide (#/guide) */
+.guidecard{display:flex;align-items:center;gap:10px;border:2px solid var(--blue)}
+.guidecard .gc-i{font-size:calc(26px*var(--fs))}
+.guide{max-width:620px;margin:0 auto;padding-bottom:30px}
+.ghero{text-align:center;margin:4px 0 14px}.gh-i{font-size:calc(46px*var(--fs));animation:gpop .35s ease-out}
+.ghero h1{margin:6px 0 2px}
+.gsec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:12px 0;box-shadow:var(--shadow);animation:gup .35s ease-out both}
+.gsec:nth-of-type(2){animation-delay:.04s}.gsec:nth-of-type(3){animation-delay:.08s}.gsec:nth-of-type(4){animation-delay:.12s}.gsec:nth-of-type(5){animation-delay:.16s}.gsec:nth-of-type(6){animation-delay:.2s}
+.gsec h2{display:flex;align-items:center;gap:8px;font-size:calc(18px*var(--fs));margin:0 0 8px}
+.gsec p{margin:0;line-height:1.55}
+.gidea{display:flex;gap:12px;align-items:flex-start;margin:10px 0}
+.gn{flex:none;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;display:grid;place-items:center;font-size:calc(14px*var(--fs))}
+.groutine{margin:0;padding-left:20px}.groutine li{margin:8px 0}
+.gmins{font-size:calc(12px*var(--fs));font-weight:800;color:var(--blue);white-space:nowrap}
+.gtips,.gwhere{list-style:none;margin:0;padding:0}
+.gtips li{display:flex;gap:8px;margin:7px 0;line-height:1.45}.gtips li span{flex:none;font-weight:900}
+.gtips li.do span{color:var(--green)}.gtips li.dont span{color:var(--red)}
+.gwhere li{display:grid;grid-template-columns:118px 1fr;gap:8px;margin:6px 0;align-items:baseline}.gwhere li span{color:var(--muted)}
+.gend{margin-top:16px}
+@keyframes gup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes gpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+body.theme-sl .gsec{background:rgba(13,21,48,.85);border-color:rgba(47,140,255,.35)}

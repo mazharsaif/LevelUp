@@ -8,7 +8,7 @@ import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
 import { RANKS } from "./store.js";
 import { L } from "./lang.js";
-import { startTour, tourRunning } from "./tour.js";
+import { startTour, tourRunning, endTour } from "./tour.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -79,7 +79,8 @@ function route() {
     setTimeout(() => goAction(act, decodeURIComponent(arg || "")), 120); return;
   }
   pushWidget();
-  if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "branch" && arg ? treeView(arg) : seHome(); }
+  if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "guide" ? (document.body.classList.add("in-lesson"), guideView()) : nm === "branch" && arg ? treeView(arg) : seHome(); }
+  if (h === "#/guide") { document.querySelectorAll("#tabs a").forEach(a => a.classList.remove("on")); return guideView(); }
   if (!S.setup) return setupView();
   const [, name, arg] = h.split("/");
   document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
@@ -238,7 +239,7 @@ function agendaCard(due) {
 function todayView() {
   if (!questMode()) return freeToday();
   const it = nextPick(), due = dueWords();
-  view().innerHTML = topBar() + apkBanner() + `
+  view().innerHTML = topBar() + apkBanner() + guideCard() + `
   ${dailyQuest(due)}
   ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
@@ -260,7 +261,7 @@ function todayView() {
   clearInterval(tleftTimer); tleftTimer = setInterval(() => { const e = document.getElementById("tleft"); if (e) e.textContent = leftToday(); else clearInterval(tleftTimer); }, 30000);
   levelWatch();
   wireTop();
-  maybeTour();
+  maybeTour(); wireGuideCard();
   const rw = checkRewards(questStatus(due).all);
   if (rw.gems || rw.gifts.length) {
     const chip = view().querySelector("#gem"); if (chip) chip.outerHTML = gemChip();
@@ -301,7 +302,7 @@ function unitLabel(u) {
 }
 function freeToday() {
   const it = nextItem(), due = dueWords();
-  view().innerHTML = topBar() + apkBanner() + `
+  view().innerHTML = topBar() + apkBanner() + guideCard() + `
   ${it ? `<div class="card next-card"><div class="sys-h">Up next</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}</div>
       <div style="font-size:calc(21px*var(--fs));font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
@@ -320,7 +321,7 @@ function freeToday() {
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
   appendStories();
   levelWatch();
-  wireTop(); maybeTour();
+  wireTop(); maybeTour(); wireGuideCard();
 }
 const freeLayout = () => { try { return localStorage.getItem("a1.freeLayout") || "skills"; } catch { return "skills"; } };
 const layoutSwitch = cur => `<div class="segt" role="group" aria-label="Layout" style="margin:4px 0 10px;--c:var(--green)"><button data-fl="skills" class="${cur === "skills" ? "on" : ""}">🧩 Skills</button><button data-fl="order" class="${cur === "order" ? "on" : ""}">↓ Recommended order</button></div>`;
@@ -707,7 +708,8 @@ function settingsView() {
   ${offerApk() || offerIos() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 ${offerIos() ? "iPhone app" : "Android app"}</div>
     <p class="muted small">Install LevelUp as an app: full screen, own icon, same account and progress.</p>${apkBtn("btn")}</div>` : ""}
   <div class="card"><div class="sys-h">About</div><div style="font-weight:800">ℹ️ App version</div>${verBox()}
-    <button class="btn ghost" data-tour style="margin-top:12px">🧭 Take the welcome tour</button></div>
+    <button class="btn" data-guide style="margin-top:12px">📘 How LevelUp works (2-min guide)</button>
+    <button class="btn ghost" data-tour style="margin-top:8px">🧭 Take the welcome tour</button></div>
   <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
     <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
@@ -880,7 +882,7 @@ function seHome() {
       <div class="ct-t">Skill ${n.n} · ${esc(n.title)}</div><div class="tiny muted">${esc(lbl)} · about ${n.mins} min</div>
       <button class="btn" id="cont" style="margin:10px 0 0">${ct.fresh || /^Start/.test(lbl) ? "Start" : "Continue"}</button></div>`;
   } else if (brs.length) cont = `<div class="contcard" style="--c:#57e3a0"><div class="ct-t">👑 Every open branch is complete</div><div class="tiny muted">New branches are on the way.</div></div>`;
-  view().innerHTML = topRow() + `<div style="margin:2px 2px 10px"><div style="font-size:calc(21px*var(--fs));font-weight:800">${esc(T.title)}</div>
+  view().innerHTML = topRow() + guideCard() + `<div style="margin:2px 2px 10px"><div style="font-size:calc(21px*var(--fs));font-weight:800">${esc(T.title)}</div>
       <div class="muted small">${brs.length} branches open · ${done} of ${all.length} skills learned</div></div>${cont}
     <div class="sec-h">Your branches</div>
     <div class="bgrid">${brs.map(b => { const ns = treeNodes(b.id), d = ns.filter(n => nodeDone(n.id)).length, nx = nextNode(b);
@@ -888,7 +890,7 @@ function seHome() {
         <div class="bc-t">${esc(b.title)}</div><div class="tiny muted">${nx ? `Next: ${esc(nx.title)}` : d === ns.length ? "👑 Complete" : ""}</div></button>`; }).join("")}</div>
     <button class="card partylink" id="gop" style="margin-top:14px"><span style="font-size:calc(26px*var(--fs))">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party</div></span><span class="pbadge" hidden></span><span>›</span></button>
     ${soon.length ? `<div class="sec-h">Coming soon</div><div class="soontags">${soon.map(b => `<button class="soontag" data-s="${b.id}">${b.icon} ${esc(b.title)}</button>`).join("")}</div>` : ""}`;
-  wireTop(); maybeTour();
+  wireTop(); maybeTour(); wireGuideCard();
   view().querySelectorAll(".bcard").forEach(b => (b.onclick = () => (location.hash = "#/branch/" + b.dataset.b)));
   view().querySelector("#gop").onclick = () => (location.hash = "#/party");
   if (PARTY && PARTY.mine && PARTY.mine.requests.length) { const pb = view().querySelector("#gop .pbadge"); pb.textContent = PARTY.mine.requests.length; pb.hidden = false; }
@@ -1908,7 +1910,7 @@ function userSheet() {
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" data-tour>🧭 Welcome tour</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
+    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" data-guide>📘 How LevelUp works</button><button class="btn ghost" data-tour>🧭 Welcome tour</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
     el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
@@ -2308,7 +2310,7 @@ function langSteps() {
     { sel: '#tabs a[data-tab="party"]', title: "Party", text: "Learn with friends: join a party and compare progress." },
     { sel: '#tabs a[data-tab="settings"]', title: "Settings", text: "Daily goal, target date, Quest Mode, theme, text size, offline audio. You can take this tour again there." },
     { sel: "#bugbtn", title: "Tell us anything", text: "Found a problem or have an idea? Tap 🐞 on any screen. It sends what you see along with your note." },
-    { title: "You're ready 🎉", text: "Start your first part. Little and often beats long sessions." },
+    { title: "You're ready 🎉", text: `Start your first part. Little and often beats long sessions.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read the 2-minute guide: how to learn well with LevelUp</button>` },
   ].filter(Boolean);
 }
 function treeSteps() {
@@ -2320,7 +2322,7 @@ function treeSteps() {
     { sel: ".bcard", title: "Branches", text: "Each branch is a skill tree. The ring shows how much you've done; skills unlock as you finish the ones before them." },
     { sel: "button.aa[data-aa]", title: "Text size", text: "Make the reading text bigger or smaller, on every page." },
     { sel: "#bugbtn", title: "Tell us anything", text: "Found a problem or have an idea? Tap 🐞 on any screen." },
-    { title: "You're ready 🎉", text: "Open a branch and start with its first skill." },
+    { title: "You're ready 🎉", text: `Open a branch and start with its first skill.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read the 2-minute guide</button>` },
   ];
 }
 let tourPending = false;
@@ -2345,3 +2347,73 @@ function takeTour() {
   if (location.hash === h) route(); else location.hash = h;
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tour]")) takeTour(); });
+
+// ------------------------------------------------------------------ "How LevelUp works" guide (#/guide)
+// The one page everyone should read (feedback 11-22): what the app is for and how to use it well, in about 2 minutes.
+// Linked from a "Start here" card on the course home (until opened or dismissed), the tour's last step, Settings → About
+// and the account menu.
+const guideSeen = () => { try { return !!localStorage.getItem("a1.guideSeen"); } catch { return true; } };
+const guideMark = () => { try { localStorage.setItem("a1.guideSeen", today()); } catch { /* ignore */ } };
+const guideCard = () => guideSeen() ? "" : `<div class="card guidecard" id="guidec"><span class="gc-i">📘</span><div class="grow"><b>New here? Start with the 2-minute guide</b>
+  <div class="muted small">What LevelUp is for and how to get the most out of it.</div></div>
+  <button class="btn sm" data-guide style="width:auto;margin:0">Read</button><button class="link" id="guidex" aria-label="Hide" style="padding:4px">✕</button></div>`;
+function wireGuideCard() {
+  const x = view().querySelector("#guidex");
+  if (x) x.onclick = () => { guideMark(); view().querySelector("#guidec")?.remove(); toast("The guide is always in Settings → About"); };
+}
+function guideView() {
+  guideMark();
+  const tree = courseInfo(COURSE).type === "tree", lang = !tree, quest = lang && S && S.setup && questMode();
+  const what = tree ? (C.content.title || "this course") : (C.course && C.course.title) || "your course";
+  const sec = (icon, title, body) => `<section class="gsec"><h2><span>${icon}</span>${title}</h2>${body}</section>`;
+  const idea = (n, icon, t, d) => `<div class="gidea"><div class="gn">${n}</div><div class="grow"><b>${icon} ${t}</b><div class="muted small">${d}</div></div></div>`;
+  const step = (t, mins, d) => `<li><div class="row" style="gap:8px;align-items:baseline"><b class="grow">${t}</b><span class="gmins">${mins}</span></div><div class="muted small">${d}</div></li>`;
+  const tip = (ok, t) => `<li class="${ok ? "do" : "dont"}"><span>${ok ? "✓" : "✗"}</span><div>${t}</div></li>`;
+  view().innerHTML = `<div class="guide">
+  <button class="link" id="gback" style="padding:0;margin-bottom:6px">‹ Back</button>
+  <div class="ghero"><div class="gh-i">📘</div><h1>How LevelUp works</h1><p class="muted">A 2-minute read. It will save you weeks.</p></div>
+  ${sec("🎯", "What it's for", lang
+    ? `<p>LevelUp gets you to a real level in <b>${esc(what)}</b> by a date you choose: enough to pass the A1 exam and to manage simple everyday conversations. It teaches every word, phrase and grammar point the exam expects, then makes sure you <b>keep</b> them.</p>`
+    : `<p><b>${esc(what)}</b> is a skill tree: short readings with worked examples, practice questions and concept checks, from the foundations up. It's built to fill gaps properly, not to skim.</p>`)}
+  ${sec("💡", "The 3 ideas that make it work", lang ? `
+    ${idea(1, "⏱", "Short parts", "Each lesson is split into parts of about 5 minutes. Small enough to do on a bus, often enough to add up.")}
+    ${idea(2, "🧠", "Recall, don't reread", "Every word comes back as a quick test right before you'd forget it (spaced repetition). Pulling it from memory is what makes it stick; rereading doesn't.")}
+    ${idea(3, "📅", "A little every day", "Your finish date sets a daily goal. Ten minutes every day beats an hour on Sunday, and the 🔥 streak keeps you honest.")}` : `
+    ${idea(1, "⏱", "Short parts", "Each skill is split into 3–4 parts of a few minutes. Read one, stop, come back.")}
+    ${idea(2, "✍️", "Practice right after reading", "Practice questions open by themselves when you finish a skill. Answering beats rereading every time.")}
+    ${idea(3, "🧱", "Foundations first", "Skills unlock in order. A concept check shows which earlier skill a mistake comes from, so you fix the cause.")}`)}
+  ${sec("🗓", "Your daily routine", lang ? `<ol class="groutine">
+    ${step("Review the words that are due", "2–5 min", "Always first. Overdue words start to fade from your progress, and a missed review day costs a little XP.")}
+    ${step(quest ? "Finish today's parts" : "Finish a part or two", "5 min each", quest ? "The daily quest says how many parts keep you on track for your date. Lessons alternate so you don't get stuck on one topic." : "Pick any lesson from the skill map and finish one part at a time.")}
+    ${step("Say it out loud", "as you go", "Answer before you reveal, out loud or in your head. 🎤 Speak it checks your pronunciation in phrase lessons.")}
+    ${quest ? step("Hit the goal, keep the streak", "done", "Reaching the XP goal banks the day: 🔥 +1, diamonds 💎 for the quest, gift boxes for long streaks.") : ""}
+  </ol>` : `<ol class="groutine">
+    ${step("Continue where you stopped", "5–10 min", "The Continue card on the home screen opens the next part.")}
+    ${step("Do the practice questions", "3–5 min", "They open when you finish a skill. Aim for 80 % to pass; retry the ones you missed.")}
+    ${step("Take the concept check", "3 min", "Common mistakes and \"spot the wrong step\". Misses link to the skill to revisit.")}
+  </ol>`)}
+  ${sec("🏆", "Tips that make the difference", `<ul class="gtips">
+    ${tip(true, "Answer <b>before</b> you look. Even a wrong guess helps you remember the right answer.")}
+    ${lang ? tip(true, "Play the audio and repeat it. Hearing and saying words makes them stick twice as well.") : tip(true, "Work the examples on paper before reading the solution.")}
+    ${lang ? tip(true, "Be honest when you grade yourself. \"I knew it\" when you didn't only hides words you need.") : tip(true, "If a concept check points to an earlier skill, reread it. It's usually a 5-minute fix.")}
+    ${tip(true, "Missed a day? Just carry on. The plan adjusts; nothing is lost.")}
+    ${lang ? tip(false, "Don't skip reviews to rush new lessons. New words you don't review are gone in a week.") : tip(false, "Don't mark skills as done without the practice. Reading alone fades fast.")}
+    ${tip(false, "Don't cram. Two short sessions a day beat one long one.")}
+  </ul>`)}
+  ${lang ? sec("📈", "How progress is measured", `<p><b>% of A1</b> counts what you actually know: learned words that you keep reviewing, grammar chapters and phrase topics. Words you stop reviewing slowly fade, so the number can go down. Your <b>level</b> (1–100) and <b>rank</b> (E → S) follow it. Progress shows whether your pace reaches your finish date.</p>`) : ""}
+  ${sec("🧭", "Where to find things", `<ul class="gwhere">
+    ${lang ? `<li><b>🏠 Today</b><span>your quest, next lesson and reviews</span></li><li><b>🗺️ ${quest ? "Path" : "Skills"}</b><span>the whole course</span></li><li><b>📖 Words</b><span>everything you've learned, with audio</span></li><li><b>📈 Progress</b><span>% of A1, pace, activity calendar</span></li><li><b>👥 Party</b><span>learn with friends</span></li><li><b>⚙️ Settings</b><span>goal, finish date, Quest Mode, theme</span></li>`
+      : `<li><b>Home</b><span>Continue card and all branches</span></li><li><b>A branch</b><span>its skills as a map or a path</span></li><li><b>A skill</b><span>parts, practice and concept check</span></li>`}
+    <li><b>Aa</b><span>text size, on reading screens</span></li><li><b>🐞</b><span>report a problem or an idea, on any screen</span></li></ul>`)}
+  <div class="gend"><button class="btn" id="gstart">${lang ? (S && S.setup ? "▶ Start learning" : "▶ Set up my plan") : "▶ Continue learning"}</button>
+    <button class="btn ghost" data-tour>🧭 Take the 30-second tour</button></div>
+  </div>`;
+  window.scrollTo(0, 0);
+  view().querySelector("#gback").onclick = () => (window.history.length > 1 ? window.history.back() : (location.hash = tree ? "#/home" : "#/today"));
+  view().querySelector("#gstart").onclick = () => {
+    if (tree) { const ct = continueTarget(); if (ct) openReader(ct.br, ct.n); else location.hash = "#/home"; return; }
+    location.hash = "#/today";
+  };
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-guide]")) { endTourIfAny(); location.hash = "#/guide"; } });
+const endTourIfAny = () => { if (tourRunning()) endTour(true); };
