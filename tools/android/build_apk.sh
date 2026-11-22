@@ -35,6 +35,7 @@ open(p, "a").write("\n")
 PY
 echo "APK version $VERSION (versionCode $CODE)"
 
+"$ROOT/tools/android/launcher_icons.sh"   # full-bleed launcher icon, no white edges
 cd "$ROOT/android"
 BT="$T/sdk/build-tools/36.1.0"
 # Gradle straight away (bubblewrap build asks questions; this is the same build without prompts)

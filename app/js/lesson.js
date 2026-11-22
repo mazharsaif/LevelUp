@@ -334,7 +334,7 @@ export function lessonDebug() {
 
 function header() {
   const pct = Math.min(100, 100 * R.done / R.total);
-  return `<div class="lesson-top"><button class="x" id="quit">✕</button><div class="bar"><div style="width:${pct}%"></div></div></div>`;
+  return `<div class="lesson-top"><button class="x" id="quit">✕</button><div class="bar"><div style="width:${pct}%"></div></div><button class="x aa" data-aa aria-label="Text size">Aa</button></div>`;
 }
 
 function render() {
@@ -573,7 +573,7 @@ function match(s, lb) {
 
 // grammar question (typed, lenient, with override)
 function gq(s, lb) {
-  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:19px;font-weight:700">${esc(s.q.q)}</div></div>
+  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:calc(19px*var(--fs));font-weight:700">${esc(s.q.q)}</div></div>
     <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer">
     ${keysHTML()}`;
   const inp = lb.querySelector("#inp");
@@ -643,7 +643,7 @@ function recall(s, lb) {
 // grammar multiple choice, optionally with a listening prompt (e.g. "which letter do you hear?")
 function gmc(s, lb) {
   const q = s.q, opts = shuffle(q.opts);
-  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:19px;font-weight:700">${esc(q.q)}</div></div>
+  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:calc(19px*var(--fs));font-weight:700">${esc(q.q)}</div></div>
     ${q.audio ? `<button class="spk xl" data-a="${q.audio}" data-t="${esc(q.say || "")}">🔊</button>` : ""}`;
   wireSpeakers(lb);
   if (q.audio) playSoon(q.audio, q.say);
@@ -815,8 +815,8 @@ function cloze(s, lb) {
   const toks = s.ex.de.split(/(\s+)/);
   let blanked = false;
   const sent = toks.map((t, k) => { const bare = t.replace(/[.,!?]/g, ""); if (!blanked && bare.toLowerCase() === s.ans.toLowerCase()) { blanked = true; return t.replace(bare, "<span class=\"gap\">____</span>"); } return /\S/.test(t) ? glossTok(t, k === 0) : esc(t); }).join("");
-  lb.innerHTML = `<div class="q-title">Fill the gap</div><div class="card"><div style="font-size:20px;font-weight:700" id="csent">${sent}</div>
-    <div class="muted" style="margin-top:6px;font-size:20px">${esc(s.ex.en)}</div></div>`;
+  lb.innerHTML = `<div class="q-title">Fill the gap</div><div class="card"><div style="font-size:calc(20px*var(--fs));font-weight:700" id="csent">${sent}</div>
+    <div class="muted" style="margin-top:6px;font-size:calc(20px*var(--fs))">${esc(s.ex.en)}</div></div>`;
   wireGloss(lb.querySelector("#csent"));
   const opts = shuffle(s.opts);
   options(lb, opts.map(o => esc(o)), opts.indexOf(s.opts[0]), ok => { play(s.ex.a, s.ex.de); answered({ ...s, key: "c:" + s.ex.de }, ok, { correctHTML: esc(s.ex.de) }); });

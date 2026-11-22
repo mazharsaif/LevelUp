@@ -5,7 +5,7 @@ Q = {
     NUM("What is the expected value (long-run average) of one roll of a fair six-sided die?", 3.5, "(1 + 2 + 3 + 4 + 5 + 6)/6 = 21/6 = 3.5.", tol=0.001),
     MF("The expected value of a die roll is a number you will often roll.", False, "Myth. You can never roll 3.5; the expected value is a long-run average, not a likely single result."),
     MC("An indicator is 1 when a project is late and 0 otherwise. Its average over 1,000 runs is 0.3. This means …", ["the project is 0.3 days late", "the estimated probability of being late is 30%", "30 runs were late", "the error is 0.3"], 1, "The average of a 0/1 variable is the share of 1s, which estimates a probability."),
-    NUM("Two dice: how many of the 36 equally likely pairs give a total of 10 or more?", 6, "4+6, 5+5, 6+4, 5+6, 6+5, 6+6: six pairs, so P = 6/36 ≈ 0.167."),
+    NUM("Two dice: how many of the 36 equally likely pairs give a total of 10 or more? (a count of pairs, not a probability)", 6, "4+6, 5+5, 6+4, 5+6, 6+5, 6+6: six pairs, so P = 6/36 ≈ 0.167."),
     TF("The law of large numbers says the average of many independent random results gets closer to the expected value.", True, "True: that is why averaging many runs works."),
     NUM("How many times more runs do you need to halve the standard error?", 4, "The error shrinks with √N, so halving it needs √N to double: 4× the runs."),
     NUM("Single results have SD 2. What is the standard error of their average over N = 10,000 runs?", 0.02, "s/√N = 2/√10,000 = 2/100 = 0.02.", tol=0.0005),

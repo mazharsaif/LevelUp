@@ -45,7 +45,7 @@
  },
  {
   "t": "num",
-  "q": "Two dice: how many of the 36 equally likely pairs give a total of 10 or more?",
+  "q": "Two dice: how many of the 36 equally likely pairs give a total of 10 or more? (a count of pairs, not a probability)",
   "a": 6,
   "why": "4+6, 5+5, 6+4, 5+6, 6+5, 6+6: six pairs, so P = 6/36 ≈ 0.167."
  },

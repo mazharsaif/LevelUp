@@ -182,7 +182,7 @@ function topBar() {
   return `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}${courseChip()}
     <span class="grow"></span><span class="tiny muted" id="syncst">${syncText()}</span>${gemChip()}</div>${playerBar()}<div class="top classic-only">
     <div class="ring" id="xpring" style="--p:${p};cursor:pointer"><div>${x}<br><span class="tiny muted">/${g} XP</span></div></div>
-    <div class="grow"><div style="font-weight:800;font-size:18px">${x >= g ? "Daily goal done ✅" : "Today's goal"}</div>
+    <div class="grow"><div style="font-weight:800;font-size:calc(18px*var(--fs))">${x >= g ? "Daily goal done ✅" : "Today's goal"}</div>
       <div class="muted small">${x >= g ? "Anything extra is a bonus." : `${g - x} XP to go`}</div></div>
     <div class="stat" title="Day streak">🔥 ${streak()}</div></div>`;
 }
@@ -233,13 +233,13 @@ function todayView() {
   ${dailyQuest(due)}
   ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
-      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(itemName(it))}</div>
+      <div style="font-size:calc(21px*var(--fs));font-weight:800;margin-top:4px">${esc(itemName(it))}</div>
       ${partBar(it)}
       <div class="muted small">${[partLabel(it), it.kind === "vocab" ? `${bitsOf(it)[nextBit(it)].length} new words` : it.kind === "phrases" ? `${bitsOf(it)[nextBit(it)].length} new phrases` : ""].filter(Boolean).join(" · ")}</div>
       ${bitCount(it) > 1 ? `<div class="muted tiny">This lesson has ${bitCount(it)} short parts${minPerPart() ? ` (about ${minPerPart()} min each)` : ""}. Each part you finish counts for the daily quest.</div>` : ""}
       <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button></div>
     ${agendaCard(due)}`
-    : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
+    : `<div class="card next-card"><div style="font-size:calc(21px*var(--fs));font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
       <div class="muted small">Review them now to keep them fresh</div></div>
@@ -294,11 +294,11 @@ function freeToday() {
   view().innerHTML = topBar() + apkBanner() + `
   ${it ? `<div class="card next-card"><div class="sys-h">Up next</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}</div>
-      <div style="font-size:21px;font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
+      <div style="font-size:calc(21px*var(--fs));font-weight:800;margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</div>
       <div class="muted small">${partLabel(it) || "A suggestion – or pick any skill"}</div>
       <button class="btn" id="next">${bitsDone(it) ? "Continue" : "Start"}</button>
       <button class="btn ghost" id="all">🧩 Pick a skill</button><button class="link" id="ord" style="display:block;margin:6px auto 0">↓ See the recommended order</button></div>`
-    : `<div class="card next-card"><div style="font-size:21px;font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
+    : `<div class="card next-card"><div style="font-size:calc(21px*var(--fs));font-weight:800">All lessons done! 🎓</div><div class="muted">Keep your reviews going until the exam.</div></div>`}
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
       <div class="muted small">No pressure – reviews just keep words fresh</div></div>
@@ -647,7 +647,7 @@ function progressView() {
       ${S.penLog.slice(-4).reverse().map(p => `<div class="muted tiny">${fmtDate(p.d)} · −${p.xp} XP · ${esc(p.why)}</div>`).join("")}</div>` : ""}</div>
 `;
   const v = view();
-  v.insertAdjacentHTML("beforeend", `<button class="card partylink" id="gop"><span style="font-size:26px">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party, or join one</div></span><span>›</span></button>`);
+  v.insertAdjacentHTML("beforeend", `<button class="card partylink" id="gop"><span style="font-size:calc(26px*var(--fs))">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party, or join one</div></span><span>›</span></button>`);
   v.querySelector("#gop").onclick = () => (location.hash = "#/party");
   wireTop(); wireCalendar();
   v.querySelector("#xph").onclick = () => sheet(XP_HELP + `<button class="btn" id="ok">Got it</button>`, el => (el.querySelector("#ok").onclick = closeSheet));
@@ -673,6 +673,7 @@ function settingsView() {
     <button class="link" id="xph">How is XP measured?</button></div>
   <div class="card"><div class="sys-h">Look & sound</div><div style="font-weight:800">🎨 Look & sound</div>
     <label class="f">Theme</label><select id="th">${themeOptions(S.settings.theme || "system")}</select>
+    <label class="f">Text size</label><button class="btn ghost sm" data-aa style="margin:0">Aa ${(FONT_SIZES.find(([f]) => f === fontScale()) || [0, "Custom"])[1]} ›</button>
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
     <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label>
@@ -842,7 +843,7 @@ function ringSVG(frac, color, icon, s = 46) {
 }
 const topRow = () => `<div class="row" style="margin-bottom:10px;gap:8px">${userChip()}
   ${courseChip()}<span class="grow"></span>
-  <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span></div>`;
+  <span class="gemchip" style="cursor:default">⚡ <b>${totalXP()}</b></span>${aaBtn()}</div>`;
 function seHome() {
   document.body.classList.add("in-lesson");
   S.tree = S.tree || {};
@@ -855,20 +856,20 @@ function seHome() {
       <div class="ct-t">Skill ${n.n} · ${esc(n.title)}</div><div class="tiny muted">${esc(lbl)} · about ${n.mins} min</div>
       <button class="btn" id="cont" style="margin:10px 0 0">${ct.fresh || /^Start/.test(lbl) ? "Start" : "Continue"}</button></div>`;
   } else if (brs.length) cont = `<div class="contcard" style="--c:#57e3a0"><div class="ct-t">👑 Every open branch is complete</div><div class="tiny muted">New branches are on the way.</div></div>`;
-  view().innerHTML = topRow() + `<div style="margin:2px 2px 10px"><div style="font-size:21px;font-weight:800">${esc(T.title)}</div>
+  view().innerHTML = topRow() + `<div style="margin:2px 2px 10px"><div style="font-size:calc(21px*var(--fs));font-weight:800">${esc(T.title)}</div>
       <div class="muted small">${brs.length} branches open · ${done} of ${all.length} skills learned</div></div>${cont}
     <div class="sec-h">Your branches</div>
     <div class="bgrid">${brs.map(b => { const ns = treeNodes(b.id), d = ns.filter(n => nodeDone(n.id)).length, nx = nextNode(b);
       return `<button class="bcard" data-b="${b.id}" style="--c:${b.color}" aria-label="${esc(b.title)}: ${d} of ${ns.length} skills"><div class="row" style="justify-content:space-between">${ringSVG(branchFrac(b), b.color, b.icon)}<span class="tiny muted">${d}/${ns.length}</span></div>
         <div class="bc-t">${esc(b.title)}</div><div class="tiny muted">${nx ? `Next: ${esc(nx.title)}` : d === ns.length ? "👑 Complete" : ""}</div></button>`; }).join("")}</div>
-    <button class="card partylink" id="gop" style="margin-top:14px"><span style="font-size:26px">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party</div></span><span class="pbadge" hidden></span><span>›</span></button>
+    <button class="card partylink" id="gop" style="margin-top:14px"><span style="font-size:calc(26px*var(--fs))">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party</div></span><span class="pbadge" hidden></span><span>›</span></button>
     ${soon.length ? `<div class="sec-h">Coming soon</div><div class="soontags">${soon.map(b => `<button class="soontag" data-s="${b.id}">${b.icon} ${esc(b.title)}</button>`).join("")}</div>` : ""}`;
   wireTop();
   view().querySelectorAll(".bcard").forEach(b => (b.onclick = () => (location.hash = "#/branch/" + b.dataset.b)));
   view().querySelector("#gop").onclick = () => (location.hash = "#/party");
   if (PARTY && PARTY.mine && PARTY.mine.requests.length) { const pb = view().querySelector("#gop .pbadge"); pb.textContent = PARTY.mine.requests.length; pb.hidden = false; }
   view().querySelectorAll(".soontag").forEach(b => (b.onclick = () => { const s = T.branches.find(x => x.id === b.dataset.s);
-    sheet(`<div style="font-size:20px;font-weight:800">${s.icon} ${esc(s.title)}</div><p class="muted small" style="margin:4px 0 0">Coming soon. Planned skills:</p>
+    sheet(`<div style="font-size:calc(20px*var(--fs));font-weight:800">${s.icon} ${esc(s.title)}</div><p class="muted small" style="margin:4px 0 0">Coming soon. Planned skills:</p>
       <ol class="planned">${(s.planned || []).map(p => `<li>${esc(p)}</li>`).join("")}</ol><button class="btn ghost" id="close">Close</button>`, el => (el.querySelector("#close").onclick = closeSheet)); }));
   const cb = view().querySelector("#cont");
   if (cb) cb.onclick = () => { pendingRead = ct.n.id; location.hash = "#/branch/" + ct.br.id; };
@@ -1047,6 +1048,20 @@ function parseNum(txt) {
   return /^-?(\d+\.?\d*|\.\d+)$/.test(t) ? +t : NaN;
 }
 const numOK = (q, v) => Math.abs(v - q.a) <= (q.tol != null ? q.tol : Math.max(1e-9, Math.abs(q.a) * 0.005));
+// rounded answers (feedback 11-21): 0.17 for 0.167 is the answer rounded to the decimals typed, so it counts,
+// with a yellow note giving the exact value. Must also be within 5 % (so 0.00 never passes for 0.004).
+const typedDecimals = raw => { const m = String(raw).trim().match(/^[^/]*[.,](\d+)\D*$/); return m ? m[1].length : 0; };
+const roundsTo = (v, a, d) => d >= 1 && Math.abs(v - a) <= 0.5 * 10 ** -d + 1e-9 && Math.abs(v - a) <= Math.abs(a) * 0.05;
+function numGrade(q, v, raw) {
+  if (numOK(q, v)) return "ok";
+  return roundsTo(v, q.a, typedDecimals(raw)) ? "close" : "no";
+}
+// a wrong number that matches another number in the working (the probability when the count was asked)
+function numMixup(q, v, raw) {
+  const d = typedDecimals(raw), ts = String(q.why).match(/\d+(?:\.\d+)?(?:\/\d+)?/g) || [];
+  if (d) ts.sort((x, y) => y.includes(".") - x.includes("."));   // typed a decimal: name the decimal in the working
+  return ts.find(t => { const n = parseNum(t); return !isNaN(n) && Math.abs(n - q.a) > 1e-9 && (Math.abs(v - n) <= Math.max(1e-9, Math.abs(n) * 0.005) || roundsTo(v, n, d)); });
+}
 async function openQuiz(br, node, only, mode = "quiz") {
   const M = QMODE[mode];
   let ch = null;
@@ -1072,25 +1087,38 @@ async function openQuiz(br, node, only, mode = "quiz") {
     else if (q.t === "tf" || q.t === "mf") { const [yes, no] = q.t === "mf" ? ["Fact", "Myth"] : ["True", "False"];
       body = `<div class="opts tf"><button class="opt" data-k="1">${yes}</button><button class="opt" data-k="0">${no}</button></div>`; }
     else body = `<div class="numin"><input id="na" inputmode="decimal" autocomplete="off" placeholder="Your answer">${q.unit ? `<span class="muted">${esc(q.unit)}</span>` : ""}</div>
+      <div class="numkeys" aria-label="Symbols">${[["/", "/"], ["-", "−"], [".", "."]].map(([k, l]) => `<button data-nk="${k}" aria-label="Type ${l}">${l}</button>`).join("")}</div>
       <div class="tiny muted" style="margin-top:6px">A number. Fractions like 3/4 and negatives like −2 are fine.</div>`;
-    view().innerHTML = `<div class="lesson-top"><button class="x" id="qx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i + 1} / ${Q.length}</span></div>
+    view().innerHTML = `<div class="lesson-top"><button class="x" id="qx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i + 1} / ${Q.length}</span>${aaBtn()}</div>
       <div class="reader quiz"><div class="r-eyebrow">${node.icon} ${esc(node.title)} · ${kind}</div>
         <div class="q-title qq">${esc(q.q)}</div>${body}<div id="fb"></div></div>
-      <div class="lesson-foot"><button class="btn" id="qn" ${q.t === "num" ? "" : "disabled"} style="margin:0">${q.t === "num" ? "Check" : "Choose an answer"}</button></div>`;
+      <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost" id="qs" style="margin:0;width:auto;padding-left:18px;padding-right:18px">Skip</button><button class="btn grow" id="qn" ${q.t === "num" ? "" : "disabled"} style="margin:0">${q.t === "num" ? "Check" : "Choose an answer"}</button></div></div>`;
     window.scrollTo(0, 0);
     view().querySelector("#qx").onclick = () => treeView();
     const nb = view().querySelector("#qn"), fb = view().querySelector("#fb");
-    const answer = ok => {
-      res[i] = ok;
-      const g = !ok && gapNode(q);
-      fb.innerHTML = `<div class="qfb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Right" : "✗ Not quite"}</b>${!ok && q.t === "num" ? ` · answer: <b>${esc(String(q.a))}${q.unit ? " " + esc(q.unit) : ""}</b>` : ""}${!ok && q.t === "step" ? ` · line ${q.a + 1} is the first wrong one` : ""}<div>${esc(q.why)}</div>${g ? `<div class="tiny" style="margin-top:6px">🧱 Foundation behind this: <b>${g.icon} ${esc(g.title)}</b></div>` : ""}</div>`;
+    const sk = view().querySelector("#qs");
+    // how: "close" = right but rounded, "skip" = skipped (counts as missed); note = extra line under the verdict
+    const answer = (ok, how, note) => {
+      res[i] = ok; sk.remove();
+      const g = !ok && gapNode(q), showA = q.t === "num" && (!ok || how === "close");
+      const head = how === "skip" ? "↷ Skipped" : how === "close" ? "✓ Right, rounded" : ok ? "✓ Right" : "✗ Not quite";
+      fb.innerHTML = `<div class="qfb ${how === "close" ? "close" : ok ? "ok" : "no"}"><b>${head}</b>${showA ? ` · ${how === "close" ? "exact" : "answer"}: <b>${esc(String(q.a))}${q.unit ? " " + esc(q.unit) : ""}</b>` : ""}${!ok && q.t === "step" ? ` · line ${q.a + 1} is the first wrong one` : ""}${note ? `<div class="tiny" style="margin:4px 0">${note}</div>` : ""}<div>${esc(q.why)}</div>${g ? `<div class="tiny" style="margin-top:6px">🧱 Foundation behind this: <b>${g.icon} ${esc(g.title)}</b></div>` : ""}</div>`;
       nb.disabled = false; nb.textContent = i + 1 < Q.length ? "Next ›" : "See result"; nb.onclick = () => { i++; i < Q.length ? draw() : done(); };
     };
     if (q.t === "num") {
       const inp = view().querySelector("#na"); inp.focus();
       const check = () => { const v = parseNum(inp.value); if (isNaN(v)) { inp.classList.add("shake"); setTimeout(() => inp.classList.remove("shake"), 400); return; }
-        inp.disabled = true; const ok = numOK(q, v); inp.classList.add(ok ? "right" : "wrong"); answer(ok); };
+        inp.disabled = true; view().querySelector(".numkeys").remove();
+        const gr = numGrade(q, v, inp.value), ok = gr !== "no", mix = !ok && numMixup(q, v, inp.value);
+        inp.classList.add(gr === "ok" ? "right" : gr === "close" ? "close" : "wrong");
+        answer(ok, gr === "close" ? "close" : "", gr === "close" ? "Counted as right: yours is the exact value rounded. More decimals next time for full precision."
+          : mix ? `Your ${esc(inp.value.trim())} matches ${esc(mix)} in the working, but the question asks for something else. Read it once more.` : ""); };
       nb.onclick = check; inp.onkeydown = e => { if (e.key === "Enter" && !inp.disabled) check(); };
+      // the phone's number keypad has no "/" (and often no minus): tap these instead (feedback 11-21)
+      view().querySelectorAll("[data-nk]").forEach(b => { b.onpointerdown = e => e.preventDefault();
+        b.onclick = () => { const a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? a;
+          inp.value = inp.value.slice(0, a) + b.dataset.nk + inp.value.slice(z); inp.focus(); inp.setSelectionRange(a + 1, a + 1); }; });
+      sk.onclick = () => { inp.disabled = true; view().querySelector(".numkeys").remove(); answer(false, "skip"); };
     } else view().querySelectorAll(".opt").forEach(b => (b.onclick = () => {
       if (res[i] != null) return;
       const val = o => q.t === "asn" ? o.dataset.k : +o.dataset.k;
@@ -1098,6 +1126,11 @@ async function openQuiz(br, node, only, mode = "quiz") {
       view().querySelectorAll(".opt").forEach(o => { o.disabled = true; o.classList.add(val(o) === right ? "right" : o === b ? "wrong" : "dim"); });
       answer(ok);
     }));
+    if (q.t !== "num") sk.onclick = () => {                  // skip: show the right option, counts as missed
+      const right = q.t === "tf" || q.t === "mf" ? (q.a ? 1 : 0) : q.a, val = o => q.t === "asn" ? o.dataset.k : +o.dataset.k;
+      view().querySelectorAll(".opt").forEach(o => { o.disabled = true; o.classList.add(val(o) === right ? "right" : "dim"); });
+      answer(false, "skip");
+    };
   };
   const done = () => {
     const got = res.filter(Boolean).length, full = !only, wrong = Q.filter((_, k) => !res[k]);
@@ -1114,7 +1147,7 @@ async function openQuiz(br, node, only, mode = "quiz") {
     xp ? addXP(xp) : save();
     // after the practice run, go straight on to the concept check if this skill has one not done yet (feedback 11-21)
     const nextCC = mode === "quiz" && full && node.cc && !(S.cc || {})[node.id];
-    view().innerHTML = `<div class="reader quiz" style="text-align:center;padding-top:40px"><div style="font-size:54px">${got === Q.length ? "🏆" : got >= Math.ceil(QUIZ_PASS * Q.length) ? "🎯" : "💪"}</div>
+    view().innerHTML = `<div class="reader quiz" style="text-align:center;padding-top:40px"><div style="font-size:calc(54px*var(--fs))">${got === Q.length ? "🏆" : got >= Math.ceil(QUIZ_PASS * Q.length) ? "🎯" : "💪"}</div>
       <div class="q-title" style="margin-top:6px">${got} of ${Q.length} right</div>
       <div class="muted small">${xp ? `+${xp} XP · ${M.label.toLowerCase()} passed` : got === Q.length ? "Perfect." : wrong.length ? "Have another go at the ones you missed." : ""}</div>
       ${full && r.best ? `<div class="tiny muted" style="margin-top:6px">Your best: ${r.best}/${r.of}</div>` : ""}
@@ -1204,7 +1237,7 @@ async function openReader(br, node, partIdx) {
     const counting = node && !nodeDone(node.id) && nodeOpen(node);
     const othersDone = parts ? parts.every((_, j) => j === k || partDone(node, j)) : true;
     const finishLabel = !counting ? "Done" : !parts || othersDone ? `Finish · +${T.xpPerSkill} XP` : partDone(node, k) ? "Done" : `Finish part ${k + 1} of ${parts.length}`;
-    view().innerHTML = `<div class="lesson-top"><button class="x" id="rx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i - A + 1} / ${B - A + 1}</span></div>
+    view().innerHTML = `<div class="lesson-top"><button class="x" id="rx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${i - A + 1} / ${B - A + 1}</span>${aaBtn()}</div>
       <div class="reader" id="rd">
         <div class="r-eyebrow">${node ? `${node.icon} ${esc(node.title)}${parts ? ` · Part ${k + 1} of ${parts.length}` : ""}` : `${br.icon} ${esc(br.title)}`}</div>
         <div class="q-title r-sec">${esc(c.s)}</div>${c.sub ? `<div class="r-sub">${esc(c.sub)}</div>` : ""}
@@ -1261,11 +1294,33 @@ function applyTheme() {
 }
 const THEMES = [["system", "⚔️ Hunter System"], ["system3", "🛡️ Hunter Mid"], ["system2", "🗡️ Hunter Simple"], ["calm", "🌿 Calm"], ["ez", "🎓 Eurozeit"], ["classic", "🟢 Classic"]];
 const themeOptions = cur => THEMES.map(([v, l]) => `<option value="${v}" ${cur === v ? "selected" : ""}>${l}</option>`).join("");
+// text size (feedback 11-21): one setting on this device scales every font on every page (CSS var --fs);
+// reachable from Settings, the account sheet, the course picker gear and the Aa button on reading / practice screens
+const FONT_SIZES = [[0.9, "Small"], [1, "Normal"], [1.15, "Large"], [1.3, "Larger"], [1.5, "Largest"]];
+const fontScale = () => { try { return +localStorage.getItem("a1.fontScale") || 1; } catch { return 1; } };
+const applyFont = () => document.documentElement.style.setProperty("--fs", fontScale());
+const aaBtn = () => `<button class="x aa" data-aa aria-label="Text size">Aa</button>`;
+function fontSheet() {
+  const segs = () => FONT_SIZES.map(([f, l]) => `<button data-f="${f}" class="${fontScale() === f ? "on" : ""}" aria-label="${l}" style="font-size:${Math.round(14 * f)}px">A</button>`).join("");
+  sheet(`<h2 style="margin-top:0">Text size</h2><div class="segt fsz" role="group" aria-label="Text size" style="--c:var(--green)">${segs()}</div>
+    <div class="tiny muted" id="fsl" style="margin:6px 0 10px">${(FONT_SIZES.find(([f]) => f === fontScale()) || [0, "Custom"])[1]} · on this device, every page</div>
+    <div class="card"><div style="font-weight:800">Preview</div><p style="margin:6px 0 0">The average of many independent results gets closer to the expected value as you add more of them.</p></div>
+    <button class="btn" id="ok">Done</button>`, el => {
+    const wire = () => el.querySelectorAll(".fsz button").forEach(b => (b.onclick = () => {
+      try { localStorage.setItem("a1.fontScale", b.dataset.f); } catch { /* private mode */ }
+      applyFont(); el.querySelector(".fsz").innerHTML = segs(); el.querySelector("#fsl").textContent = FONT_SIZES.find(([f]) => f === fontScale())[1] + " · on this device, every page"; wire();
+    }));
+    wire(); el.querySelector("#ok").onclick = closeSheet;
+  });
+}
+applyFont();
+document.addEventListener("click", e => { if (e.target.closest("[data-aa]")) fontSheet(); });
 const deviceTheme = () => { try { return localStorage.getItem("a1.theme") || "system"; } catch { return "system"; } };
 // theme for screens without a learner (login / player picker); a learner's own theme applies after login
 function themeSheet() {
   const mine = !!(S && USER); // logged in (course picker): change the learner's own theme
   sheet(`<h2 style="margin-top:0">⚙️ Settings</h2><label class="f">Theme</label><select id="dth">${themeOptions(mine ? S.settings.theme : deviceTheme())}</select>
+    <button class="btn ghost" data-aa style="margin-top:10px">Aa Text size</button>
     <p class="muted small" style="margin:6px 0 12px">${mine ? "Your theme. You can also change it later in Settings." : "Used on this screen. After you log in, your own theme from Settings applies."}</p>
     <button class="btn" id="ok">Done</button>`, el => {
     el.querySelector("#dth").onchange = e => {
@@ -1303,7 +1358,7 @@ function ranksView() {
   }).reverse().join("");
   view().innerHTML = `<button class="link" id="rback">‹ Back</button><h1>Ranks</h1>
     <div class="card"><div class="row" style="gap:14px">${rankEmblem(L.lv, "md", cur)}<div class="grow" style="min-width:0">
-      <div style="font-size:20px;font-weight:700">${cur}-Rank · ${esc(RANK_INFO[cur].name)}</div>
+      <div style="font-size:calc(20px*var(--fs));font-weight:700">${cur}-Rank · ${esc(RANK_INFO[cur].name)}</div>
       <div class="small muted">Level ${L.lv} · ${pr.total.toFixed(1)}% of A1 · Aura: ${auraName(L.lv)}</div></div></div>
       <p class="small muted" style="margin:10px 0 0">Your rank is how much of ${esc(lang)} A1 you know: words you still remember (55%), grammar (30%) and phrases (15%). It climbs from E to S and the purple aura grows with every level. Forgotten words lower your %, so reviews keep your rank.</p></div>
     <div class="rladder">${rows}</div>`;
@@ -1317,7 +1372,7 @@ function playerBar() {
     <div class="grow"><div class="lv">Level <b>${L.lv}</b> · ${RANK_TITLE[rk.r]}</div>
     <div class="hbar" style="margin-top:4px"><div style="width:${100 * L.frac}%"></div></div>
     <div class="tiny muted" style="margin-top:2px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1}`}</div></div>
-    <div class="stat" style="font-size:18px">🔥 ${streak()}</div></div>`;
+    <div class="stat" style="font-size:calc(18px*var(--fs))">🔥 ${streak()}</div></div>`;
 }
 function questStatus(due) {
   const t = today(), g = goalFor(), x = xpToday();
@@ -1357,9 +1412,9 @@ function statusWindow(pr, pc, r) {
   return `<div class="card sl-only"><div class="sys-h">Status</div>
     <a href="#/ranks" class="emb-link big" aria-label="${RANK_TITLE[rk.r]}: see all ranks">${rankEmblem(L.lv, "big", rk.r)}<span class="emb-i">i</span></a><div class="hero-cap">${RANK_TITLE[rk.r]} · Aura: <b>${auraName(L.lv)}</b> · ${Math.round(aura(L.lv) * 100)}%${L.lv < AURA_FULL_LEVEL ? ` · full at level ${AURA_FULL_LEVEL}` : ""}</div><div style="height:12px"></div>
     <div class="row" style="margin-bottom:10px">
-      <div class="grow" style="min-width:0"><div style="font-size:22px;font-weight:700;letter-spacing:1px;overflow-wrap:anywhere">${esc(userInfo(USER).name.toUpperCase())}</div>
+      <div class="grow" style="min-width:0"><div style="font-size:calc(22px*var(--fs));font-weight:700;letter-spacing:1px;overflow-wrap:anywhere">${esc(userInfo(USER).name.toUpperCase())}</div>
       <div class="muted small">${rk.next ? `Next: ${rk.next}-Rank at ${rk.nextAt}% of A1` : "Highest rank"} · <a href="#/ranks" class="link-in">All ranks ›</a></div></div>
-      <div style="text-align:right"><div class="lv">Level</div><div style="font-size:34px;font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:14px">/${A1_LEVEL}</span>`}</div></div></div>
+      <div style="text-align:right"><div class="lv">Level</div><div style="font-size:calc(34px*var(--fs));font-weight:800;line-height:1;text-shadow:0 0 12px var(--accent)">${L.lv}${L.a1 ? `<div class="tiny" style="color:#57e3a0;letter-spacing:1px;margin-top:2px">A1 ✓</div>` : `<span class="muted" style="font-size:calc(14px*var(--fs))">/${A1_LEVEL}</span>`}</div></div></div>
     <div class="hbar"><div style="width:${100 * L.frac}%"></div></div><div class="tiny muted" style="margin:3px 0 10px">${L.a1 ? `A1 reached 🎓 · ${L.xpInto}/${L.xpNeed} XP to level ${L.lv + 1}` : `${L.toNext.toFixed(1)}% of A1 to level ${L.lv + 1} · A1 at level ${A1_LEVEL}`}</div>
     <div class="statgrid">
       <div><span>📖 Words</span><b>${r.learned}</b></div><div><span>🏆 Mastered</span><b>${r.mastered}</b></div>
@@ -1438,8 +1493,8 @@ function treasureSheet() {
   const g = goalFor(), xt = xpToday(), wk = [0, 1, 2, 3, 4, 5, 6].reduce((a, i) => a + (S.xp[addDays(today(), -i)] || 0), 0);
   sheet(`<div class="sys-h">XP &amp; Diamonds</div>
     <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin:6px 0 14px">
-      <div class="tile" style="text-align:center"><span>Total XP</span><b style="font-size:30px">⚡ ${totalXP()}</b></div>
-      <div class="tile" style="text-align:center"><span>Diamonds</span><b style="font-size:30px">💎 ${S.gems || 0}</b></div></div>
+      <div class="tile" style="text-align:center"><span>Total XP</span><b style="font-size:calc(30px*var(--fs))">⚡ ${totalXP()}</b></div>
+      <div class="tile" style="text-align:center"><span>Diamonds</span><b style="font-size:calc(30px*var(--fs))">💎 ${S.gems || 0}</b></div></div>
     <div style="font-weight:800;margin-bottom:4px">⚡ XP</div>
     <div class="small muted">Today: <b style="color:var(--ink)">${xt} / ${g} XP</b> daily goal</div>
     <div class="hbar" style="margin:4px 0"><div style="width:${Math.min(100, 100 * xt / g)}%;background:var(--blue, #4fb3ff)"></div></div>
@@ -1490,7 +1545,7 @@ function lessonsView() {
   const list = P.filter(i => lf === "all" || (lf === "done" ? S.done[i.id] : lf === "todo" ? !S.done[i.id] : i.kind === lf));
   const plan = weekPlan(), inList = new Set(list.map(i => i.id));
   view().innerHTML = `<h1>All lessons</h1>
-  <div class="card"><div class="row"><div class="grow"><div style="font-size:28px;font-weight:900">${done.length}<span class="muted" style="font-size:18px"> / ${P.length}</span></div>
+  <div class="card"><div class="row"><div class="grow"><div style="font-size:calc(28px*var(--fs));font-weight:900">${done.length}<span class="muted" style="font-size:calc(18px*var(--fs))"> / ${P.length}</span></div>
     <div class="muted small">lessons done</div></div><div class="ring" style="--p:${100 * done.length / P.length}"><div>${Math.round(100 * done.length / P.length)}%</div></div></div>
     <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
       <div class="tile"><span>🔤 Vocab</span><b>${dk("vocab")}<span class="tiny muted">/${by("vocab").length}</span></b></div>
@@ -1583,8 +1638,8 @@ async function whoView() {
   if (AUTH === "on") return loginView();
   document.body.classList.add("in-lesson");
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:6vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div><h1>Who’s learning today?</h1><p class="muted">Select your player.</p></div>
-    <div class="who">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}<div class="grow"><div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
-      <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:24px;color:var(--muted)">›</span></button>`).join("")}</div>`;
+    <div class="who">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}<div class="grow"><div style="font-size:calc(20px*var(--fs));font-weight:800">${esc(u.name)}</div>
+      <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:calc(24px*var(--fs));color:var(--muted)">›</span></button>`).join("")}</div>`;
   view().querySelector("#gear").onclick = themeSheet;
   view().querySelectorAll(".who button").forEach(b => (b.onclick = async () => {
     b.disabled = true; await switchUser(b.dataset.u); unpick(); document.body.classList.remove("in-lesson");
@@ -1602,7 +1657,7 @@ const seenIntro = () => { try { return !!localStorage.getItem("a1.introSeen"); }
 function introView() {
   try { localStorage.setItem("a1.introSeen", "1"); } catch { /* ignore */ }
   document.body.classList.add("in-lesson");
-  const f = (icon, t, d) => `<div class="row" style="align-items:flex-start;gap:12px;margin:12px 0"><span style="font-size:26px;line-height:1">${icon}</span><div class="grow"><b>${t}</b><div class="muted small">${d}</div></div></div>`;
+  const f = (icon, t, d) => `<div class="row" style="align-items:flex-start;gap:12px;margin:12px 0"><span style="font-size:calc(26px*var(--fs));line-height:1">${icon}</span><div class="grow"><b>${t}</b><div class="muted small">${d}</div></div></div>`;
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:4vh"><img src="icons/icon.svg" alt="" width="72" height="72" style="border-radius:18px"><div class="brand">LevelUp</div>
     <h1>Level up in languages and skills</h1><p class="muted">Short daily lessons that turn into real knowledge, one level at a time.</p></div>
     <div class="card">
@@ -1707,11 +1762,11 @@ const apkBtn = (cls = "btn ghost", style = "") => offerApk() ? `<button class="$
   : offerIos() ? `<button class="${cls}" type="button" data-ios style="${style}">📱 Add LevelUp to your home screen</button>` : "";
 const apkHidden = () => { try { return !!localStorage.getItem("a1.apkHide"); } catch { return false; } };
 const apkBanner = () => offerApk() && IS_ANDROID && !apkHidden() ? `<div class="card row" id="apkb" style="gap:10px;align-items:center;padding:10px 12px">
-  <span style="font-size:24px">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Full screen, own icon, opens straight into your lessons.</div></div>
-  <button class="btn sm" type="button" data-apk style="width:auto;margin:0">Get it</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>`
+  <span style="font-size:calc(24px*var(--fs))">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Full screen, own icon, opens straight into your lessons.</div></div>
+  <button class="btn sm" type="button" data-apk style="width:auto;margin:0">Get it</button><button class="link" id="apkx" aria-label="Hide" style="font-size:calc(18px*var(--fs));padding:4px">✕</button></div>`
   : offerIos() && !apkHidden() ? `<div class="card row" id="apkb" style="gap:10px;align-items:center;padding:10px 12px">
-  <span style="font-size:24px">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Add it to your home screen: full screen, own icon.</div></div>
-  <button class="btn sm" type="button" data-ios style="width:auto;margin:0">How</button><button class="link" id="apkx" aria-label="Hide" style="font-size:18px;padding:4px">✕</button></div>` : "";
+  <span style="font-size:calc(24px*var(--fs))">📱</span><div class="grow"><b>Get the LevelUp app</b><div class="muted small">Add it to your home screen: full screen, own icon.</div></div>
+  <button class="btn sm" type="button" data-ios style="width:auto;margin:0">How</button><button class="link" id="apkx" aria-label="Hide" style="font-size:calc(18px*var(--fs));padding:4px">✕</button></div>` : "";
 function wireApk(root = view()) {
   root.querySelectorAll("[data-apk]").forEach(b => (b.onclick = apkSheet));
   root.querySelectorAll("[data-ios]").forEach(b => (b.onclick = iosSheet));
@@ -1787,14 +1842,14 @@ function userSheet() {
     el.querySelector("#glv").onclick = doLeaveGuest;
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
-      <div class="grow"><div style="font-size:18px;font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
+      <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
+    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
     el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
   });
   sheet(`<h2 style="margin-top:0">Switch learner</h2><div class="who" style="margin-top:8px">${USERS.map(u => `<button data-u="${u.id}">${avatar(u.id)}
-    <div class="grow"><div style="font-size:18px;font-weight:800">${esc(u.name)}</div><div class="muted small">${u.id === USER ? "Current" : "Tap to switch"}</div></div>
+    <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(u.name)}</div><div class="muted small">${u.id === USER ? "Current" : "Tap to switch"}</div></div>
     ${u.id === USER ? "✓" : "›"}</button>`).join("")}</div>`, el => {
     el.querySelectorAll("button[data-u]").forEach(b => (b.onclick = async () => {
       closeSheet();
@@ -1818,7 +1873,7 @@ async function fillCompare() {
   const pacefmt = (g) => Math.abs(g) < 1 ? "on track" : g > 0 ? `+${Math.round(g)}` : `${Math.round(g)}`;
   box.innerHTML = `<div class="card"><div class="sys-h">Party</div><div style="font-weight:800;margin-bottom:6px">👥 ${people.map(u => esc(u.name)).join(" & ")}</div>
     <table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
-    <tr class="sl-only-row"><td>Level · Rank</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b>Lv ${r.s.lv}</b> <span class="rank ${r.s.rank}" style="display:inline-grid;width:24px;height:24px;font-size:14px;border-width:1.5px;vertical-align:middle">${r.s.rank}</span></td>`).join("")}</tr>
+    <tr class="sl-only-row"><td>Level · Rank</td>${rows.map(r => !r.s ? `<td class="muted">–</td>` : `<td><b>Lv ${r.s.lv}</b> <span class="rank ${r.s.rank}" style="display:inline-grid;width:24px;height:24px;font-size:calc(14px*var(--fs));border-width:1.5px;vertical-align:middle">${r.s.rank}</span></td>`).join("")}</tr>
     <tr><td>XP today</td>${rows.map(r => cell(r, "xpToday", (v, s) => `${v}<span class="tiny muted">/${s.goal}</span>`)).join("")}</tr>
     <tr><td>Diamonds</td>${rows.map(r => cell(r, "gems", v => `💎 ${v}`)).join("")}</tr>
     <tr><td>Total XP</td>${rows.map(r => cell(r, "xp", v => v)).join("")}</tr>
@@ -1847,7 +1902,7 @@ async function appendStories() {
   const st = await loadStories(); if (!st.length || !box.isConnected) return;
   const open = st.filter(x => wordsKnown() >= x.minWords), next = st.find(x => wordsKnown() < x.minWords);
   const fresh = open.filter(x => !(S.stories || {})[x.id]);
-  box.innerHTML = `<button class="card partylink" id="stc"><span style="font-size:28px">🎧</span><span class="grow"><b>Stories</b>
+  box.innerHTML = `<button class="card partylink" id="stc"><span style="font-size:calc(28px*var(--fs))">🎧</span><span class="grow"><b>Stories</b>
     <div class="tiny muted">${open.length ? `${open.length} of ${st.length} open${fresh.length ? ` · ${fresh.length} new` : ""} · optional listening practice` : `First story unlocks at ${st[0].minWords} words (you know ${wordsKnown()})`}</div></span>
     ${fresh.length ? `<span class="pbadge">${fresh.length}</span>` : ""}<span>›</span></button>`;
   box.querySelector("#stc").onclick = () => (location.hash = "#/stories");
@@ -1878,12 +1933,12 @@ async function storyView(id) {
         setTimeout(step, !nxt ? 0 : nxt.sp === ln.sp ? 450 : 750); }); };
     step();
   };
-  const top = (pct, label) => `<div class="lesson-top"><button class="x" id="sx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${label}</span></div>`;
+  const top = (pct, label) => `<div class="lesson-top"><button class="x" id="sx" aria-label="Close">✕</button><div class="bar"><div style="width:${pct}%"></div></div><span class="tiny muted" style="min-width:52px;text-align:right">${label}</span>${aaBtn()}</div>`;
   const leave = () => { stopPlay(); location.hash = "#/stories"; };
   const wireX = () => (view().querySelector("#sx").onclick = leave);
   // 1. scene + new words
   const intro = () => {
-    view().innerHTML = top(5, "1 / 4") + `<div class="reader story"><div style="font-size:56px;text-align:center">${x.scene}</div>
+    view().innerHTML = top(5, "1 / 4") + `<div class="reader story"><div style="font-size:calc(56px*var(--fs));text-align:center">${x.scene}</div>
       <div class="q-title" style="text-align:center">${esc(x.title)}</div><div class="muted" style="text-align:center">${esc(x.titleEn)}</div>
       ${x.pre.length ? `<div class="sys-h" style="margin-top:18px">New words first</div>${x.pre.map((w, i) => `<button class="card stword" data-w="${i}"><span>🔊</span><span class="grow"><b>${esc(w.de)}</b><div class="small muted">${esc(w.en)}</div></span></button>`).join("")}`
         : `<p class="muted small" style="text-align:center;margin-top:18px">You know every word in this story.</p>`}
@@ -1894,7 +1949,7 @@ async function storyView(id) {
   };
   // 2. listen without text
   const listen = () => {
-    view().innerHTML = top(30, "2 / 4") + `<div class="reader story" style="text-align:center"><div style="font-size:56px">${x.scene}</div>
+    view().innerHTML = top(30, "2 / 4") + `<div class="reader story" style="text-align:center"><div style="font-size:calc(56px*var(--fs))">${x.scene}</div>
       <div class="q-title">Listen</div><div class="muted small">No text yet. Play it as often as you like.</div>
       <button class="playbig" id="pl" aria-label="Play the story">▶</button><div class="tiny muted" id="pos">${x.lines.length} lines</div>
       <label class="slowtog"><input type="checkbox" id="slow" ${slow ? "checked" : ""}> 🐢 Slow</label></div>
@@ -1980,7 +2035,7 @@ async function partyView() {
   const act = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); } catch (e) { toast(e.message); } partyView(); };
   if (P.mine) {
     const m = P.mine;
-    view().innerHTML = head + `<div class="card"><div class="sys-h">Your party</div><div style="font-size:20px;font-weight:800">👥 ${esc(m.name)}</div>
+    view().innerHTML = head + `<div class="card"><div class="sys-h">Your party</div><div style="font-size:calc(20px*var(--fs));font-weight:800">👥 ${esc(m.name)}</div>
         <div class="tiny muted">${m.members.length} of ${P.max} members · any member can accept new people</div>
         <div class="pmembers">${m.members.map(x => `<span class="pmem">${avatar(x.id, true)}<span>${esc(x.name)}${x.id === USER ? " (you)" : ""}</span></span>`).join("")}</div></div>
       ${m.requests.length ? `<div class="card"><div class="sys-h">Join requests <span class="pbadge inl">${m.requests.length}</span></div>${m.requests.map(r => `<div class="preq"><span class="grow"><b>${esc(r.name)}</b><div class="tiny muted">asked ${fmtDate(r.at.slice(0, 10))}</div></span>

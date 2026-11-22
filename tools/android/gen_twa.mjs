@@ -36,4 +36,6 @@ Object.assign(m, {
 fs.mkdirSync(OUT, { recursive: true });
 await m.saveToFile(path.join(OUT, "twa-manifest.json"));
 await new TwaGenerator().createTwaProject(OUT, m, new ConsoleLog("gen"));
+// Bubblewrap's launcher icon has a white layer that shows on zoomed-out launchers: replace it
+(await import("node:child_process")).execFileSync(path.join(ROOT, "tools/android/launcher_icons.sh"), { stdio: "inherit" });
 console.log("Android project written to", OUT);

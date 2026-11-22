@@ -11,6 +11,7 @@ BT="$(ls -d "$T"/sdk/build-tools/* | sort -V | tail -1)"
 PW="$(cat "$T/keystore-password.txt")"
 VER="${VERSION:-$("$ROOT/tools/next_version.sh" 2>/dev/null | sed 's/^v//' || date +%Y.%m.%d.01)}"
 CODE="$(echo "$VER" | tr -d . )"
+"$ROOT/tools/android/launcher_icons.sh"   # full-bleed launcher icon, no white edges
 cd "$ROOT/native"
 ./gradlew -q clean :app:assembleRelease -Plu.versionCode="$CODE" -Plu.versionName="$VER-native"
 OUT="app/build/outputs/apk/release"

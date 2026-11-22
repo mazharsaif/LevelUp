@@ -12,7 +12,7 @@
   "navigationDividerColorDark": "#000000",
   "backgroundColor": "#070A1C",
   "enableNotifications": false,
-  "startUrl": "/?src=apk&v=2026.11.21.08",
+  "startUrl": "/?src=apk&v=2026.11.22.01",
   "iconUrl": "https://levelrise.org/icons/icon-512.png",
   "maskableIconUrl": "https://levelrise.org/icons/icon-512-maskable.png",
   "splashScreenFadeOutDuration": 300,
@@ -20,8 +20,8 @@
     "path": "/Users/mazhar/.levelup-android/levelup-release.keystore",
     "alias": "levelup"
   },
-  "appVersionName": "2026.11.21.08",
-  "appVersionCode": 2026112108,
+  "appVersionName": "2026.11.22.01",
+  "appVersionCode": 2026112201,
   "shortcuts": [],
   "generatorApp": "unknown",
   "webManifestUrl": "https://levelrise.org/manifest.webmanifest",
@@ -43,5 +43,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "2026.11.21.08"
+  "appVersion": "2026.11.22.01"
 }
