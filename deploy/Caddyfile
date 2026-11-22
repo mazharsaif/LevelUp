@@ -38,4 +38,6 @@ staylit.levelrise.org {
 	file_server
 	@sw path /sw.js
 	header @sw Cache-Control "no-cache"
+	@manifest path *.webmanifest
+	header @manifest Content-Type "application/manifest+json"
 }
