@@ -1091,3 +1091,32 @@ body.theme-sl .aa{background:rgba(47,140,255,.12);border-color:#2f8cff;color:#8f
 /* installed versions (Settings → About, account menu, course-picker gear) */
 .verbox{margin-top:10px;line-height:1.6}
 .verbox b{color:var(--ink)}
+/* welcome tour (js/tour.js): spotlight + bubble, quick moves */
+.tour{position:fixed;inset:0;z-index:90;opacity:0;transition:opacity .16s}
+.tour.tour-on{opacity:1}
+.tour-hole{position:fixed;left:50%;top:45%;width:0;height:0;border-radius:14px;box-shadow:0 0 0 9999px rgba(4,8,20,.74);
+  outline:2px solid var(--blue);outline-offset:0;transition:left .22s cubic-bezier(.3,.7,.2,1),top .22s cubic-bezier(.3,.7,.2,1),width .22s cubic-bezier(.3,.7,.2,1),height .22s cubic-bezier(.3,.7,.2,1),border-radius .22s;pointer-events:none}
+.tour-hole::after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid var(--blue);opacity:0;animation:tourPulse 1.4s ease-out .25s infinite}
+.tour-center .tour-hole{outline:0}.tour-center .tour-hole::after{display:none}
+@keyframes tourPulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.12)}}
+.tour-bubble{position:fixed;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px;
+  box-shadow:0 12px 32px rgba(0,0,0,.35);transition:left .22s cubic-bezier(.3,.7,.2,1),top .22s cubic-bezier(.3,.7,.2,1)}
+.tour-bubble.tour-in{animation:tourIn .18s ease-out}
+@keyframes tourIn{from{opacity:.2;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.tour-bubble[data-arrow="up"]::before,.tour-bubble[data-arrow="down"]::before{content:"";position:absolute;left:calc(var(--ax) - 8px);width:14px;height:14px;background:var(--card);border:1px solid var(--line);transform:rotate(45deg)}
+.tour-bubble[data-arrow="up"]::before{top:-8px;border-right:0;border-bottom:0}
+.tour-bubble[data-arrow="down"]::before{bottom:-8px;border-left:0;border-top:0}
+.tour-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.tour-n{font-size:calc(11px*var(--fs));font-weight:800;color:var(--blue);letter-spacing:.5px}
+.tour-skip{background:none;border:0;color:var(--muted);font:inherit;font-size:calc(12px*var(--fs));cursor:pointer;padding:2px 0}
+.tour-t{font-weight:800;font-size:calc(17px*var(--fs));margin-bottom:4px}
+.tour-x{font-size:calc(14px*var(--fs));line-height:1.45;color:var(--ink);opacity:.9}
+.tour-foot{display:flex;align-items:center;gap:8px;margin-top:12px}
+.tour-dots{flex:1;display:flex;gap:4px;flex-wrap:wrap}
+.tour-dots i{width:6px;height:6px;border-radius:3px;background:var(--line);transition:width .18s,background .18s}
+.tour-dots i.past{background:color-mix(in srgb,var(--blue) 45%,var(--line))}.tour-dots i.on{width:16px;background:var(--blue)}
+.tour-back,.tour-next{border:0;border-radius:10px;font:inherit;font-weight:800;font-size:calc(14px*var(--fs));padding:8px 14px;cursor:pointer}
+.tour-back{background:var(--bg);color:var(--ink)}.tour-next{background:var(--blue);color:#fff}
+body.theme-sl .tour-bubble{background:#0d1530;border-color:#2f8cff;box-shadow:0 0 18px rgba(47,140,255,.45)}
+body.theme-sl .tour-bubble::before{background:#0d1530 !important;border-color:#2f8cff !important}
+body.theme-sl .tour-hole{outline-color:#57b8ff}

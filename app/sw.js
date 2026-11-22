@@ -1,8 +1,8 @@
 // Offline support: app shell + lesson data cached on install, audio cached the first time it plays.
-const SHELL = "a1-shell-v62";
+const SHELL = "a1-shell-v63";
 const AUDIO = "a1-audio-v1";
 const CONTENT = "a1-content-v1"; // reading material, downloaded per skill only when opened (never precached)
-const FILES = ["./", "index.html", "styles.css", "js/app.js", "js/store.js", "js/lesson.js", "js/audio.js", "js/hero.js", "js/bugreport.js", "js/lang.js", "data/se-path.json", "data/math-path.json",
+const FILES = ["./", "index.html", "styles.css", "js/app.js", "js/store.js", "js/lesson.js", "js/audio.js", "js/hero.js", "js/bugreport.js", "js/lang.js", "js/tour.js", "data/se-path.json", "data/math-path.json",
   "data/content.json", "data/fr-a1.json", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-512-maskable.png", "icons/apple-touch-icon.png", "data/courses.json"];
 
 self.addEventListener("install", e => {

@@ -8,6 +8,7 @@ import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
 import { RANKS } from "./store.js";
 import { L } from "./lang.js";
+import { startTour, tourRunning } from "./tour.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -259,6 +260,7 @@ function todayView() {
   clearInterval(tleftTimer); tleftTimer = setInterval(() => { const e = document.getElementById("tleft"); if (e) e.textContent = leftToday(); else clearInterval(tleftTimer); }, 30000);
   levelWatch();
   wireTop();
+  maybeTour();
   const rw = checkRewards(questStatus(due).all);
   if (rw.gems || rw.gifts.length) {
     const chip = view().querySelector("#gem"); if (chip) chip.outerHTML = gemChip();
@@ -318,7 +320,7 @@ function freeToday() {
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
   appendStories();
   levelWatch();
-  wireTop();
+  wireTop(); maybeTour();
 }
 const freeLayout = () => { try { return localStorage.getItem("a1.freeLayout") || "skills"; } catch { return "skills"; } };
 const layoutSwitch = cur => `<div class="segt" role="group" aria-label="Layout" style="margin:4px 0 10px;--c:var(--green)"><button data-fl="skills" class="${cur === "skills" ? "on" : ""}">🧩 Skills</button><button data-fl="order" class="${cur === "order" ? "on" : ""}">↓ Recommended order</button></div>`;
@@ -704,7 +706,8 @@ function settingsView() {
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
   ${offerApk() || offerIos() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 ${offerIos() ? "iPhone app" : "Android app"}</div>
     <p class="muted small">Install LevelUp as an app: full screen, own icon, same account and progress.</p>${apkBtn("btn")}</div>` : ""}
-  <div class="card"><div class="sys-h">About</div><div style="font-weight:800">ℹ️ App version</div>${verBox()}</div>
+  <div class="card"><div class="sys-h">About</div><div style="font-weight:800">ℹ️ App version</div>${verBox()}
+    <button class="btn ghost" data-tour style="margin-top:12px">🧭 Take the welcome tour</button></div>
   <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
     <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
@@ -885,7 +888,7 @@ function seHome() {
         <div class="bc-t">${esc(b.title)}</div><div class="tiny muted">${nx ? `Next: ${esc(nx.title)}` : d === ns.length ? "👑 Complete" : ""}</div></button>`; }).join("")}</div>
     <button class="card partylink" id="gop" style="margin-top:14px"><span style="font-size:calc(26px*var(--fs))">👥</span><span class="grow"><b>Party</b><div class="tiny muted">Compare progress with your party</div></span><span class="pbadge" hidden></span><span>›</span></button>
     ${soon.length ? `<div class="sec-h">Coming soon</div><div class="soontags">${soon.map(b => `<button class="soontag" data-s="${b.id}">${b.icon} ${esc(b.title)}</button>`).join("")}</div>` : ""}`;
-  wireTop();
+  wireTop(); maybeTour();
   view().querySelectorAll(".bcard").forEach(b => (b.onclick = () => (location.hash = "#/branch/" + b.dataset.b)));
   view().querySelector("#gop").onclick = () => (location.hash = "#/party");
   if (PARTY && PARTY.mine && PARTY.mine.requests.length) { const pb = view().querySelector("#gop .pbadge"); pb.textContent = PARTY.mine.requests.length; pb.hidden = false; }
@@ -1905,7 +1908,7 @@ function userSheet() {
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
+    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" data-tour>🧭 Welcome tour</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
     el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
@@ -2280,3 +2283,65 @@ function goAction(act, arg) {
   } else if (act === "word" && !tree && C.word[arg]) { location.hash = "#/words"; setTimeout(() => wordSheet(C.word[arg]), 150); }
 }
 ["a1:saved", "a1:sync", "a1:state-replaced", "hashchange", "visibilitychange"].forEach(ev => window.addEventListener(ev, pushWidget));
+
+// ------------------------------------------------------------------ welcome tour (js/tour.js)
+// Runs once per device for each kind of course (language / skill tree), on the course home, the first time it is shown.
+// "Take the tour" (Settings → About, account menu) runs it again.
+const tourKind = () => (courseInfo(COURSE).type === "tree" ? "tree" : "lang");
+const tourSeen = k => { try { return !!localStorage.getItem("a1.tour." + k); } catch { return true; } };
+const tourMark = k => { try { localStorage.setItem("a1.tour." + k, today()); } catch { /* ignore */ } };
+const cardOf = sel => () => { const e = [...document.querySelectorAll(sel)].find(x => x.offsetParent); return e ? e.closest(".card") || e : null; };
+function langSteps() {
+  const quest = questMode();
+  return [
+    { title: "Welcome to LevelUp 👋", text: `A quick look at how it works. It takes about 30 seconds. Tap <b>Show me</b>, or anywhere on the screen to go on.` },
+    { sel: "#uc", title: "Your profile", text: "Your account: invite friends, text size, password, log out, and the app version." },
+    { sel: "#cc", title: "Your course", text: "Tap to switch courses: German, French, Maths, Software Engineering. Each one keeps its own progress." },
+    { sel: "#gem", title: "XP and diamonds", text: "⚡ XP for every part you finish and every word you recall. 💎 Diamonds for clearing the daily quest. Long streaks earn gift boxes 🎁." },
+    { sel: ".player .emb-link, #xpring", title: "Level and rank", text: "Your level grows with how much of A1 you know, and your rank climbs from E to S. Tap it to see every rank." },
+    quest && { find: cardOf(".quest"), title: "Daily quest", text: "Three goals a day: earn the XP goal, finish a few short parts, review the words that are due. Reaching the XP goal keeps your 🔥 streak." },
+    { sel: ".next-card", title: "Your next lesson", text: "Lessons come in short parts of a few minutes. Tap <b>Start</b>; every part counts for today's quest." },
+    { find: cardOf("#rev"), title: "Memory training", text: "Learned words come back right before you'd forget them. Review them so they stay fresh; skipped days cost a little XP." },
+    { sel: '#tabs a[data-tab="path"]', title: quest ? "Path" : "Skills", text: quest ? "The whole course, week by week, up to your target date." : "Every lesson as a skill map: pick any one, at your own pace." },
+    { sel: '#tabs a[data-tab="words"]', title: "Words", text: "Every word and phrase you've learned, with audio, search and how well you know it." },
+    { sel: '#tabs a[data-tab="progress"]', title: "Progress", text: "How much of A1 you know, your pace to the target date and an activity calendar." },
+    { sel: '#tabs a[data-tab="party"]', title: "Party", text: "Learn with friends: join a party and compare progress." },
+    { sel: '#tabs a[data-tab="settings"]', title: "Settings", text: "Daily goal, target date, Quest Mode, theme, text size, offline audio. You can take this tour again there." },
+    { sel: "#bugbtn", title: "Tell us anything", text: "Found a problem or have an idea? Tap 🐞 on any screen. It sends what you see along with your note." },
+    { title: "You're ready 🎉", text: "Start your first part. Little and often beats long sessions." },
+  ].filter(Boolean);
+}
+function treeSteps() {
+  return [
+    { title: `Welcome to ${esc(C.content.title || "LevelUp")} 👋`, text: "A quick look at how skill-tree courses work. Tap <b>Show me</b>, or anywhere on the screen to go on." },
+    { sel: "#uc", title: "Your profile", text: "Your account: invite friends, text size, password, log out, and the app version." },
+    { sel: "#cc", title: "Your course", text: "Tap to switch courses. Each one keeps its own progress." },
+    { sel: ".contcard", title: "Continue", text: "Picks up exactly where you stopped. Each skill is a few short parts to read, then practice questions." },
+    { sel: ".bcard", title: "Branches", text: "Each branch is a skill tree. The ring shows how much you've done; skills unlock as you finish the ones before them." },
+    { sel: "button.aa[data-aa]", title: "Text size", text: "Make the reading text bigger or smaller, on every page." },
+    { sel: "#bugbtn", title: "Tell us anything", text: "Found a problem or have an idea? Tap 🐞 on any screen." },
+    { title: "You're ready 🎉", text: "Open a branch and start with its first skill." },
+  ];
+}
+let tourPending = false;
+function maybeTour() {
+  if (!USER || !S || tourRunning() || inLesson()) return;
+  const k = tourKind();
+  if (!tourPending && tourSeen(k)) return;
+  if (k === "lang" && !S.setup) return;
+  setTimeout(() => {
+    // wait for pop-ups (rewards, updates, sheets) to be gone; try again on the next render
+    if (tourRunning() || inLesson() || document.querySelector("#sheet-root .sheet-bg, #upd-root, .bug-bg")) return;
+    const home = k === "tree" ? !location.hash.startsWith("#/branch") : /^#\/(today)?$/.test(location.hash || "#/today");
+    if (!home) return;
+    tourPending = false; tourMark(k);
+    startTour(k === "tree" ? treeSteps() : langSteps());
+  }, 650);
+}
+// "Take the tour": go to the course home and run it
+function takeTour() {
+  closeSheet(); tourPending = true;
+  const h = courseInfo(COURSE).type === "tree" ? "#/home" : "#/today";
+  if (location.hash === h) route(); else location.hash = h;
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-tour]")) takeTour(); });
