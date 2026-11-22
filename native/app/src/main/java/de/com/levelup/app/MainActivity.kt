@@ -137,6 +137,7 @@ class MainActivity : ComponentActivity() {
         val route = routeOf(intent)
         if (route != null || savedInstanceState == null || web.restoreState(savedInstanceState) == null) load(route)
         de.com.levelup.app.widget.Widgets.schedule(this); de.com.levelup.app.widget.Reminders.schedule(this)
+        runCatching { de.com.levelup.app.widget.NudgeWorker.schedule(this) }
     }
 
     /** widget tap: levelup://open/<route> → the web route #/<route> (e.g. go/next, go/review, ranks) */
@@ -219,6 +220,10 @@ class MainActivity : ComponentActivity() {
     private val askNotify = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         if (!ok) toast("Notifications are off, so the reminder can't show")
     }
+    fun askNotifications() {
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
     fun setReminder(hhmm: String) {
         de.com.levelup.app.widget.Reminders.set(this, hhmm)
         if (hhmm.isNotBlank() && android.os.Build.VERSION.SDK_INT >= 33 &&
@@ -266,6 +271,8 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun takeLifeTicks(): String = de.com.levelup.app.widget.LifeStore.takeTicks(a)
         /** daily quest reminder at "HH:MM" ("" = off); asks for the notification permission on Android 13+ */
         @JavascriptInterface fun setLifeReminder(hhmm: String) = a.runOnUiThread { a.setReminder(hhmm) }
+        /** asks for the notification permission (Android 13+) when nudges or reminders are first needed */
+        @JavascriptInterface fun askNotifications() = a.runOnUiThread { a.askNotifications() }
     }
 }
 

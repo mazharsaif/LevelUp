@@ -1216,3 +1216,8 @@ body.theme-sl button.chipx.on{background:rgba(47,140,255,.25);color:#eaf4ff;bord
 .qcheck.ok,.qbtn.ok{background:#22b26a !important;border-color:#22b26a !important;color:#fff}
 .qprog.ok,.qauto.ok,.okc{color:#22b26a}
 .lcal i.ok,.lleg i.ok{background:#22b26a}
+/* party gates + nudges */
+.pgcard .pgm{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.pgcard .pgm:first-of-type{margin-top:8px}.pgm.failed{opacity:.6}
+.nudgecard{display:flex;align-items:center;gap:10px;border:2px solid var(--amber);animation:nudge .5s ease-out}
+@keyframes nudge{0%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}100%{transform:none}}

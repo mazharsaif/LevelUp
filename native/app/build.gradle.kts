@@ -57,4 +57,5 @@ dependencies {
     implementation("androidx.webkit:webkit:1.13.0")
     // home-screen widgets (app/src/main/java/.../widget, designs in docs/design/widgets)
     implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")   // party-gate nudges checked in the background
 }

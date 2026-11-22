@@ -251,3 +251,25 @@ export function reenter(tr) {
   return newTrack(o);
 }
 export const cleanDays = (tr, n = 30) => { let c = 0; for (let k = 1; k <= n; k++) { const d = addDays(today(), -k); if (d < tr.start) break; if (dayValue(tr, d) === true) c++; } return c; };
+
+// ---------- party gates (server: /api/party-gates): the full team must survive ----------
+export const TEAM_BONUS = { xp: 150, gems: 20 };
+export function teamFail(tr, who) {
+  if (tr.status !== "active") return;
+  tr.status = "failed"; tr.ended = today(); tr.st.pendingPen = null;
+  ev(tr, today(), "fail", `${who} run broke, so the whole team falls. You keep the XP you earned.`);
+}
+export function teamClear(tr) {
+  if (tr.teamBonus) return false;
+  tr.teamBonus = true;
+  award(TEAM_BONUS.xp, tr.stat, `Party gate cleared together: ${shown(tr)}`); gems(TEAM_BONUS.gems, "Party gate cleared together");
+  ev(tr, today(), "clear", `The whole party survived · +${TEAM_BONUS.xp} XP · 💎 ${TEAM_BONUS.gems}`);
+  return true;
+}
+/** what this member reports to the party gate */
+export function reportOf(tr) {
+  const status = tr.status === "active" ? "active" : tr.status === "cleared" ? "cleared" : "failed";
+  return { track: tr.id, status, run: tr.st.run, day: Math.max(0, Math.min(dayNo(tr), tr.days || 9999)), today: tr.start <= today() && doneToday(tr),
+    cracked: !!tr.st.cracked, date: today(), why: status === "failed" ? String((tr.st.events.at(-1) || {}).txt || "").slice(0, 120) : "" };
+}
+export const upcoming = () => Object.values(H() && S.tracks).filter(tr => tr.status === "active" && tr.start > today());

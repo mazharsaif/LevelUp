@@ -73,13 +73,17 @@ function route() {
   // a home-screen widget tap opens a route straight away: use the last course instead of asking first
   if (!picked() && lastCourse(USER) === COURSE && (h.startsWith("#/go/") || (/[?&]src=native\b/.test(location.search) && /^#\/(today|ranks|progress|words|home)$/.test(h)))) markPicked();
   if (!picked()) return courseView();
-  if (h === "#/party") { document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party")); return partyView(); }
+  if (h === "#/party") {
+    document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party"));
+    const navFix = () => { if (isLife() && location.hash === "#/party") { document.body.classList.add("in-lesson"); if (!view().querySelector(".lnav")) view().insertAdjacentHTML("afterbegin", lifeNav("party")); } };   // Hunter's Path has its own nav
+    navFix(); return Promise.resolve(partyView()).then(navFix);
+  }
   if (h.startsWith("#/go/")) {        // widget tap: show the course home, then run the action
     const [, , act, arg] = h.split("/");
     location.replace(["tree", "life"].includes(courseInfo(COURSE).type) ? "#/home" : "#/today");
     setTimeout(() => goAction(act, decodeURIComponent(arg || "")), 120); return;
   }
-  pushWidget();
+  pushWidget(); checkNudges();
   if (courseInfo(COURSE).type === "life") return lifeRoute(h);
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "guide" ? (document.body.classList.add("in-lesson"), guideView()) : nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (h === "#/guide") { document.querySelectorAll("#tabs a").forEach(a => a.classList.remove("on")); return guideView(); }
@@ -2438,6 +2442,7 @@ const DAYNAMES = ["M", "T", "W", "T", "F", "S", "S"];
 function lifeRoute(h) {
   document.body.classList.add("in-lesson");
   LF.H(); LF.settleAll(); applyWidgetTicks();
+  if (pgOk() && Date.now() - PG.at > 15000) syncPartyGates().then(() => { if (/^#\/(home)?$/.test(location.hash || "#/home") && !document.querySelector("#sheet-root .sheet-bg, .sos")) lifeHome(); });
   const [, nm, arg] = h.split("/");
   if (nm === "guide") return guideView();
   if (nm === "gates") return lifeGates();
@@ -2483,7 +2488,7 @@ function questRow(tr) {
   const done = LF.doneToday(tr);
   return `<div class="qrow ${done ? "done" : ""} ${tr.st.cracked ? "cracked" : ""}" data-open="${tr.id}">
     <span class="qic">${tr.icon}</span><div class="grow qmid"><b>${esc(LF.shown(tr))}</b> ${gateBadge(tr.days)}
-      <div class="tiny muted">${trackLine(tr)}${tr.st.cracked ? ` · <span class="crk">${crackText(tr)}</span>` : ""}</div></div>
+      <div class="tiny muted">${trackLine(tr)}${teamLine(tr)}${tr.st.cracked ? ` · <span class="crk">${crackText(tr)}</span>` : ""}</div></div>
     <div class="qact">${questAction(tr)}</div></div>`;
 }
 function wireQuests(root, rerender) {
@@ -2575,13 +2580,14 @@ function lifeHome() {
   const back = LF.active().filter(tr => (tr.kind === "daily" || tr.kind === "abstain") && !tr.auto && y >= tr.start && LF.scheduled(tr, y) && tr.st.settled < y && LF.dayValue(tr, y) === null);
   const ended = Object.values(S.tracks).filter(tr => (tr.status === "cleared" || tr.status === "failed") && !tr.seen);
   const rest = LF.active().filter(tr => !list.includes(tr));
-  view().innerHTML = topRow() + guideCard() + lifeNav("home") + `
+  const soon = LF.upcoming();
+  view().innerHTML = topRow() + guideCard() + lifeNav("home") + nudgeBanner() + `
   <div class="card hcard"><a href="#/hunter" class="emb-link">${rankEmblem(Math.min(100, hu.lv), "sm", hu.rk)}</a>
     <div class="grow"><div class="lv">Level <b>${hu.lv}</b> · ${hu.rk}-Rank Hunter</div><div class="hbar" style="margin-top:4px"><div style="width:${100 * hu.frac}%"></div></div>
       <div class="tiny muted" style="margin-top:3px">${hu.into} / ${hu.need} XP to level ${hu.lv + 1}</div></div>
     <div class="hchips"><button class="hchip" id="shl" aria-label="Shields">🛡 ${h.shields} / ${LF.SHIELD_MAX}</button><span class="hchip">🔥 ${streak()} day${streak() === 1 ? "" : "s"}</span><span class="hchip">💎 ${S.gems || 0}</span></div></div>
   ${ended.map(tr => `<div class="card endcard ${tr.status}"><div class="grow"><b>${tr.status === "cleared" ? `🏆 Gate cleared: ${esc(LF.shown(tr))}` : `Gate failed: ${esc(LF.shown(tr))}`}</b>
-    <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}${"DCBAS".includes(tr.reward.g) ? " · 🛡 if you had room" : ""}` : `${esc((tr.st.events.at(-1) || {}).txt || "")} You keep the XP you earned.`}</div></div>
+    <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}${"DCBAS".includes(tr.reward.g) ? " · 🛡 if you had room" : ""}` : `${esc((tr.st.events.at(-1) || {}).txt || "")}${/keep the XP/.test((tr.st.events.at(-1) || {}).txt || "") ? "" : " You keep the XP you earned."}`}</div></div>
     ${tr.status === "failed" ? `<button class="btn sm" data-re="${tr.id}" style="width:auto;margin:0">Re-enter</button>` : ""}<button class="link" data-seen="${tr.id}" aria-label="Dismiss">✕</button></div>`).join("")}
   <div class="card sysq"><div class="sys-h"><span class="ex">!</span> Daily quests</div>
     ${list.length ? `<div class="tiny muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">${doneN === list.length ? "ALL QUESTS COMPLETE ✓" : `${doneN} OF ${list.length} DONE · ${leftToday()}`}</div>` : ""}
@@ -2592,9 +2598,12 @@ function lifeHome() {
       <a class="btn" href="#/gates" style="display:block;text-decoration:none;text-align:center">Open the gate board</a></div>`}
     ${list.some(tr => tr.kind === "abstain") ? `<button class="btn ghost sosbtn" data-sos="${list.find(tr => tr.kind === "abstain").id}">🆘 Urge SOS</button>` : ""}</div>
   ${rest.length ? `<div class="card"><div class="sys-h">Rest day</div>${rest.map(questRow).join("")}</div>` : ""}
+  ${soon.length ? `<div class="card"><div class="sys-h">Starting soon</div>${soon.map(tr => `<div class="qrow" data-open="${tr.id}"><span class="qic">${tr.icon}</span><div class="grow qmid"><b>${esc(LF.shown(tr))}</b> ${gateBadge(tr.days)}
+    <div class="tiny muted">Starts ${fmtDate(tr.start, { weekday: "long", day: "numeric", month: "short" })}${tr.pgate ? " · 👥 party gate" : ""}</div></div></div>`).join("")}</div>` : ""}
   ${list.length ? `<a class="btn ghost" href="#/gates" style="display:block;text-decoration:none;text-align:center">＋ Enter another gate</a>` : ""}`;
   wireTop(); wireGuideCard(); maybeTour();
   view().querySelector("#shl").onclick = () => shieldSheet(lifeHome);
+  const nx = view().querySelector("#nudgex"); if (nx) nx.onclick = () => { markNudgesSeen(PG.nudges.map(n => n.id)); PG.nudges = []; lifeHome(); };
   view().querySelectorAll("[data-seen]").forEach(b => (b.onclick = () => { S.tracks[b.dataset.seen].seen = true; save(); lifeHome(); }));
   view().querySelectorAll("[data-re]").forEach(b => (b.onclick = () => { const n = LF.reenter(S.tracks[b.dataset.re]); S.tracks[b.dataset.re].seen = true; save(); toast("Gate re-entered. Day 1."); location.hash = "#/track/" + n.id; }));
   wireQuests(view(), lifeHome);
@@ -2617,13 +2626,16 @@ function lifeGates() {
 }
 const ICONS = ["⭐", "🛡", "📚", "🧘", "🏋️", "🏃", "👟", "💧", "🍬", "📵", "⏰", "📓", "🚿", "🌙", "🎓", "🎸", "🎨", "💰", "🥗", "🚭", "🍺", "🙏", "✍️", "🧹"];
 function lifeBuilder(arg) {
-  const tp = lifeTemplates().find(x => x.id === arg) || null;
+  if (pgOk() && !PG.at) { PG.at = 1; syncPartyGates(true).then(() => { if (location.hash.startsWith("#/new")) lifeBuilder(arg); }); }
+  const tp = lifeTemplates().find(x => x.id === arg) || null, inParty = pgOk() && !!PG.party;
   const f = tp ? { ...tp, template: tp.id, steps: (tp.steps || []).join("\n") } : { kind: "daily", title: "", icon: "⭐", stat: "discipline", days: 30, schedule: [1, 1, 1, 1, 1, 1, 1], period: "week", steps: "" };
   f.schedule = f.schedule || [1, 1, 1, 1, 1, 1, 1];
+  f.party = arg === "party" && inParty;
+  if (arg === "party" && !inParty) setTimeout(() => toast(pgOk() ? "Join a party first (Party tab), then start a party gate" : "Party gates need an account"), 300);
   const KINDS = [["daily", "✅", "Daily", "Do it on set days"], ["abstain", "🛡", "Quit", "A clean run: stay off something"], ["target", "🎯", "Target", "An amount per week or in total"], ["milestone", "🏔", "Big goal", "Steps by a date"]];
   const draw = () => {
     const lens = f.kind === "target" && f.period === "week" ? [[14, "2 weeks"], [28, "4 weeks"], [56, "8 weeks"], [84, "12 weeks"]]
-      : [[7, "7 days"], [14, "14 days"], [21, "21 days"], [30, "30 days"], [60, "60 days"], [90, "90 days"], [180, "180 days"]].concat(f.kind === "daily" || f.kind === "abstain" ? [[0, "No end"]] : []);
+      : [[7, "7 days"], [14, "14 days"], [21, "21 days"], [30, "30 days"], [60, "60 days"], [90, "90 days"], [180, "180 days"]].concat((f.kind === "daily" || f.kind === "abstain") && !f.party ? [[0, "No end"]] : []);
     view().innerHTML = `<button class="link" id="bx" style="padding:0">‹ Back</button><h1 style="margin:6px 0 10px">${tp ? `${tp.icon} ${esc(tp.title)}` : "New gate"}</h1>
     <div class="card"><label class="f">What kind?</label><div class="kinds">${KINDS.map(([k, i, l, d]) => `<button class="kind ${f.kind === k ? "on" : ""}" data-k="${k}"><span>${i}</span><b>${l}</b><small>${d}</small></button>`).join("")}</div>
       <label class="f">Name</label><input id="ti" value="${esc(f.title || "")}" maxlength="60" placeholder="${{ daily: "Read 20 minutes", abstain: "No sugar", target: "Gym 3 times a week", milestone: "Run a 10K" }[f.kind]}">
@@ -2639,11 +2651,13 @@ function lifeBuilder(arg) {
       <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 180 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield.</p></div>
     <div class="card"><label class="f">Why are you doing this? <span class="muted">(shown when it gets hard)</span></label><textarea id="wy" rows="2" placeholder="${f.kind === "abstain" ? "For the moment an urge hits…" : "What will be better when you've done it?"}">${esc(tp && tp.why && tp.why.startsWith("Why do you") ? "" : f.why || "")}</textarea>
       <label class="f">Penalty quest <span class="muted">(only in System mode)</span></label><input id="pq" value="${esc(f.penalty || "")}" placeholder="e.g. 20 push-ups">
-      <label class="toggle">Private (never shown to your party) <input type="checkbox" id="pv" ${f.private ? "checked" : ""}></label>
+      ${inParty ? `<label class="toggle"><span><b>👥 Run it with my party</b><div class="small muted">Starts tomorrow so everyone can join. The whole team must survive: if one run breaks, the gate fails for all.</div></span><input type="checkbox" id="pty" ${f.party ? "checked" : ""}></label>` : ""}
+      <label class="toggle">Private (never shown to your party) <input type="checkbox" id="pv" ${f.private && !f.party ? "checked" : ""} ${f.party ? "disabled" : ""}></label>
       <label class="f">Name on widgets and in Party <span class="muted">(optional)</span></label><input id="al" value="${esc(f.alias || "")}" placeholder="e.g. Clean run">
       <label class="toggle">Hard mode (no shields) <input type="checkbox" id="hd" ${f.hard ? "checked" : ""}></label></div>
     <button class="btn" id="go">🌀 Enter the gate</button>`;
     const v = view(), keep = () => {
+      const pty = v.querySelector("#pty"); if (pty) f.party = pty.checked;
       f.title = v.querySelector("#ti").value; f.why = v.querySelector("#wy").value; f.penalty = v.querySelector("#pq").value; f.private = v.querySelector("#pv").checked; f.alias = v.querySelector("#al").value; f.hard = v.querySelector("#hd").checked;
       const am = v.querySelector("#am"), un = v.querySelector("#un"), st = v.querySelector("#st");
       if (am) f.amount = parseInt(am.value, 10) || null; if (un) f.unit = un.value.trim(); if (st) f.steps = st.value;
@@ -2655,12 +2669,19 @@ function lifeBuilder(arg) {
     v.querySelectorAll("[data-d]").forEach(b => (b.onclick = () => { keep(); f.schedule[+b.dataset.d] = f.schedule[+b.dataset.d] ? 0 : 1; draw(); }));
     v.querySelectorAll("[data-p]").forEach(b => (b.onclick = () => { keep(); f.period = b.dataset.p; if (f.period === "week" && f.days % 7) f.days = 28; draw(); }));
     v.querySelectorAll("[data-l]").forEach(b => (b.onclick = () => { keep(); f.days = +b.dataset.l || null; draw(); }));
+    const pt = v.querySelector("#pty"); if (pt) pt.onchange = () => { keep(); if (f.party && !f.days) f.days = 21; draw(); };
     v.querySelector("#go").onclick = () => {
       keep();
       const err = !f.title.trim() ? "Give it a name" : f.kind === "daily" && !f.schedule.some(Boolean) ? "Pick at least one day" : f.kind === "target" && !f.amount ? "Set a target amount" : f.kind === "target" && !f.unit ? "Say what you count (e.g. books)" : f.kind === "milestone" && !String(f.steps).trim() ? "Add at least one step" : null;
       if (err) return toast(err);
       if (f.kind === "daily" && f.amount && !f.unit) f.unit = "times";
-      const tr = LF.newTrack({ ...f, steps: f.kind === "milestone" ? String(f.steps).split("\n").map(s => s.trim()).filter(Boolean) : [] });
+      if (f.party && !f.days) return toast("A party gate needs a length");
+      const tr = LF.newTrack({ ...f, private: f.party ? false : f.private, start: f.party ? addDays(today(), 1) : today(),
+        steps: f.kind === "milestone" ? String(f.steps).split("\n").map(s => s.trim()).filter(Boolean) : [] });
+      if (f.party) {
+        createPartyGate(tr).then(ok => { if (ok) toast(`👥 Party gate opened: ${tr.title}. It starts tomorrow.`); location.hash = "#/party"; });
+        return;
+      }
       toast(`🌀 Gate entered: ${LF.shown(tr)}. Day 1.`); location.hash = "#/track/" + tr.id;
     };
   };
@@ -2779,16 +2800,17 @@ function applyWidgetTicks() {
 function lifeCompare(box, people, all) {
   const row = id => { const st = all[id] || {}, xp = Object.values(st.xp || {}).reduce((a, b) => a + b, 0), lv = LF.hunterLevel(xp).lv;
     const tr = Object.values(st.tracks || {}); return { lv, rank: LF.hunterRank(lv), cleared: (st.hunter || {}).cleared || 0, open: tr.filter(t => t.status === "active").length, xp,
-      pub: tr.filter(t => t.status === "active" && !t.private) }; };
+      pub: tr.filter(t => t.status === "active" && !t.private && !t.pgate) }; };   // party gates have their own section
   const rows = people.map(u => ({ u, s: row(u.id) })), best = k => Math.max(...rows.map(r => r.s[k]));
   const cell = (r, k, f = v => v) => `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${f(r.s[k], r.s)}</b></td>`;
   const mine = new Set(LF.active().map(t => t.party || "").filter(Boolean));
-  box.innerHTML = `<div class="card"><div class="sys-h">Hunter's Path</div><table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
+  box.innerHTML = `<div id="pgates"></div><div class="card"><div class="sys-h">Hunter's Path</div><table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
     <tr><td>Level</td>${rows.map(r => cell(r, "lv", (v, s) => `${v} · ${s.rank}`)).join("")}</tr><tr><td>Gates cleared</td>${rows.map(r => cell(r, "cleared")).join("")}</tr>
     <tr><td>Open gates</td>${rows.map(r => cell(r, "open")).join("")}</tr><tr><td>Hunter XP</td>${rows.map(r => cell(r, "xp")).join("")}</tr></table></div>
     ${rows.filter(r => r.u.id !== USER && r.s.pub.length).map(r => `<div class="card"><div class="sys-h">${esc(r.u.name)}'s gates</div>${r.s.pub.map(t => `<div class="recrow"><span>${t.icon}</span>
       <span class="grow">${esc(t.alias || t.title)} ${gateBadge(t.days)}<div class="tiny muted">${t.days ? `Day ${Math.min(t.days, daysBetween(t.start, today()) + 1)} / ${t.days}` : "No end"} · run ${(t.st || {}).run || 0}</div></span>
       ${mine.has(`${r.u.id}:${t.id}`) ? `<span class="tiny okc">Joined ✓</span>` : `<button class="btn sm" data-join="${r.u.id}:${t.id}" style="width:auto;margin:0">Join</button>`}</div>`).join("")}</div>`).join("")}`;
+  fillPartyGates(box.querySelector("#pgates"));
   box.querySelectorAll("[data-join]").forEach(b => (b.onclick = () => {
     const [uid, tid] = b.dataset.join.split(":"), src = ((all[uid] || {}).tracks || {})[tid]; if (!src) return;
     const tr = LF.newTrack({ ...src, private: false, party: b.dataset.join, steps: (src.steps || []).map(s => s.t || s) });
@@ -2844,3 +2866,114 @@ function lifeGuide() {
   window.scrollTo(0, 0);
   view().querySelector("#gback").onclick = () => (window.history.length > 1 ? window.history.back() : (location.hash = "#/home"));
 }
+
+// ------------------------------------------------------------------ party gates + nudges (server: /api/party-gates, /api/nudges)
+// A party gate is a Hunter's Path gate the whole party runs together; each member has their own track and reports its
+// state. One member failing fails it for everyone; when everyone clears, all get a team bonus. Nudge = "check in!".
+let PG = { gates: [], nudges: [], party: null, at: 0 };
+const pgOk = () => !!USER && !isGuest() && AUTH === "on";
+const JSONH = { "Content-Type": "application/json" };
+async function syncPartyGates(force = false) {
+  if (!pgOk()) return PG;
+  if (!force && Date.now() - PG.at < 15000) return PG;
+  try { const r = await fetch("api/party-gates", { cache: "no-store" }); if (r.ok) PG = { ...(await r.json()), at: Date.now() }; } catch { return PG; }
+  if (isLife() && S) applyPartyGates();
+  return PG;
+}
+function applyPartyGates() {
+  let changed = false;
+  for (const g of PG.gates) {
+    const mine = g.members.find(m => m.id === USER); if (!mine) continue;
+    const tr = S.tracks[mine.track]; if (!tr) continue;
+    if (tr.pgate !== g.id) { tr.pgate = g.id; changed = true; }
+    if (g.status === "failed" && tr.status === "active") { LF.teamFail(tr, g.failedBy === USER ? "Your" : `${g.failedByName}'s`); changed = true; }
+    if (g.status === "cleared" && LF.teamClear(tr)) { changed = true; toast(`👥 The whole party cleared ${g.title}! +${LF.TEAM_BONUS.xp} XP · 💎 ${LF.TEAM_BONUS.gems}`); }
+  }
+  if (changed) save();
+  reportPartyGates();
+}
+let pgBusy = false;
+async function reportPartyGates() {
+  if (!pgOk() || !S || pgBusy) return; pgBusy = true;
+  try {
+    for (const tr of Object.values(S.tracks || {})) {
+      if (!tr.pgate || !PG.gates.some(g => g.id === tr.pgate)) continue;
+      const body = JSON.stringify(LF.reportOf(tr)); if (tr.pgRep === body) continue;
+      const r = await fetch(`api/party-gates/${tr.pgate}/report`, { method: "POST", headers: JSONH, body }).catch(() => null);
+      if (r && r.ok) { PG = { ...(await r.json()), at: Date.now() }; tr.pgRep = body; save(); }
+    }
+  } finally { pgBusy = false; }
+}
+let pgTimer = 0;
+const partySoon = () => { clearTimeout(pgTimer); pgTimer = setTimeout(() => (isLife() ? reportPartyGates() : null), 1200); };
+window.addEventListener("a1:saved", () => { if (isLife() && Object.values(S.tracks || {}).some(t => t.pgate)) partySoon(); });
+function gateOf(tr) { return tr.pgate ? PG.gates.find(g => g.id === tr.pgate) : null; }
+function teamLine(tr) {
+  const g = gateOf(tr); if (!g) return "";
+  const t = today(), ok = g.members.filter(m => m.checked === t).length;
+  return ` · 👥 ${ok}/${g.members.length} checked in`;
+}
+async function sendNudge(g, m, btn) {
+  btn.disabled = true;
+  const r = await fetch("api/nudges", { method: "POST", headers: JSONH, body: JSON.stringify({ to: m.id, gate: g.id }) }).catch(() => null);
+  if (r && r.ok) { toast(`🔔 Nudged ${m.name}`); btn.textContent = "Nudged ✓"; }
+  else { const j = r ? await r.json().catch(() => ({})) : {}; toast(j.error ? j.error[0].toUpperCase() + j.error.slice(1) : "Couldn't send the nudge"); btn.textContent = "Nudged ✓"; }
+}
+async function markNudgesSeen(ids) { if (ids.length) await fetch("api/nudges/seen", { method: "POST", headers: JSONH, body: JSON.stringify({ ids }) }).catch(() => null); }
+const nudgeBanner = () => PG.nudges.length ? `<div class="card nudgecard"><span class="qic">🔔</span><div class="grow">${PG.nudges.slice(0, 3).map(n =>
+  `<div><b>${esc(n.fromName)}</b> nudged you: check in on ${n.icon || ""} ${esc(n.title)}</div>`).join("")}</div><button class="link" id="nudgex" aria-label="Dismiss">✕</button></div>` : "";
+function pgateCard(g) {
+  const t = today(), me = g.members.find(m => m.id === USER), dayN = Math.min(g.days, daysBetween(g.start, t) + 1);
+  const joinable = !me && g.status === "active" && daysBetween(g.start, t) <= 1;
+  const status = g.status === "failed" ? `<span class="crk" style="color:var(--red)">Failed: ${esc(g.failedByName || "someone")}'s run broke${g.why ? ` (${esc(g.why)})` : ""}</span>`
+    : g.status === "cleared" ? `<span class="okc">🏆 Cleared by the whole party</span>` : g.start > t ? `Starts ${fmtDate(g.start)}` : `Day ${dayN} / ${g.days}`;
+  return `<div class="card pgcard"><div class="row" style="gap:10px"><span class="qic">${g.icon}</span><div class="grow"><b>${esc(g.title)}</b> ${gateBadge(g.days)}
+    <div class="tiny muted">${status} · ${g.members.length} hunter${g.members.length > 1 ? "s" : ""} · everyone must survive</div></div>
+    ${joinable ? `<button class="btn sm" data-pgjoin="${g.id}" style="width:auto;margin:0">Join</button>` : ""}</div>
+    ${g.members.map(m => `<div class="pgm ${m.status}">${avatar(m.id, true)}<span class="grow"><b>${esc(m.name)}${m.id === USER ? " (you)" : ""}</b>
+      <span class="tiny muted"> · run ${m.run}${m.cracked ? " · ⚠ cracked" : ""}</span></span>
+      ${m.status === "failed" ? `<span class="tiny" style="color:var(--red)">✗ fell</span>` : m.status === "cleared" ? `<span class="tiny okc">✓ cleared</span>`
+        : g.start > t ? `<span class="tiny muted">ready</span>` : m.checked === t ? `<span class="tiny okc">✓ today</span>`
+        : m.id !== USER && me && g.status === "active" ? `<button class="qbtn sm2" data-nudge="${g.id}:${m.id}">🔔 Nudge</button>` : `<span class="tiny muted">⏳ not yet</span>`}</div>`).join("")}</div>`;
+}
+async function fillPartyGates(box) {
+  if (!box) return;
+  if (!pgOk()) { box.innerHTML = ""; return; }
+  await syncPartyGates(true);
+  const active = PG.gates.filter(g => g.status === "active"), ended = PG.gates.filter(g => g.status !== "active").slice(-5);
+  box.innerHTML = `<div class="sys-h" style="margin:4px 2px 6px">👥 Party gates</div>
+    ${nudgeBanner()}
+    ${active.map(pgateCard).join("") || `<p class="muted small" style="margin:0 2px 8px">No party gates yet. Start one: everyone runs the same gate, and the whole team must survive.</p>`}
+    <a class="btn" href="#/new/party" style="display:block;text-align:center;text-decoration:none">＋ Start a party gate</a>
+    ${ended.length ? `<details style="margin-top:10px"><summary class="small muted">Ended party gates</summary>${ended.map(pgateCard).join("")}</details>` : ""}`;
+  const x = box.querySelector("#nudgex"); if (x) x.onclick = () => { markNudgesSeen(PG.nudges.map(n => n.id)); PG.nudges = []; box.querySelector(".nudgecard").remove(); };
+  box.querySelectorAll("[data-nudge]").forEach(b => (b.onclick = () => { const [gid, uid] = b.dataset.nudge.split(":"), g = PG.gates.find(x => x.id === gid); sendNudge(g, g.members.find(m => m.id === uid), b); }));
+  box.querySelectorAll("[data-pgjoin]").forEach(b => (b.onclick = () => joinPartyGate(PG.gates.find(g => g.id === b.dataset.pgjoin), box)));
+}
+async function joinPartyGate(g, box) {
+  const sp = g.spec || {};
+  const tr = LF.newTrack({ kind: g.kind, title: g.title, icon: g.icon, days: g.days, start: g.start, private: false, stat: sp.stat, schedule: sp.schedule,
+    amount: sp.amount, unit: sp.unit, period: sp.period, steps: sp.steps || [], why: "", penalty: sp.penalty || "" });
+  const r = await fetch(`api/party-gates/${g.id}/join`, { method: "POST", headers: JSONH, body: JSON.stringify({ track: tr.id }) }).catch(() => null);
+  if (!r || !r.ok) { delete S.tracks[tr.id]; save(); const j = r ? await r.json().catch(() => ({})) : {}; return toast(j.error || "Couldn't join"); }
+  tr.pgate = g.id; save(); PG = { ...(await r.json()), at: Date.now() };
+  askNotify(); toast(`👥 Joined ${g.title}. Everyone must survive!`); fillPartyGates(box);
+}
+async function createPartyGate(tr) {
+  const spec = { stat: tr.stat, schedule: tr.schedule, amount: tr.amount, unit: tr.unit, period: tr.period, steps: tr.steps.map(s => s.t), penalty: tr.penalty };
+  const r = await fetch("api/party-gates", { method: "POST", headers: JSONH, body: JSON.stringify({ track: tr.id, title: tr.title, icon: tr.icon, kind: tr.kind, days: tr.days, start: tr.start, spec }) }).catch(() => null);
+  if (!r || !r.ok) { const j = r ? await r.json().catch(() => ({})) : {}; toast(j.error ? `Party gate: ${j.error}` : "Couldn't open the party gate (offline?)"); return false; }
+  const j = await r.json(); tr.pgate = j.id; save(); PG = { ...j, at: Date.now() }; askNotify();
+  return true;
+}
+// native app: notifications are needed for nudges and reminders
+const askNotify = () => { try { window.LevelUpNative && window.LevelUpNative.askNotifications && window.LevelUpNative.askNotifications(); } catch { /* ignore */ } };
+// any course: tell the learner about new nudges once per app start (Hunter's Path shows them in full)
+let nudgeToldAt = 0;
+async function checkNudges() {
+  if (!pgOk() || isLife() || Date.now() - nudgeToldAt < 600000) return;
+  nudgeToldAt = Date.now();
+  try { const r = await fetch("api/nudges", { cache: "no-store" }); if (!r.ok) return; const n = (await r.json()).nudges || [];
+    if (n.length) toast(`🔔 ${n[0].fromName} nudged you: check in on ${n[0].title} (Hunter's Path)`); } catch { /* offline */ }
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { checkNudges(); if (isLife() && S) syncPartyGates().then(() => { if (/^#\/(home)?$/.test(location.hash || "#/home") && !document.querySelector("#sheet-root .sheet-bg")) lifeHome(); }); } });

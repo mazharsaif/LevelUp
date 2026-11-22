@@ -148,6 +148,9 @@ The widgets already read one snapshot from the web app (`widgetSnapshot()`), so 
   at 21:00 if anything is open.
 
 ## 8. Party
+
+**Built 22 Nov:** party gates (`/api/party-gates`): a gate the party runs together, starting the next day; **the whole team must survive** (one failed run fails it for all; all cleared = team bonus). Nudges (`/api/nudges`): one per person per gate per day, shown as a banner and as a notification in the native app (background check every 15 minutes).
+
 - Share chosen tracks with your party (never private ones).
 - **Party gates:** everyone enters the same gate ("No sugar, 21 days"), and the party sees who is still in and the
   group's clean days.

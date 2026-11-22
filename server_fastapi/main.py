@@ -507,6 +507,235 @@ def leave_party(request: Request, pid: str = Path(..., pattern=ID_RE)):
         return party_view(d, who)
 
 
+# ---------- party gates: a Hunter's Path gate the whole party runs together; the full team must survive ----------
+# party_gates.json = {"gates": {gid: {id, party, owner, title, icon, kind, days, start, spec, status, members: {uid: member}}},
+#                     "nudges": [{id, from, to, gate, title, day, at, seen}]}
+# Each member keeps their own track in their Hunter's Path progress and reports its state here after check-ins.
+# One member's run failing fails the gate for everyone; it clears when every member has cleared.
+PGATES_FILE = os.path.join(DATA, "party_gates.json")
+_pg_lock = threading.Lock()
+NUDGE_KEEP = 500
+DAY_RE = r"^\d{4}-\d{2}-\d{2}$"
+TRACK_RE = r"^[a-z0-9]{1,40}$"
+
+
+def load_pg() -> dict:
+    try:
+        with open(PGATES_FILE) as f:
+            d = json.load(f)
+    except (FileNotFoundError, ValueError):
+        d = {}
+    d.setdefault("gates", {})
+    d.setdefault("nudges", [])
+    return d
+
+
+def save_pg(d: dict) -> None:
+    tmp = PGATES_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(d, f, indent=1, ensure_ascii=False)
+    os.replace(tmp, PGATES_FILE)
+
+
+class PGateIn(BaseModel):
+    track: str = Field(..., pattern=TRACK_RE, description="your own track id (Hunter's Path)")
+    title: str = Field(..., min_length=1, max_length=60)
+    icon: str = Field("⭐", max_length=8)
+    kind: str = Field(..., pattern="^(daily|abstain|target|milestone)$")
+    days: int = Field(..., ge=7, le=365)
+    start: str = Field(..., pattern=DAY_RE)
+    spec: dict = Field(default_factory=dict, description="schedule, amount, unit, period, stat, steps: copied to members who join")
+
+
+class PGateJoin(BaseModel):
+    track: str = Field(..., pattern=TRACK_RE)
+
+
+class PGateReport(BaseModel):
+    track: str = Field(..., pattern=TRACK_RE)
+    status: str = Field(..., pattern="^(active|failed|cleared)$")
+    run: int = Field(0, ge=0, le=100000)
+    day: int = Field(0, ge=0, le=100000)
+    today: bool = False
+    cracked: bool = False
+    date: str = Field(..., pattern=DAY_RE, description="the reporter's local date")
+    why: str = Field("", max_length=120)
+
+
+class NudgeIn(BaseModel):
+    to: str = Field(..., pattern=ID_RE)
+    gate: str = Field(..., pattern=ID_RE)
+
+
+class NudgeSeen(BaseModel):
+    ids: list[str] = Field(default_factory=list, max_length=100)
+
+
+def pg_view(d: dict, who: str) -> dict:
+    names = {u["id"]: u["name"] for u in users()}
+    mine = party_of(load_parties(), who)
+    gates = []
+    for g in d["gates"].values():
+        if not mine or g["party"] != mine["id"]:
+            continue
+        gates.append({**{k: g[k] for k in ("id", "owner", "title", "icon", "kind", "days", "start", "spec", "status", "created")},
+                      "failedBy": g.get("failedBy"), "failedByName": names.get(g.get("failedBy", ""), g.get("failedBy")), "failedAt": g.get("failedAt"),
+                      "why": g.get("why", ""), "members": [{"id": u, "name": names.get(u, u), **m} for u, m in g["members"].items()]})
+    gates.sort(key=lambda x: (x["status"] != "active", x["start"]), reverse=False)
+    nudges = [{**n, "fromName": names.get(n["from"], n["from"])} for n in d["nudges"] if n["to"] == who and not n["seen"]]
+    return {"party": mine["id"] if mine else None, "gates": gates, "nudges": nudges}
+
+
+@app.get("/api/party-gates", tags=["party gates"])
+def get_pgates(request: Request):
+    """Your party's gates with every member's status, and the nudges sent to you that you haven't seen."""
+    denied = need(request)
+    if denied:
+        return denied
+    with _pg_lock:
+        return pg_view(load_pg(), me(request))
+
+
+@app.post("/api/party-gates", tags=["party gates"], responses={409: {"model": ErrorOut}})
+def create_pgate(request: Request, body: PGateIn):
+    """Open a party gate from one of your tracks. Party members can join until the day after it starts."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    party = party_of(load_parties(), who)
+    if not party:
+        return err("join a party first", 409)
+    with _pg_lock:
+        d = load_pg()
+        gid = "g" + format(int(time.time() * 1000), "x")
+        d["gates"][gid] = {"id": gid, "party": party["id"], "owner": who, "title": body.title.strip(), "icon": body.icon, "kind": body.kind,
+                           "days": body.days, "start": body.start, "spec": body.spec, "status": "active", "created": date.today().isoformat(),
+                           "members": {who: {"track": body.track, "status": "active", "run": 0, "day": 0, "checked": None, "cracked": False}}}
+        save_pg(d)
+        return {"id": gid, **pg_view(d, who)}
+
+
+@app.post("/api/party-gates/{gid}/join", tags=["party gates"], responses={404: {"model": ErrorOut}, 409: {"model": ErrorOut}})
+def join_pgate(request: Request, body: PGateJoin, gid: str = Path(..., pattern=ID_RE)):
+    """Join a party gate with your copy of the track (same start date)."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    party = party_of(load_parties(), who)
+    with _pg_lock:
+        d = load_pg()
+        g = d["gates"].get(gid)
+        if not g or not party or g["party"] != party["id"]:
+            return err("no such gate in your party", 404)
+        if g["status"] != "active":
+            return err("this gate has ended", 409)
+        if (date.today() - date.fromisoformat(g["start"])).days > 1:
+            return err("too late to join: the gate started more than a day ago", 409)
+        if who not in g["members"]:
+            g["members"][who] = {"track": body.track, "status": "active", "run": 0, "day": 0, "checked": None, "cracked": False}
+            save_pg(d)
+        return pg_view(d, who)
+
+
+@app.post("/api/party-gates/{gid}/report", tags=["party gates"], responses={404: {"model": ErrorOut}})
+def report_pgate(request: Request, body: PGateReport, gid: str = Path(..., pattern=ID_RE)):
+    """Report your track's state. A failed run fails the gate for the whole party; all cleared clears it."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _pg_lock:
+        d = load_pg()
+        g = d["gates"].get(gid)
+        if not g or who not in g["members"]:
+            return err("you are not in this gate", 404)
+        m = g["members"][who]
+        m.update(run=body.run, day=body.day, cracked=body.cracked, track=body.track)
+        if body.today:
+            m["checked"] = body.date
+        if m["status"] == "active":
+            m["status"] = body.status
+        if g["status"] == "active":
+            if body.status == "failed":
+                g.update(status="failed", failedBy=who, failedAt=body.date, why=body.why)
+            elif all(x["status"] == "cleared" for x in g["members"].values()):
+                g["status"] = "cleared"
+        save_pg(d)
+        return pg_view(d, who)
+
+
+@app.post("/api/party-gates/{gid}/leave", tags=["party gates"])
+def leave_pgate(request: Request, gid: str = Path(..., pattern=ID_RE)):
+    """Leave a party gate before it starts (once it has started, leaving counts as failing it)."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _pg_lock:
+        d = load_pg()
+        g = d["gates"].get(gid)
+        if g and who in g["members"]:
+            if g["status"] == "active" and date.today().isoformat() >= g["start"]:
+                g.update(status="failed", failedBy=who, failedAt=date.today().isoformat(), why="left the gate")
+                g["members"][who]["status"] = "failed"
+            else:
+                del g["members"][who]
+                if not g["members"]:
+                    del d["gates"][gid]
+            save_pg(d)
+        return pg_view(d, who)
+
+
+@app.post("/api/nudges", tags=["party gates"], responses={404: {"model": ErrorOut}, 429: {"model": ErrorOut}})
+def send_nudge(request: Request, body: NudgeIn):
+    """Nudge a party member to check in on a gate you share. One nudge per person per gate per day."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _pg_lock:
+        d = load_pg()
+        g = d["gates"].get(body.gate)
+        if not g or who not in g["members"] or body.to not in g["members"] or body.to == who or g["status"] != "active":
+            return err("you can only nudge someone in an open gate you share", 404)
+        today = date.today().isoformat()
+        if any(n["from"] == who and n["to"] == body.to and n["gate"] == body.gate and n["day"] == today for n in d["nudges"]):
+            return err("you already nudged them about this gate today", 429)
+        d["nudges"].append({"id": "n" + format(int(time.time() * 1000), "x"), "from": who, "to": body.to, "gate": body.gate,
+                            "title": g["title"], "icon": g["icon"], "day": today, "at": int(time.time() * 1000), "seen": False})
+        d["nudges"] = d["nudges"][-NUDGE_KEEP:]
+        save_pg(d)
+        return {"ok": True}
+
+
+@app.get("/api/nudges", tags=["party gates"])
+def get_nudges(request: Request):
+    """Nudges sent to you that you haven't seen (the native app checks this in the background)."""
+    denied = need(request)
+    if denied:
+        return denied
+    with _pg_lock:
+        return {"nudges": pg_view(load_pg(), me(request))["nudges"]}
+
+
+@app.post("/api/nudges/seen", tags=["party gates"])
+def seen_nudges(request: Request, body: NudgeSeen):
+    """Mark your nudges as seen."""
+    denied = need(request)
+    if denied:
+        return denied
+    who = me(request)
+    with _pg_lock:
+        d = load_pg()
+        for n in d["nudges"]:
+            if n["to"] == who and (not body.ids or n["id"] in body.ids):
+                n["seen"] = True
+        save_pg(d)
+        return {"ok": True}
+
+
 @app.get("/api/state/{uid}", response_model=StateEnvelope, responses={404: {"model": ErrorOut}}, tags=["progress"])
 def get_state(request: Request, uid: str = Path(...), c: str = CourseQ):
     """Your progress (null if you haven't started this course)."""
