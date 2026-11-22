@@ -74,7 +74,7 @@ data class Look(
                 }
                 else -> Look("sl", true, 0xFF0B1230.toInt(), R.drawable.wbg_hunter, 0xFF121B3F.toInt(), 0xFFEAF4FF.toInt(), 0xFF8EA6C8.toInt(),
                     0xFF4D96FF.toInt(), 0xFF9A6DFF.toInt(), 0xFFFFFFFF.toInt(), 0xFF57E3A0.toInt(), 0xFFFF4D6D.toInt(), 0xFFFFC53D.toInt(), 0xFF1E2A55.toInt(),
-                    true, FontFamily("sans-serif-condensed"), FontFamily("sans-serif-condensed"))
+                    true, FontFamily.SansSerif, FontFamily.SansSerif)
             }
         }
 
@@ -125,7 +125,7 @@ data class Look(
             cv.drawRoundRect(rr, box * 0.16f, box * 0.16f, stroke)
             val tp = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = col; textSize = box * 0.62f; textAlign = Paint.Align.CENTER
-                typeface = if (look.id == "calm") Typeface.create(Typeface.SERIF, Typeface.BOLD) else Typeface.create("sans-serif-condensed", Typeface.BOLD)
+                typeface = if (look.id == "calm") Typeface.create(Typeface.SERIF, Typeface.BOLD) else Typeface.DEFAULT_BOLD
             }
             cv.drawText(rank, cx, cx - (tp.descent() + tp.ascent()) / 2, tp)
             return b

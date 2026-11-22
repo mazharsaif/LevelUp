@@ -9,6 +9,7 @@ import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.j
 import { RANKS } from "./store.js";
 import { L } from "./lang.js";
 import { startTour, tourRunning, endTour } from "./tour.js";
+import * as LF from "./life.js";
 
 const view = () => document.getElementById("view");
 const sheetRoot = () => document.getElementById("sheet-root");
@@ -75,10 +76,11 @@ function route() {
   if (h === "#/party") { document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party")); return partyView(); }
   if (h.startsWith("#/go/")) {        // widget tap: show the course home, then run the action
     const [, , act, arg] = h.split("/");
-    location.replace(courseInfo(COURSE).type === "tree" ? "#/home" : "#/today");
+    location.replace(["tree", "life"].includes(courseInfo(COURSE).type) ? "#/home" : "#/today");
     setTimeout(() => goAction(act, decodeURIComponent(arg || "")), 120); return;
   }
   pushWidget();
+  if (courseInfo(COURSE).type === "life") return lifeRoute(h);
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "guide" ? (document.body.classList.add("in-lesson"), guideView()) : nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (h === "#/guide") { document.querySelectorAll("#tabs a").forEach(a => a.classList.remove("on")); return guideView(); }
   if (!S.setup) return setupView();
@@ -1314,7 +1316,7 @@ function applyTheme() {
   document.body.classList.toggle("theme-sl3", t === "system3");
   document.body.classList.toggle("theme-calm", t === "calm" || t === "ez"); // Eurozeit builds on Calm
   document.body.classList.toggle("theme-ez", t === "ez");
-  applyAura(S && S.setup && courseInfo(COURSE).type !== "tree" ? level(progress().total).lv : 1);
+  applyAura(S && S.setup && !["tree", "life"].includes(courseInfo(COURSE).type) ? level(progress().total).lv : 1);
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.content = t === "system" || t === "system2" || t === "system3" ? "#0a0f1a" : t === "calm" ? "#f6f3ee" : t === "ez" ? "#ffffff" : "#58a700";
 }
@@ -1934,6 +1936,7 @@ async function fillCompare() {
   const people = Object.keys(all).map(id => USERS.find(u => u.id === id) || { id, name: id, color: "#888" });
   if (people.length < 2) return;                          // keep the "when someone joins" hint
   if (courseInfo(COURSE).type === "tree") return treeCompare(box, people, all);
+  if (courseInfo(COURSE).type === "life") return lifeCompare(box, people, all);
   const rows = people.map(u => ({ u, s: summary(all[u.id]) }));
   const best = k => Math.max(...rows.map(r => (r.s ? r.s[k] : -1)));
   const cell = (r, k, fmt) => !r.s ? `<td class="muted">–</td>` : `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${fmt(r.s[k], r.s)}</b></td>`;
@@ -2228,6 +2231,7 @@ function widgetSnapshot() {
   const from = addDays(mondayOf(t), -28);
   base.days = Array.from({ length: 35 }, (_, k) => { const d = addDays(from, k);
     return d > t ? "F" : dayCounts(d) ? "H" : (S.xp[d] || 0) > 0 ? "P" : "M"; }).join("");
+  if (ci.type === "life") return { ...base, courseType: "life", questMode: false, life: lifeSnapshot() };
   if (tree) {
     const ct = continueTarget(), all = openBranches().flatMap(b => treeNodes(b.id));
     return { ...base, questMode: false, treeDone: all.filter(n => nodeDone(n.id)).length, treeTotal: all.length,
@@ -2275,7 +2279,13 @@ function pushWidget() {
   wTimer = setTimeout(() => { try { N.setWidgetData(JSON.stringify(widgetSnapshot())); } catch (e) { console.warn("widget snapshot", e); } }, 700);
 }
 // widget taps: #/go/next (start the next part), #/go/review, #/go/word/<id>
-function goAction(act, arg) {
+async function goAction(act, arg) {
+  if (act === "life") {                     // Hunter's Path widget / reminder: open that course from anywhere
+    if (!isLife()) { await switchCourse("hunter"); markPicked(); }
+    if (location.hash !== "#/home") location.hash = "#/home"; else route();
+    return;
+  }
+  if (isLife()) { if (arg && S.tracks[arg]) location.hash = "#/track/" + arg; return; }
   const tree = courseInfo(COURSE).type === "tree";
   if (act === "next") {
     if (tree) { const ct = continueTarget(); if (ct) openReader(ct.br, ct.n); return; }
@@ -2289,7 +2299,7 @@ function goAction(act, arg) {
 // ------------------------------------------------------------------ welcome tour (js/tour.js)
 // Runs once per device for each kind of course (language / skill tree), on the course home, the first time it is shown.
 // "Take the tour" (Settings → About, account menu) runs it again.
-const tourKind = () => (courseInfo(COURSE).type === "tree" ? "tree" : "lang");
+const tourKind = () => (isLife() ? "life" : courseInfo(COURSE).type === "tree" ? "tree" : "lang");
 const tourSeen = k => { try { return !!localStorage.getItem("a1.tour." + k); } catch { return true; } };
 const tourMark = k => { try { localStorage.setItem("a1.tour." + k, today()); } catch { /* ignore */ } };
 const cardOf = sel => () => { const e = [...document.querySelectorAll(sel)].find(x => x.offsetParent); return e ? e.closest(".card") || e : null; };
@@ -2334,16 +2344,16 @@ function maybeTour() {
   setTimeout(() => {
     // wait for pop-ups (rewards, updates, sheets) to be gone; try again on the next render
     if (tourRunning() || inLesson() || document.querySelector("#sheet-root .sheet-bg, #upd-root, .bug-bg")) return;
-    const home = k === "tree" ? !location.hash.startsWith("#/branch") : /^#\/(today)?$/.test(location.hash || "#/today");
+    const home = k === "life" ? /^#\/(home)?$/.test(location.hash || "#/home") : k === "tree" ? !location.hash.startsWith("#/branch") : /^#\/(today)?$/.test(location.hash || "#/today");
     if (!home) return;
     tourPending = false; tourMark(k);
-    startTour(k === "tree" ? treeSteps() : langSteps());
+    startTour(k === "life" ? lifeSteps() : k === "tree" ? treeSteps() : langSteps());
   }, 650);
 }
 // "Take the tour": go to the course home and run it
 function takeTour() {
   closeSheet(); tourPending = true;
-  const h = courseInfo(COURSE).type === "tree" ? "#/home" : "#/today";
+  const h = ["tree", "life"].includes(courseInfo(COURSE).type) ? "#/home" : "#/today";
   if (location.hash === h) route(); else location.hash = h;
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tour]")) takeTour(); });
@@ -2363,6 +2373,7 @@ function wireGuideCard() {
 }
 function guideView() {
   guideMark();
+  if (isLife()) return lifeGuide();
   const tree = courseInfo(COURSE).type === "tree", lang = !tree, quest = lang && S && S.setup && questMode();
   const what = tree ? (C.content.title || "this course") : (C.course && C.course.title) || "your course";
   const sec = (icon, title, body) => `<section class="gsec"><h2><span>${icon}</span>${title}</h2>${body}</section>`;
@@ -2417,3 +2428,419 @@ function guideView() {
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-guide]")) { endTourIfAny(); location.hash = "#/guide"; } });
 const endTourIfAny = () => { if (tourRunning()) endTour(true); };
+
+// ------------------------------------------------------------------ Hunter's Path (personal tracks; engine in js/life.js)
+// Routes: #/home (today's quests), #/gates (gate board + record), #/new[/template] (builder), #/track/<id>, #/hunter.
+// Design: docs/design/personal-tracks.md. Shield rules (anti-abuse) live in life.js.
+const isLife = () => courseInfo(COURSE).type === "life";
+const lifeTemplates = () => C.content.templates || [];
+const DAYNAMES = ["M", "T", "W", "T", "F", "S", "S"];
+function lifeRoute(h) {
+  document.body.classList.add("in-lesson");
+  LF.H(); LF.settleAll(); applyWidgetTicks();
+  const [, nm, arg] = h.split("/");
+  if (nm === "guide") return guideView();
+  if (nm === "gates") return lifeGates();
+  if (nm === "new") return lifeBuilder(decodeURIComponent(arg || ""));
+  if (nm === "track" && arg && S.tracks[arg]) return lifeTrack(arg);
+  if (nm === "hunter") return lifeHunter();
+  return lifeHome();
+}
+const lifeNav = cur => `<div class="lnav">${[["home", "⚔️ Today"], ["gates", "🌀 Gates"], ["hunter", "🧬 Hunter"], ["party", "👥 Party"]].map(([k, l]) =>
+  `<a href="#/${k}" class="${cur === k ? "on" : ""}">${l}</a>`).join("")}</div>`;
+const hunter = () => { const lv = LF.hunterLevel(LF.totalLifeXP()); return { ...lv, rk: LF.hunterRank(lv.lv) }; };
+const gateBadge = days => { const g = LF.gateRank(days); return g ? `<span class="gbadge g-${g}">${g}</span>` : `<span class="gbadge g-open">∞</span>`; };
+function crackText(tr) {
+  const c = tr.st.cracked; if (!c) return "";
+  const need = (tr.kind === "target" ? LF.HEAL_WEEKS : LF.HEAL_DAYS) - c.heal;
+  return `⚠ Cracked · heals after ${need} more good ${tr.kind === "target" ? (need === 1 ? "week" : "weeks") : need === 1 ? "day" : "days"}`;
+}
+function trackLine(tr) {
+  const t = today(), n = LF.dayNo(tr, t);
+  const parts = [tr.days ? `Day ${Math.min(n, tr.days)} / ${tr.days}` : `Day ${n}`];
+  if (tr.kind === "daily" || tr.kind === "abstain") parts.push(`run ${tr.st.run}`);
+  if (tr.kind === "target" && tr.period === "week") parts.push(`week ${Math.floor(LF.dayNo(tr, t) / 7.0001) + 1}`);
+  return parts.join(" · ");
+}
+function questAction(tr) {
+  const t = today(), v = tr.log[t], done = LF.doneToday(tr, t);
+  if (tr.auto === "learn") return `<span class="qauto ${done ? "ok" : ""}">${done ? "✓ Goal reached" : "Ticks itself"}</span>`;
+  if (tr.kind === "abstain") {
+    if (v === true) return `<button class="qbtn ok" data-un="${tr.id}" aria-label="Undo">✓ Clean</button>`;
+    if (v === "slip") return `<span class="qauto bad">Slipped</span>`;
+    return `<button class="qbtn" data-clean="${tr.id}">Still clean ✓</button><button class="qlink" data-slip="${tr.id}">I slipped</button>`;
+  }
+  if (tr.kind === "daily" && tr.amount) return `<button class="qbtn ${done ? "ok" : ""}" data-amt="${tr.id}">${+v || 0} / ${tr.amount} ${esc(tr.unit)}</button>`;
+  if (tr.kind === "daily") return `<button class="qcheck ${done ? "ok" : ""}" data-ck="${tr.id}" aria-label="${done ? "Done" : "Mark done"}">${done ? "✓" : ""}</button>`;
+  if (tr.kind === "target") {
+    const n = tr.period === "week" ? LF.weekCount(tr, Math.floor(LF.dayNo(tr, t) / 7.0001)) : LF.totalCount(tr);
+    return `<span class="qprog ${done ? "ok" : ""}">${n} / ${tr.amount}</span><button class="qbtn sm2" data-add="${tr.id}">+1 ${esc(tr.unit)}</button>`;
+  }
+  const k = tr.steps.filter(s => s.d).length;
+  return `<span class="qprog">${k} / ${tr.steps.length} steps</span>`;
+}
+function questRow(tr) {
+  const done = LF.doneToday(tr);
+  return `<div class="qrow ${done ? "done" : ""} ${tr.st.cracked ? "cracked" : ""}" data-open="${tr.id}">
+    <span class="qic">${tr.icon}</span><div class="grow qmid"><b>${esc(LF.shown(tr))}</b> ${gateBadge(tr.days)}
+      <div class="tiny muted">${trackLine(tr)}${tr.st.cracked ? ` · <span class="crk">${crackText(tr)}</span>` : ""}</div></div>
+    <div class="qact">${questAction(tr)}</div></div>`;
+}
+function wireQuests(root, rerender) {
+  const T = id => S.tracks[id], t = today();
+  root.querySelectorAll("[data-open]").forEach(r => (r.onclick = e => { if (!e.target.closest("button")) location.hash = "#/track/" + r.dataset.open; }));
+  root.querySelectorAll("[data-ck]").forEach(b => (b.onclick = () => { const tr = T(b.dataset.ck); LF.checkIn(tr, t, LF.doneToday(tr) ? null : true); questToast(tr); rerender(); }));
+  root.querySelectorAll("[data-clean]").forEach(b => (b.onclick = () => { const tr = T(b.dataset.clean); LF.checkIn(tr, t, true); questToast(tr); rerender(); }));
+  root.querySelectorAll("[data-un]").forEach(b => (b.onclick = () => { LF.checkIn(T(b.dataset.un), t, null); rerender(); }));
+  root.querySelectorAll("[data-slip]").forEach(b => (b.onclick = () => slipSheet(T(b.dataset.slip), rerender)));
+  root.querySelectorAll("[data-add]").forEach(b => (b.onclick = () => { const tr = T(b.dataset.add); LF.logUnits(tr, 1); toast(`+1 ${tr.unit} · +${LF.XP.unit} XP`); rerender(); }));
+  root.querySelectorAll("[data-amt]").forEach(b => (b.onclick = () => amountSheet(T(b.dataset.amt), rerender)));
+  root.querySelectorAll("[data-sos]").forEach(b => (b.onclick = e => { e.stopPropagation(); sosView(T(b.dataset.sos), rerender); }));
+  root.querySelectorAll("[data-pen]").forEach(b => (b.onclick = () => { LF.penaltyDone(T(b.dataset.pen)); toast("Penalty quest done · the crack healed"); rerender(); }));
+  root.querySelectorAll("[data-yes],[data-no]").forEach(b => (b.onclick = () => {
+    const tr = T(b.dataset.yes || b.dataset.no), y = addDays(t, -1);
+    LF.checkIn(tr, y, b.dataset.yes ? true : tr.kind === "abstain" ? "slip" : false); LF.settleAll(); rerender();
+  }));
+}
+function questToast(tr) { if (LF.doneToday(tr)) toast(`${tr.icon} ${LF.shown(tr)} ✓ · +${LF.XP.day} XP`); }
+function amountSheet(tr, done) {
+  const t = today();
+  sheet(`<h2 style="margin-top:0">${tr.icon} ${esc(LF.shown(tr))}</h2><label class="f">How many ${esc(tr.unit)} today?</label>
+    <input id="amt" type="number" inputmode="numeric" min="0" value="${+tr.log[t] || ""}" placeholder="0">
+    <p class="muted small">Goal: ${tr.amount} ${esc(tr.unit)}.</p><button class="btn" id="ok">Save</button><button class="btn ghost" id="cx">Cancel</button>`, el => {
+    const i = el.querySelector("#amt"); i.focus();
+    el.querySelector("#ok").onclick = () => { const n = Math.max(0, parseInt(i.value, 10) || 0); LF.checkIn(tr, t, n || null); closeSheet(); questToast(tr); done(); };
+    el.querySelector("#cx").onclick = closeSheet;
+  });
+}
+function slipSheet(tr, done) {
+  const out = LF.missOutcome(tr), best = Math.max(tr.st.best, tr.st.run), clean = LF.cleanDays(tr);
+  const msg = { shield: "A 🛡 shield will cover today, so your run continues.", crack: "Your run will crack ⚠ but keep going. It heals after a week of good days.",
+    break: tr.days ? "This ends the gate. You keep the XP you earned, and you can re-enter it right away." : "This run ends, and a new one starts tomorrow." }[out];
+  sheet(`<h2 style="margin-top:0">That happens.</h2>
+    <p>${best ? `Your best run is <b>${best} day${best === 1 ? "" : "s"}</b>${clean ? `, and you were on track <b>${clean} of the last 30 days</b>` : ""}. One slip doesn't undo that.` : "You've only just started. One slip doesn't decide anything."}</p>
+    <div class="note">${msg}</div>
+    ${tr.why ? `<p class="small"><b>Why you started:</b> ${esc(tr.why)}</p>` : ""}
+    <button class="btn" id="slipok">Log the slip</button>
+    ${tr.kind === "abstain" ? `<button class="btn ghost" id="sos">🆘 I'm still fighting an urge</button>` : ""}
+    <button class="btn ghost" id="cx">Cancel</button>`, el => {
+    el.querySelector("#slipok").onclick = () => { LF.checkIn(tr, today(), "slip"); LF.settleAll(); closeSheet(); toast(out === "shield" ? "🛡 Shield used. The run continues." : "Logged. Tomorrow is a new day."); done(); };
+    const s = el.querySelector("#sos"); if (s) s.onclick = () => { closeSheet(); sosView(tr, done); };
+    el.querySelector("#cx").onclick = closeSheet;
+  });
+}
+// 🆘 urge help: 90 s of guided breathing, your own reason, a quick physical task
+const SOS_TASKS = ["Do 20 push-ups right now", "Drink a big glass of cold water", "Go outside and walk for 5 minutes", "Take a cold shower", "Put the phone in another room for 10 minutes", "Text a friend about anything else"];
+function sosView(tr, done) {
+  const root = document.createElement("div"); root.className = "sos";
+  const task = SOS_TASKS[Math.floor(Math.random() * SOS_TASKS.length)];
+  root.innerHTML = `<div class="sos-in"><div class="tiny" style="letter-spacing:2px;opacity:.8">URGE SOS</div>
+    <div class="sos-ring"><div class="sos-b"></div><div class="sos-t" id="sost">Breathe in</div></div>
+    <div class="sos-time" id="sosc">1:30</div>
+    <p class="sos-why">${tr.why ? `“${esc(tr.why)}”` : "Urges peak and pass in a few minutes. Ride it out."}</p>
+    <div class="sos-task">💪 ${task}</div>
+    <button class="btn" id="won">The urge passed 💪</button><button class="btn ghost" id="slip">I slipped</button><button class="link" id="close" style="display:block;margin:10px auto 0;color:#cfe">Close</button>
+    <p class="sos-help">If this feels bigger than a habit, talking to a doctor or counsellor helps. LevelUp is not a medical tool.</p></div>`;
+  document.body.appendChild(root);
+  let left = 90; const tick = setInterval(() => {
+    left--; const e = root.querySelector("#sosc"); if (!e) return clearInterval(tick);
+    e.textContent = left > 0 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "Well done";
+    root.querySelector("#sost").textContent = (90 - left) % 10 < 4 ? "Breathe in" : "Breathe out";
+    if (left <= 0) clearInterval(tick);
+  }, 1000);
+  const close = () => { clearInterval(tick); root.remove(); };
+  root.querySelector("#won").onclick = () => { LF.urgeBeaten(tr); close(); toast(`Urge defeated · +${LF.XP.urge} XP`); done(); };
+  root.querySelector("#slip").onclick = () => { close(); slipSheet(tr, done); };
+  root.querySelector("#close").onclick = close;
+}
+function shieldSheet(done = () => route()) {
+  const h = LF.H(), shop = LF.shieldShop();
+  const why = { full: `You already hold the most shields (${LF.SHIELD_MAX}).`, wait: `You can buy the next one on ${fmtDate(shop.next, { day: "numeric", month: "long" })}.`, gems: `You need 💎 ${shop.cost} (you have ${S.gems || 0}).` }[shop.why];
+  sheet(`<h2 style="margin-top:0">🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</h2>
+    <p class="small">A shield covers one missed or slipped day, so your run doesn't crack. It's used automatically.</p>
+    <ul class="small rules"><li><b>Earn</b> one for every D-rank gate (14 days) or higher you clear.</li>
+      <li><b>Buy</b> one for 💎 ${shop.cost}, at most once every ${LF.SHIELD_BUY_DAYS} days.</li>
+      <li>One shield per gate per week, never two days in a row, and not on hard-mode gates.</li>
+      <li>No shield? The run <b>cracks ⚠</b> instead. A crack heals by itself after ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly goals). Miss twice in a row, or again while cracked, and the run breaks.</li></ul>
+    <button class="btn" id="buy" ${shop.ok ? "" : "disabled"}>Buy a shield · 💎 ${shop.cost}</button>
+    ${why ? `<p class="muted small" style="text-align:center">${why}</p>` : ""}<button class="btn ghost" id="cx">Close</button>`, el => {
+    el.querySelector("#buy").onclick = () => { if (LF.buyShield()) { closeSheet(); toast("🛡 Shield bought"); done(); } };
+    el.querySelector("#cx").onclick = closeSheet;
+  });
+}
+function lifeHome() {
+  const h = LF.H(), t = today(), list = LF.todayList(), hu = hunter(), y = addDays(t, -1);
+  const doneN = list.filter(tr => LF.doneToday(tr)).length;
+  const pens = LF.active().filter(tr => tr.st.pendingPen && tr.st.pendingPen <= t && !tr.pen[t]);
+  const back = LF.active().filter(tr => (tr.kind === "daily" || tr.kind === "abstain") && !tr.auto && y >= tr.start && LF.scheduled(tr, y) && tr.st.settled < y && LF.dayValue(tr, y) === null);
+  const ended = Object.values(S.tracks).filter(tr => (tr.status === "cleared" || tr.status === "failed") && !tr.seen);
+  const rest = LF.active().filter(tr => !list.includes(tr));
+  view().innerHTML = topRow() + guideCard() + lifeNav("home") + `
+  <div class="card hcard"><a href="#/hunter" class="emb-link">${rankEmblem(Math.min(100, hu.lv), "sm", hu.rk)}</a>
+    <div class="grow"><div class="lv">Level <b>${hu.lv}</b> · ${hu.rk}-Rank Hunter</div><div class="hbar" style="margin-top:4px"><div style="width:${100 * hu.frac}%"></div></div>
+      <div class="tiny muted" style="margin-top:3px">${hu.into} / ${hu.need} XP to level ${hu.lv + 1}</div></div>
+    <div class="hchips"><button class="hchip" id="shl" aria-label="Shields">🛡 ${h.shields} / ${LF.SHIELD_MAX}</button><span class="hchip">🔥 ${streak()} day${streak() === 1 ? "" : "s"}</span><span class="hchip">💎 ${S.gems || 0}</span></div></div>
+  ${ended.map(tr => `<div class="card endcard ${tr.status}"><div class="grow"><b>${tr.status === "cleared" ? `🏆 Gate cleared: ${esc(LF.shown(tr))}` : `Gate failed: ${esc(LF.shown(tr))}`}</b>
+    <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}${"DCBAS".includes(tr.reward.g) ? " · 🛡 if you had room" : ""}` : `${esc((tr.st.events.at(-1) || {}).txt || "")} You keep the XP you earned.`}</div></div>
+    ${tr.status === "failed" ? `<button class="btn sm" data-re="${tr.id}" style="width:auto;margin:0">Re-enter</button>` : ""}<button class="link" data-seen="${tr.id}" aria-label="Dismiss">✕</button></div>`).join("")}
+  <div class="card sysq"><div class="sys-h"><span class="ex">!</span> Daily quests</div>
+    ${list.length ? `<div class="tiny muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">${doneN === list.length ? "ALL QUESTS COMPLETE ✓" : `${doneN} OF ${list.length} DONE · ${leftToday()}`}</div>` : ""}
+    ${pens.map(tr => `<div class="qrow pen"><span class="qic">⚡</span><div class="grow qmid"><b>Penalty quest</b><div class="tiny">${esc(tr.penalty)} · for ${esc(LF.shown(tr))}</div></div><div class="qact"><button class="qbtn" data-pen="${tr.id}">Done</button></div></div>`).join("")}
+    ${back.map(tr => `<div class="qrow back"><span class="qic">${tr.icon}</span><div class="grow qmid"><b>Yesterday: ${esc(LF.shown(tr))}?</b><div class="tiny muted">You didn't check in. Answer before midnight.</div></div>
+      <div class="qact"><button class="qbtn" data-yes="${tr.id}">${tr.kind === "abstain" ? "Clean ✓" : "Done ✓"}</button><button class="qlink" data-no="${tr.id}">${tr.kind === "abstain" ? "Slipped" : "Missed"}</button></div></div>`).join("")}
+    ${list.map(questRow).join("") || `<div class="lempty"><div style="font-size:calc(40px*var(--fs))">🌀</div><b>No gates open yet</b><p class="muted small">Pick a challenge from the gate board, or make your own: a habit to build, something to quit, a target or a big goal.</p>
+      <a class="btn" href="#/gates" style="display:block;text-decoration:none;text-align:center">Open the gate board</a></div>`}
+    ${list.some(tr => tr.kind === "abstain") ? `<button class="btn ghost sosbtn" data-sos="${list.find(tr => tr.kind === "abstain").id}">🆘 Urge SOS</button>` : ""}</div>
+  ${rest.length ? `<div class="card"><div class="sys-h">Rest day</div>${rest.map(questRow).join("")}</div>` : ""}
+  ${list.length ? `<a class="btn ghost" href="#/gates" style="display:block;text-decoration:none;text-align:center">＋ Enter another gate</a>` : ""}`;
+  wireTop(); wireGuideCard(); maybeTour();
+  view().querySelector("#shl").onclick = () => shieldSheet(lifeHome);
+  view().querySelectorAll("[data-seen]").forEach(b => (b.onclick = () => { S.tracks[b.dataset.seen].seen = true; save(); lifeHome(); }));
+  view().querySelectorAll("[data-re]").forEach(b => (b.onclick = () => { const n = LF.reenter(S.tracks[b.dataset.re]); S.tracks[b.dataset.re].seen = true; save(); toast("Gate re-entered. Day 1."); location.hash = "#/track/" + n.id; }));
+  wireQuests(view(), lifeHome);
+  pushWidget();
+}
+function lifeGates() {
+  const all = Object.values(S.tracks || {}), rec = all.filter(tr => tr.status !== "active").sort((a, b) => (b.ended || "").localeCompare(a.ended || ""));
+  const open = new Set(LF.active().map(tr => tr.template).filter(Boolean));
+  view().innerHTML = topRow() + lifeNav("gates") + `
+  <a class="card gnew" href="#/new"><span class="qic">✨</span><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div><span class="caret">›</span></a>
+  <div class="sys-h" style="margin:14px 2px 6px">Gate board</div>
+  ${lifeTemplates().map(tp => `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start"><span class="qic">${tp.icon}</span>
+    <div class="grow"><b>${esc(tp.title)}</b> ${gateBadge(tp.days)}<div class="small muted">${esc(tp.blurb || "")}</div>
+      <div class="tiny muted" style="margin-top:3px">${LF.STATS[tp.stat][0]} ${LF.STATS[tp.stat][1]} · ${tp.days ? `${tp.days} days` : "no end"}${tp.private ? " · private" : ""}</div></div>
+    ${open.has(tp.id) ? `<span class="tiny muted">Open ✓</span>` : `<a class="btn sm" href="#/new/${tp.id}" style="width:auto;margin:0;text-decoration:none">Enter</a>`}</div></div>`).join("")}
+  ${rec.length ? `<div class="sys-h" style="margin:14px 2px 6px">Your record</div><div class="card">${rec.slice(0, 30).map(tr => `<div class="recrow" data-open="${tr.id}"><span>${tr.icon}</span><span class="grow">${esc(LF.shown(tr))} ${gateBadge(tr.days)}</span>
+    <span class="tiny ${tr.status === "cleared" ? "okc" : "muted"}">${tr.status === "cleared" ? "Cleared" : tr.status === "failed" ? "Failed" : "Ended"} ${tr.ended ? fmtDate(tr.ended) : ""}</span></div>`).join("")}</div>` : ""}`;
+  wireTop();
+  view().querySelectorAll("[data-open]").forEach(r => (r.onclick = () => (location.hash = "#/track/" + r.dataset.open)));
+}
+const ICONS = ["⭐", "🛡", "📚", "🧘", "🏋️", "🏃", "👟", "💧", "🍬", "📵", "⏰", "📓", "🚿", "🌙", "🎓", "🎸", "🎨", "💰", "🥗", "🚭", "🍺", "🙏", "✍️", "🧹"];
+function lifeBuilder(arg) {
+  const tp = lifeTemplates().find(x => x.id === arg) || null;
+  const f = tp ? { ...tp, template: tp.id, steps: (tp.steps || []).join("\n") } : { kind: "daily", title: "", icon: "⭐", stat: "discipline", days: 30, schedule: [1, 1, 1, 1, 1, 1, 1], period: "week", steps: "" };
+  f.schedule = f.schedule || [1, 1, 1, 1, 1, 1, 1];
+  const KINDS = [["daily", "✅", "Daily", "Do it on set days"], ["abstain", "🛡", "Quit", "A clean run: stay off something"], ["target", "🎯", "Target", "An amount per week or in total"], ["milestone", "🏔", "Big goal", "Steps by a date"]];
+  const draw = () => {
+    const lens = f.kind === "target" && f.period === "week" ? [[14, "2 weeks"], [28, "4 weeks"], [56, "8 weeks"], [84, "12 weeks"]]
+      : [[7, "7 days"], [14, "14 days"], [21, "21 days"], [30, "30 days"], [60, "60 days"], [90, "90 days"], [180, "180 days"]].concat(f.kind === "daily" || f.kind === "abstain" ? [[0, "No end"]] : []);
+    view().innerHTML = `<button class="link" id="bx" style="padding:0">‹ Back</button><h1 style="margin:6px 0 10px">${tp ? `${tp.icon} ${esc(tp.title)}` : "New gate"}</h1>
+    <div class="card"><label class="f">What kind?</label><div class="kinds">${KINDS.map(([k, i, l, d]) => `<button class="kind ${f.kind === k ? "on" : ""}" data-k="${k}"><span>${i}</span><b>${l}</b><small>${d}</small></button>`).join("")}</div>
+      <label class="f">Name</label><input id="ti" value="${esc(f.title || "")}" maxlength="60" placeholder="${{ daily: "Read 20 minutes", abstain: "No sugar", target: "Gym 3 times a week", milestone: "Run a 10K" }[f.kind]}">
+      <label class="f">Icon</label><div class="icons">${ICONS.map(i => `<button class="ico ${f.icon === i ? "on" : ""}" data-i="${i}">${i}</button>`).join("")}</div>
+      <label class="f">Stat it trains</label><div class="chips">${Object.entries(LF.STATS).map(([k, [i, l]]) => `<button class="chipx ${f.stat === k ? "on" : ""}" data-s="${k}">${i} ${l}</button>`).join("")}</div></div>
+    <div class="card">
+      ${f.kind === "daily" ? `<label class="f">Which days?</label><div class="dows">${DAYNAMES.map((d, i) => `<button class="dow ${f.schedule[i] ? "on" : ""}" data-d="${i}">${d}</button>`).join("")}</div>
+        <label class="f">Amount per day <span class="muted">(optional)</span></label><div class="row" style="gap:8px"><input id="am" type="number" min="1" value="${f.amount || ""}" placeholder="e.g. 50" style="flex:1"><input id="un" value="${esc(f.unit || "")}" placeholder="unit, e.g. push-ups" style="flex:1.4"></div>` : ""}
+      ${f.kind === "target" ? `<label class="f">Target</label><div class="row" style="gap:8px"><input id="am" type="number" min="1" value="${f.amount || ""}" placeholder="e.g. 3" style="flex:1"><input id="un" value="${esc(f.unit || "")}" placeholder="unit, e.g. workout" style="flex:1.4"></div>
+        <div class="chips" style="margin-top:8px">${[["week", "Every week"], ["total", "In total"]].map(([k, l]) => `<button class="chipx ${f.period === k ? "on" : ""}" data-p="${k}">${l}</button>`).join("")}</div>` : ""}
+      ${f.kind === "milestone" ? `<label class="f">Steps <span class="muted">(one per line)</span></label><textarea id="st" rows="4" placeholder="Run 3 km&#10;Run 5 km&#10;Run 10 km">${esc(f.steps || "")}</textarea>` : ""}
+      <label class="f">${f.kind === "milestone" ? "Finish within" : "How long? (the gate)"}</label><div class="chips">${lens.map(([d, l]) => `<button class="chipx ${(f.days || 0) === d ? "on" : ""}" data-l="${d}">${l} ${d ? gateBadge(d) : ""}</button>`).join("")}</div>
+      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 180 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield.</p></div>
+    <div class="card"><label class="f">Why are you doing this? <span class="muted">(shown when it gets hard)</span></label><textarea id="wy" rows="2" placeholder="${f.kind === "abstain" ? "For the moment an urge hits…" : "What will be better when you've done it?"}">${esc(tp && tp.why && tp.why.startsWith("Why do you") ? "" : f.why || "")}</textarea>
+      <label class="f">Penalty quest <span class="muted">(only in System mode)</span></label><input id="pq" value="${esc(f.penalty || "")}" placeholder="e.g. 20 push-ups">
+      <label class="toggle">Private (never shown to your party) <input type="checkbox" id="pv" ${f.private ? "checked" : ""}></label>
+      <label class="f">Name on widgets and in Party <span class="muted">(optional)</span></label><input id="al" value="${esc(f.alias || "")}" placeholder="e.g. Clean run">
+      <label class="toggle">Hard mode (no shields) <input type="checkbox" id="hd" ${f.hard ? "checked" : ""}></label></div>
+    <button class="btn" id="go">🌀 Enter the gate</button>`;
+    const v = view(), keep = () => {
+      f.title = v.querySelector("#ti").value; f.why = v.querySelector("#wy").value; f.penalty = v.querySelector("#pq").value; f.private = v.querySelector("#pv").checked; f.alias = v.querySelector("#al").value; f.hard = v.querySelector("#hd").checked;
+      const am = v.querySelector("#am"), un = v.querySelector("#un"), st = v.querySelector("#st");
+      if (am) f.amount = parseInt(am.value, 10) || null; if (un) f.unit = un.value.trim(); if (st) f.steps = st.value;
+    };
+    v.querySelector("#bx").onclick = () => window.history.back();
+    v.querySelectorAll("[data-k]").forEach(b => (b.onclick = () => { keep(); f.kind = b.dataset.k; if (f.kind === "target" && f.period === "week" && f.days % 7) f.days = 28; if (f.kind === "milestone" && !f.days) f.days = 60; draw(); }));
+    v.querySelectorAll("[data-i]").forEach(b => (b.onclick = () => { keep(); f.icon = b.dataset.i; draw(); }));
+    v.querySelectorAll("[data-s]").forEach(b => (b.onclick = () => { keep(); f.stat = b.dataset.s; draw(); }));
+    v.querySelectorAll("[data-d]").forEach(b => (b.onclick = () => { keep(); f.schedule[+b.dataset.d] = f.schedule[+b.dataset.d] ? 0 : 1; draw(); }));
+    v.querySelectorAll("[data-p]").forEach(b => (b.onclick = () => { keep(); f.period = b.dataset.p; if (f.period === "week" && f.days % 7) f.days = 28; draw(); }));
+    v.querySelectorAll("[data-l]").forEach(b => (b.onclick = () => { keep(); f.days = +b.dataset.l || null; draw(); }));
+    v.querySelector("#go").onclick = () => {
+      keep();
+      const err = !f.title.trim() ? "Give it a name" : f.kind === "daily" && !f.schedule.some(Boolean) ? "Pick at least one day" : f.kind === "target" && !f.amount ? "Set a target amount" : f.kind === "target" && !f.unit ? "Say what you count (e.g. books)" : f.kind === "milestone" && !String(f.steps).trim() ? "Add at least one step" : null;
+      if (err) return toast(err);
+      if (f.kind === "daily" && f.amount && !f.unit) f.unit = "times";
+      const tr = LF.newTrack({ ...f, steps: f.kind === "milestone" ? String(f.steps).split("\n").map(s => s.trim()).filter(Boolean) : [] });
+      toast(`🌀 Gate entered: ${LF.shown(tr)}. Day 1.`); location.hash = "#/track/" + tr.id;
+    };
+  };
+  draw(); window.scrollTo(0, 0);
+}
+function lifeTrack(id) {
+  const tr = S.tracks[id], t = today(), st = tr.st, end = LF.endDate(tr), n = LF.dayNo(tr, t);
+  const frac = tr.kind === "milestone" ? tr.steps.filter(s => s.d).length / Math.max(1, tr.steps.length) : tr.kind === "target" && tr.period === "total" ? Math.min(1, LF.totalCount(tr) / tr.amount)
+    : tr.days ? Math.min(1, (tr.status === "active" ? n - 1 : tr.days) / tr.days) : 0;
+  const shieldsUsed = Object.keys(st.shielded || {}).length;
+  // calendar: every day from the start to the end (or today), Monday-aligned
+  let cal = "";
+  if (tr.kind !== "milestone") {
+    const last = end && end < addDays(t, 14) ? end : addDays(t, 6), first = tr.start;
+    const pad = (parse(first).getDay() + 6) % 7;
+    cal = `<div class="lcal">${DAYNAMES.map(d => `<b>${d}</b>`).join("")}${"<i></i>".repeat(pad)}`;
+    for (let d = first; d <= last; d = addDays(d, 1)) {
+      const v = LF.dayValue(tr, d), sh = st.shielded && st.shielded[d], sched = LF.scheduled(tr, d);
+      const c = d > t ? "fut" : !sched ? "off" : sh ? "sh" : tr.kind === "target" ? (+tr.log[d] ? "ok" : "none") : v === true ? "ok" : tr.log[d] === "slip" || v === false ? "bad" : d < t && d <= st.settled ? "bad" : "none";
+      cal += `<i class="${c} ${d === t ? "now" : ""}" title="${d}">${sh ? "🛡" : tr.kind === "target" && +tr.log[d] ? +tr.log[d] : ""}</i>`;
+    }
+    cal += `</div>`;
+  }
+  const stat = (v, l) => `<div class="tstat"><b>${v}</b><span>${l}</span></div>`;
+  view().innerHTML = `<button class="link" id="bx" style="padding:0">‹ Today</button>
+  <div class="thead"><span class="tic">${tr.icon}</span><div class="grow"><h1 style="margin:0">${esc(tr.title)}</h1>
+    <div class="small muted">${gateBadge(tr.days)} ${tr.days ? `${LF.gateRank(tr.days)}-rank gate · ${tr.days} days` : "No end"} · ${LF.STATS[tr.stat][0]} ${LF.STATS[tr.stat][1]}${tr.private ? " · 🔒 private" : ""}${tr.hard ? " · hard mode" : ""}${tr.alias ? ` · shown as “${esc(tr.alias)}”` : ""}</div></div></div>
+  ${tr.status !== "active" ? `<div class="note">${tr.status === "cleared" ? `🏆 Cleared on ${fmtDate(tr.ended)}` : tr.status === "failed" ? `Gate failed on ${fmtDate(tr.ended)}. ${esc((st.events.at(-1) || {}).txt || "")}` : "Archived"}</div>` : ""}
+  <div class="card"><div class="row" style="gap:14px;align-items:center">${ringSVG(frac, "var(--blue)", tr.icon, 64)}
+    <div class="grow"><div style="font-weight:800;font-size:calc(18px*var(--fs))">${tr.status === "active" ? trackLine(tr) : tr.status === "cleared" ? "Cleared ✓" : "Ended"}</div>
+      ${end ? `<div class="tiny muted">${tr.status === "active" ? `Ends ${fmtDate(end, { day: "numeric", month: "long" })}` : ""}</div>` : ""}
+      ${st.cracked ? `<div class="small crk">${crackText(tr)}</div>` : ""}</div></div>
+    ${tr.status === "active" ? `<div class="qrow solo">${questAction(tr)}</div>` : ""}
+    <div class="tstats">${tr.kind === "daily" || tr.kind === "abstain" ? stat(st.run, "current run") + stat(Math.max(st.best, st.run), "best run") + stat(st.good, tr.kind === "abstain" ? "clean days" : "days done") : tr.kind === "target" ? stat(LF.totalCount(tr), `${tr.unit} logged`) + stat(st.good, "weeks hit") + stat(st.bad, "weeks missed") : stat(tr.steps.filter(s => s.d).length + " / " + tr.steps.length, "steps")}${stat(shieldsUsed, "🛡 used")}</div></div>
+  ${tr.kind === "milestone" ? `<div class="card">${tr.steps.map((s, i) => `<label class="toggle"><span>${s.d ? "✅" : "⬜"} ${esc(s.t)}${s.d ? ` <span class="tiny muted">${fmtDate(s.d)}</span>` : ""}</span><input type="checkbox" data-step="${i}" ${s.d ? "checked" : ""} ${tr.status !== "active" ? "disabled" : ""}></label>`).join("")}</div>` : ""}
+  ${cal ? `<div class="card"><div class="sys-h">Calendar</div>${cal}<div class="tiny muted lleg"><span><i class="ok"></i>done</span><span><i class="bad"></i>missed / slipped</span><span><i class="sh">🛡</i>shield</span></div></div>` : ""}
+  ${tr.kind === "target" && tr.status === "active" ? `<div class="row" style="gap:8px"><button class="btn ghost grow" id="m1" style="margin:0">−1 today</button><button class="btn grow" data-add="${tr.id}" style="margin:0">+1 ${esc(tr.unit)}</button></div>` : ""}
+  ${tr.kind === "abstain" && tr.status === "active" ? `<button class="btn ghost sosbtn" data-sos="${tr.id}">🆘 Urge SOS</button>` : ""}
+  ${tr.why ? `<div class="card"><div class="sys-h">Why I'm doing this</div><p style="margin:0">${esc(tr.why)}</p></div>` : ""}
+  ${st.events.length ? `<div class="card"><div class="sys-h">History</div>${st.events.slice(-8).reverse().map(e => `<div class="small" style="margin:4px 0"><span class="muted">${fmtDate(e.d)}</span> · ${esc(e.txt)}</div>`).join("")}</div>` : ""}
+  <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" id="ed" style="margin:0">Edit</button>
+    ${tr.status === "active" ? `<button class="btn ghost grow" id="gu" style="margin:0">Give up</button>` : `<button class="btn grow" id="re" style="margin:0">Re-enter the gate</button>`}</div>`;
+  window.scrollTo(0, 0);
+  const v = view(), rr = () => lifeTrack(id);
+  v.querySelector("#bx").onclick = () => (location.hash = "#/home");
+  wireQuests(v, rr);
+  v.querySelectorAll("[data-step]").forEach(c => (c.onchange = () => { LF.toggleStep(tr, +c.dataset.step); LF.settleAll(); rr(); }));
+  const m1 = v.querySelector("#m1"); if (m1) m1.onclick = () => { if (+tr.log[t] > 0) { LF.logUnits(tr, -1); rr(); } };
+  v.querySelector("#ed").onclick = () => editTrackSheet(tr, rr);
+  const gu = v.querySelector("#gu"); if (gu) gu.onclick = () => sheet(`<h2 style="margin-top:0">Give up this gate?</h2><p class="small">It moves to your record as ended. You keep the XP you earned.</p>
+    <button class="btn" id="y" style="background:var(--red)">Give up</button><button class="btn ghost" id="n">Keep going</button>`, el => {
+    el.querySelector("#y").onclick = () => { tr.status = "archived"; tr.ended = t; tr.seen = true; save(); closeSheet(); location.hash = "#/home"; };
+    el.querySelector("#n").onclick = closeSheet; });
+  const re = v.querySelector("#re"); if (re) re.onclick = () => { const nt = LF.reenter(tr); tr.seen = true; save(); toast("Gate re-entered. Day 1."); location.hash = "#/track/" + nt.id; };
+}
+function editTrackSheet(tr, done) {
+  sheet(`<h2 style="margin-top:0">Edit</h2><label class="f">Name</label><input id="ti" value="${esc(tr.title)}" maxlength="60">
+    <label class="f">Name on widgets and in Party</label><input id="al" value="${esc(tr.alias || "")}" placeholder="optional">
+    <label class="toggle">Private <input type="checkbox" id="pv" ${tr.private ? "checked" : ""}></label>
+    <label class="f">Why</label><textarea id="wy" rows="2">${esc(tr.why || "")}</textarea>
+    <label class="f">Penalty quest</label><input id="pq" value="${esc(tr.penalty || "")}">
+    <label class="f">Icon</label><div class="icons">${ICONS.map(i => `<button class="ico ${tr.icon === i ? "on" : ""}" data-i="${i}">${i}</button>`).join("")}</div>
+    <button class="btn" id="ok">Save</button><button class="btn ghost" id="cx">Cancel</button>`, el => {
+    let icon = tr.icon;
+    el.querySelectorAll("[data-i]").forEach(b => (b.onclick = () => { icon = b.dataset.i; el.querySelectorAll("[data-i]").forEach(x => x.classList.toggle("on", x === b)); }));
+    el.querySelector("#ok").onclick = () => {
+      const ti = el.querySelector("#ti").value.trim(); if (!ti) return toast("Give it a name");
+      Object.assign(tr, { title: ti, alias: el.querySelector("#al").value.trim(), private: el.querySelector("#pv").checked, why: el.querySelector("#wy").value, penalty: el.querySelector("#pq").value, icon });
+      save(); closeSheet(); done();
+    };
+    el.querySelector("#cx").onclick = closeSheet;
+  });
+}
+function radarSVG(vals, max) {
+  const keys = Object.keys(LF.STATS), cx = 110, cy = 105, R = 78, pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / keys.length; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const ring = f => keys.map((_, i) => pt(i, R * f).join(",")).join(" ");
+  const poly = keys.map((k, i) => pt(i, R * Math.max(0.06, Math.min(1, (vals[k] || 0) / max))).join(",")).join(" ");
+  return `<svg viewBox="0 0 220 210" class="radar" role="img" aria-label="Stats">${[0.25, 0.5, 0.75, 1].map(f => `<polygon points="${ring(f)}" class="rg"/>`).join("")}
+    ${keys.map((_, i) => `<line x1="${cx}" y1="${cy}" x2="${pt(i, R)[0]}" y2="${pt(i, R)[1]}" class="rg"/>`).join("")}<polygon points="${poly}" class="rv"/>
+    ${keys.map((k, i) => { const [x, y] = pt(i, R + 18); return `<text x="${x}" y="${y + 4}" text-anchor="middle" class="rl">${LF.STATS[k][0]} ${vals[k] || 0}</text>`; }).join("")}</svg>`;
+}
+function otherXP() {
+  let n = 0;
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith(`a1.state.${USER}`) && !k.endsWith(`@${COURSE}`)) n += Object.values((JSON.parse(localStorage.getItem(k) || "{}").xp) || {}).reduce((a, b) => a + b, 0); } catch { /* ignore */ }
+  return n;
+}
+function lifeHunter() {
+  const h = LF.H(), hu = hunter(), vals = h.stats, max = Math.max(50, ...Object.values(vals));
+  const N = window.LevelUpNative, rem = N && N.setLifeReminder;
+  let remAt = ""; try { remAt = localStorage.getItem("a1.lifeRem") || ""; } catch { /* ignore */ }
+  view().innerHTML = topRow() + lifeNav("hunter") + `
+  <div class="card" style="text-align:center"><div style="display:inline-block">${rankEmblem(Math.min(100, hu.lv), "big", hu.rk)}</div>
+    <div style="font-weight:900;font-size:calc(22px*var(--fs));margin-top:6px">${hu.rk}-Rank Hunter · Level ${hu.lv}</div>
+    <div class="hbar" style="margin:8px 0 4px"><div style="width:${100 * hu.frac}%"></div></div><div class="tiny muted">${hu.into} / ${hu.need} XP to level ${hu.lv + 1} · Hunter XP ${LF.totalLifeXP()}</div>
+    ${h.titles.length ? `<div class="chips" style="justify-content:center;margin-top:10px">${h.titles.map(t => `<span class="chipx on">🏅 ${esc(t)}</span>`).join("")}</div>` : ""}</div>
+  <div class="card"><div class="sys-h">Stats</div>${radarSVG(vals, max)}<p class="tiny muted" style="text-align:center;margin:0">Each gate trains one stat. A balanced shape beats one huge spike.</p></div>
+  <div class="card"><div class="tstats">${[[h.cleared, "gates cleared"], [Object.values(S.tracks).filter(t => t.status === "failed").length, "gates failed"], [streak(), "day streak"], [LF.totalLifeXP() + otherXP(), "all XP (incl. learning)"]].map(([v, l]) => `<div class="tstat"><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>
+  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earn by clearing D-rank gates; buy at most once every 2 weeks.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
+  <div class="card"><label class="toggle"><span><b>⚡ System mode</b><div class="small muted">A missed day gives you a penalty quest for the next day. Doing it heals the crack at once.</div></span><input type="checkbox" id="sys" ${h.system ? "checked" : ""}></label>
+    ${rem ? `<label class="f">Daily reminder (this phone)</label><select id="rem"><option value="">Off</option>${["07:00", "08:00", "12:00", "18:00", "20:00", "21:00", "22:00"].map(x => `<option ${remAt === x ? "selected" : ""}>${x}</option>`).join("")}</select>
+      <p class="tiny muted" style="margin:4px 0 0">Only if some of today's quests are still open.</p>` : ""}</div>
+  <div class="card"><div class="sys-h">Log</div>${h.log.slice(-10).reverse().map(e => `<div class="small" style="margin:3px 0"><span class="muted">${fmtDate(e.d)}</span> · ${esc(e.why)}${e.n ? ` <b>${e.n > 0 ? "+" : ""}${e.n} XP</b>` : ""}</div>`).join("") || `<p class="muted small" style="margin:0">Nothing yet.</p>`}</div>`;
+  wireTop();
+  view().querySelector("#shl").onclick = () => shieldSheet(lifeHunter);
+  view().querySelector("#sys").onchange = e => { h.system = e.target.checked; save(); toast(h.system ? "⚡ System mode on: penalties are real now" : "System mode off"); };
+  const r = view().querySelector("#rem");
+  if (r) r.onchange = () => { try { localStorage.setItem("a1.lifeRem", r.value); } catch { /* ignore */ } N.setLifeReminder(r.value); toast(r.value ? `Reminder at ${r.value}` : "Reminder off"); };
+}
+// widget ticks made on the home screen (native app): applied when Hunter's Path opens
+function applyWidgetTicks() {
+  const N = window.LevelUpNative; if (!N || !N.takeLifeTicks) return;
+  let ticks = []; try { ticks = JSON.parse(N.takeLifeTicks() || "[]"); } catch { return; }
+  for (const k of ticks) { const tr = S.tracks[k.id]; if (tr && tr.status === "active" && LF.dayValue(tr, k.d) !== true) LF.checkIn(tr, k.d, true); }
+  if (ticks.length) toast(`${ticks.length} check-in${ticks.length > 1 ? "s" : ""} from the widget saved`);
+}
+function lifeCompare(box, people, all) {
+  const row = id => { const st = all[id] || {}, xp = Object.values(st.xp || {}).reduce((a, b) => a + b, 0), lv = LF.hunterLevel(xp).lv;
+    const tr = Object.values(st.tracks || {}); return { lv, rank: LF.hunterRank(lv), cleared: (st.hunter || {}).cleared || 0, open: tr.filter(t => t.status === "active").length, xp,
+      pub: tr.filter(t => t.status === "active" && !t.private) }; };
+  const rows = people.map(u => ({ u, s: row(u.id) })), best = k => Math.max(...rows.map(r => r.s[k]));
+  const cell = (r, k, f = v => v) => `<td class="${r.s[k] === best(k) && best(k) > 0 ? "lead" : ""}"><b>${f(r.s[k], r.s)}</b></td>`;
+  const mine = new Set(LF.active().map(t => t.party || "").filter(Boolean));
+  box.innerHTML = `<div class="card"><div class="sys-h">Hunter's Path</div><table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
+    <tr><td>Level</td>${rows.map(r => cell(r, "lv", (v, s) => `${v} · ${s.rank}`)).join("")}</tr><tr><td>Gates cleared</td>${rows.map(r => cell(r, "cleared")).join("")}</tr>
+    <tr><td>Open gates</td>${rows.map(r => cell(r, "open")).join("")}</tr><tr><td>Hunter XP</td>${rows.map(r => cell(r, "xp")).join("")}</tr></table></div>
+    ${rows.filter(r => r.u.id !== USER && r.s.pub.length).map(r => `<div class="card"><div class="sys-h">${esc(r.u.name)}'s gates</div>${r.s.pub.map(t => `<div class="recrow"><span>${t.icon}</span>
+      <span class="grow">${esc(t.alias || t.title)} ${gateBadge(t.days)}<div class="tiny muted">${t.days ? `Day ${Math.min(t.days, daysBetween(t.start, today()) + 1)} / ${t.days}` : "No end"} · run ${(t.st || {}).run || 0}</div></span>
+      ${mine.has(`${r.u.id}:${t.id}`) ? `<span class="tiny okc">Joined ✓</span>` : `<button class="btn sm" data-join="${r.u.id}:${t.id}" style="width:auto;margin:0">Join</button>`}</div>`).join("")}</div>`).join("")}`;
+  box.querySelectorAll("[data-join]").forEach(b => (b.onclick = () => {
+    const [uid, tid] = b.dataset.join.split(":"), src = ((all[uid] || {}).tracks || {})[tid]; if (!src) return;
+    const tr = LF.newTrack({ ...src, private: false, party: b.dataset.join, steps: (src.steps || []).map(s => s.t || s) });
+    toast(`Joined ${esc(src.alias || src.title)} · Day 1`); b.outerHTML = `<span class="tiny okc">Joined ✓</span>`;
+  }));
+}
+// what the "Hunter's Path" widget shows (native app); private tracks show their alias or a neutral name
+function lifeSnapshot() {
+  LF.H(); const t = today(), hu = hunter();
+  const items = LF.todayList().map(tr => ({ id: tr.id, icon: tr.icon, title: tr.private ? (tr.alias || "Private quest") : LF.shown(tr), kind: tr.kind,
+    done: LF.doneToday(tr, t), tickable: (tr.kind === "daily" && !tr.amount && !tr.auto) || tr.kind === "abstain", slip: tr.log[t] === "slip",
+    line: trackLine(tr), cracked: !!tr.st.cracked, day: Math.min(LF.dayNo(tr, t), tr.days || 9999), days: tr.days || 0 }));
+  return { items, level: hu.lv, rank: hu.rk, frac: hu.frac, shields: LF.H().shields, streak: streak(), gems: S.gems || 0, open: items.filter(i => !i.done).length };
+}
+
+function lifeSteps() {
+  return [
+    { title: "Welcome to Hunter's Path ⚔️", text: "Your own goals as quests and dungeons: habits to build, things to quit, targets and big goals. Tap <b>Show me</b>." },
+    { sel: ".hcard", title: "Your Hunter level", text: "Every check-in earns XP. Level up and climb from E-Rank to S-Rank. 🛡 shields, 🔥 streak and 💎 diamonds sit here." },
+    { sel: ".lnav", title: "Today · Gates · Hunter · Party", text: "<b>Today</b> has your check-ins. <b>Gates</b> is the board of challenges. <b>Hunter</b> shows your stats. <b>Party</b> lets friends join your gates." },
+    { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Missed yesterday? You can still answer it until midnight." },
+    { sel: "#shl", title: "Shields 🛡", text: "A shield covers one missed day. Earn them by clearing gates; you can buy one only every 2 weeks. No shield? The run cracks ⚠ and heals after a week of good days." },
+    { sel: ".lnav a[href='#/gates']", title: "Open a gate", text: "Pick a ready-made challenge (30 days without porn, a book a week, gym 3× a week…) or build your own." },
+    { title: "You're ready 🎉", text: `Open the gate board and enter your first gate.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read how Hunter's Path works</button>` },
+  ];
+}
+function lifeGuide() {
+  const sec = (icon, title, body) => `<section class="gsec"><h2><span>${icon}</span>${title}</h2>${body}</section>`;
+  const idea = (n, icon, t, d) => `<div class="gidea"><div class="gn">${n}</div><div class="grow"><b>${icon} ${t}</b><div class="muted small">${d}</div></div></div>`;
+  const tip = (ok, t) => `<li class="${ok ? "do" : "dont"}"><span>${ok ? "✓" : "✗"}</span><div>${t}</div></li>`;
+  view().innerHTML = `<div class="guide"><button class="link" id="gback" style="padding:0;margin-bottom:6px">‹ Back</button>
+  <div class="ghero"><div class="gh-i">⚔️</div><h1>How Hunter's Path works</h1><p class="muted">Your own goals, played like Solo Leveling. A 2-minute read.</p></div>
+  ${sec("🎯", "What it's for", `<p>Set goals for your life, not just your lessons: build a habit, quit something, hit a target, reach a big goal. Each one is a <b>gate</b> (a dungeon) you enter, check in on every day, and clear.</p>`)}
+  ${sec("🧩", "Four kinds of gate", `
+    ${idea(1, "✅", "Daily", "Do it on set days: read 20 minutes, 50 push-ups, meditate.")}
+    ${idea(2, "🛡", "Quit", "A clean run: no porn, no sugar, no phone after 22:00. Check in “still clean” each day.")}
+    ${idea(3, "🎯", "Target", "An amount per week or in total: 1 book a week, gym 3 times a week.")}
+    ${idea(4, "🏔", "Big goal", "Steps by a date: run a 10K.")}`)}
+  ${sec("🌀", "Gates and ranks", `<p>Longer gates rank higher: <b>E</b> 7 days, <b>D</b> 14, <b>C</b> 30, <b>B</b> 60, <b>A</b> 90, <b>S</b> 180. Clearing one pays XP and 💎, and D-rank or higher also gives a 🛡 shield. Fail a gate and you keep the XP you earned; re-enter it right away.</p>`)}
+  ${sec("🛡", "Shields and cracks", `<ul class="gtips">
+    ${tip(true, "A <b>shield</b> covers one missed or slipped day automatically, so the run goes on.")}
+    ${tip(true, "Hold at most <b>2</b>. Earn them by clearing gates; buy one with 💎 <b>at most once every 2 weeks</b>.")}
+    ${tip(true, "No shield? The run <b>cracks ⚠</b>. A crack heals by itself after <b>7 good days</b> in a row (2 good weeks for weekly targets).")}
+    ${tip(false, "Miss <b>twice in a row</b>, or again while cracked, and the run breaks. Shields never cover two days in a row, or the same gate twice in a week.")}</ul>`)}
+  ${sec("🆘", "Hard goals", `<p>Quit gates can be <b>private</b> and shown under a neutral name. When an urge hits, the <b>Urge SOS</b> button gives you 90 seconds of breathing, your own reason, and a quick task. A slip is met with support, not shame: your best run and calendar stay. If it feels bigger than a habit, talk to a doctor or counsellor; LevelUp isn't a medical tool.</p>`)}
+  ${sec("🏆", "Tips", `<ul class="gtips">
+    ${tip(true, "Start with one or two gates. Add more once they feel easy.")}
+    ${tip(true, "Check in at the same time every day, for example before bed.")}
+    ${tip(true, "Write your <b>why</b>. It's shown when it gets hard.")}
+    ${tip(true, "Turn on <b>System mode</b> on the Hunter page if you want penalty quests after a miss.")}
+    ${tip(false, "Don't tick quests you didn't do. The only person it fools is you.")}</ul>`)}
+  <div class="gend"><a class="btn" href="#/gates" style="display:block;text-align:center;text-decoration:none">🌀 Open the gate board</a><button class="btn ghost" data-tour>🧭 Take the 30-second tour</button></div></div>`;
+  window.scrollTo(0, 0);
+  view().querySelector("#gback").onclick = () => (window.history.length > 1 ? window.history.back() : (location.hash = "#/home"));
+}

@@ -41,9 +41,13 @@ import java.util.Locale
 abstract class LuWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(ALL_SIZES)
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val s = Snap.load(context)
-        val look = Look.of(context, s.theme)
-        provideContent { if (!s.signedIn && needsSignIn) SignedOut(look, context) else Body(context, s, look) }
+        // read the snapshot on every recomposition: a running Glance session doesn't call provideGlance again,
+        // so Widgets.bump() changes VER in the widget's state to make it redraw with fresh data
+        provideContent {
+            androidx.glance.currentState(VER)
+            val s = Snap.load(context); val look = Look.of(context, s.theme)
+            if (!s.signedIn && needsSignIn) SignedOut(look, context) else Body(context, s, look)
+        }
     }
     open val needsSignIn = true
     @Composable abstract fun Body(ctx: Context, s: Snap, look: Look)
@@ -521,7 +525,10 @@ class WordWidget : LuWidget() {
         val open = Go.open(ctx, Go.word(w.id))
         Frame(look, open, pad = 0) {
             Row(GlanceModifier.fillMaxSize()) {
-                Box(GlanceModifier.width(5.dp).fillMaxHeight().background(cp(col))) {}
+                // article strip inset from the rounded edge (Glance can't clip children to the frame's corners)
+                Box(GlanceModifier.fillMaxHeight().padding(start = 8.dp, top = 14.dp, bottom = 14.dp)) {
+                    Box(GlanceModifier.width(4.dp).fillMaxHeight().background(cp(col)).cornerRadius(2.dp)) {}
+                }
                 Column(GlanceModifier.defaultWeight().fillMaxHeight().padding(horizontal = 12.dp, vertical = if (b == B.TINY) 6.dp else 10.dp)) {
                     when (b) {
                         B.TINY -> { if (w.art != null) T(w.art, look, 11.sp, cp(col), bold = true); T(w.word, look, 14.sp, bold = true, display = true); T(w.en, look, 10.sp, look.mutedC) }

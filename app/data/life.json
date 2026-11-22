@@ -1,0 +1,23 @@
+{
+  "_help": "Hunter's Path (personal tracks). templates = the gate board; every field can be changed in the builder. kind: daily | abstain | target | milestone. days: gate length (null = no end). schedule: Mon..Sun (daily). amount/unit: per day (daily) or per period (target). period: week | total. stat: body | mind | discipline | health. Design: docs/design/personal-tracks.md",
+  "title": "Hunter's Path",
+  "templates": [
+    { "id": "nofap30", "title": "30 days without porn", "alias": "Clean run", "icon": "🛡", "kind": "abstain", "days": 30, "stat": "discipline", "private": true,
+      "why": "Why do you want this? Write it for the moment an urge hits.", "penalty": "20 push-ups and a cold shower", "blurb": "Check in each evening. The SOS button helps when an urge hits." },
+    { "id": "book4", "title": "1 book a week for a month", "icon": "📚", "kind": "target", "days": 28, "period": "week", "amount": 1, "unit": "book", "stat": "mind",
+      "penalty": "Read 30 minutes", "blurb": "Log a book when you finish it. One per week, four weeks." },
+    { "id": "meditate30", "title": "Meditate 10 minutes a day", "icon": "🧘", "kind": "daily", "days": 30, "stat": "mind", "penalty": "Meditate 15 minutes", "blurb": "Ten minutes of quiet, every day for a month." },
+    { "id": "gym3", "title": "Gym 3 times a week", "icon": "🏋️", "kind": "target", "days": 56, "period": "week", "amount": 3, "unit": "workout", "stat": "body",
+      "penalty": "50 push-ups", "blurb": "Log each workout. Three a week for eight weeks." },
+    { "id": "steps10k", "title": "10,000 steps a day", "icon": "👟", "kind": "daily", "days": 21, "amount": 10000, "unit": "steps", "stat": "body", "penalty": "A 30-minute walk", "blurb": "Enter your steps from your phone's step counter." },
+    { "id": "nosugar21", "title": "No sugar for 21 days", "icon": "🍬", "kind": "abstain", "days": 21, "stat": "health", "penalty": "No snacks tomorrow", "blurb": "No sweets, soft drinks or desserts. Fruit is fine." },
+    { "id": "nophone22", "title": "No social media after 22:00", "icon": "📵", "kind": "abstain", "days": 14, "stat": "discipline", "penalty": "Phone off at 21:00 tomorrow", "blurb": "Check in each night: did you stay off after 22:00?" },
+    { "id": "wake6", "title": "Wake up at 6:00", "icon": "⏰", "kind": "daily", "days": 21, "stat": "discipline", "penalty": "Wake at 5:45 tomorrow", "blurb": "Tick it when you're up by 6:00." },
+    { "id": "journal30", "title": "Journal every day", "icon": "📓", "kind": "daily", "days": 30, "stat": "mind", "penalty": "Write a full page", "blurb": "A few lines every day: what happened, what you learned." },
+    { "id": "cold14", "title": "Cold shower", "icon": "🚿", "kind": "daily", "days": 14, "stat": "discipline", "penalty": "Two cold showers", "blurb": "End every shower with 30 seconds of cold water." },
+    { "id": "water30", "title": "Drink 2 litres of water", "icon": "💧", "kind": "daily", "days": 30, "amount": 8, "unit": "glasses", "stat": "health", "penalty": "Ten glasses tomorrow", "blurb": "Eight glasses a day." },
+    { "id": "sleep21", "title": "In bed by 23:00", "icon": "🌙", "kind": "daily", "days": 21, "stat": "health", "penalty": "In bed by 22:30", "blurb": "Tick it when you're in bed by 23:00." },
+    { "id": "learn30", "title": "Reach my LevelUp daily goal", "icon": "🎓", "kind": "daily", "days": 30, "stat": "mind", "auto": "learn", "penalty": "One extra lesson part", "blurb": "Ticks itself on days you reach the daily XP goal in a language course." },
+    { "id": "run10k", "title": "Run a 10K", "icon": "🏃", "kind": "milestone", "days": 60, "stat": "body", "steps": ["Run 3 km without stopping", "Run 5 km", "Run 7 km", "Run 10 km"], "blurb": "Four steps to your first 10 km, within 60 days." }
+  ]
+}

@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />  <!-- 🎤 Speak it (asked the first time the mic is tapped) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />  <!-- Hunter's Path daily reminder (asked when turned on) -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />  <!-- re-arm the reminder after a restart -->  <!-- 🎤 Speak it (asked the first time the mic is tapped) -->
     <queries>
         <intent><action android:name="android.speech.RecognitionService" /></intent>
     </queries>
@@ -72,5 +74,12 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_actions" />
         </receiver>
         <receiver android:name=".widget.TickReceiver" android:exported="false" />
+        <receiver android:name=".widget.LifeReceiver" android:exported="true" android:label="@string/w_life">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_life" />
+        </receiver>
+        <receiver android:name=".widget.ReminderReceiver" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /></intent-filter>
+        </receiver>
     </application>
 </manifest>

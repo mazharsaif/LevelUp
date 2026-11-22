@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
         })
         val route = routeOf(intent)
         if (route != null || savedInstanceState == null || web.restoreState(savedInstanceState) == null) load(route)
-        de.com.levelup.app.widget.Widgets.schedule(this)
+        de.com.levelup.app.widget.Widgets.schedule(this); de.com.levelup.app.widget.Reminders.schedule(this)
     }
 
     /** widget tap: levelup://open/<route> → the web route #/<route> (e.g. go/next, go/review, ranks) */
@@ -216,6 +216,14 @@ class MainActivity : ComponentActivity() {
     }
     fun save(name: String, text: String) { pendingSave = text; saveFile.launch(name) }
     fun retry() = load()
+    private val askNotify = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        if (!ok) toast("Notifications are off, so the reminder can't show")
+    }
+    fun setReminder(hhmm: String) {
+        de.com.levelup.app.widget.Reminders.set(this, hhmm)
+        if (hhmm.isNotBlank() && android.os.Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
     fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
 
     private fun offlinePage() = """
@@ -248,10 +256,16 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun speechStart(id: String, lang: String, max: Int) = a.runOnUiThread { a.speechStart(id, lang, max) }
         @JavascriptInterface fun speechStop(id: String) = a.runOnUiThread { a.speechStop(id) }
         @JavascriptInterface fun speechAbort(id: String) = a.runOnUiThread { a.speechAbort(id) }
-        /** today's progress summary for the home-screen widgets (widgetSnapshot() in app.js); redraws them when it changed */
+        /** today's progress summary for the home-screen widgets (widgetSnapshot() in app.js); redraws them when it changed.
+         *  Hunter's Path (courseType "life") has its own snapshot, so it never replaces the learning widgets' data. */
         @JavascriptInterface fun setWidgetData(json: String) {
-            if (WidgetStore.save(a, json)) de.com.levelup.app.widget.Widgets.refresh(a)
+            val changed = if (json.contains("\"courseType\":\"life\"")) WidgetStore.saveLife(a, json) else WidgetStore.save(a, json)
+            if (changed) de.com.levelup.app.widget.Widgets.refresh(a)
         }
+        /** ticks made on the Hunter's Path widget, for the page to apply (JSON [{id, d}]); clears the queue */
+        @JavascriptInterface fun takeLifeTicks(): String = de.com.levelup.app.widget.LifeStore.takeTicks(a)
+        /** daily quest reminder at "HH:MM" ("" = off); asks for the notification permission on Android 13+ */
+        @JavascriptInterface fun setLifeReminder(hhmm: String) = a.runOnUiThread { a.setReminder(hhmm) }
     }
 }
 
@@ -269,4 +283,12 @@ object WidgetStore {
         return changed
     }
     fun load(c: Context): String? = prefs(c).getString("snapshot", null)
+    /** Hunter's Path snapshot (separate key); true when it changed */
+    fun saveLife(c: Context, json: String): Boolean {
+        val strip = { t: String? -> t?.replace(Regex("\"(generatedAt|syncedAt)\":\\d+,?"), "") }
+        val changed = strip(prefs(c).getString("snapshot_life", null)) != strip(json)
+        prefs(c).edit().putString("snapshot_life", json).apply()
+        return changed
+    }
+    fun loadLife(c: Context): String? = prefs(c).getString("snapshot_life", null)
 }

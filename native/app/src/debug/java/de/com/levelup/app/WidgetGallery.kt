@@ -21,7 +21,7 @@ class WidgetGallery : Activity() {
     private lateinit var host: AppWidgetHost
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
-        intent.getStringExtra("snap")?.let { WidgetStore.save(this, String(Base64.decode(it, Base64.DEFAULT))) }
+        intent.getStringExtra("snap")?.let { val j = String(Base64.decode(it, Base64.DEFAULT)); if (j.contains("\"courseType\":\"life\"")) WidgetStore.saveLife(this, j) else WidgetStore.save(this, j) }
         val only = intent.getStringExtra("only")
         val sizes = (intent.getStringExtra("sizes") ?: "57x57,130x57,250x57,130x160,250x160,250x330").split(",").map { it.split("x").let { (w, h) -> w.toInt() to h.toInt() } }
         val mgr = AppWidgetManager.getInstance(this)
@@ -47,6 +47,11 @@ class WidgetGallery : Activity() {
         }
         setContentView(ScrollView(this).apply { addView(col, ViewGroup.LayoutParams(-1, -2)) })
         Widgets.refresh(this)
+    }
+    // a new snapshot while the gallery is open: like the app's bridge, store it and refresh (tests live sessions)
+    override fun onNewIntent(i: android.content.Intent) {
+        super.onNewIntent(i)
+        i.getStringExtra("snap")?.let { val j = String(Base64.decode(it, Base64.DEFAULT)); if (j.contains("\"courseType\":\"life\"")) WidgetStore.saveLife(this, j) else WidgetStore.save(this, j); Widgets.refresh(this) }
     }
     override fun onDestroy() { host.stopListening(); super.onDestroy() }
 }

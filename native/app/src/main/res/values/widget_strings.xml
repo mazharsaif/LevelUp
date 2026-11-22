@@ -18,4 +18,6 @@
     <string name="w_ring_desc">Today\'s XP ring and streak, in one cell</string>
     <string name="w_actions">Quick actions</string>
     <string name="w_actions_desc">Start the next part or review in one tap</string>
+    <string name="w_life">Hunter\'s Path</string>
+    <string name="w_life_desc">Your personal quests for today: tick them off right here</string>
 </resources>

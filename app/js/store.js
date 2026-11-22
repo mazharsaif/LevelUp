@@ -149,7 +149,7 @@ const ls = {
 const cacheKey = u => COURSE === DEFAULT_COURSE ? `a1.state.${u}` : `a1.state.${u}@${COURSE}`;
 export const lastCourse = u => ls.get(`a1.course.${u}`);
 // Has this learner started course cid? (course picker: "Continue" for every started course, not only the open one)
-const startedState = st => !!st && !!(st.setup || Object.keys(st.done || {}).length || Object.keys(st.tree || {}).length || (st.log || []).length);
+const startedState = st => !!st && !!(st.setup || Object.keys(st.done || {}).length || Object.keys(st.tree || {}).length || Object.keys(st.tracks || {}).length || (st.log || []).length);
 export function startedLocal(u, cid) {
   try { return startedState(JSON.parse(ls.get(cid === DEFAULT_COURSE ? `a1.state.${u}` : `a1.state.${u}@${cid}`) || "null")); } catch { return false; }
 }

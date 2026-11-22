@@ -14,6 +14,10 @@ import androidx.glance.action.actionParametersOf
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
 import de.com.levelup.app.BuildConfig
 import de.com.levelup.app.MainActivity
@@ -64,7 +68,7 @@ class NextWord : ActionCallback {
         val today = LocalDate.now().toString()
         val n = if (p.getString("wotdDay", "") == today) p.getInt("wotdOffset", 0) + 1 else 1
         p.edit().putString("wotdDay", today).putInt("wotdOffset", n).apply()
-        WordWidget().updateAll(context)
+        Widgets.bump(context, WordWidget())
     }
     companion object {
         fun offset(c: Context): Int = c.getSharedPreferences("levelup.widget", Context.MODE_PRIVATE).let {
@@ -72,14 +76,24 @@ class NextWord : ActionCallback {
     }
 }
 
+/** bumped on every refresh so running widget sessions redraw with the new snapshot */
+val VER = longPreferencesKey("ver")
+
 object Widgets {
+    suspend fun bump(c: Context, w: GlanceAppWidget) {
+        val now = System.currentTimeMillis()
+        GlanceAppWidgetManager(c).getGlanceIds(w.javaClass).forEach { id ->
+            updateAppWidgetState(c, id) { it[VER] = now }
+            w.update(c, id)
+        }
+    }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     /** redraw every LevelUp widget (after a new snapshot, at midnight, at the 20:00 streak-at-risk switch) */
     fun refresh(c: Context) {
         val app = c.applicationContext
         scope.launch {
-            listOf(QuestWidget(), RankWidget(), ContinueWidget(), ReviewWidget(), StreakWidget(), WordWidget(), GlanceStripWidget(), RingWidget(), ActionsWidget())
-                .forEach { runCatching { it.updateAll(app) } }
+            listOf(QuestWidget(), RankWidget(), ContinueWidget(), ReviewWidget(), StreakWidget(), WordWidget(), GlanceStripWidget(), RingWidget(), ActionsWidget(), LifeWidget())
+                .forEach { runCatching { bump(app, it) } }
         }
         schedule(app)
     }

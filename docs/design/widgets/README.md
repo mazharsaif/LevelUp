@@ -24,7 +24,7 @@ Every widget is resizable (`resizeMode="horizontal|vertical"`). The layout jumps
 |---|---|---|---|
 | Matches | `theme-sl` | `theme-calm` | system (dynamic colour) |
 | Surface | navy gradient, blue glow outline, corner brackets | warm paper (light) / slate (dark), flat | `GlanceTheme.colors` surface / secondaryContainer |
-| Type | `sans-serif-condensed`, caps labels | `serif` headings, Roboto body | system (Google Sans / Roboto) |
+| Type | system sans (`sans-serif`), caps labels (named families like `sans-serif-condensed` are remapped by some OEMs, e.g. Nothing OS draws dotted/circled glyphs) | `serif` headings, Roboto body | system (Google Sans / Roboto) |
 | Accent | blue → purple with the aura | deep teal | primary of the wallpaper seed |
 | Light/dark | always dark (as in the app) | both | both (follows the system) |
 
@@ -179,7 +179,7 @@ The `#/…` routes exist in the web app today. Rows marked **new** need an actio
 - **Fine as-is:** text, rows/columns, rounded backgrounds (`cornerRadius`, API 31+; use a background drawable below 31), `LinearProgressIndicator` for bars, images, `actionStartActivity` with deep-link intents, `actionRunCallback`, dynamic colours via `GlanceTheme`.
 - **Needs bitmaps:** progress rings and rank emblems with aura. Draw them with Canvas into a Bitmap, or ship pre-rendered PNGs. Keep each bitmap small (≤ 2× the dp size) to stay under the RemoteViews memory limit.
 - **Hunter glow and corner brackets:** one static nine-patch or layer-list drawable per state colour (blue, red, gold). No blur at runtime.
-- **Avoid:** animation (no pulsing aura, no particles), custom fonts (use the `sans-serif-condensed` / `serif` families), scrolling except `LazyColumn` (not needed here).
+- **Avoid:** animation (no pulsing aura, no particles), custom fonts and OEM-specific family names (use `sans-serif` / `serif` only), scrolling except `LazyColumn` (not needed here).
 - **Updates:** push from the app (`GlanceAppWidget.updateAll`) on every state change, plus three alarms: midnight rollover, evening at-risk (20:00 if the goal is not met) and next-review-due. Add a `WorkManager` 1 h periodic sync only to mark data stale or refresh from the server when the learner uses the web app on another device.
 - **Multi-course:** the widget configuration activity picks the course (default = current course). Store `courseId` in the widget's Glance state.
 - **Quest Mode off:** the quest, streak and at-risk widgets show "Quest Mode is off" with a link to Settings. Rank, Continue, Review and Word still work.
