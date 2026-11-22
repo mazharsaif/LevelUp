@@ -1,5 +1,5 @@
 // Offline support: app shell + lesson data cached on install, audio cached the first time it plays.
-const SHELL = "a1-shell-v60";
+const SHELL = "a1-shell-v61";
 const AUDIO = "a1-audio-v1";
 const CONTENT = "a1-content-v1"; // reading material, downloaded per skill only when opened (never precached)
 const FILES = ["./", "index.html", "styles.css", "js/app.js", "js/store.js", "js/lesson.js", "js/audio.js", "js/hero.js", "js/bugreport.js", "js/lang.js", "data/se-path.json", "data/math-path.json",

@@ -485,7 +485,7 @@ function wordsView() {
       ${p.a ? `<button class="spk sm" data-a="${p.a}" data-t="${esc(p.de)}">🔊</button>` : ""}</div>`;
   // phrases from phrase lessons: own groups on "All" (by topic), and in search results
   const phraseGroups = open => PT.map(t => { const n = t.items.filter(p => p.learned).length, k = "💬 " + t.title;
-    return `<details class="wgrp" data-t="${esc(k)}" ${open.has(k) ? "open" : ""}><summary><span class="grow">${esc(k)}</span>
+    return `<details class="wgrp" data-t="${esc(k)}" ${open.has(k) ? "open" : ""}><summary><span class="grow">${esc(t.title)}</span>
       <span class="tiny muted">${n}/${t.items.length} learned</span></summary>${t.items.map(prow).join("")}</details>`; }).join("");
   const draw = () => {
     const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());

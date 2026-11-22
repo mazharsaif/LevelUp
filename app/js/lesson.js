@@ -410,7 +410,25 @@ const COMBO = { 3: "🔥 3 in a row – nice!", 5: "🔥 5 in a row – you're o
 // ---------- 🎤 Speak it: optional pronunciation practice (Chrome Web Speech API, language from the course: de-DE, fr-FR) ----------
 // It checks the words it heard, not the sounds: every word of the phrase must be heard (one may be missing in phrases of
 // 6+ words), so "wie geht es Ihnen" doesn't pass for "Wie geht es dir?". Never counts toward accuracy; +1 XP when understood.
-const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+// In the native app, always use Android's SpeechRecognizer: newer WebViews expose a webkitSpeechRecognition that only fails with "not-allowed"
+function nativeSpeechRec() {
+  const N = window.LevelUpNative;
+  try { if (!N || !N.speechStart || !N.speechAvailable()) return null; } catch { return null; }
+  const live = {};
+  window.__luSpeech = (id, type, data) => {
+    const r = live[id]; if (!r) return;
+    if (type === "result") r.onresult && r.onresult({ results: [data.map(t => ({ transcript: t, confidence: 0 }))] });
+    else if (type === "error") r.onerror && r.onerror({ error: data });
+    else if (type === "end") { delete live[id]; r.onend && r.onend(); }
+  };
+  return class {
+    constructor() { this.lang = "de-DE"; this.maxAlternatives = 5; this.interimResults = false; this._id = String(Math.random()).slice(2); }
+    start() { live[this._id] = this; N.speechStart(this._id, this.lang, this.maxAlternatives || 5); }
+    stop() { N.speechStop(this._id); }
+    abort() { N.speechAbort(this._id); }
+  };
+}
+const SpeechRec = nativeSpeechRec() || window.SpeechRecognition || window.webkitSpeechRecognition;
 export const speakAvailable = () => !!SpeechRec && window.isSecureContext;
 export const speakOn = () => speakAvailable() && S && S.settings.speak !== false;
 export const speakable = p => !!p && !/[…()]/.test(p.de) && p.de.length <= 70;
