@@ -334,7 +334,7 @@ export function lessonDebug() {
 
 function header() {
   const pct = Math.min(100, 100 * R.done / R.total);
-  return `<div class="lesson-top"><button class="x" id="quit">✕</button><div class="bar"><div style="width:${pct}%"></div></div><button class="x aa" data-aa aria-label="Text size">Aa</button></div>`;
+  return `<div class="lesson-top"><button class="x" id="quit">✕</button><div class="bar"><div style="width:${pct}%"></div></div><button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button></div>`;
 }
 
 function render() {

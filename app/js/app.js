@@ -704,6 +704,7 @@ function settingsView() {
     <button class="btn ghost" id="dl">Download all audio</button><p class="small" id="dlst"></p></div>
   ${offerApk() || offerIos() ? `<div class="card"><div class="sys-h">App</div><div style="font-weight:800">📱 ${offerIos() ? "iPhone app" : "Android app"}</div>
     <p class="muted small">Install LevelUp as an app: full screen, own icon, same account and progress.</p>${apkBtn("btn")}</div>` : ""}
+  <div class="card"><div class="sys-h">About</div><div style="font-weight:800">ℹ️ App version</div>${verBox()}</div>
   <div class="card"><div class="sys-h">Invite</div><div style="font-weight:800">🎁 Invite friends</div>
     <p class="muted small">Learning is more fun with a party. Share LevelUp and compare progress.</p><button class="btn" id="inv">Share / invite</button></div>
   <div class="card"><div class="sys-h">Data</div><div style="font-weight:800">💾 Backup</div>
@@ -1319,7 +1320,7 @@ const themeOptions = cur => THEMES.map(([v, l]) => `<option value="${v}" ${cur =
 const FONT_SIZES = [[0.9, "Small"], [1, "Normal"], [1.15, "Large"], [1.3, "Larger"], [1.5, "Largest"]];
 const fontScale = () => { try { return +localStorage.getItem("a1.fontScale") || 1; } catch { return 1; } };
 const applyFont = () => document.documentElement.style.setProperty("--fs", fontScale());
-const aaBtn = () => `<button class="x aa" data-aa aria-label="Text size">Aa</button>`;
+const aaBtn = () => `<button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button>`;   // small A + big A = text size (feedback 11-22: plain "Aa" was easy to miss)
 function fontSheet() {
   const segs = () => FONT_SIZES.map(([f, l]) => `<button data-f="${f}" class="${fontScale() === f ? "on" : ""}" aria-label="${l}" style="font-size:${Math.round(14 * f)}px">A</button>`).join("");
   sheet(`<h2 style="margin-top:0">Text size</h2><div class="segt fsz" role="group" aria-label="Text size" style="--c:var(--green)">${segs()}</div>
@@ -1334,7 +1335,21 @@ function fontSheet() {
   });
 }
 applyFont();
-document.addEventListener("click", e => { if (e.target.closest("[data-aa]")) fontSheet(); });
+document.addEventListener("click", e => { if (e.target.closest("[data-aa]")) { aaHintDone(); fontSheet(); } });
+// first time a text-size button shows on this device: a small "Text size" tip under it, once
+const aaHintDone = () => { try { localStorage.setItem("a1.aaHint", "1"); } catch { /* ignore */ } document.querySelectorAll(".aa-tip").forEach(t => t.remove()); };
+new MutationObserver(() => {
+  let seen = false; try { seen = !!localStorage.getItem("a1.aaHint"); } catch { seen = true; }
+  if (seen || document.querySelector(".aa-tip")) return;
+  const b = document.querySelector("button.aa[data-aa]"); if (!b || !b.offsetParent) return;
+  const r = b.getBoundingClientRect(), tip = document.createElement("div");
+  tip.className = "aa-tip"; tip.innerHTML = "Text size: tap to make the text bigger or smaller";
+  document.body.appendChild(tip);
+  tip.style.top = (window.scrollY + r.bottom + 10) + "px";
+  tip.style.right = Math.max(8, window.innerWidth - r.right - 6) + "px";
+  tip.onclick = aaHintDone;
+  setTimeout(aaHintDone, 6000);
+}).observe(document.body, { childList: true, subtree: true });
 const deviceTheme = () => { try { return localStorage.getItem("a1.theme") || "system"; } catch { return "system"; } };
 // theme for screens without a learner (login / player picker); a learner's own theme applies after login
 function themeSheet() {
@@ -1342,6 +1357,7 @@ function themeSheet() {
   sheet(`<h2 style="margin-top:0">⚙️ Settings</h2><label class="f">Theme</label><select id="dth">${themeOptions(mine ? S.settings.theme : deviceTheme())}</select>
     <button class="btn ghost" data-aa style="margin-top:10px">Aa Text size</button>
     <p class="muted small" style="margin:6px 0 12px">${mine ? "Your theme. You can also change it later in Settings." : "Used on this screen. After you log in, your own theme from Settings applies."}</p>
+    ${verBox()}
     <button class="btn" id="ok">Done</button>`, el => {
     el.querySelector("#dth").onchange = e => {
       if (mine) { S.settings.theme = e.target.value; save(); } else try { localStorage.setItem("a1.theme", e.target.value); } catch { /* ignore */ }
@@ -1776,6 +1792,31 @@ async function checkNativeUpdate() {
   box.querySelector("#later").onclick = close;
   box.querySelector(".sheet-bg").onclick = e => { if (e.target === e.currentTarget) close(); };
 }
+// installed versions (feedback 11-22: "show the installed app version so I can check I have the latest").
+// <div data-ver></div> anywhere is filled in: Android app (native) with the latest published one, web app, offline cache.
+const verBox = () => `<div class="verbox tiny muted" data-ver>Checking version…</div>`;
+async function fillVersions(root = document) {
+  const boxes = [...root.querySelectorAll("[data-ver]:not([data-filled])")]; if (!boxes.length) return;
+  boxes.forEach(b => b.setAttribute("data-filled", ""));
+  const N = window.LevelUpNative, rows = [];
+  let mineCode = 0, mineName = "";
+  if (N && N.version) {
+    try { mineName = String(N.version()).replace(/-native.*$/, ""); mineCode = (N.deviceInfo && JSON.parse(N.deviceInfo()).appVersionCode) || verCode(mineName); } catch { mineCode = verCode(mineName); }
+    const r = await fetch("download/native.json", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).catch(() => null);
+    const latest = r && r.versionCode > mineCode;
+    rows.push(`📱 Android app: <b>${esc(mineName)}</b> ${r ? (latest ? `· <span style="color:var(--red)">new version ${esc(String(r.versionName).replace(/-native.*$/, ""))} available</span> <button class="link" data-verupd style="padding:0">Update</button>` : `· <span style="color:var(--green)">latest ✓</span>`) : ""}`);
+  }
+  const web = window.__luVersion || await fetch("api/health", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).then(j => j && j.version).catch(() => null);
+  if (web) rows.push(`🌐 Web app: <b>${esc(web)}</b>`);
+  try { const k = (await caches.keys()).find(x => /^a1-shell-v\d+$/.test(x)); if (k) rows.push(`💾 Offline copy: ${esc(k.replace("a1-shell-", ""))}`); } catch { /* no cache API over http */ }
+  boxes.forEach(b => {
+    b.innerHTML = rows.map(x => `<div>${x}</div>`).join("");
+    const u = b.querySelector("[data-verupd]");
+    if (u) u.onclick = async () => { const r = await fetch("download/native.json", { cache: "no-store" }).then(x => x.json()).catch(() => null);
+      N.openExternal(new URL((r && r.url) || NATIVE_APK_URL, location.href).href); };
+  });
+}
+new MutationObserver(() => { if (document.querySelector("[data-ver]:not([data-filled])")) fillVersions(); }).observe(document.body, { childList: true, subtree: true });
 // iPhone: no APK, but Safari's "Add to Home Screen" installs LevelUp as a full-screen app (iosSheet explains it)
 const offerIos = () => IS_IOS && !standaloneApp();
 const IOS_GUIDE = "download/levelup-iphone-guide.pdf";
@@ -1864,7 +1905,7 @@ function userSheet() {
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>`, el => {
+    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
     el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
