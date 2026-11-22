@@ -1,7 +1,7 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, startedLocal, startedRemote, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -461,8 +461,8 @@ function sortWords(list) {
   return by ? [...list].sort(by) : list;
 }
 function wordsView() {
-  const r = retention();
-  view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} learned · ${r.mastered} mastered</p>
+  const r = retention(), PT = phraseTopics(), pAll = PT.flatMap(t => t.items), pN = pAll.filter(p => p.learned).length;
+  view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} words learned · ${r.mastered} mastered${pAll.length ? ` · 💬 ${pN} of ${pAll.length} phrases learned` : ""}</p>
     <input class="search" id="q" placeholder="Search ${L.name} or English…" value="${esc(wf.q)}">
     <div class="seg" id="seg">${[["all", "All"], ["due", "Due"], ["learning", "Learning"], ["known", "Known"], ["mastered", "Mastered"], ["new", "New"], ["core", "★ Core"]]
       .map(([k, l]) => `<button data-f="${k}" class="${wf.f === k ? "on" : ""}">${l}</button>`).join("")}</div>
@@ -473,6 +473,12 @@ function wordsView() {
   const row = w => `<div class="wrow" data-id="${w.id}">
       <span class="dot ${cls[wordStatus(w.id)]}"></span><div class="t"><div>${esc(w.de)}</div><div>${esc(w.en)}</div></div>
       <button class="spk sm" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊</button></div>`;
+  const prow = p => `<div class="wrow"><span class="dot ${p.learned ? "k" : ""}"></span><div class="t"><div>${esc(p.de)}</div><div>${esc(p.en)}</div></div>
+      ${p.a ? `<button class="spk sm" data-a="${p.a}" data-t="${esc(p.de)}">🔊</button>` : ""}</div>`;
+  // phrases from phrase lessons: own groups on "All" (by topic), and in search results
+  const phraseGroups = open => PT.map(t => { const n = t.items.filter(p => p.learned).length, k = "💬 " + t.title;
+    return `<details class="wgrp" data-t="${esc(k)}" ${open.has(k) ? "open" : ""}><summary><span class="grow">${esc(k)}</span>
+      <span class="tiny muted">${n}/${t.items.length} learned</span></summary>${t.items.map(prow).join("")}</details>`; }).join("");
   const draw = () => {
     const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());
     const list = C.content.words.filter(w => {
@@ -485,12 +491,18 @@ function wordsView() {
     const wl = view().querySelector("#wl"), wx = view().querySelector("#wx");
     const grouped = wf.sort === "topic" && !q;
     wx.hidden = !grouped;
-    if (!list.length) wl.innerHTML = `<div class="wrow muted">No words here yet.</div>`;
+    const pq = q ? pAll.filter(p => p.de.toLowerCase().includes(q) || p.en.toLowerCase().includes(q)) : [];
+    if (q && pq.length) {                     // search: matching phrases first, then words
+      const sorted = sortWords(list);
+      wl.innerHTML = `<div class="wrow muted tiny">💬 Phrases</div>${pq.slice(0, 50).map(prow).join("")}` +
+        (sorted.length ? `<div class="wrow muted tiny">Words</div>${sorted.slice(0, 300).map(row).join("")}` : "");
+    } else if (!list.length) wl.innerHTML = `<div class="wrow muted">No words here yet.</div>`;
     else if (grouped) {
       const groups = new Map();
       list.forEach(w => { const t = topicName(w.topic); if (!groups.has(t)) groups.set(t, []); groups.get(t).push(w); });
       const open = openTopics();
-      wl.innerHTML = [...groups].map(([t, ws]) => { const n = ws.filter(w => S.words[w.id]).length;
+      if (wf.f === "all") PT.forEach(t => groups.set("💬 " + t.title, null));   // phrase topics (drawn first by phraseGroups) for Expand all
+      wl.innerHTML = (wf.f === "all" ? phraseGroups(open) : "") + [...groups].filter(([, ws]) => ws).map(([t, ws]) => { const n = ws.filter(w => S.words[w.id]).length;
         return `<details class="wgrp" data-t="${esc(t)}" ${open.has(t) ? "open" : ""}><summary><span class="grow">${esc(t)}</span>
           <span class="tiny muted">${n}/${ws.length} learned</span></summary>${ws.map(row).join("")}</details>`; }).join("");
       const allOpen = [...groups.keys()].every(t => open.has(t));
@@ -1727,8 +1739,9 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfo
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
 const standaloneApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const offerApk = () => !IN_APK && !IS_IOS && !standaloneApp();
-const APK_URL = "download/levelup.apk";
-const NATIVE_APK_URL = "download/levelup-native.apk"; // native Kotlin app, beta (installs next to the APK above)
+// The Android app = the native app ("LevelUp"). The TWA web-wrapper APK (download/levelup.apk) is parked from 11-22:
+// never linked, and the server redirects that old link to this one.
+const NATIVE_APK_URL = "download/levelup-native.apk";
 // Native app: when a newer APK is published (download/native.json, written by tools/android/build_native.sh), offer it
 // at start. Web-only changes never trigger this: they reach the native app by themselves. Asked once per app start.
 const verCode = v => { const m = String(v || "").match(/(\d{4})\.(\d{2})\.(\d{2})\.(\d{2})/); return m ? +(m[1] + m[2] + m[3] + m[4]) : 0; };
@@ -1745,7 +1758,7 @@ async function checkNativeUpdate() {
   const box = document.createElement("div");
   box.id = "upd-root";
   box.innerHTML = `<div class="sheet-bg"><div class="sheet"><h2 style="margin-top:0">🚀 Update available</h2>
-    <p>A new version of LevelUp Native is ready: <b>${esc(r.versionName)}</b> (you have ${esc(N.version())}).</p>
+    <p>A new version of LevelUp is ready: <b>${esc(String(r.versionName).replace(/-native.*$/, ""))}</b> (you have ${esc(String(N.version()).replace(/-native.*$/, ""))}).</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ""}
     <p class="muted small">Tap Update, open the downloaded file and tap Install. Your progress stays: it's saved on your account.</p>
     <button class="btn" id="upd">Update now</button><button class="btn ghost" id="later" style="margin-top:8px">Later</button></div></div>`;
@@ -1798,8 +1811,8 @@ function apkSheet() {
       <li>If Play Protect asks to scan the app, let it, then tap <b>Install anyway</b>.</li>
       <li>Open LevelUp from your home screen and log in once. Your progress is the same as on the website.</li>
     </ol>
-    <p class="muted small">Needs Android 7 or newer and Chrome. Updates to lessons arrive by themselves, no reinstall needed.</p>
-    <a class="btn" href="${APK_URL}" download="LevelUp.apk" id="apkdl" style="display:block;text-align:center;text-decoration:none">Download (about 3 MB)</a>
+    <p class="muted small">Needs Android 7 or newer. Lessons update by themselves; when a new app version is out, the app offers it at start.</p>
+    <a class="btn" href="${NATIVE_APK_URL}" download="LevelUp.apk" id="apkdl" style="display:block;text-align:center;text-decoration:none">Download (about 3 MB)</a>
     <button class="btn ghost" type="button" id="apkc">Close</button>`, el => {
     el.querySelector("#apkc").onclick = closeSheet;
     el.querySelector("#apkdl").onclick = () => setTimeout(() => toast("Downloading… open it from your notifications"), 300);
@@ -1811,7 +1824,7 @@ async function shareApp() {
   const url = location.origin + location.pathname.replace(/index\.html$/, "");
   // all links sit inside the text (no separate url field, so apps don't add it twice); the first link gives WhatsApp's preview
   // card. The iOS PDF is a link, not an attachment (WhatsApp drops the text when a file rides along).
-  const text = `${SHARE_TEXT}\n\n🌐 Web app (any phone or computer, nothing to install): ${url}\n📱 Android app (install the APK): ${new URL(APK_URL, url).href}\n🧪 Android native app (beta, installs next to the other one): ${new URL(NATIVE_APK_URL, url).href}`
+  const text = `${SHARE_TEXT}\n\n🌐 Web app (any phone or computer, nothing to install): ${url}\n📱 Android app (LevelUp, install the APK): ${new URL(NATIVE_APK_URL, url).href}`
     + `\n🍎 iOS instructions (iPhone): open the link in Safari, tap Share, then "Add to Home Screen". Download the picture guide (PDF): ${new URL(IOS_GUIDE, url).href}`;
   try { if (navigator.share) { await navigator.share({ title: "LevelUp", text }); return; } }
   catch (e) { if (e && e.name === "AbortError") return; }

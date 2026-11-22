@@ -23,7 +23,7 @@ import auth
 from fastapi import FastAPI, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -678,23 +678,20 @@ def assetlinks():
     return FileResponse(os.path.join(APP, ".well-known", "assetlinks.json"), media_type="application/json")
 
 
-# The sideloadable APK (built locally by tools/android/build_apk.sh, committed in app/download/).
+# The TWA APK (web-wrapper app) is parked from 11-22: the native app is the only Android app. Old invite links to
+# /download/levelup.apk now get the native app. The parked APK lives in android/parked/ (not served).
 @app.get("/download/levelup.apk", include_in_schema=False)
 def apk():
-    path = os.path.join(APP, "download", "levelup.apk")
-    if not os.path.isfile(path):
-        return err("no APK built yet", 404)
-    return FileResponse(path, media_type="application/vnd.android.package-archive", filename="LevelUp.apk",
-                        headers={"Cache-Control": "no-cache"})
+    return RedirectResponse("/download/levelup-native.apk", status_code=302)
 
 
-# The native Android app (beta, installs next to the TWA app), built by tools/android/build_native.sh.
+# The Android app ("LevelUp", native), built by tools/android/build_native.sh.
 @app.get("/download/levelup-native.apk", include_in_schema=False)
 def apk_native():
     path = os.path.join(APP, "download", "levelup-native.apk")
     if not os.path.isfile(path):
         return err("no native APK built yet", 404)
-    return FileResponse(path, media_type="application/vnd.android.package-archive", filename="LevelUp-Native.apk",
+    return FileResponse(path, media_type="application/vnd.android.package-archive", filename="LevelUp.apk",
                         headers={"Cache-Control": "no-cache"})
 
 

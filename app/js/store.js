@@ -668,6 +668,16 @@ function migratePhraseBits(st) {
   st.settings.pb3 = true;
 }
 export const bitCount = it => bitsOf(it).length;
+// phrases learned in phrase lessons, by topic (feedback 11-22: the Words page counted words only, so greetings and
+// polite phrases learned in phrase lessons never showed). A phrase is learned when its part (or the topic) is finished.
+export function phraseTopics(st = S) {
+  if (!C.phrases || !C.content || !C.content.path) return [];
+  return C.content.path.filter(it => it.kind === "phrases" && C.phrases[it.id]).map(it => {
+    const sec = C.phrases[it.id], all = !!st.done[it.id], b = (st.bits || {})[it.id] || [], learned = new Set();
+    bitsOf(it).forEach((ids, k) => { if (all || b[k]) ids.forEach(i => learned.add(i)); });
+    return { id: it.id, title: sec.title || it.title, items: sec.items.map((p, i) => ({ ...p, learned: learned.has(i) })) };
+  });
+}
 export function bitsDone(it, st = S) {
   if (st.done[it.id]) return bitCount(it);
   return ((st.bits || {})[it.id] || []).filter(Boolean).length;

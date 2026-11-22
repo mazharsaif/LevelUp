@@ -1,6 +1,6 @@
 {
- "versionCode": 2026112201,
- "versionName": "2026.11.22.01-native-beta",
+ "versionCode": 2026112202,
+ "versionName": "2026.11.22.02",
  "url": "download/levelup-native.apk",
- "notes": "New app icon: no white edges on round launchers."
+ "notes": "The app is now called just \"LevelUp\"."
 }

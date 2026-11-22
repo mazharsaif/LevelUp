@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the LevelUp Android app (TWA) and puts it on the website:
-#   app/download/levelup.apk          the sideloadable APK (download button in the web app)
+#   android/parked/levelup.apk        PARKED from 11-22: the native app is the only Android app; this APK isn't served
 #   app/.well-known/assetlinks.json   proves the APK owns levelrise.org (no URL bar)
 # Toolchain + signing key live in ~/.levelup-android (JDK 17, Android SDK, Bubblewrap, keystore).
 # Usage: tools/android/build_apk.sh            (stamps the next release version, see tools/next_version.sh)
@@ -46,7 +46,7 @@ BT="$T/sdk/build-tools/36.1.0"
 rm -f app-release-aligned.apk app-release-signed.apk.idsig
 
 mkdir -p "$ROOT/app/download" "$ROOT/app/.well-known"
-cp app-release-signed.apk "$ROOT/app/download/levelup.apk"
+mkdir -p "$ROOT/android/parked" && cp app-release-signed.apk "$ROOT/android/parked/levelup.apk"
 
 FP="$("$JAVA_HOME/bin/keytool" -list -v -keystore "$T/levelup-release.keystore" -alias levelup -storepass "$PW" | awk '/SHA256:/{print $2; exit}')"
 PKG="$(python3 -c "import json;print(json.load(open('twa-manifest.json'))['packageId'])")"
@@ -56,5 +56,5 @@ cat > "$ROOT/app/.well-known/assetlinks.json" <<EOF
   "target": {"namespace": "android_app", "package_name": "$PKG", "sha256_cert_fingerprints": ["$FP"]}
 }]
 EOF
-"$T/sdk/build-tools/36.1.0/apksigner" verify --print-certs "$ROOT/app/download/levelup.apk" | head -3
-ls -la "$ROOT/app/download/levelup.apk"
+"$T/sdk/build-tools/36.1.0/apksigner" verify --print-certs "$ROOT/android/parked/levelup.apk" | head -3
+ls -la "$ROOT/android/parked/levelup.apk"

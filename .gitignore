@@ -19,7 +19,7 @@ legacy/
 # Personal Claude Code settings (shared ones are in .claude/settings.json)
 .claude/settings.local.json
 
-# Android (TWA) build outputs; the signed APK that ships is app/download/levelup.apk
+# Android (TWA) build outputs; the TWA is parked (11-22), its last signed APK is android/parked/levelup.apk
 android/.gradle/
 android/build/
 android/app/build/

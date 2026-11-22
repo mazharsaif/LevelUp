@@ -1,6 +1,6 @@
 #!/bin/bash
-# Builds the signed native Android app (beta) from native/ → app/download/levelup-native.apk.
-# Release build: id de.com.levelup.app.native ("LevelUp Native"), talks to https://levelrise.org, installs next to the TWA app.
+# Builds the signed Android app from native/ → app/download/levelup-native.apk (the only Android app from 11-22).
+# Release build: id de.com.levelup.app.native, named "LevelUp", talks to https://levelrise.org.
 # Same signing key as the TWA (~/.levelup-android/levelup-release.keystore, alias levelup).
 set -euo pipefail
 T="$HOME/.levelup-android"
@@ -23,7 +23,7 @@ OUT="app/build/outputs/apk/release"
 python3 - "$ROOT/app/download/native.json" "$CODE" "$VER" "${NOTES:-}" <<'PY'
 import json, sys
 p, code, ver, notes = sys.argv[1:5]
-json.dump({"versionCode": int(code), "versionName": ver + "-native-beta", "url": "download/levelup-native.apk", "notes": notes}, open(p, "w"), indent=1)
+json.dump({"versionCode": int(code), "versionName": ver, "url": "download/levelup-native.apk", "notes": notes}, open(p, "w"), indent=1)
 PY
 "$BT/aapt2" dump badging "$ROOT/app/download/levelup-native.apk" | head -1
 ls -la "$ROOT/app/download/levelup-native.apk"

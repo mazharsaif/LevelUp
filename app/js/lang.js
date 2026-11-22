@@ -6,7 +6,11 @@ const DE_NUM = ["null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "siebe
 const DE_FORMS = { ist: "is", bin: "am", bist: "are", sind: "are", seid: "are", war: "was", hat: "has", habe: "have", hast: "have", habt: "have",
   den: "the", dem: "the", des: "of the", einen: "a, an", einem: "a, an", eines: "of a", du: "you", mich: "me", mir: "(to) me",
   dich: "you", dir: "(to) you", uns: "us", euch: "you (plural)", im: "in the", am: "at the, on the", zum: "to the", zur: "to the",
-  vom: "from the", beim: "at the", ins: "into the" };
+  vom: "from the", beim: "at the", ins: "into the",
+  // articles (feedback 11-22: "Der" showed no meaning) and stem-changing verbs whose stem isn't the infinitive's
+  der: "the", die: "the", das: "the; that", ein: "a, an; one", eine: "a, an; one", einer: "a, an; one", kein: "no, not a", keine: "no, not any",
+  isst: "eats (essen)", liest: "reads (lesen)", gibt: "gives (geben)", nimmt: "takes (nehmen)", sieht: "sees (sehen)",
+  spricht: "speaks (sprechen)", hilft: "helps (helfen)", trifft: "meets (treffen)", weiß: "know(s) (wissen)", wird: "becomes (werden)" };
 const DE = {
   code: "de", name: "German", bcp: "de-DE",
   // article + noun ("der Tisch") → ["der", "Tisch", " "]
@@ -26,7 +30,8 @@ const DE = {
   forms: DE_FORMS,
   formal: (t, first) => (!first && /^Ihr(e|en|em|er|es)?$/.test(t) ? "your (formal)" : !first && t === "Sie" ? "you (formal)" : null),
   suffixes: ["en", "em", "er", "es", "e", "n", "s", "st", "t"],
-  stemTry: st => [st, st + "en", st + "n"],
+  // fährt → fähr → fahren, läuft → laufen, schläft → schlafen: also try the stem without its umlaut
+  stemTry: st => { const u = st.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u"); return u === st ? [st, st + "en", st + "n"] : [st, st + "en", st + "n", u, u + "en", u + "n"]; },
   bare: low => [low + "en", low + "n"],
   genderQ: w => ({ title: "der, die or das?", opts: ["der", "die", "das"], cls: ["m", "f", "n"], ans: { m: "der", f: "die", n: "das", pl: "die" }[w.g],
     note: w.g === "pl" ? "Plural-only noun → die" : "" }),

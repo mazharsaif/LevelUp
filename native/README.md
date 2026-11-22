@@ -42,7 +42,7 @@ export JAVA_HOME=<~/.levelup-android/jdk/…/Contents/Home> ANDROID_HOME=~/.leve
 ./gradlew :app:assembleDebug        # de.com.levelup.app.dev, "LevelUp dev", installs next to everything
 ./gradlew test                      # core golden + engine tests (server tests skip without LU_TEST_SERVER)
 LU_TEST_SERVER=http://127.0.0.1:8899 ./gradlew test   # with the scratch server (never the live site)
-../tools/android/build_native.sh    # signed beta → app/download/levelup-native.apk (de.com.levelup.app.native, "LevelUp Native")
+../tools/android/build_native.sh    # signed beta → app/download/levelup-native.apk (de.com.levelup.app.native, "LevelUp")
 ```
 
 Regenerate the goldens after changing web logic: `cd tools/golden && npm install && node gen.mjs`.

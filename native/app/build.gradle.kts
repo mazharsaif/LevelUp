@@ -31,11 +31,10 @@ android {
         }
         release {
             isMinifyEnabled = false
-            // Beta (11-21): own id so it installs NEXT TO the TWA app (de.com.levelup.app) while it's tested on phones.
-            // Drop the suffix once the native app replaces the TWA. Signed by tools/android/build_native.sh.
+            // The only Android app from 11-22 (the TWA is parked). Keeps its own id (.native) so installed copies
+            // keep updating; named just "LevelUp". Signed by tools/android/build_native.sh.
             applicationIdSuffix = ".native"
-            versionNameSuffix = "-beta"
-            manifestPlaceholders["appLabel"] = "LevelUp Native"
+            manifestPlaceholders["appLabel"] = "LevelUp"
         }
     }
 
