@@ -68,7 +68,7 @@ function mergeTracks(a = {}, b = {}, bNewer) {
 function mergeHunter(a, b, bNewer) {
   if (!a || !b) return a || b;
   const n = bNewer ? b : a, o = bNewer ? a : b;
-  return { ...n, shields: Math.min(2, Math.max(a.shields || 0, b.shields || 0)), boughtAt: laterDate(a.boughtAt, b.boughtAt), stats: maxMap(a.stats, b.stats),
+  return { ...n, shields: Math.min(2, Math.max(a.shields || 0, b.shields || 0)), healAt: laterDate(a.healAt, b.healAt), stats: maxMap(a.stats, b.stats),
     cleared: Math.max(a.cleared || 0, b.cleared || 0), titles: [...new Set([...(a.titles || []), ...(b.titles || [])])], allDone: unionMap(n.allDone, o.allDone),
     log: unionList(n.log, o.log).sort((p, q) => String(p.d).localeCompare(String(q.d))).slice(-300) };
 }

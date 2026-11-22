@@ -146,16 +146,21 @@ for e in E:
     wid[e["de"]] = w["id"]
 
 # ------------------------------------------------------------------ grammar
+def no_playlist(t: str) -> str:
+    """drop references to the old video playlist (feedback 11-22: "it says playlist lesson x, remove it everywhere")"""
+    t = re.sub(r"\s*\(playlist lessons? [\d, ]+\)", "", t, flags=re.I)
+    return re.sub(r"\s*[–-]\s*playlist lessons? [\d, ]+\.", ".", t, flags=re.I)
+
+
 grammar = []
 for c in G.CH:
     grammar.append(dict(
         id=f"g{c['num']}",
         num=c["num"],
         title=c["title"],
-        watch=c["watch"],
         intro=strip_tags(c["intro"]),
-        body=re.sub(r'<span class="v2">.*?</span>', "", c["body"]),
-        after=re.sub(r'<span class="v2">.*?</span>', "", c.get("after") or ""),
+        body=no_playlist(re.sub(r'<span class="v2">.*?</span>', "", c["body"])),
+        after=no_playlist(re.sub(r'<span class="v2">.*?</span>', "", c.get("after") or "")),
         ex=[dict(de=strip_tags(d), en=strip_tags(en), a=say(d)) for d, en in c["examples"]],
         mist=[dict(wrong=strip_tags(a), right=strip_tags(b), why=strip_tags(w)) for a, b, w in c["mist"]],
         q=[dict(q=strip_tags(q), a=strip_tags(a)) for q, a in zip(c["practice"], c["answers"])],
@@ -361,8 +366,9 @@ for k, b in enumerate(batches):
         if t not in topics:
             topics.append(t)
     items.append((day, 0, dict(id=f"v{k + 1}", kind="vocab", n=k + 1, title=" · ".join(topics), words=[wid[w] for w in b["words"]])))
+CH_DAY = {1: 28}   # feedback 11-22: pronunciation and the alphabet after many lessons, not at the very start (week 5)
 for c in grammar:
-    items.append((first_ch[c["num"]], 1, dict(id=c["id"], kind="grammar", title=f"Ch {c['num']}: {c['title']}")))
+    items.append((CH_DAY.get(c["num"], first_ch[c["num"]]), 1, dict(id=c["id"], kind="grammar", title=f"Ch {c['num']}: {c['title']}")))
 for n, d in PHRASE_DAY.items():
     items.append((d, 2, dict(id=f"p{n}", kind="phrases", title=phrases[n]["title"])))
 items.sort(key=lambda t: (t[0], t[1]))

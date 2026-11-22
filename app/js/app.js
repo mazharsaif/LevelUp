@@ -407,7 +407,7 @@ function itemSheet(it, refresh = pathView) {
   const d = S.done[it.id];
   let body = "";
   if (it.kind === "vocab") body = `<div class="chips">${it.words.map(id => `<span class="chip">${esc(C.word[id].de)}</span>`).join("")}</div>`;
-  if (it.kind === "grammar") { const g = grammarOf(it), P = gPart(it); body = `${P ? `<p class="small"><b>Part ${it.part + 1} of ${it.of}</b> · ${P.q.length ? `${P.q.length} question${P.q.length > 1 ? "s" : ""}` : "short read"}</p>` : ""}<p class="small muted">${esc(g.intro).slice(0, 220)}…</p><p class="small">🎬 ${esc(g.watch)}</p>`; }
+  if (it.kind === "grammar") { const g = grammarOf(it), P = gPart(it); body = `${P ? `<p class="small"><b>Part ${it.part + 1} of ${it.of}</b> · ${P.q.length ? `${P.q.length} question${P.q.length > 1 ? "s" : ""}` : "short read"}</p>` : ""}<p class="small muted">${esc(g.intro).slice(0, 220)}…</p>`; }
   if (it.kind === "phrases") body = `<p class="small muted">${C.phrases[it.id].items.length} phrases</p>`;
   sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}${questMode() ? ` · WEEK ${weekOf(it)}` : ""}</div>
     <h2 style="margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</h2>${body}
@@ -436,7 +436,7 @@ function grammarView(id) {
   <div class="small muted" style="font-weight:800">📐 GRAMMAR · CHAPTER ${g.num}${P ? ` · PART ${it.part + 1} OF ${it.of}` : ""}</div><h1>${esc(P ? P.t : g.title)}</h1>
   ${P ? `<div class="gparts">${Array.from({ length: it.of }, (_, k) => `<span class="${S.done[`${g.id}.${k + 1}`] ? "ok" : ""} ${k === it.part ? "cur" : ""}"></span>`).join("")}</div>
     ${P.t.startsWith(g.title) ? "" : `<p class="small muted" style="margin-top:4px">${esc(g.title)}</p>`}` : ""}
-  ${first ? `${g.watch ? `<p class="small">🎬 ${esc(g.watch)}</p>` : ""}<p>${esc(g.intro)}</p>` : ""}
+  ${first ? `<p>${esc(g.intro)}</p>` : ""}
   <div class="gram">${personalize(P ? P.html : g.body + (g.after || ""))}</div>
   ${last ? `${g.ex.length ? "<h2>Examples</h2>" : ""}${g.ex.map(e => `<div class="ex"><button class="spk sm" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>
     <div class="t"><div>${esc(e.de)}</div><div class="muted small">${esc(e.en)}</div></div></div>`).join("")}
@@ -722,7 +722,7 @@ function settingsView() {
     <p class="muted small">${isGuest() ? "Guest progress is saved only on this phone. Create an account (above) to save it on the server, or export a copy here." : "Progress is saved on the LevelUp server, with a daily backup. You can also export a copy here."}</p>
     <div class="row"><button class="btn ghost sm grow" id="ex">Export</button><button class="btn ghost sm grow" id="im">Import</button></div>
     <input type="file" id="imf" accept="application/json" hidden>
-    <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset ${esc(userInfo(USER).name)}'s progress…</button></div>
+    <button class="link" id="reset" style="color:var(--red);margin-top:8px">Reset my progress…</button></div>
   ${isGuest() ? `<div class="card"><div class="sys-h">Account</div>${GUEST_NOTE}<button class="btn" id="gsu">Create free account</button>
     <button class="btn ghost" id="glv" style="margin-top:8px">Leave guest mode</button></div>`
     : AUTH === "on" ? `<div class="card"><div class="sys-h">Account</div><div class="row"><div class="grow"><b>${esc(userInfo(USER).name)}</b><div class="muted small">Logged in as ${esc(USER)}</div></div>
@@ -763,11 +763,23 @@ function settingsView() {
   v.querySelector("#imf").onchange = async e => {
     try { importState(await e.target.files[0].text()); toast("Backup restored"); settingsView(); } catch (err) { toast("Could not read that file"); }
   };
-  v.querySelector("#reset").onclick = () => sheet(`<h2 style="margin-top:0">Reset ${esc(userInfo(USER).name)}'s progress?</h2><p class="muted">All of ${esc(userInfo(USER).name)}'s lessons, words, XP and streak will be deleted (yesterday's backup stays in LevelUp/progress/backups). Export a backup first if unsure.</p>
-    <button class="btn red" id="yes">Delete all progress</button><button class="btn ghost" id="no">Cancel</button>`, el => {
-    el.querySelector("#no").onclick = closeSheet;
-    el.querySelector("#yes").onclick = () => { resetAll(); closeSheet(); location.hash = "#/today"; route(); };
-  });
+  // feedback 11-22: first person, says exactly what is lost, and asks twice (the second time you type RESET)
+  v.querySelector("#reset").onclick = () => {
+    const cn = esc(C.course.title);
+    sheet(`<h2 style="margin-top:0">Reset my progress?</h2><p>Your progress in <b>${cn}</b> will be reset: your lessons, words, XP, 💎 and streak start again from zero.</p>
+      <p class="muted small">Your other courses and your settings are not touched. Export a backup first if you might want it back.</p>
+      <button class="btn red" id="yes">Yes, reset my progress</button><button class="btn ghost" id="no">Cancel</button>`, el => {
+      el.querySelector("#no").onclick = closeSheet;
+      el.querySelector("#yes").onclick = () => sheet(`<h2 style="margin-top:0">Are you sure?</h2><p>This deletes your progress in <b>${cn}</b> and can't be undone.</p>
+        <label class="f">Type <b>RESET</b> to confirm</label><input id="rs" autocomplete="off" autocapitalize="characters" placeholder="RESET">
+        <button class="btn red" id="go" disabled>Reset my progress</button><button class="btn ghost" id="no2">Keep my progress</button>`, el2 => {
+        const i = el2.querySelector("#rs"), go = el2.querySelector("#go");
+        i.oninput = () => { go.disabled = i.value.trim().toUpperCase() !== "RESET"; };
+        el2.querySelector("#no2").onclick = closeSheet;
+        go.onclick = () => { if (go.disabled) return; resetAll(); closeSheet(); toast("Your progress was reset"); location.hash = "#/today"; route(); };
+      });
+    });
+  };
 }
 
 async function downloadAudio() {
@@ -1613,9 +1625,44 @@ function lessonsView() {
 }
 
 // ------------------------------------------------------------------ profiles
-function avatar(id, sm) {
-  const u = userInfo(id);
-  return `<span class="av ${sm ? "sm" : ""}" style="background:${u.color}">${esc(u.name[0].toUpperCase())}</span>`;
+// party avatars (feedback 11-22): your own symbol and colour; the frame shows your Hunter rank (E grey … S gold)
+const AV_SYMS = [["⚔️", "Fighter"], ["🔮", "Mage"], ["🗡️", "Assassin"], ["🛡️", "Tank"], ["✨", "Healer"], ["🏹", "Archer"], ["🐉", ""], ["🐺", ""], ["🦅", ""], ["🦊", ""], ["🐯", ""], ["🦁", ""],
+  ["🌙", ""], ["⚡", ""], ["🔥", ""], ["👑", ""], ["💀", ""], ["🌸", ""], ["🍀", ""], ["🎯", ""]];
+const AV_COLORS = ["#1c7cd6", "#ce4fa0", "#2f9e6b", "#e8590c", "#7048e8", "#0c8599", "#d6336c", "#5c940d", "#f08c00", "#495057"];
+function avatar(id, sm, look) {
+  const u = userInfo(id), a = look || u.avatar || {}, rk = /^[EDCBAS]$/.test(a.rank || "") ? a.rank : "";
+  const bg = /^#[0-9a-fA-F]{6}$/.test(a.color || "") ? a.color : u.color;
+  return `<span class="av ${sm ? "sm" : ""} ${a.sym ? "sym" : ""} ${rk ? `fr fr-${rk}` : ""}" style="background:${bg}"${rk ? ` title="${rk}-Rank"` : ""}>${esc(a.sym || u.name[0].toUpperCase())}</span>`;
+}
+async function saveAvatar(patch) {
+  const u = userInfo(USER); if (AUTH !== "on" || isGuest()) return false;
+  try {
+    const r = await fetch("api/auth/avatar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+    if (!r.ok) return false;
+    u.avatar = (await r.json()).avatar || { ...(u.avatar || {}), ...patch };
+    try { localStorage.setItem("a1.users", JSON.stringify(USERS)); } catch { /* ignore */ }
+    return true;
+  } catch { return false; }
+}
+function avatarSheet() {
+  const u = userInfo(USER), cur = { ...(u.avatar || {}) };
+  const draw = el => { el.querySelector("#avp").innerHTML = avatar(USER, false, cur);
+    el.querySelectorAll("[data-sym]").forEach(b => b.classList.toggle("on", b.dataset.sym === (cur.sym || "")));
+    el.querySelectorAll("[data-col]").forEach(b => b.classList.toggle("on", b.dataset.col === (cur.color || u.color))); };
+  sheet(`<h2 style="margin-top:0">🎭 My avatar</h2><div class="avprev"><div id="avp"></div><div class="small muted">Your party sees this. The frame shows your Hunter rank${cur.rank ? ` (now <b>${esc(cur.rank)}</b>)` : ""}: grey at E, gold at S.</div></div>
+    <div class="sys-h" style="margin-top:12px">Class</div><div class="avgrid">${AV_SYMS.slice(0, 6).map(([e, n]) => `<button class="avopt" data-sym="${e}"><span>${e}</span><span class="tiny">${n}</span></button>`).join("")}</div>
+    <div class="sys-h" style="margin-top:10px">Or a symbol</div><div class="avgrid">${AV_SYMS.slice(6).map(([e]) => `<button class="avopt" data-sym="${e}"><span>${e}</span></button>`).join("")}<button class="avopt" data-sym=""><span>${esc(u.name[0].toUpperCase())}</span><span class="tiny">Initial</span></button></div>
+    <div class="sys-h" style="margin-top:10px">Colour</div><div class="avcols">${AV_COLORS.map(c => `<button class="avcol" data-col="${c}" style="background:${c}" aria-label="Colour ${c}"></button>`).join("")}</div>
+    <button class="btn" id="ok" style="margin-top:14px">Save</button><button class="btn ghost" id="cx">Cancel</button>`, el => {
+    draw(el);
+    el.querySelectorAll("[data-sym]").forEach(b => (b.onclick = () => { cur.sym = b.dataset.sym; draw(el); }));
+    el.querySelectorAll("[data-col]").forEach(b => (b.onclick = () => { cur.color = b.dataset.col; draw(el); }));
+    el.querySelector("#cx").onclick = closeSheet;
+    el.querySelector("#ok").onclick = async () => {
+      const ok = await saveAvatar({ sym: cur.sym || "", color: cur.color || u.color });
+      closeSheet(); toast(ok ? "Avatar saved" : "Couldn't save. Check your connection."); route();
+    };
+  });
 }
 function syncText() {
   if (SYNC.pending && !SYNC.online) return "⚠️ No connection – progress saved on this phone, it will sync when you're back online";
@@ -1806,22 +1853,26 @@ async function checkNativeUpdate() {
 // installed versions (feedback 11-22: "show the installed app version so I can check I have the latest").
 // <div data-ver></div> anywhere is filled in: Android app (native) with the latest published one, web app, offline cache.
 const verBox = () => `<div class="verbox tiny muted" data-ver>Checking version…</div>`;
+// one line (feedback 11-22: "why does it show both web app and android app"): the release you run, plus an update
+// link when the Android app itself is out of date; the separate numbers sit under "details"
 async function fillVersions(root = document) {
   const boxes = [...root.querySelectorAll("[data-ver]:not([data-filled])")]; if (!boxes.length) return;
   boxes.forEach(b => b.setAttribute("data-filled", ""));
-  const N = window.LevelUpNative, rows = [];
-  let mineCode = 0, mineName = "";
+  const N = window.LevelUpNative, more = [];
+  let mineName = "", appOld = false, appNew = "";
   if (N && N.version) {
+    let mineCode = 0;
     try { mineName = String(N.version()).replace(/-native.*$/, ""); mineCode = (N.deviceInfo && JSON.parse(N.deviceInfo()).appVersionCode) || verCode(mineName); } catch { mineCode = verCode(mineName); }
     const r = await fetch("download/native.json", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).catch(() => null);
-    const latest = r && r.versionCode > mineCode;
-    rows.push(`📱 Android app: <b>${esc(mineName)}</b> ${r ? (latest ? `· <span style="color:var(--red)">new version ${esc(String(r.versionName).replace(/-native.*$/, ""))} available</span> <button class="link" data-verupd style="padding:0">Update</button>` : `· <span style="color:var(--green)">latest ✓</span>`) : ""}`);
+    appOld = !!(r && r.versionCode > mineCode); appNew = r ? String(r.versionName).replace(/-native.*$/, "") : "";
+    more.push(`📱 Android app ${esc(mineName)}`);
   }
   const web = window.__luVersion || await fetch("api/health", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).then(j => j && j.version).catch(() => null);
-  if (web) rows.push(`🌐 Web app: <b>${esc(web)}</b>`);
-  try { const k = (await caches.keys()).find(x => /^a1-shell-v\d+$/.test(x)); if (k) rows.push(`💾 Offline copy: ${esc(k.replace("a1-shell-", ""))}`); } catch { /* no cache API over http */ }
+  if (web && mineName) more.push(`🌐 Lessons and screens ${esc(web)}`);
+  try { const k = (await caches.keys()).find(x => /^a1-shell-v\d+$/.test(x)); if (k) more.push(`💾 Offline copy ${esc(k.replace("a1-shell-", ""))}`); } catch { /* no cache API over http */ }
+  const main = `LevelUp <b>${esc(web || mineName || "?")}</b> ${appOld ? `· <span style="color:var(--red)">app update ${esc(appNew)}</span> <button class="link" data-verupd style="padding:0">Update</button>` : web || mineName ? `· <span style="color:var(--green)">latest ✓</span>` : ""}`;
   boxes.forEach(b => {
-    b.innerHTML = rows.map(x => `<div>${x}</div>`).join("");
+    b.innerHTML = `<div>${main}</div>${more.length > 1 ? `<details class="verdet"><summary>details</summary>${more.map(x => `<div>${x}</div>`).join("")}</details>` : ""}`;
     const u = b.querySelector("[data-verupd]");
     if (u) u.onclick = async () => { const r = await fetch("download/native.json", { cache: "no-store" }).then(x => x.json()).catch(() => null);
       N.openExternal(new URL((r && r.url) || NATIVE_APK_URL, location.href).href); };
@@ -1916,7 +1967,8 @@ function userSheet() {
   });
   if (AUTH === "on") return sheet(`<h2 style="margin-top:0">Account</h2><div class="who" style="margin-top:8px"><button disabled>${avatar(USER)}
       <div class="grow"><div style="font-size:calc(18px*var(--fs));font-weight:800">${esc(userInfo(USER).name)}</div><div class="muted small">Logged in as ${esc(USER)}</div></div></button></div>
-    <button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" data-guide>📘 How LevelUp works</button><button class="btn ghost" data-tour>🧭 Welcome tour</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
+    <button class="btn ghost" id="avs">🎭 My avatar</button><button class="btn ghost" id="inv">🎁 Share / invite</button><button class="btn ghost" data-aa>Aa Text size</button><button class="btn ghost" data-guide>📘 How LevelUp works</button><button class="btn ghost" data-tour>🧭 Welcome tour</button><button class="btn ghost" id="pw">Change password</button><button class="btn" id="lo">Log out</button>${verBox()}`, el => {
+    el.querySelector("#avs").onclick = avatarSheet;
     el.querySelector("#inv").onclick = shareApp;
     el.querySelector("#pw").onclick = passwordSheet;
     el.querySelector("#lo").onclick = doLogout;
@@ -2106,6 +2158,7 @@ async function partyView() {
   view().innerHTML = head + `<div class="loading">Loading parties…</div>`; wirePartyTop();
   let P;
   try { P = await refreshParty(); if (!P) throw new Error(); } catch { view().innerHTML = head + `<div class="card">Couldn't load parties. Check your connection and try again.</div>`; wirePartyTop(); return; }
+  partySig = partyNow();
   const act = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); } catch (e) { toast(e.message); } partyView(); };
   if (P.mine) {
     const m = P.mine;
@@ -2139,6 +2192,20 @@ async function partyView() {
   view().querySelector("#pnew").onclick = () => { const n = view().querySelector("#pname").value.trim(); if (n.length < 2) return toast("Give your party a name (2+ letters)."); act(() => partyApi("", { name: n }), `${n} started. Invite people to request to join.`); };
   wirePartyTop();
 }
+// auto-refresh (feedback 11-22: "if someone else created a party I have to go to another tab and come back"):
+// while Party is open and visible, check every 15 s and redraw when parties or party gates changed
+let partySig = "";
+const partyNow = () => JSON.stringify([PARTY, (PG.gates || []).map(g => [g.id, g.status, g.members.map(m => [m.id, m.run, m.today, m.status])])]);
+async function partyPoll() {
+  if (location.hash !== "#/party" || document.hidden || !partyOK() || !USER) return;
+  if (document.querySelector("#sheet-root .sheet-bg, .tour") || (document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) return;
+  const before = partySig || partyNow();
+  await refreshParty(); if (isLife()) await syncPartyGates(true);
+  partySig = partyNow();
+  if (partySig !== before && location.hash === "#/party") route();
+}
+setInterval(partyPoll, 15000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) partyPoll(); });
 function wirePartyTop() {
   const b = view().querySelector("#pback"); if (b) b.onclick = () => (location.hash = "#/today");
   wireTop();
@@ -2304,8 +2371,9 @@ async function goAction(act, arg) {
 // Runs once per device for each kind of course (language / skill tree), on the course home, the first time it is shown.
 // "Take the tour" (Settings → About, account menu) runs it again.
 const tourKind = () => (isLife() ? "life" : courseInfo(COURSE).type === "tree" ? "tree" : "lang");
-const tourSeen = k => { try { return !!localStorage.getItem("a1.tour." + k); } catch { return true; } };
-const tourMark = k => { try { localStorage.setItem("a1.tour." + k, today()); } catch { /* ignore */ } };
+const tourKey = k => "a1.tour." + (k === "life" ? "life2" : k);   // life2: the longer Hunter tour (gates and ranks) shows once more
+const tourSeen = k => { try { return !!localStorage.getItem(tourKey(k)); } catch { return true; } };
+const tourMark = k => { try { localStorage.setItem(tourKey(k), today()); } catch { /* ignore */ } };
 const cardOf = sel => () => { const e = [...document.querySelectorAll(sel)].find(x => x.offsetParent); return e ? e.closest(".card") || e : null; };
 function langSteps() {
   const quest = questMode();
@@ -2421,7 +2489,7 @@ function guideView() {
       : `<li><b>Home</b><span>Continue card and all branches</span></li><li><b>A branch</b><span>its skills as a map or a path</span></li><li><b>A skill</b><span>parts, practice and concept check</span></li>`}
     <li><b>Aa</b><span>text size, on reading screens</span></li><li><b>🐞</b><span>report a problem or an idea, on any screen</span></li></ul>`)}
   <div class="gend"><button class="btn" id="gstart">${lang ? (S && S.setup ? "▶ Start learning" : "▶ Set up my plan") : "▶ Continue learning"}</button>
-    <button class="btn ghost" data-tour>🧭 Take the 30-second tour</button></div>
+    <button class="btn ghost" data-tour>🧭 Take the 1-minute tour</button></div>
   </div>`;
   window.scrollTo(0, 0);
   view().querySelector("#gback").onclick = () => (window.history.length > 1 ? window.history.back() : (location.hash = tree ? "#/home" : "#/today"));
@@ -2511,9 +2579,10 @@ function questToast(tr) { if (LF.doneToday(tr)) toast(`${tr.icon} ${LF.shown(tr)
 function amountSheet(tr, done) {
   const t = today();
   sheet(`<h2 style="margin-top:0">${tr.icon} ${esc(LF.shown(tr))}</h2><label class="f">How many ${esc(tr.unit)} today?</label>
-    <input id="amt" type="number" inputmode="numeric" min="0" value="${+tr.log[t] || ""}" placeholder="0">
+    <div class="crow"><button class="cbtn" data-cm="-1" aria-label="One less">−</button><input id="amt" type="number" inputmode="numeric" min="0" value="${+tr.log[t] || ""}" placeholder="0"><button class="cbtn" data-cm="1" aria-label="One more">+</button></div>
     <p class="muted small">Goal: ${tr.amount} ${esc(tr.unit)}.</p><button class="btn" id="ok">Save</button><button class="btn ghost" id="cx">Cancel</button>`, el => {
-    const i = el.querySelector("#amt"); i.focus();
+    const i = el.querySelector("#amt");
+    el.querySelectorAll("[data-cm]").forEach(b => (b.onclick = () => { i.value = Math.max(0, (parseInt(i.value, 10) || 0) + +b.dataset.cm); }));
     el.querySelector("#ok").onclick = () => { const n = Math.max(0, parseInt(i.value, 10) || 0); LF.checkIn(tr, t, n || null); closeSheet(); questToast(tr); done(); };
     el.querySelector("#cx").onclick = closeSheet;
   });
@@ -2559,20 +2628,27 @@ function sosView(tr, done) {
   root.querySelector("#close").onclick = close;
 }
 function shieldSheet(done = () => route()) {
-  const h = LF.H(), shop = LF.shieldShop();
-  const why = { full: `You already hold the most shields (${LF.SHIELD_MAX}).`, wait: `You can buy the next one on ${fmtDate(shop.next, { day: "numeric", month: "long" })}.`, gems: `You need 💎 ${shop.cost} (you have ${S.gems || 0}).` }[shop.why];
+  const h = LF.H(), cracked = LF.active().filter(tr => tr.st.cracked);
   sheet(`<h2 style="margin-top:0">🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</h2>
     <p class="small">A shield covers one missed or slipped day, so your run doesn't crack. It's used automatically.</p>
-    <ul class="small rules"><li><b>Earn</b> one for every D-rank gate (14 days) or higher you clear.</li>
-      <li><b>Buy</b> one for 💎 ${shop.cost}, at most once every ${LF.SHIELD_BUY_DAYS} days.</li>
+    <ul class="small rules"><li><b>Earned, never bought:</b> one for every D-rank gate (14 days) or higher you clear.</li>
       <li>One shield per gate per week, never two days in a row, and not on hard-mode gates.</li>
-      <li>No shield? The run <b>cracks ⚠</b> instead. A crack heals by itself after ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly goals). Miss twice in a row, or again while cracked, and the run breaks.</li></ul>
-    <button class="btn" id="buy" ${shop.ok ? "" : "disabled"}>Buy a shield · 💎 ${shop.cost}</button>
-    ${why ? `<p class="muted small" style="text-align:center">${why}</p>` : ""}<button class="btn ghost" id="cx">Close</button>`, el => {
-    el.querySelector("#buy").onclick = () => { if (LF.buyShield()) { closeSheet(); toast("🛡 Shield bought"); done(); } };
+      <li>No shield? The run <b>cracks ⚠</b> instead. A crack heals by itself after ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly goals). Miss twice in a row, or again while cracked, and the run breaks.</li>
+      <li><b>🩹 Heal a crack now</b> for 💎 ${LF.HEAL_COST}, at most once every ${LF.HEAL_BUY_DAYS} days.</li></ul>
+    ${cracked.map(tr => healButton(tr)).join("")}<button class="btn ghost" id="cx">Close</button>`, el => {
+    wireHeal(el, () => { closeSheet(); done(); });
     el.querySelector("#cx").onclick = closeSheet;
   });
 }
+function healButton(tr) {
+  const shop = LF.healShop(tr);
+  const why = { wait: `Next heal on ${fmtDate(shop.next, { day: "numeric", month: "long" })}.`, gems: `You need 💎 ${shop.cost} (you have ${S.gems || 0}).` }[shop.why];
+  return `<button class="btn" data-heal="${tr.id}" ${shop.ok ? "" : "disabled"}>🩹 Heal ${esc(LF.shown(tr))} · 💎 ${shop.cost}</button>${why ? `<p class="muted small" style="text-align:center;margin-top:2px">${why}</p>` : ""}`;
+}
+function wireHeal(el, after) {
+  el.querySelectorAll("[data-heal]").forEach(b => (b.onclick = () => { if (LF.healCrack(S.tracks[b.dataset.heal])) { toast("🩹 Crack healed"); after(); } }));
+}
+let rankSent = "";
 function lifeHome() {
   const h = LF.H(), t = today(), list = LF.todayList(), hu = hunter(), y = addDays(t, -1);
   const doneN = list.filter(tr => LF.doneToday(tr)).length;
@@ -2581,6 +2657,7 @@ function lifeHome() {
   const ended = Object.values(S.tracks).filter(tr => (tr.status === "cleared" || tr.status === "failed") && !tr.seen);
   const rest = LF.active().filter(tr => !list.includes(tr));
   const soon = LF.upcoming();
+  if (AUTH === "on" && !isGuest() && (userInfo(USER).avatar || {}).rank !== hu.rk && rankSent !== USER + hu.rk) { rankSent = USER + hu.rk; saveAvatar({ rank: hu.rk }); }   // the avatar frame follows your rank
   view().innerHTML = topRow() + guideCard() + lifeNav("home") + nudgeBanner() + `
   <div class="card hcard"><a href="#/hunter" class="emb-link">${rankEmblem(Math.min(100, hu.lv), "sm", hu.rk)}</a>
     <div class="grow"><div class="lv">Level <b>${hu.lv}</b> · ${hu.rk}-Rank Hunter</div><div class="hbar" style="margin-top:4px"><div style="width:${100 * hu.frac}%"></div></div>
@@ -2614,6 +2691,8 @@ function lifeGates() {
   const open = new Set(LF.active().map(tr => tr.template).filter(Boolean));
   view().innerHTML = topRow() + lifeNav("gates") + `
   <a class="card gnew" href="#/new"><span class="qic">✨</span><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div><span class="caret">›</span></a>
+  <div class="card rankstrip"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b class="small">Rank = length:</b>${LF.GATES.map(([d, g]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> ${d}d</span>`).join("")}</div>
+    <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎. D-rank and up also earn a 🛡.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
   <div class="sys-h" style="margin:14px 2px 6px">Gate board</div>
   ${lifeTemplates().map(tp => `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start"><span class="qic">${tp.icon}</span>
     <div class="grow"><b>${esc(tp.title)}</b> ${gateBadge(tp.days)}<div class="small muted">${esc(tp.blurb || "")}</div>
@@ -2687,6 +2766,38 @@ function lifeBuilder(arg) {
   };
   draw(); window.scrollTo(0, 0);
 }
+// the track page's main action (feedback 11-22: "mark as done is not clear"; count tracks get − / number / +)
+function bigAction(tr) {
+  const t = today(), v = tr.log[t], done = LF.doneToday(tr, t);
+  if (tr.auto === "learn") return `<div class="bigact ${done ? "ok" : ""}">${done ? "✓ Daily goal reached today" : "Ticks itself when you reach your LevelUp daily goal"}</div>`;
+  if (tr.kind === "abstain") {
+    if (v === true) return `<button class="btn bigdone ok" data-un="${tr.id}">✓ Clean today <span class="tiny">· tap to undo</span></button>`;
+    if (v === "slip") return `<div class="bigact bad">Slipped today. Tomorrow is a new day.</div>`;
+    return `<button class="btn bigdone" data-clean="${tr.id}">✓ Still clean today</button><button class="btn ghost" data-slip="${tr.id}" style="margin-top:6px">I slipped</button>`;
+  }
+  if ((tr.kind === "daily" && tr.amount) || tr.kind === "target") {
+    const n = +v || 0, goal = tr.kind === "daily" ? `Goal today: ${tr.amount} ${esc(tr.unit)}`
+      : tr.period === "week" ? `This week: ${LF.weekCount(tr, Math.floor(LF.dayNo(tr, t) / 7.0001))} / ${tr.amount} ${esc(tr.unit)}` : `In total: ${LF.totalCount(tr)} / ${tr.amount} ${esc(tr.unit)}`;
+    return `<div class="counter ${done ? "ok" : ""}"><div class="tiny muted">${tr.kind === "daily" ? "Today" : `${esc(tr.unit)} today`}</div>
+      <div class="crow"><button class="cbtn" data-cm="-1" aria-label="One less">−</button><input id="cnt" type="number" inputmode="numeric" min="0" value="${n}" aria-label="Count today">
+      <button class="cbtn" data-cm="1" aria-label="One more">+</button></div><div class="small ${done ? "okc" : "muted"}">${done ? "✓ " : ""}${goal}</div></div>`;
+  }
+  if (tr.kind === "daily") return `<button class="btn bigdone ${done ? "ok" : ""}" id="bigdone">${done ? `✓ Done today <span class="tiny">· tap to undo</span>` : "✓ Mark today as done"}</button>`;
+  return "";
+}
+function wireCounter(v, tr, rr) {
+  const i = v.querySelector("#cnt"); if (!i) return;
+  const t = today(), setTo = n => {
+    n = Math.max(0, Math.min(9999, n | 0)); const cur = +tr.log[t] || 0; if (n === cur) return;
+    const was = LF.doneToday(tr, t);
+    if (tr.kind === "target") LF.logUnits(tr, n - cur); else LF.checkIn(tr, t, n || null);
+    if (!was && LF.doneToday(tr, t)) toast(`${tr.icon} ${LF.shown(tr)} ✓`);
+    rr();
+  };
+  v.querySelectorAll("[data-cm]").forEach(b => (b.onclick = () => setTo((+tr.log[t] || 0) + +b.dataset.cm)));
+  i.onchange = () => setTo(parseInt(i.value, 10) || 0);
+  i.onkeydown = e => { if (e.key === "Enter") i.blur(); };
+}
 function lifeTrack(id) {
   const tr = S.tracks[id], t = today(), st = tr.st, end = LF.endDate(tr), n = LF.dayNo(tr, t);
   const frac = tr.kind === "milestone" ? tr.steps.filter(s => s.d).length / Math.max(1, tr.steps.length) : tr.kind === "target" && tr.period === "total" ? Math.min(1, LF.totalCount(tr) / tr.amount)
@@ -2714,11 +2825,11 @@ function lifeTrack(id) {
     <div class="grow"><div style="font-weight:800;font-size:calc(18px*var(--fs))">${tr.status === "active" ? trackLine(tr) : tr.status === "cleared" ? "Cleared ✓" : "Ended"}</div>
       ${end ? `<div class="tiny muted">${tr.status === "active" ? `Ends ${fmtDate(end, { day: "numeric", month: "long" })}` : ""}</div>` : ""}
       ${st.cracked ? `<div class="small crk">${crackText(tr)}</div>` : ""}</div></div>
-    ${tr.status === "active" ? `<div class="qrow solo">${questAction(tr)}</div>` : ""}
+    ${st.cracked && tr.status === "active" ? `<div style="margin-top:8px">${healButton(tr)}</div>` : ""}
+    ${tr.status === "active" && tr.start <= t ? bigAction(tr) : ""}
     <div class="tstats">${tr.kind === "daily" || tr.kind === "abstain" ? stat(st.run, "current run") + stat(Math.max(st.best, st.run), "best run") + stat(st.good, tr.kind === "abstain" ? "clean days" : "days done") : tr.kind === "target" ? stat(LF.totalCount(tr), `${tr.unit} logged`) + stat(st.good, "weeks hit") + stat(st.bad, "weeks missed") : stat(tr.steps.filter(s => s.d).length + " / " + tr.steps.length, "steps")}${stat(shieldsUsed, "🛡 used")}</div></div>
   ${tr.kind === "milestone" ? `<div class="card">${tr.steps.map((s, i) => `<label class="toggle"><span>${s.d ? "✅" : "⬜"} ${esc(s.t)}${s.d ? ` <span class="tiny muted">${fmtDate(s.d)}</span>` : ""}</span><input type="checkbox" data-step="${i}" ${s.d ? "checked" : ""} ${tr.status !== "active" ? "disabled" : ""}></label>`).join("")}</div>` : ""}
   ${cal ? `<div class="card"><div class="sys-h">Calendar</div>${cal}<div class="tiny muted lleg"><span><i class="ok"></i>done</span><span><i class="bad"></i>missed / slipped</span><span><i class="sh">🛡</i>shield</span></div></div>` : ""}
-  ${tr.kind === "target" && tr.status === "active" ? `<div class="row" style="gap:8px"><button class="btn ghost grow" id="m1" style="margin:0">−1 today</button><button class="btn grow" data-add="${tr.id}" style="margin:0">+1 ${esc(tr.unit)}</button></div>` : ""}
   ${tr.kind === "abstain" && tr.status === "active" ? `<button class="btn ghost sosbtn" data-sos="${tr.id}">🆘 Urge SOS</button>` : ""}
   ${tr.why ? `<div class="card"><div class="sys-h">Why I'm doing this</div><p style="margin:0">${esc(tr.why)}</p></div>` : ""}
   ${st.events.length ? `<div class="card"><div class="sys-h">History</div>${st.events.slice(-8).reverse().map(e => `<div class="small" style="margin:4px 0"><span class="muted">${fmtDate(e.d)}</span> · ${esc(e.txt)}</div>`).join("")}</div>` : ""}
@@ -2729,7 +2840,8 @@ function lifeTrack(id) {
   v.querySelector("#bx").onclick = () => (location.hash = "#/home");
   wireQuests(v, rr);
   v.querySelectorAll("[data-step]").forEach(c => (c.onchange = () => { LF.toggleStep(tr, +c.dataset.step); LF.settleAll(); rr(); }));
-  const m1 = v.querySelector("#m1"); if (m1) m1.onclick = () => { if (+tr.log[t] > 0) { LF.logUnits(tr, -1); rr(); } };
+  wireCounter(v, tr, rr); wireHeal(v, rr);
+  const bd = v.querySelector("#bigdone"); if (bd) bd.onclick = () => { LF.checkIn(tr, t, LF.doneToday(tr) ? null : true); questToast(tr); rr(); };
   v.querySelector("#ed").onclick = () => editTrackSheet(tr, rr);
   const gu = v.querySelector("#gu"); if (gu) gu.onclick = () => sheet(`<h2 style="margin-top:0">Give up this gate?</h2><p class="small">It moves to your record as ended. You keep the XP you earned.</p>
     <button class="btn" id="y" style="background:var(--red)">Give up</button><button class="btn ghost" id="n">Keep going</button>`, el => {
@@ -2779,7 +2891,7 @@ function lifeHunter() {
     ${h.titles.length ? `<div class="chips" style="justify-content:center;margin-top:10px">${h.titles.map(t => `<span class="chipx on">🏅 ${esc(t)}</span>`).join("")}</div>` : ""}</div>
   <div class="card"><div class="sys-h">Stats</div>${radarSVG(vals, max)}<p class="tiny muted" style="text-align:center;margin:0">Each gate trains one stat. A balanced shape beats one huge spike.</p></div>
   <div class="card"><div class="tstats">${[[h.cleared, "gates cleared"], [Object.values(S.tracks).filter(t => t.status === "failed").length, "gates failed"], [streak(), "day streak"], [LF.totalLifeXP() + otherXP(), "all XP (incl. learning)"]].map(([v, l]) => `<div class="tstat"><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>
-  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earn by clearing D-rank gates; buy at most once every 2 weeks.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
+  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earned only, by clearing D-rank gates or higher.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
   <div class="card"><label class="toggle"><span><b>⚡ System mode</b><div class="small muted">A missed day gives you a penalty quest for the next day. Doing it heals the crack at once.</div></span><input type="checkbox" id="sys" ${h.system ? "checked" : ""}></label>
     ${rem ? `<label class="f">Daily reminder (this phone)</label><select id="rem"><option value="">Off</option>${["07:00", "08:00", "12:00", "18:00", "20:00", "21:00", "22:00"].map(x => `<option ${remAt === x ? "selected" : ""}>${x}</option>`).join("")}</select>
       <p class="tiny muted" style="margin:4px 0 0">Only if some of today's quests are still open.</p>` : ""}</div>
@@ -2806,7 +2918,7 @@ function lifeCompare(box, people, all) {
   const mine = new Set(LF.active().map(t => t.party || "").filter(Boolean));
   box.innerHTML = `<div id="pgates"></div><div class="card"><div class="sys-h">Hunter's Path</div><table class="cmp"><tr><th></th>${rows.map(r => `<th>${avatar(r.u.id, true)}<div class="tiny">${esc(r.u.name)}</div></th>`).join("")}</tr>
     <tr><td>Level</td>${rows.map(r => cell(r, "lv", (v, s) => `${v} · ${s.rank}`)).join("")}</tr><tr><td>Gates cleared</td>${rows.map(r => cell(r, "cleared")).join("")}</tr>
-    <tr><td>Open gates</td>${rows.map(r => cell(r, "open")).join("")}</tr><tr><td>Hunter XP</td>${rows.map(r => cell(r, "xp")).join("")}</tr></table></div>
+    <tr><td>Gates in progress</td>${rows.map(r => cell(r, "open")).join("")}</tr><tr><td>Hunter XP</td>${rows.map(r => cell(r, "xp")).join("")}</tr></table></div>
     ${rows.filter(r => r.u.id !== USER && r.s.pub.length).map(r => `<div class="card"><div class="sys-h">${esc(r.u.name)}'s gates</div>${r.s.pub.map(t => `<div class="recrow"><span>${t.icon}</span>
       <span class="grow">${esc(t.alias || t.title)} ${gateBadge(t.days)}<div class="tiny muted">${t.days ? `Day ${Math.min(t.days, daysBetween(t.start, today()) + 1)} / ${t.days}` : "No end"} · run ${(t.st || {}).run || 0}</div></span>
       ${mine.has(`${r.u.id}:${t.id}`) ? `<span class="tiny okc">Joined ✓</span>` : `<button class="btn sm" data-join="${r.u.id}:${t.id}" style="width:auto;margin:0">Join</button>`}</div>`).join("")}</div>`).join("")}`;
@@ -2826,15 +2938,21 @@ function lifeSnapshot() {
   return { items, level: hu.lv, rank: hu.rk, frac: hu.frac, shields: LF.H().shields, streak: streak(), gems: S.gems || 0, open: items.filter(i => !i.done).length };
 }
 
+// Hunter's Path tour (feedback 11-22: explain what gates are and what the ranks mean)
 function lifeSteps() {
+  const ladder = LF.GATES.map(([d, g]) => `<div class="tl-row"><span class="gbadge g-${g}">${g}</span><span class="grow">${d} days</span><span class="tiny muted">+${LF.GATE_REWARD[g][0]} XP · 💎 ${LF.GATE_REWARD[g][1]}${"DCBAS".includes(g) ? " · 🛡" : ""}</span></div>`).join("");
+  const hr = [["E", 1], ["D", 10], ["C", 25], ["B", 45], ["A", 70], ["S", 95]].map(([g, l]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> Lv ${l}</span>`).join("");
   return [
-    { title: "Welcome to Hunter's Path ⚔️", text: "Your own goals as quests and dungeons: habits to build, things to quit, targets and big goals. Tap <b>Show me</b>." },
-    { sel: ".hcard", title: "Your Hunter level", text: "Every check-in earns XP. Level up and climb from E-Rank to S-Rank. 🛡 shields, 🔥 streak and 💎 diamonds sit here." },
-    { sel: ".lnav", title: "Today · Gates · Hunter · Party", text: "<b>Today</b> has your check-ins. <b>Gates</b> is the board of challenges. <b>Hunter</b> shows your stats. <b>Party</b> lets friends join your gates." },
-    { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Missed yesterday? You can still answer it until midnight." },
-    { sel: "#shl", title: "Shields 🛡", text: "A shield covers one missed day. Earn them by clearing gates; you can buy one only every 2 weeks. No shield? The run cracks ⚠ and heals after a week of good days." },
-    { sel: ".lnav a[href='#/gates']", title: "Open a gate", text: "Pick a ready-made challenge (30 days without porn, a book a week, gym 3× a week…) or build your own." },
-    { title: "You're ready 🎉", text: `Open the gate board and enter your first gate.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read how Hunter's Path works</button>` },
+    { title: "Welcome to Hunter's Path ⚔️", text: "Your own goals, played like a game: habits to build, things to quit, targets and big goals. A 1-minute tour." },
+    { title: "What is a gate? 🌀", text: "A <b>gate</b> is a challenge you enter for a set number of days, like <i>Gym 3× a week for 8 weeks</i> or <i>Read every day for 30 days</i>.<br><br>Check in on every day you do it. Reach the last day without breaking your run and the gate is <b>cleared</b> 🏆." },
+    { title: "Gate ranks: E to S", text: `The longer the gate, the higher its rank and the bigger the reward:<div class="tl">${ladder}</div><span class="tiny muted">🛡 = clearing it also earns a shield.</span>` },
+    { sel: ".hcard", title: "Your Hunter rank", text: `Separate from gate ranks: every check-in earns XP, XP raises your <b>level</b>, and your level sets your rank.<div class="tl-chips">${hr}</div>` },
+    { title: "Miss a day? ⚠", text: "First miss: a 🛡 shield covers it, or the run <b>cracks</b>. A crack heals after 7 good days in a row (or right away for 💎).<br><br>Miss <b>twice in a row</b>, or again while cracked, and the gate fails. You keep all XP you earned and can re-enter." },
+    { sel: "#shl", title: "Shields 🛡", text: "You hold up to 2. They're <b>earned only</b>, by clearing D-rank gates or higher. They can't be bought." },
+    { sel: ".lnav", title: "Today · Gates · Hunter · Party", text: "<b>Today</b>: your check-ins. <b>Gates</b>: the board of challenges. <b>Hunter</b>: your stats and rank. <b>Party</b>: run gates together; the whole team must survive." },
+    { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Forgot yesterday? You can still answer it today." },
+    { sel: ".lnav a[href='#/gates']", title: "Enter your first gate", text: "Pick a ready-made challenge (a book a week, gym 3× a week, no sugar…) or build your own. Start small: an E-rank gate is just 7 days." },
+    { title: "You're ready 🎉", text: `Go clear your first gate.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read how Hunter's Path works</button>` },
   ];
 }
 function lifeGuide() {
@@ -2846,13 +2964,14 @@ function lifeGuide() {
   ${sec("🎯", "What it's for", `<p>Set goals for your life, not just your lessons: build a habit, quit something, hit a target, reach a big goal. Each one is a <b>gate</b> (a dungeon) you enter, check in on every day, and clear.</p>`)}
   ${sec("🧩", "Four kinds of gate", `
     ${idea(1, "✅", "Daily", "Do it on set days: read 20 minutes, 50 push-ups, meditate.")}
-    ${idea(2, "🛡", "Quit", "A clean run: no porn, no sugar, no phone after 22:00. Check in “still clean” each day.")}
+    ${idea(2, "🛡", "Quit", "A clean run: no sugar, no smoking, no phone after 22:00. Check in “still clean” each day.")}
     ${idea(3, "🎯", "Target", "An amount per week or in total: 1 book a week, gym 3 times a week.")}
     ${idea(4, "🏔", "Big goal", "Steps by a date: run a 10K.")}`)}
   ${sec("🌀", "Gates and ranks", `<p>Longer gates rank higher: <b>E</b> 7 days, <b>D</b> 14, <b>C</b> 30, <b>B</b> 60, <b>A</b> 90, <b>S</b> 180. Clearing one pays XP and 💎, and D-rank or higher also gives a 🛡 shield. Fail a gate and you keep the XP you earned; re-enter it right away.</p>`)}
   ${sec("🛡", "Shields and cracks", `<ul class="gtips">
     ${tip(true, "A <b>shield</b> covers one missed or slipped day automatically, so the run goes on.")}
-    ${tip(true, "Hold at most <b>2</b>. Earn them by clearing gates; buy one with 💎 <b>at most once every 2 weeks</b>.")}
+    ${tip(true, "Hold at most <b>2</b>. Shields are <b>earned only</b>, by clearing D-rank gates or higher. They can't be bought.")}
+    ${tip(true, `Cracked? You can <b>heal it at once for 💎 ${LF.HEAL_COST}</b>, at most once every 2 weeks.`)}
     ${tip(true, "No shield? The run <b>cracks ⚠</b>. A crack heals by itself after <b>7 good days</b> in a row (2 good weeks for weekly targets).")}
     ${tip(false, "Miss <b>twice in a row</b>, or again while cracked, and the run breaks. Shields never cover two days in a row, or the same gate twice in a week.")}</ul>`)}
   ${sec("🆘", "Hard goals", `<p>Quit gates can be <b>private</b> and shown under a neutral name. When an urge hits, the <b>Urge SOS</b> button gives you 90 seconds of breathing, your own reason, and a quick task. A slip is met with support, not shame: your best run and calendar stay. If it feels bigger than a habit, talk to a doctor or counsellor; LevelUp isn't a medical tool.</p>`)}
@@ -2862,7 +2981,7 @@ function lifeGuide() {
     ${tip(true, "Write your <b>why</b>. It's shown when it gets hard.")}
     ${tip(true, "Turn on <b>System mode</b> on the Hunter page if you want penalty quests after a miss.")}
     ${tip(false, "Don't tick quests you didn't do. The only person it fools is you.")}</ul>`)}
-  <div class="gend"><a class="btn" href="#/gates" style="display:block;text-align:center;text-decoration:none">🌀 Open the gate board</a><button class="btn ghost" data-tour>🧭 Take the 30-second tour</button></div></div>`;
+  <div class="gend"><a class="btn" href="#/gates" style="display:block;text-align:center;text-decoration:none">🌀 Open the gate board</a><button class="btn ghost" data-tour>🧭 Take the 1-minute tour</button></div></div>`;
   window.scrollTo(0, 0);
   view().querySelector("#gback").onclick = () => (window.history.length > 1 ? window.history.back() : (location.hash = "#/home"));
 }

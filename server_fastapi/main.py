@@ -97,6 +97,7 @@ class User(BaseModel):
     name: str
     color: str
     demo: bool | None = None
+    avatar: dict | None = None   # {"sym": "⚔️", "color": "#rrggbb", "rank": "E".."S"} (party avatars, feedback 11-22)
 
 
 class StateEnvelope(BaseModel):
@@ -202,7 +203,7 @@ def logged_in(request: Request, uid: str) -> JSONResponse:
     """Response that starts a session for uid (cookie) and returns the profile."""
     token = auth.new_session(DATA, uid)
     u = next(x for x in users() if x["id"] == uid)
-    r = JSONResponse({k: u[k] for k in ("id", "name", "color")})
+    r = JSONResponse({k: u[k] for k in ("id", "name", "color", "avatar") if k in u})
     r.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_DAYS * 86400, httponly=True, samesite="lax",
                  secure=is_https(request), path="/")
     return r
@@ -227,6 +228,12 @@ class SignupIn(BaseModel):
     username: str = Field(..., pattern=r"^[A-Za-z0-9_-]{3,32}$", description="3-32 letters, digits, _ or -")
     name: str = Field(..., min_length=1, max_length=40)
     password: str = Field(..., min_length=auth.MIN_PASSWORD, max_length=200)
+
+
+class AvatarIn(BaseModel):
+    sym: str | None = Field(None, max_length=8)
+    color: str | None = Field(None, pattern=r"^#[0-9a-fA-F]{6}$")
+    rank: str | None = Field(None, pattern=r"^[EDCBAS]$")
 
 
 class PasswordIn(BaseModel):
@@ -310,6 +317,31 @@ def auth_password(request: Request, body: PasswordIn):
     auth.set_password(DATA, uid, body.new)
     auth.end_other_sessions(DATA, uid, request.cookies.get(auth.COOKIE))
     return {"ok": True}
+
+
+@app.post("/api/auth/avatar", response_model=User, responses={401: {"model": ErrorOut}}, tags=["accounts"])
+def auth_avatar(request: Request, body: AvatarIn):
+    """Set your party avatar: a symbol, a colour, and the Hunter rank that picks its frame (fields left out are kept)."""
+    uid = me(request)
+    if not uid:
+        return err("login required", 401)
+    if body.sym and any(c in body.sym for c in "<>&\"'"):
+        return err("bad symbol", 400)
+    with lock_for("__users__"):
+        us = users()
+        u = next((x for x in us if x["id"] == uid), None)
+        if not u:
+            return err("no such learner", 404)
+        av = dict(u.get("avatar") or {})
+        av.update({k: v for k, v in body.model_dump().items() if v is not None})
+        if not (av.get("sym") or "").strip():
+            av.pop("sym", None)   # "" = back to the initial
+        u["avatar"] = av
+        tmp = USERS_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(us, f, indent=1, ensure_ascii=False)
+        os.replace(tmp, USERS_FILE)
+    return u
 
 
 @app.get("/api/users", response_model=list[User], response_model_exclude_none=True, tags=["learners"])

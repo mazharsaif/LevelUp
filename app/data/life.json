@@ -2,8 +2,6 @@
   "_help": "Hunter's Path (personal tracks). templates = the gate board; every field can be changed in the builder. kind: daily | abstain | target | milestone. days: gate length (null = no end). schedule: Mon..Sun (daily). amount/unit: per day (daily) or per period (target). period: week | total. stat: body | mind | discipline | health. Design: docs/design/personal-tracks.md",
   "title": "Hunter's Path",
   "templates": [
-    { "id": "nofap30", "title": "30 days without porn", "alias": "Clean run", "icon": "🛡", "kind": "abstain", "days": 30, "stat": "discipline", "private": true,
-      "why": "Why do you want this? Write it for the moment an urge hits.", "penalty": "20 push-ups and a cold shower", "blurb": "Check in each evening. The SOS button helps when an urge hits." },
     { "id": "book4", "title": "1 book a week for a month", "icon": "📚", "kind": "target", "days": 28, "period": "week", "amount": 1, "unit": "book", "stat": "mind",
       "penalty": "Read 30 minutes", "blurb": "Log a book when you finish it. One per week, four weeks." },
     { "id": "meditate30", "title": "Meditate 10 minutes a day", "icon": "🧘", "kind": "daily", "days": 30, "stat": "mind", "penalty": "Meditate 15 minutes", "blurb": "Ten minutes of quiet, every day for a month." },

@@ -6,14 +6,15 @@
 //   good  → run +1; a crack heals after 7 good days (2 good weeks) in a row
 //   bad   → a shield covers it if one is free, else the run cracks (⚠); never miss twice: a second bad slot in a row,
 //           or a bad slot while cracked, breaks the run (a gate fails; an open-ended track starts a new run).
-// Shields (anti-abuse, feedback 11-22): hold at most 2; earned by clearing a D-rank gate or better; bought with 💎 at most
-// once every 14 days; a track can use one at most once a week; never two slots in a row; never on hard-mode tracks.
+// Shields (anti-abuse, feedback 11-22): hold at most 2; earned only, by clearing a D-rank gate or better (no buying, feedback
+// 11-22b); a track can use one at most once a week; never two slots in a row; never on hard-mode tracks.
+// 💎 can instead heal a crack at once (healCrack), at most once every 14 days.
 import { S, save, today, addDays, daysBetween, parse } from "./store.js";
 
 export const STATS = { body: ["💪", "Body"], mind: ["🧠", "Mind"], discipline: ["🛡", "Discipline"], health: ["❤️", "Health"] };
 export const GATES = [[7, "E"], [14, "D"], [30, "C"], [60, "B"], [90, "A"], [180, "S"]];
 export const GATE_REWARD = { E: [50, 5], D: [100, 10], C: [250, 25], B: [500, 50], A: [900, 80], S: [2000, 150] }; // [XP, 💎]
-export const SHIELD_MAX = 2, SHIELD_COST = 40, SHIELD_BUY_DAYS = 14, SHIELD_TRACK_DAYS = 7, HEAL_DAYS = 7, HEAL_WEEKS = 2;
+export const SHIELD_MAX = 2, HEAL_COST = 40, HEAL_BUY_DAYS = 14, SHIELD_TRACK_DAYS = 7, HEAL_DAYS = 7, HEAL_WEEKS = 2;
 export const XP = { day: 5, unit: 2, week: 15, urge: 2, penalty: 3, step: 20, allDone: 5 };
 export const TITLES = [[1, "Gate Opener"], [3, "Dungeon Runner"], [5, "Gatebreaker"], [10, "Raid Leader"], [20, "Monarch"]]; // gates cleared
 
@@ -23,7 +24,7 @@ export const H = () => {
   S.hunter = S.hunter || {};
   const h = S.hunter;
   if (S.settings && S.settings.quest !== false) S.settings.quest = false; // streak = any day with a check-in (no daily XP goal here)
-  h.shields ??= 0; h.boughtAt ??= null; h.stats ??= {}; h.cleared ??= 0; h.titles ??= []; h.log ??= []; h.system ??= false; h.allDone ??= {};
+  h.shields ??= 0; h.healAt ??= null; h.stats ??= {}; h.cleared ??= 0; h.titles ??= []; h.log ??= []; h.system ??= false; h.allDone ??= {};
   return h;
 };
 const note = (d, why, n = 0) => { const h = H(); h.log.push({ d, why, n }); if (h.log.length > 300) h.log = h.log.slice(-300); };
@@ -238,17 +239,17 @@ function dailyAll() {
 export const active = () => Object.values(H() && S.tracks).filter(tr => tr.status === "active" && tr.start <= today());
 export const todayList = () => active().filter(tr => tr.kind === "target" || tr.kind === "milestone" || scheduled(tr, today()));
 
-// ---------- shields ----------
-export function shieldShop() {
+// ---------- crack heal (💎): shields can't be bought, but a crack can be healed at once, at most once every 14 days ----------
+export function healShop(tr) {
   const h = H(), t = today();
-  const next = h.boughtAt ? addDays(h.boughtAt, SHIELD_BUY_DAYS) : t;
-  const why = h.shields >= SHIELD_MAX ? "full" : next > t ? "wait" : (S.gems || 0) < SHIELD_COST ? "gems" : null;
-  return { ok: !why, why, next, cost: SHIELD_COST };
+  const next = h.healAt ? addDays(h.healAt, HEAL_BUY_DAYS) : t;
+  const why = !tr || !tr.st.cracked || tr.status !== "active" ? "none" : next > t ? "wait" : (S.gems || 0) < HEAL_COST ? "gems" : null;
+  return { ok: !why, why, next, cost: HEAL_COST };
 }
-export function buyShield() {
-  const s = shieldShop(); if (!s.ok) return false;
-  const h = H(); S.gems -= SHIELD_COST; h.shields++; h.boughtAt = today();
-  (S.gemLog = S.gemLog || []).push({ d: today(), n: -SHIELD_COST, why: "Shield bought" }); note(today(), "🛡 bought"); save();
+export function healCrack(tr) {
+  const s = healShop(tr); if (!s.ok) return false;
+  const h = H(), t = today(); h.healAt = t; tr.st.cracked = null;
+  gems(-HEAL_COST, "Crack healed"); note(t, `🩹 crack healed: ${shown(tr)}`); ev(tr, t, "heal", `Healed with 💎 ${HEAL_COST}.`); save();
   return true;
 }
 

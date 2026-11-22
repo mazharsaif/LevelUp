@@ -2,7 +2,7 @@
 
 Status: **built 22 Nov 2026** (release 2026.11.22.09). Code: `app/js/life.js` (rules), `lifeRoute()` and friends in `app/js/app.js` (screens), `app/data/life.json` (gate board), `native/.../widget/LifeWidget.kt` (widget, reminder).
 
-**Shield rules as built (anti-abuse):** hold at most 2 · earned only by clearing a D-rank gate (14 days) or higher · bought with 💎 40 at most once every 14 days · one shield per gate per week · never two missed days in a row (the second one cracks) · never on hard-mode gates. Without a shield a miss **cracks** the run; a crack **heals by itself after 7 good days in a row** (2 good weeks for weekly targets), or at once by doing the penalty quest in System mode. Two misses in a row, or a miss while cracked, break the run.
+**Shield rules as built (anti-abuse):** hold at most 2 · earned only, by clearing a D-rank gate (14 days) or higher (never bought, feedback 11-22) · one shield per gate per week · never two missed days in a row (the second one cracks) · never on hard-mode gates. Without a shield a miss **cracks** the run; a crack **heals by itself after 7 good days in a row** (2 good weeks for weekly targets), or at once by doing the penalty quest in System mode, or by paying 💎 40 (at most once every 14 days). Two misses in a row, or a miss while cracked, break the run.
 
 LevelUp already turns *learning* into a Solo Leveling style game: daily quest, XP, levels, E → S ranks, streaks,
 diamonds, gift boxes, parties and widgets. This plan adds **personal tracks**: goals the learner sets for their own
@@ -57,7 +57,7 @@ it or *fail* it. Gate rank comes from its length and difficulty:
 Daily tracks without an end date are fine too: they just have no gate rank.
 
 ### Forgiving rules (the default)
-- **Shields 🛡** (like Duolingo's streak freeze): earned by clearing a gate or bought with 💎. One shield is used
+- **Shields 🛡** (like Duolingo's streak freeze): earned by clearing a gate (not bought; 💎 can heal a crack instead). One shield is used
   automatically on a missed or slipped day, so the run continues. Hard mode turns shields off.
 - **Never miss twice:** one miss without a shield "cracks" the run (it shows ⚠ and the run continues); a second miss in a
   row breaks it. A broken run never erases history: "best run 23 days" and the calendar stay.
