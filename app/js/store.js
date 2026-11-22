@@ -1,5 +1,6 @@
 // State per user (saved on the Mac via server.py, cached in the browser), spaced repetition, A1 progress / pace maths.
 import { setLang } from "./lang.js";
+import { mergeStates } from "./merge.js";
 export const C = { content: null, course: null, word: {}, item: {}, grammar: {}, phrases: {} };
 
 // ---------- courses (German A1 now; more languages / subjects later) ----------
@@ -295,7 +296,20 @@ function normalize(st) {
   return st;
 }
 
-// Load a user's state: newest of server copy and browser cache wins.
+// Load a user's state. syncBase = the server's `updated` at the last sync: if only one copy changed since then, that copy
+// wins; if both changed (e.g. the phone was offline while the website saved), they are merged (merge.js).
+const pendingLocal = st => !!st && (st.updated || 0) > (st.syncBase || 0);
+const serverMoved = (st, server) => !!server && (server.updated || 0) > ((st && st.syncBase) || 0);
+function pick(local, server) {
+  if (!server) return { st: local, push: !!local };
+  if (!local) return { st: server, push: false };
+  if (pendingLocal(local) && serverMoved(local, server)) {               // both changed: merge, then upload the result
+    const m = mergeStates(local, server); m.updated = Date.now(); m.syncBase = server.updated || 0;
+    return { st: m, push: true, merged: true };
+  }
+  if (pendingLocal(local) && (local.updated || 0) >= (server.updated || 0)) return { st: local, push: true };
+  return { st: { ...server, syncBase: server.updated || 0 }, push: false };
+}
 export async function switchUser(id) {
   if (S && USER && SYNC.pending) { clearTimeout(timer); await push(); } // flush the previous learner first
   USER = id; ls.set("a1.user", id);
@@ -309,10 +323,12 @@ export async function switchUser(id) {
   // one-time migration of progress made before profiles existed
   const legacy = JSON.parse(ls.get(LEGACY) || "null");
   if (!server && !local && legacy && legacy.setup && id === USERS[0].id) { local = legacy; local.updated = Date.now(); ls.del(LEGACY); }
-  S = normalize((server && (!local || (server.updated || 0) >= (local.updated || 0))) ? server : local);
+  const p = pick(local, server);
+  S = normalize(p.st);
   ls.set(cacheKey(id), JSON.stringify(S));
   checkMissed();
-  if (local && (!server || (local.updated || 0) > (server.updated || 0))) push(); // local is newer: upload it
+  if (p.merged) window.dispatchEvent(new Event("a1:merged"));
+  if (p.push) push(); // local changes (or a merge) to upload
   return S;
 }
 // Switch the active course for the current learner: save the old course first, then load the new one's content + progress.
@@ -336,17 +352,20 @@ export function save() {
   clearTimeout(timer);
   timer = setTimeout(push, 600);
 }
-export async function push() {
+export async function push(retried = false) {
   if (!S || !USER || isGuest()) return;
   const u = USER, body = JSON.stringify(S);
   try {
     const r = await fetch(`api/state/${u}` + cq(), { method: "PUT", headers: { "Content-Type": "application/json" }, body });
     if (r.status === 401 || r.status === 403) { SYNC.pending = true; authLost(); return; } // kept locally; saved after the next login
     const j = await r.json();
-    if (r.status === 409 && j.state && u === USER) { // a newer copy exists (other device) – take it
-      S = normalize(j.state); ls.set(cacheKey(u), JSON.stringify(S));
+    if (r.status === 409 && j.state && u === USER) { // the server has a newer copy (other device): merge both, upload the result
+      const p = pick(S, j.state);
+      S = normalize(p.st); ls.set(cacheKey(u), JSON.stringify(S));
       window.dispatchEvent(new Event("a1:state-replaced"));
-    }
+      if (p.merged) window.dispatchEvent(new Event("a1:merged"));
+      if (p.push && !retried) return push(true);
+    } else if (r.ok && u === USER && S) { S.syncBase = JSON.parse(body).updated || 0; ls.set(cacheKey(u), JSON.stringify(S)); }
     SYNC.online = true; SYNC.pending = false; SYNC.last = Date.now();
   } catch { SYNC.online = false; SYNC.pending = true; }
   window.dispatchEvent(new Event("a1:sync"));
@@ -359,17 +378,17 @@ export async function refreshFromServer() {
   try {
     const r = await fetch(`api/state/${USER}` + cq(), { cache: "no-store" });
     const s = (await r.json()).state; SYNC.online = true;
-    if (s && (s.updated || 0) > (S.updated || 0)) { S = normalize(s); ls.set(cacheKey(USER), JSON.stringify(S)); checkMissed(); return true; }
+    if (s && (s.updated || 0) > (S.updated || 0)) { const p = pick(S, s); S = normalize(p.st); ls.set(cacheKey(USER), JSON.stringify(S)); checkMissed(); if (p.push) push(); return true; }
     if (checkMissed()) return true;
   } catch { SYNC.online = false; }
   return false;
 }
-export function resetAll() { const st = S.settings; S = blank(); S.settings = { ...st }; save(); }
+export function resetAll() { const st = S.settings, base = S.syncBase; S = blank(); S.settings = { ...st }; S.resetAt = Date.now(); S.syncBase = base; save(); }
 export function exportState() { return JSON.stringify(S, null, 1); }
 export function importState(txt) {
   const o = JSON.parse(txt);
   if (!o || !o.settings || !o.words) throw new Error("Not a backup file");
-  S = normalize(o); save();
+  const base = S ? S.syncBase : 0; S = normalize(o); S.resetAt = Date.now(); S.syncBase = base; save();   // a restored backup wins over older copies
 }
 
 // ---------- XP / streak ----------

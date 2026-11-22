@@ -104,6 +104,7 @@ export function doneToday(tr, d = today()) {
 // ---------- settle: apply finished slots (shields, cracks, heals, breaks) ----------
 export function settleAll() {
   H(); let changed = false;
+  for (const tr of Object.values(S.tracks)) if (tr._resettle) { resettle(tr); changed = true; }
   for (const tr of Object.values(S.tracks)) if (tr.status === "active" && settle(tr)) changed = true;
   if (changed) save();
   return changed;
@@ -177,8 +178,21 @@ function fail(tr, d, why) {
   tr.status = "failed"; tr.ended = d; tr.st.pendingPen = null;
   ev(tr, d, "fail", why);
 }
+// after two copies were merged (merge.js): work the run out again from the merged check-ins. Shields this track used
+// are given back first and used again where the rules say so; a clear that was already paid isn't paid twice.
+function resettle(tr) {
+  delete tr._resettle;
+  if (tr.status === "archived") return;
+  const h = H(), used = Object.keys(tr.st.shielded || {}).length;
+  h.shields = Math.min(SHIELD_MAX + used, h.shields + used);
+  tr.status = "active"; delete tr.ended;
+  tr.st = { settled: addDays(tr.start, -1), run: 0, best: 0, good: 0, bad: 0, cracked: null, prevBad: false, prevShield: false, lastShield: null, shielded: {}, pendingPen: null, events: [] };
+  settle(tr);
+  h.shields = Math.min(SHIELD_MAX, h.shields);
+}
 function clear(tr, d) {
   tr.status = "cleared"; tr.ended = d;
+  if (tr.reward) { ev(tr, d, "clear", `${tr.reward.g}-rank gate cleared`); return; }   // already paid (e.g. re-checked after a merge)
   const g = gateRank(tr.days || daysBetween(tr.start, d) + 1) || "E", [x, dm] = GATE_REWARD[g];
   award(x, tr.stat, `Gate cleared: ${shown(tr)}`); gems(dm, `${g}-rank gate cleared`);
   const h = H(); h.cleared++;

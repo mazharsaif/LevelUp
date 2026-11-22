@@ -2977,3 +2977,5 @@ async function checkNudges() {
     if (n.length) toast(`🔔 ${n[0].fromName} nudged you: check in on ${n[0].title} (Hunter's Path)`); } catch { /* offline */ }
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { checkNudges(); if (isLife() && S) syncPartyGates().then(() => { if (/^#\/(home)?$/.test(location.hash || "#/home") && !document.querySelector("#sheet-root .sheet-bg")) lifeHome(); }); } });
+// two devices changed progress at the same time (e.g. the phone was offline): both were kept (merge.js)
+window.addEventListener("a1:merged", () => toast("🔄 Progress from your other device was merged"));
