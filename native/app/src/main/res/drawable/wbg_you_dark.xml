@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- home-screen widget background (wbg_you_dark), see docs/design/widgets -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="22dp" />
+    <solid android:color="#FF1D1B20" />
+    <stroke android:width="0dp" android:color="#00000000" />
+</shape>

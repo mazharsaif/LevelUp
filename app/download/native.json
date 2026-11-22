@@ -1,6 +1,6 @@
 {
- "versionCode": 2026112202,
- "versionName": "2026.11.22.02",
+ "versionCode": 2026112203,
+ "versionName": "2026.11.22.03",
  "url": "download/levelup-native.apk",
- "notes": "The app is now called just \"LevelUp\"."
+ "notes": "Home-screen widgets: long-press your home screen \u2192 Widgets \u2192 LevelUp (Today's quest, Rank, Continue, Review, Streak, Word of the day and more)."
 }

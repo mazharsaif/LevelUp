@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="w_quest">Today\'s quest</string>
+    <string name="w_quest_desc">Daily XP ring, lesson parts, streak and words due</string>
+    <string name="w_rank">Rank</string>
+    <string name="w_rank_desc">Your rank, level and aura, and the bar to the next rank</string>
+    <string name="w_continue">Continue</string>
+    <string name="w_continue_desc">One tap into your next lesson part</string>
+    <string name="w_review">Review due</string>
+    <string name="w_review_desc">Words due for review, before they fade</string>
+    <string name="w_streak">Streak</string>
+    <string name="w_streak_desc">Your streak and this week\'s goal days</string>
+    <string name="w_word">Word of the day</string>
+    <string name="w_word_desc">A new word every day, with audio</string>
+    <string name="w_glance">LevelUp at a glance</string>
+    <string name="w_glance_desc">Date, streak, XP to go and words due, on your wallpaper</string>
+    <string name="w_ring">XP ring</string>
+    <string name="w_ring_desc">Today\'s XP ring and streak, in one cell</string>
+    <string name="w_actions">Quick actions</string>
+    <string name="w_actions_desc">Start the next part or review in one tap</string>
+</resources>

@@ -94,10 +94,11 @@ class MainActivity : ComponentActivity() {
             // WebView has no Web Share API: route the invite through Android's share sheet
             WebViewCompat.addDocumentStartJavaScript(web, """
                 if (!navigator.share) navigator.share = d => { LevelUpNative.share([d && d.text, d && d.url].filter(Boolean).join("\n")); return Promise.resolve(); };
-                // WebView has no Web Speech recognition: give the page the same API, backed by Android's SpeechRecognizer
-                if (!window.SpeechRecognition && !window.webkitSpeechRecognition && LevelUpNative.speechAvailable()) {
+                // WebView's Web Speech recognition doesn't work (newer ones expose it but fail with "not-allowed"):
+                // always give the page the same API, backed by Android's SpeechRecognizer
+                if (LevelUpNative.speechAvailable()) {
                   const live = {};
-                  window.webkitSpeechRecognition = class {
+                  window.SpeechRecognition = window.webkitSpeechRecognition = class {
                     constructor() { this.lang = "de-DE"; this.maxAlternatives = 5; this.interimResults = false; this._id = String(Math.random()).slice(2); }
                     start() { live[this._id] = this; LevelUpNative.speechStart(this._id, this.lang, this.maxAlternatives || 5); }
                     stop() { LevelUpNative.speechStop(this._id); }
@@ -133,10 +134,21 @@ class MainActivity : ComponentActivity() {
             // the page manages its own history (closing sheets, "quit this lesson?", "swipe back again to close")
             override fun handleOnBackPressed() { if (web.canGoBack()) web.goBack() else finish() }
         })
-        if (savedInstanceState == null || web.restoreState(savedInstanceState) == null) load()
+        val route = routeOf(intent)
+        if (route != null || savedInstanceState == null || web.restoreState(savedInstanceState) == null) load(route)
+        de.com.levelup.app.widget.Widgets.schedule(this)
     }
 
-    private fun load() = web.loadUrl(home.buildUpon().appendQueryParameter("src", "native").build().toString())
+    /** widget tap: levelup://open/<route> → the web route #/<route> (e.g. go/next, go/review, ranks) */
+    private fun routeOf(i: Intent?): String? = i?.data?.takeIf { it.scheme == "levelup" }?.path?.trim('/')?.takeIf { it.isNotBlank() }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val r = routeOf(intent) ?: return
+        if (::web.isInitialized && web.url?.startsWith(home.toString()) == true) web.evaluateJavascript("location.hash = ${JSONObject.quote("#/$r")}", null)
+        else load(r)
+    }
+
+    private fun load(route: String? = null) = web.loadUrl(home.buildUpon().appendQueryParameter("src", "native").build().toString() + (route?.let { "#/$it" } ?: ""))
 
     // ---- 🎤 speech recognition for "Speak it" (events go back to the page as onresult / onerror / onend) ----
     fun speechStart(id: String, lang: String, max: Int) {
@@ -236,14 +248,25 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun speechStart(id: String, lang: String, max: Int) = a.runOnUiThread { a.speechStart(id, lang, max) }
         @JavascriptInterface fun speechStop(id: String) = a.runOnUiThread { a.speechStop(id) }
         @JavascriptInterface fun speechAbort(id: String) = a.runOnUiThread { a.speechAbort(id) }
-        /** Progress summary for future widgets / reminders (JSON, see core WidgetSnapshot). */
-        @JavascriptInterface fun setWidgetData(json: String) = WidgetStore.save(a, json)
+        /** today's progress summary for the home-screen widgets (widgetSnapshot() in app.js); redraws them when it changed */
+        @JavascriptInterface fun setWidgetData(json: String) {
+            if (WidgetStore.save(a, json)) de.com.levelup.app.widget.Widgets.refresh(a)
+        }
     }
 }
 
-/** Where widgets, reminders and alarms will read the latest progress summary from (SharedPreferences, works with the app closed). */
+/** Where the widgets read the latest progress summary from (SharedPreferences, works with the app closed). */
 object WidgetStore {
     private fun prefs(c: Context) = c.getSharedPreferences("levelup.widget", Context.MODE_PRIVATE)
-    fun save(c: Context, json: String) = prefs(c).edit().putString("snapshot", json).putLong("at", System.currentTimeMillis()).apply()
+    /** true when the content changed (generatedAt alone doesn't count), so widgets aren't redrawn for nothing */
+    fun save(c: Context, json: String): Boolean {
+        val strip = { t: String? -> t?.replace(Regex("\"generatedAt\":\\d+,?"), "")?.replace(Regex("\"syncedAt\":\\d+,?"), "") }
+        val old = prefs(c).getString("snapshot", null)
+        val now = System.currentTimeMillis()
+        // redraw on new content, or every 30 min while the app is used (keeps "⊘ 3 h ago" badges honest)
+        val changed = strip(old) != strip(json) || now - prefs(c).getLong("drawnAt", 0) > 30 * 60 * 1000L
+        prefs(c).edit().putString("snapshot", json).putLong("at", now).apply { if (changed) putLong("drawnAt", now) }.apply()
+        return changed
+    }
     fun load(c: Context): String? = prefs(c).getString("snapshot", null)
 }

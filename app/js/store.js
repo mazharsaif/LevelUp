@@ -330,6 +330,7 @@ export function save() {
   if (!S || !USER) return;
   S.updated = Date.now();
   ls.set(cacheKey(USER), JSON.stringify(S));
+  window.dispatchEvent(new Event("a1:saved"));   // native widgets refresh (app.js pushWidget)
   if (isGuest()) return;
   SYNC.pending = true;
   clearTimeout(timer);

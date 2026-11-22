@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Word of the day widget (Jetpack Glance, de.com.levelup.app.widget). Resizable; the layout follows the size. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/w_word_desc"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="250dp" android:minHeight="40dp"
+    android:targetCellWidth="4" android:targetCellHeight="1"
+    android:minResizeWidth="40dp" android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher"
+    android:updatePeriodMillis="1800000" />

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rank widget (Jetpack Glance, de.com.levelup.app.widget). Resizable; the layout follows the size. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/w_rank_desc"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp" android:minHeight="110dp"
+    android:targetCellWidth="2" android:targetCellHeight="2"
+    android:minResizeWidth="40dp" android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher"
+    android:updatePeriodMillis="1800000" />

@@ -1,7 +1,7 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, startedLocal, startedRemote, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -68,8 +68,16 @@ function route() {
   document.body.classList.remove("in-lesson");
   applyTheme();
   if (!USER || !S) return whoView();
+  // a home-screen widget tap opens a route straight away: use the last course instead of asking first
+  if (!picked() && lastCourse(USER) === COURSE && (h.startsWith("#/go/") || (/[?&]src=native\b/.test(location.search) && /^#\/(today|ranks|progress|words|home)$/.test(h)))) markPicked();
   if (!picked()) return courseView();
   if (h === "#/party") { document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party")); return partyView(); }
+  if (h.startsWith("#/go/")) {        // widget tap: show the course home, then run the action
+    const [, , act, arg] = h.split("/");
+    location.replace(courseInfo(COURSE).type === "tree" ? "#/home" : "#/today");
+    setTimeout(() => goAction(act, decodeURIComponent(arg || "")), 120); return;
+  }
+  pushWidget();
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (!S.setup) return setupView();
   const [, name, arg] = h.split("/");
@@ -2143,3 +2151,91 @@ function treeCompare(box, people, all) {
   checkNativeUpdate();
   if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
+
+// ------------------------------------------------------------------ home-screen widgets (native app only)
+// The native app's widgets read one snapshot of today's state, sent here after every save, sync and route change.
+// Widgets compute only time-based states themselves (time left, streak at risk after 20:00, stale, new day).
+// Field list: docs/design/widgets/README.md (WidgetSnapshot). Taps come back as #/go/<action> (see goAction).
+const W_THEME = t => (t === "calm" || t === "ez" ? "calm" : t === "classic" ? "you" : "sl");
+function wCard(w, lessonOf) {
+  if (!w) return null;
+  const m = String(w.de).match(/^(der|die|das|le|la|les|l')\s*(.*)$/i), s = S && S.words[w.id], ex = (w.ex || [])[0];
+  return { id: w.id, de: w.de, art: m ? m[1] : null, word: m ? m[2] : w.de, g: w.g || null, en: firstEn(w.en), hint: w.hint || null,
+    pl: w.pl || null, ex: ex ? ex.de : null, exEn: ex ? ex.en : null, a: w.a || null, learned: !!s, lesson: lessonOf[w.id] || null,
+    due: s ? s.due : null };
+}
+const firstEn = en => String(en).split(/;/)[0].trim();
+function bestStreakOf() {
+  const days = [...new Set([...Object.keys(S.xp || {}), ...Object.keys(S.hit || {})])].sort();
+  if (!days.length) return streak();
+  let best = 0, run = 0, d = days[0];
+  for (; d <= today(); d = addDays(d, 1)) { if (dayCounts(d)) { run++; best = Math.max(best, run); } else if (d !== today()) run = 0; }
+  return Math.max(best, streak());
+}
+function widgetSnapshot() {
+  if (!USER || !S) return { v: 1, signedIn: false, generatedAt: Date.now() };
+  const ci = courseInfo(COURSE), tree = ci.type === "tree", t = today();
+  const base = { v: 1, signedIn: true, guest: isGuest(), userName: userInfo(USER).name, courseId: COURSE, courseTitle: ci.short || ci.title,
+    courseType: tree ? "tree" : "language", lang: tree ? null : L.code, theme: W_THEME(S.settings.theme), generatedAt: Date.now(), day: t,
+    syncedAt: SYNC.last || null, offline: !SYNC.online, totalXP: totalXP(), diamonds: S.gems || 0, xpToday: xpToday(),
+    streak: streak(), bestStreak: bestStreakOf(), todayHit: dayCounts(t), nextGiftAt: nextMilestone() };
+  const from = addDays(mondayOf(t), -28);
+  base.days = Array.from({ length: 35 }, (_, k) => { const d = addDays(from, k);
+    return d > t ? "F" : dayCounts(d) ? "H" : (S.xp[d] || 0) > 0 ? "P" : "M"; }).join("");
+  if (tree) {
+    const ct = continueTarget(), all = openBranches().flatMap(b => treeNodes(b.id));
+    return { ...base, questMode: false, treeDone: all.filter(n => nodeDone(n.id)).length, treeTotal: all.length,
+      next: ct ? { kind: "skill", itemId: ct.n.id, branch: ct.br.id, icon: ct.br.icon, title: ct.n.title, subtitle: `${ct.br.title} · skill ${ct.n.n}`,
+        part: Math.min(partsDoneCount(ct.n) + 1, (nodeParts(ct.n) || [1]).length), parts: (nodeParts(ct.n) || [1]).length, minutes: ct.n.mins || 5, newWords: [] } : null,
+      dueCount: 0, review: [], wotd: null };
+  }
+  if (!S.setup) return { ...base, signedIn: true, setup: false };
+  const lessonOf = {}; C.content.path.forEach(it => it.kind === "vocab" && it.words.forEach(id => (lessonOf[id] = it.n)));
+  const due = dueWords(), qs = questStatus(due), pc = progress(), Lv = level(pc.total), rk = rank(pc.total), info = RANK_INFO[rk.r] || {};
+  const p = pace(), rkFrom = (RANKS.find(x => x[0] === rk.r) || [0, 0])[1];
+  const eta = rk.nextAt != null && p.actualPerDay > 0 ? Math.ceil((rk.nextAt - pc.total) / p.actualPerDay) : null;
+  const lastLv = S.lastLv || Lv.lv, lastRank = rank(Math.max(0, ((lastLv - 1) * 100) / (A1_LEVEL - 1))).r;
+  const it = nextPick() || nextItem();
+  let next = null;
+  if (it) {
+    const b = nextBit(it), ids = bitsOf(it)[b] || [];
+    next = { kind: it.kind, itemId: it.id, lessonNo: it.n || null, title: it.kind === "vocab" ? `Lesson ${it.n}` : it.title,
+      subtitle: it.kind === "vocab" ? it.title : KIND[it.kind], part: Math.min(bitsDone(it) + 1, bitCount(it)), parts: bitCount(it), minutes: minPerPart() || 5,
+      newWords: it.kind === "vocab" ? ids.slice(0, 6).map(id => wCard(C.word[id], lessonOf)) : it.kind === "phrases" ? ids.slice(0, 4).map(i => { const ph = C.phrases[it.id].items[i]; return { de: ph.de, en: ph.en, word: ph.de }; }) : [] };
+  }
+  // word of the day: the same for the whole day; learned words that are due soon first, else the next lesson's words
+  const learned = Object.entries(S.words).sort((a, b) => a[1].due.localeCompare(b[1].due)).slice(0, 30).map(([id]) => id);
+  const ahead = it && it.kind === "vocab" ? it.words : C.content.words.filter(w => w.core).slice(0, 60).map(w => w.id);
+  const pool = [...new Set([...learned, ...ahead])].filter(id => C.word[id]);
+  let h = 0; for (const ch of t + USER) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const pick = k => wCard(C.word[pool[(h + k * 7) % pool.length]], lessonOf);
+  const tomorrow = addDays(t, 1);
+  return { ...base, questMode: questMode(), setup: true,
+    xpGoal: qs.g, partsToday: partsToday(), partsGoal: partsGoal(), dueCount: due.length,
+    fadingCount: Object.values(S.words).filter(s => overdueDays(s) > 0).length,
+    revDone: S.reviews[t] || 0, revGoal: Math.min(20, due.length + (S.reviews[t] || 0)), questCleared: qs.all,
+    missedPenalty: (S.pen || {})[addDays(t, -1)] || null,
+    level: Lv.lv, a1Pct: Math.round(pc.total * 10) / 10, rank: rk.r, rankName: info.name || "", rankCan: info.can || "",
+    rankFromPct: rkFrom, nextRank: rk.next, nextRankPct: rk.nextAt, aura: aura(Lv.lv), auraName: auraName(Lv.lv),
+    nextRankEta: eta != null ? (eta <= 1 ? "~1 day" : `~${eta} days`) : null, rankUp: lastRank !== rk.r && Lv.lv > lastLv,
+    next, review: due.slice(0, 4).map(id => wCard(C.word[id], lessonOf)).filter(Boolean),
+    dueTomorrow: Object.values(S.words).filter(s => s.due === tomorrow).length,
+    wotd: pool.length ? pick(0) : null, wotdAlt: pool.length > 1 ? [1, 2, 3, 4, 5].map(pick) : [] };
+}
+let wTimer = 0;
+function pushWidget() {
+  const N = window.LevelUpNative; if (!N || !N.setWidgetData) return;
+  clearTimeout(wTimer);
+  wTimer = setTimeout(() => { try { N.setWidgetData(JSON.stringify(widgetSnapshot())); } catch (e) { console.warn("widget snapshot", e); } }, 700);
+}
+// widget taps: #/go/next (start the next part), #/go/review, #/go/word/<id>
+function goAction(act, arg) {
+  const tree = courseInfo(COURSE).type === "tree";
+  if (act === "next") {
+    if (tree) { const ct = continueTarget(); if (ct) openReader(ct.br, ct.n); return; }
+    const it = nextPick() || nextItem(); if (it) startItem(it); else toast("All lessons done 🎓");
+  } else if (act === "review" && !tree) {
+    const d = dueWords(); if (d.length) startReview(d.slice(0, 20)); else toast("No words due right now ✓");
+  } else if (act === "word" && !tree && C.word[arg]) { location.hash = "#/words"; setTimeout(() => wordSheet(C.word[arg]), 150); }
+}
+["a1:saved", "a1:sync", "a1:state-replaced", "hashchange", "visibilitychange"].forEach(ev => window.addEventListener(ev, pushWidget));

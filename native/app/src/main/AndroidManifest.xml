@@ -6,7 +6,7 @@
     <queries>
         <intent><action android:name="android.speech.RecognitionService" /></intent>
     </queries>
-    <!-- Later: POST_NOTIFICATIONS + SCHEDULE_EXACT_ALARM for reminders/alarms (see native/README.md) -->
+    <!-- Widgets use inexact alarms (no permission). Later: POST_NOTIFICATIONS for reminders (see native/README.md) -->
 
     <application
         android:label="${appLabel}"
@@ -21,11 +21,56 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.LevelUp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- widget taps: levelup://open/<route> opens the web route #/<route> -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="levelup" android:host="open" />
+            </intent-filter>
         </activity>
+        <!-- home-screen widgets (docs/design/widgets) -->
+        <receiver android:name=".widget.QuestReceiver" android:exported="true" android:label="@string/w_quest">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_quest" />
+        </receiver>
+        <receiver android:name=".widget.RankReceiver" android:exported="true" android:label="@string/w_rank">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_rank" />
+        </receiver>
+        <receiver android:name=".widget.ContinueReceiver" android:exported="true" android:label="@string/w_continue">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_continue" />
+        </receiver>
+        <receiver android:name=".widget.ReviewReceiver" android:exported="true" android:label="@string/w_review">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_review" />
+        </receiver>
+        <receiver android:name=".widget.StreakReceiver" android:exported="true" android:label="@string/w_streak">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_streak" />
+        </receiver>
+        <receiver android:name=".widget.WordReceiver" android:exported="true" android:label="@string/w_word">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_word" />
+        </receiver>
+        <receiver android:name=".widget.GlanceStripReceiver" android:exported="true" android:label="@string/w_glance">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_glance" />
+        </receiver>
+        <receiver android:name=".widget.RingReceiver" android:exported="true" android:label="@string/w_ring">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_ring" />
+        </receiver>
+        <receiver android:name=".widget.ActionsReceiver" android:exported="true" android:label="@string/w_actions">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_actions" />
+        </receiver>
+        <receiver android:name=".widget.TickReceiver" android:exported="false" />
     </application>
 </manifest>

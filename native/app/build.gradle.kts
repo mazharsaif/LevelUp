@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")   // Jetpack Glance (home-screen widgets) is written in Compose
 }
 
 android {
@@ -38,7 +39,7 @@ android {
         }
     }
 
-    buildFeatures { buildConfig = true }
+    buildFeatures { buildConfig = true; compose = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -54,4 +55,6 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("androidx.webkit:webkit:1.13.0")
+    // home-screen widgets (app/src/main/java/.../widget, designs in docs/design/widgets)
+    implementation("androidx.glance:glance-appwidget:1.1.1")
 }

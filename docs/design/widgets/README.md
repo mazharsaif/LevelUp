@@ -1,6 +1,6 @@
 # LevelUp home-screen widgets (design)
 
-Design only. The widgets are built later in the native app (`native/`) with **Jetpack Glance**.
+**Built (11-22)** in the native app with **Jetpack Glance**: `native/app/src/main/java/de/com/levelup/app/widget/` (Snapshot.kt reads the data, Look.kt the three looks and the drawn rings/emblems, Ui.kt shared pieces, Widgets.kt all nine widgets, Actions.kt taps/audio/alarms). The web app sends the snapshot (`widgetSnapshot()` in app/js/app.js) after every save, sync and route change; taps open `#/go/next`, `#/go/review`, `#/go/word/<id>`, `#/ranks`, `#/progress`. Not built yet: the inline quick review on the 4×2 Review widget, the configuration screen (widgets follow the current course and the app theme), the Hunter corner brackets, and a background server sync (a widget shows "⊘ 3 h ago" until the app is opened).
 
 - `widgets.html` is one self-contained page (no network). It shows every widget, variant and state on phone home screens at real launcher cell sizes. Open it in a browser.
 - `png/` holds the same mockups rendered with headless Chrome at 2× (one PNG per block on the page).
