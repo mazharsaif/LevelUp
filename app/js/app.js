@@ -1691,7 +1691,7 @@ function loginView(msg = "") {
       ${up ? `<label class="f" for="an">Your name</label><input id="an" name="name" autocomplete="name" maxlength="40" required>` : ""}
       <label class="f" for="au">Username</label><input id="au" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32" required>
       <label class="f" for="ap">Password</label><input id="ap" name="password" type="password" autocomplete="${up ? "new-password" : "current-password"}" minlength="${up ? 6 : 1}" required>
-      ${up ? `<p class="muted small" style="margin:6px 0 0">Username: 3–32 letters, digits, - or _. Password: at least 6 characters.</p>` : ""}
+      ${up ? `<p class="muted small" style="margin:6px 0 0">Username: 3–32 letters, digits, - or _ (not at the start). Password: at least 6 characters.</p>` : ""}
       <p class="small" id="aerr" style="color:var(--red);min-height:1.2em;margin:8px 0 0">${esc(msg)}</p>
       <button class="btn" id="ago" type="submit">${up ? "Create account" : "Log in"}</button>
       ${up ? "" : `<button class="link small" type="button" id="afp" style="display:block;margin:8px auto 0">Forgot password?</button>`}
@@ -1714,6 +1714,7 @@ function loginView(msg = "") {
   f.onsubmit = async e => {
     e.preventDefault();
     const u = f.querySelector("#au").value.trim(), pw = f.querySelector("#ap").value, nm = up ? f.querySelector("#an").value.trim() : "";
+    if (up && u.startsWith("_")) { er.textContent = "Username cannot start with _ (reserved for developer accounts)"; return; }
     if (up && !/^[A-Za-z0-9_-]{3,32}$/.test(u)) { er.textContent = "Username: 3–32 letters, digits, - or _"; return; }
     go.disabled = true; er.textContent = "";
     const wasGuest = isGuest();

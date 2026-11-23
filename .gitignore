@@ -27,3 +27,7 @@ android/local.properties
 android/*.apk
 app/download/*.idsig
 android/*.idsig
+
+# Secrets (API keys); never commit
+.env
+**/.env

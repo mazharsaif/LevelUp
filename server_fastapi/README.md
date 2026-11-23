@@ -8,7 +8,7 @@ It serves the same `../app`, uses the same API and reads and writes the same `..
 cd LevelUp/server_fastapi
 uv run main.py            # http://<mac-ip>:8766   (API docs: /docs)
 uv run main.py 8765       # use the old port instead (stop server.py first)
-A1_DATA=/tmp/a1test uv run main.py 8899      # test server with scratch data
+A1_DATA=/tmp/a1test uv run main.py 8899      # local scratch server (risky-code trials only; real testing is on live with `_` accounts, see devaccounts.py)
 uv run uvicorn main:app --host 0.0.0.0 --port 8766 --reload   # dev: restarts when you edit main.py
 ```
 It uses the repo's single uv project: Python 3.9 for now (`../.python-version`; Apple's `/usr/bin/python3`, which the Mac firewall allows), `../pyproject.toml` / `../uv.lock`, env in `../.venv` (created on first `uv run`, or `uv sync`).

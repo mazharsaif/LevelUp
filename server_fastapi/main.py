@@ -243,6 +243,7 @@ class PasswordIn(BaseModel):
 
 _signups: dict[str, list[float]] = {}
 RESERVED = {"guest", "admin", "anon"}  # "guest" = the app's offline guest mode
+DEV_PREFIX = "_"  # developer/test accounts (e.g. _test_user1) are created from code (devaccounts.py), never by sign-up
 
 
 @app.get("/api/auth/me", response_model=User, responses={401: {"model": ErrorOut}}, tags=["accounts"])
@@ -279,6 +280,8 @@ def auth_signup(request: Request, body: SignupIn):
     uid, name = body.username.lower(), body.name.strip()
     if not name:
         return err("name required", 400)
+    if uid.startswith(DEV_PREFIX):
+        return err(f"username cannot start with {DEV_PREFIX} (reserved for developer accounts)", 400)
     with lock_for("__users__"):
         us = users()
         if uid in RESERVED or any(u["id"] == uid for u in us) or auth.has_password(DATA, uid):
@@ -346,8 +349,13 @@ def auth_avatar(request: Request, body: AvatarIn):
 
 @app.get("/api/users", response_model=list[User], response_model_exclude_none=True, tags=["learners"])
 def get_users(request: Request):
-    """All learner profiles (login required)."""
-    return need(request) or users()
+    """All learner profiles (login required). Developer accounts (`_...`) are only listed to other developer accounts."""
+    denied = need(request)
+    if denied:
+        return denied
+    if (me(request) or "").startswith(DEV_PREFIX):
+        return users()
+    return [u for u in users() if not u["id"].startswith(DEV_PREFIX)]
 
 
 @app.get("/api/states", response_model=dict[str, dict | None], tags=["progress"])

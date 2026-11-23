@@ -10,8 +10,8 @@ replaces the first version's hand-built Compose screens, which looked different 
 
 ## How it works
 
-* Opens `SERVER_URL/?src=native` (release: https://levelrise.org, debug: http://10.0.2.2:8899 = the Mac's test
-  server from an emulator; override with `-Plevelup.server=http://<mac-ip>:8899` for a phone).
+* Opens `SERVER_URL/?src=native` (release: https://levelrise.org, the one live app; the debug build is only for emulator/widget
+  work and points at http://10.0.2.2:8899 = the Mac's scratch server; override with `-Plevelup.server=http://<mac-ip>:8899` for a phone).
 * User agent ends with `LevelUpNative/<version>`; the web uses it (and `?src=native`) to hide APK download offers.
 * Offline: the web's service worker caches the app after the first start (WebView supports service workers).
   With no network on the very first start a small "You're offline · Try again" page shows.
