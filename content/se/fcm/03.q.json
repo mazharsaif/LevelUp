@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "A registration token identifies …",
+  "o": [
+   "one app install on one device",
+   "one user account",
+   "one Google account",
+   "one server"
+  ],
+  "a": 0,
+  "why": "A user can have several, and a token can change."
+ },
+ {
+  "t": "mc",
+  "q": "Where does the user-to-token mapping live?",
+  "o": [
+   "In your own server's database",
+   "In Firebase, keyed by username",
+   "In the user's Google account",
+   "Nowhere; FCM guesses"
+  ],
+  "a": 0,
+  "why": "Firebase never learns your usernames."
+ },
+ {
+  "t": "mc",
+  "q": "FCM answers UNREGISTERED. What should your server do?",
+  "o": [
+   "Delete that token",
+   "Retry forever",
+   "Log the user out",
+   "Switch to polling"
+  ],
+  "a": 0,
+  "why": "Dead tokens waste work and slow fan-out."
+ },
+ {
+  "t": "mf",
+  "q": "Users must sign in with Google to receive your pushes.",
+  "a": false,
+  "why": "Myth. The token comes from the app's Firebase config, not a Google login (confirm on a test phone)."
+ }
+]

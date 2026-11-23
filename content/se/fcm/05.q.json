@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "When is FCM the wrong tool on its own?",
+  "o": [
+   "Delivery must be guaranteed or auditable",
+   "A nudge for a small group",
+   "Waking a closed app",
+   "Sending an id to fetch"
+  ],
+  "a": 0,
+  "why": "Use an inbox or SMS as the source of truth, with push as a prompt."
+ },
+ {
+  "t": "mc",
+  "q": "Which fits a PWA with no native app?",
+  "o": [
+   "Web Push",
+   "FCM through Play Services",
+   "A foreground service",
+   "A TURN server"
+  ],
+  "a": 0,
+  "why": "Browsers have their own standard push."
+ },
+ {
+  "t": "mc",
+  "q": "A walkie-talkie that stays connected is best built with …",
+  "o": [
+   "a socket for audio, and FCM to wake and reconnect",
+   "FCM carrying the audio",
+   "polling every 15 minutes",
+   "email"
+  ],
+  "a": 0,
+  "why": "Push wakes the app; the live part needs a socket or WebRTC."
+ },
+ {
+  "t": "mc",
+  "q": "Phones without Google Play Services need …",
+  "o": [
+   "another route, such as UnifiedPush or polling",
+   "nothing, FCM works anyway",
+   "a bigger payload",
+   "iOS"
+  ],
+  "a": 0,
+  "why": "FCM on Android depends on Play Services."
+ }
+]

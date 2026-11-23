@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Firebase is best described as …",
+  "o": [
+   "a catalogue of separable app services",
+   "a single database product",
+   "a hosting plan only",
+   "an Android version"
+  ],
+  "a": 0,
+  "why": "You can adopt one product and ignore the rest."
+ },
+ {
+  "t": "mc",
+  "q": "Which Firebase products carry high lock-in?",
+  "o": [
+   "Firestore and Authentication",
+   "Cloud Messaging",
+   "Hosting",
+   "None of them"
+  ],
+  "a": 0,
+  "why": "They become your data and identity layer."
+ },
+ {
+  "t": "mf",
+  "q": "Sending push through FCM requires the paid Blaze plan.",
+  "a": false,
+  "why": "Myth. FCM is free and works on the no-cost Spark plan (verify current pricing)."
+ },
+ {
+  "t": "mc",
+  "q": "The rule of thumb 'adopt the leaf, doubt the roots' means …",
+  "o": [
+   "use push, but think hard before using Firebase's database and login",
+   "avoid all of Firebase",
+   "use every product",
+   "only use Hosting"
+  ],
+  "a": 0,
+  "why": "Push is easy to swap out; data and login are not."
+ }
+]

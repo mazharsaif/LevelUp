@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Why does the guide say keep the truth in your database?",
+  "o": [
+   "Push is best-effort and can be late or lost",
+   "FCM deletes messages instantly",
+   "Databases are faster",
+   "It is cheaper"
+  ],
+  "a": 0,
+  "why": "The app reads your backend on open; push only says look now."
+ },
+ {
+  "t": "mc",
+  "q": "Fraud alerts in a payments app should use push as …",
+  "o": [
+   "a 'check the app' signal with no sensitive content",
+   "the only record",
+   "the full message body",
+   "a replacement for SMS"
+  ],
+  "a": 0,
+  "why": "Auditable delivery lives in your backend."
+ },
+ {
+  "t": "mc",
+  "q": "What does choosing FCM commit you to?",
+  "o": [
+   "A sender, a token table and Google as a transport",
+   "Google owning your data and logins",
+   "A paid plan",
+   "A rewrite of your backend"
+  ],
+  "a": 0,
+  "why": "It is a leaf, so it is easy to remove."
+ },
+ {
+  "t": "mf",
+  "q": "Push alone is enough to carry live walkie-talkie audio.",
+  "a": false,
+  "why": "Push only wakes the app; audio needs a socket or WebRTC."
+ }
+]

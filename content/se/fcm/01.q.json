@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Why can a closed app get a push within seconds, while its own polling job cannot?",
+  "o": [
+   "The phone keeps one shared OS-level connection that every app rides",
+   "FCM keeps your app running in the background",
+   "Push ignores the battery saver",
+   "Polling is blocked by Google"
+  ],
+  "a": 0,
+  "why": "Your app is woken by the OS when a message arrives."
+ },
+ {
+  "t": "mc",
+  "q": "What does FCM do?",
+  "o": [
+   "Transports a small message from your server to one app install",
+   "Stores your users and their data",
+   "Guarantees every message arrives",
+   "Replaces your backend"
+  ],
+  "a": 0,
+  "why": "It is a pipe, not a database or a login."
+ },
+ {
+  "t": "mf",
+  "q": "Push notifications are guaranteed to be delivered.",
+  "a": false,
+  "why": "Myth. Delivery is best-effort, so keep the truth in your own backend."
+ },
+ {
+  "t": "mc",
+  "q": "Why is polling every few minutes a poor fit on Android?",
+  "o": [
+   "Background work is limited to roughly every 15 minutes",
+   "Android blocks all network use",
+   "It needs a Google account",
+   "It costs money per request"
+  ],
+  "a": 0,
+  "why": "So 'now' becomes 'within a quarter of an hour'."
+ }
+]

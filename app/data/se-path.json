@@ -172,6 +172,16 @@
       "reading": "data/se/keys/",
       "intro": 0,
       "order": 14
+    },
+    {
+      "id": "fcm",
+      "title": "Firebase Push",
+      "icon": "🔥",
+      "color": "#FF5DA2",
+      "status": "open",
+      "reading": "data/se/fcm/",
+      "intro": 0,
+      "order": 15
     }
   ],
   "nodes": [
@@ -5451,6 +5461,380 @@
           ],
           "a": 4,
           "b": 7
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.why",
+      "branch": "fcm",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "📬",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Why push exists",
+      "short": "The pain and the model",
+      "learn": [
+        "Explain why polling and home-made sockets fall short on Android",
+        "Describe the shared connection that push rides on",
+        "Say what FCM transports, and what it never does",
+        "Name the best-effort rule for delivery"
+      ],
+      "concepts": [
+        "Polling",
+        "Shared connection",
+        "FCM",
+        "Best-effort delivery"
+      ],
+      "exercises": [
+        "Concept check",
+        "Order the flow",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The pain",
+            "Why polling and sockets fall short"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "The shared connection",
+            "What FCM does and does not do"
+          ],
+          "a": 3,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.map",
+      "branch": "fcm",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🗺️",
+      "req": [
+        "fcm.why"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "The Firebase map",
+      "short": "Products, plans, lock-in",
+      "learn": [
+        "List the main Firebase products and what each is for",
+        "Tell the free Spark plan from the pay-as-you-go Blaze plan",
+        "Separate low lock-in products from high lock-in ones",
+        "Pick one product without adopting the catalogue"
+      ],
+      "concepts": [
+        "Spark",
+        "Blaze",
+        "Lock-in",
+        "Leaf and roots"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Firebase is a catalogue",
+            "The products at a glance"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "What it costs",
+            "Roots versus leaf"
+          ],
+          "a": 3,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.tokens",
+      "branch": "fcm",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🪪",
+      "req": [
+        "fcm.why"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Tokens & users",
+      "short": "Who gets the message",
+      "learn": [
+        "Define a registration token and say why it is not a user id",
+        "Design the user-to-token table your server keeps",
+        "Explain why users never log in with Google",
+        "Clean up stale tokens when UNREGISTERED comes back"
+      ],
+      "concepts": [
+        "Registration token",
+        "UNREGISTERED",
+        "POST_NOTIFICATIONS",
+        "Token refresh"
+      ],
+      "exercises": [
+        "Fix the code",
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The registration token",
+            "Your server holds the mapping"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Stale tokens are normal",
+            "Android 13 and the notification permission"
+          ],
+          "a": 3,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.send",
+      "branch": "fcm",
+      "n": 4,
+      "level": 2,
+      "col": 1,
+      "icon": "🚀",
+      "req": [
+        "fcm.map",
+        "fcm.tokens"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Sending a push",
+      "short": "v1 API, data messages",
+      "learn": [
+        "Send a message with a service account through HTTP v1",
+        "Choose a data message over a notification message",
+        "Set priority and a short TTL on purpose",
+        "Keep payloads small and secret-free"
+      ],
+      "concepts": [
+        "HTTP v1",
+        "Service account",
+        "Data message",
+        "Priority",
+        "TTL"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "HTTP v1 and a service account"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Data versus notification messages"
+          ],
+          "a": 3,
+          "b": 3
+        },
+        {
+          "t": [
+            "Priority and TTL",
+            "Payload size and topics"
+          ],
+          "a": 4,
+          "b": 5
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.choose",
+      "branch": "fcm",
+      "n": 5,
+      "level": 3,
+      "col": 0,
+      "icon": "⚖️",
+      "req": [
+        "fcm.send"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Use it, or not?",
+      "short": "When, when not, instead",
+      "learn": [
+        "List the signals that say FCM fits",
+        "List the signals that say it does not",
+        "Compare FCM with polling, Web Push and a socket",
+        "Make the call for LevelUp's nudges and walkie-talkie"
+      ],
+      "concepts": [
+        "Web Push",
+        "Foreground service",
+        "UnifiedPush",
+        "Source of truth"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Use FCM when",
+            "Do not use FCM (or not alone) when"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Alternatives"
+          ],
+          "a": 3,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.pitfalls",
+      "branch": "fcm",
+      "n": 6,
+      "level": 3,
+      "col": 2,
+      "icon": "🕳️",
+      "req": [
+        "fcm.send"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "Pitfalls & phones",
+      "short": "Mistakes and battery savers",
+      "learn": [
+        "Spot the seven common push mistakes and their fixes",
+        "Explain why some phones never receive your push",
+        "Say what push can and cannot do for a call",
+        "Keep the truth in your database, not in the message"
+      ],
+      "concepts": [
+        "Doze",
+        "Battery optimisation",
+        "Full-screen intent",
+        "Foreground service"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Seven mistakes"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The phone is the hidden tax"
+          ],
+          "a": 4,
+          "b": 4
+        },
+        {
+          "t": [
+            "Calls and always-on audio"
+          ],
+          "a": 5,
+          "b": 5
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.boss",
+      "branch": "fcm",
+      "n": 7,
+      "level": 4,
+      "col": 1,
+      "icon": "🏁",
+      "req": [
+        "fcm.choose",
+        "fcm.pitfalls"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Final review",
+      "short": "Self-check and cheat sheet",
+      "learn": [
+        "Answer the eight design-review questions out loud",
+        "Recall the five key terms and five gotchas",
+        "Apply the rule of thumb: adopt the leaf, doubt the roots",
+        "Know where to read next"
+      ],
+      "concepts": [
+        "Leaf and roots",
+        "Data message",
+        "Token table",
+        "Best-effort"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Scenario",
+        "Design decision"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "Self-check"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "One-page cheat sheet"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Further reading"
+          ],
+          "a": 5,
+          "b": 5
         }
       ],
       "quiz": 4

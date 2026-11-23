@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Your handler never fires in the background. A likely cause?",
+  "o": [
+   "You sent a notification message, not a data message",
+   "The token is too long",
+   "TTL is too short",
+   "The payload is too small"
+  ],
+  "a": 0,
+  "why": "The OS tray handles notification messages in the background."
+ },
+ {
+  "t": "mc",
+  "q": "Not deleting dead tokens leads to …",
+  "o": [
+   "slower sends and duplicate or wasted work",
+   "faster delivery",
+   "free quota",
+   "nothing"
+  ],
+  "a": 0,
+  "why": "Clean them when UNREGISTERED comes back."
+ },
+ {
+  "t": "mf",
+  "q": "A service-account key can safely be committed to a private repo.",
+  "a": false,
+  "why": "Keep it out of git; a leaked key lets anyone send pushes as you."
+ },
+ {
+  "t": "mc",
+  "q": "A user on some phone brands never gets your push. The likely reason?",
+  "o": [
+   "An aggressive battery manager delays or drops it",
+   "Your server is down",
+   "FCM is blocked in their country",
+   "The payload is encrypted"
+  ],
+  "a": 0,
+  "why": "You cannot fix this server-side; guide users to whitelist the app."
+ }
+]

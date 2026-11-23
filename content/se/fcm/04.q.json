@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Which message type runs your code when the app is in the background?",
+  "o": [
+   "A data message",
+   "A notification message",
+   "Both always",
+   "Neither"
+  ],
+  "a": 0,
+  "why": "Notification messages are shown by the OS tray instead."
+ },
+ {
+  "t": "mc",
+  "q": "For a 'ring now' message you should set …",
+  "o": [
+   "high priority and a TTL of a few minutes",
+   "normal priority and a TTL of four weeks",
+   "no priority",
+   "a huge payload"
+  ],
+  "a": 0,
+  "why": "A stale ring is worse than no ring."
+ },
+ {
+  "t": "mc",
+  "q": "How does your server authenticate to the FCM HTTP v1 API?",
+  "o": [
+   "With a service-account key (OAuth2)",
+   "With the user's Google password",
+   "With the registration token alone",
+   "It needs no credentials"
+  ],
+  "a": 0,
+  "why": "The legacy server-key API has been shut down (verify)."
+ },
+ {
+  "t": "mf",
+  "q": "It is fine to put a user's private message text in the push payload.",
+  "a": false,
+  "why": "Send an id and fetch the content from your own API; the payload passes through Google and is size-limited."
+ }
+]
