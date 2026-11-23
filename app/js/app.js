@@ -2,7 +2,7 @@ import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COUR
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
   importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
-import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
+import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startPractice, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
@@ -118,6 +118,18 @@ function partBar(it) {
 function leftToday() {
   const m = Math.max(0, Math.ceil((new Date().setHours(24, 0, 0, 0) - Date.now()) / 60000));
   return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
+}
+// "time left today" block (feedback 11-23): plain text, a bar for how much of the day is gone, amber under 4 h, red under 1 h
+function dayLeftBlock(what = "quests") {
+  const n = Date.now(), a = new Date().setHours(0, 0, 0, 0), frac = Math.min(1, Math.max(0, (n - a) / 864e5)), m = Math.ceil((a + 864e5 - n) / 60000);
+  return `<div class="dayleft ${m < 60 ? "late" : m < 240 ? "soon" : ""}" role="timer"><div class="dl-top"><span>⏳ <b id="tleft">${leftToday()}</b> left today</span><span class="tiny">${what} reset at midnight</span></div>
+    <div class="dl-bar" aria-hidden="true"><i style="width:${(frac * 100).toFixed(1)}%"></i></div></div>`;
+}
+function tickLeft() {
+  const e = document.getElementById("tleft"); if (!e) { clearInterval(tleftTimer); return; }
+  e.textContent = leftToday();
+  const n = Date.now(), a = new Date().setHours(0, 0, 0, 0), m = Math.ceil((a + 864e5 - n) / 60000), box = e.closest(".dayleft");
+  if (box) { box.classList.toggle("late", m < 60); box.classList.toggle("soon", m >= 60 && m < 240); const i = box.querySelector(".dl-bar i"); if (i) i.style.width = Math.min(100, (n - a) / 864e3).toFixed(1) + "%"; }
 }
 // average minutes in lessons per part finished, from the tracked days (null until there's enough data)
 function minPerPart() {
@@ -260,11 +272,12 @@ function todayView() {
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
       <div class="muted small">Review them now to keep them fresh</div></div>
       <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div>
-    ${memWarn()}</div>` : ""}`;
+    ${memWarn()}</div>` : practiceCard()}`;
   appendStories();
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
-  clearInterval(tleftTimer); tleftTimer = setInterval(() => { const e = document.getElementById("tleft"); if (e) e.textContent = leftToday(); else clearInterval(tleftTimer); }, 30000);
+  const pr = view().querySelector("#prac"); if (pr) pr.onclick = () => startPractice(practiceIds());
+  clearInterval(tleftTimer); tleftTimer = setInterval(tickLeft, 30000);
   levelWatch();
   wireTop();
   maybeTour(); wireGuideCard();
@@ -319,7 +332,7 @@ function freeToday() {
   ${due.length ? `<div class="card"><div class="sys-h">Memory training</div>
     <div class="quest" style="border:0"><span class="box"></span><div class="grow"><b>Review ${due.length} word${due.length > 1 ? "s" : ""} to remember</b>
       <div class="muted small">No pressure – reviews just keep words fresh</div></div>
-      <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div></div>` : ""}
+      <button class="btn blue sm" id="rev">Review ${Math.min(20, due.length)}</button></div></div>` : practiceCard()}
   <p class="small muted" style="text-align:center">Quest Mode is off – no daily goal, quests or penalties. <a href="#/settings" class="link" style="padding:0">Change</a></p>`;
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
   const ab = view().querySelector("#all"); if (ab) ab.onclick = () => { try { localStorage.setItem("a1.freeLayout", "skills"); } catch { /* ignore */ } location.hash = "#/path"; };
@@ -493,9 +506,12 @@ function wordsView() {
   const prow = p => `<div class="wrow"><span class="dot ${p.learned ? "k" : ""}"></span><div class="t"><div>${esc(p.de)}</div><div>${esc(p.en)}</div></div>
       ${p.a ? `<button class="spk sm" data-a="${p.a}" data-t="${esc(p.de)}">🔊</button>` : ""}</div>`;
   // phrases from phrase lessons: own groups on "All" (by topic), and in search results
-  const phraseGroups = open => PT.map(t => { const n = t.items.filter(p => p.learned).length, k = "💬 " + t.title;
-    return `<details class="wgrp" data-t="${esc(k)}" ${open.has(k) ? "open" : ""}><summary><span class="grow">${esc(t.title)}</span>
-      <span class="tiny muted">${n}/${t.items.length} learned</span></summary>${t.items.map(prow).join("")}</details>`; }).join("");
+  // feedback 11-23: learned phrases also show under Known / Learning (the learned ones) and New (the rest), not only under All
+  const PF = () => ({ all: () => true, known: p => p.learned, learning: p => p.learned, new: p => !p.learned })[wf.f] || null;
+  const shownPT = () => { const f = PF(); return f ? PT.filter(t => t.items.some(f)) : []; };
+  const phraseGroups = open => { const f = PF(); return !f ? "" : PT.map(t => { const n = t.items.filter(p => p.learned).length, k = "💬 " + t.title, its = t.items.filter(f);
+    return !its.length ? "" : `<details class="wgrp" data-t="${esc(k)}" ${open.has(k) ? "open" : ""}><summary><span class="grow">${esc(t.title)}</span>
+      <span class="tiny muted">${n}/${t.items.length} learned</span></summary>${its.map(prow).join("")}</details>`; }).join(""); };
   const draw = () => {
     const q = wf.q.toLowerCase().trim(), due = new Set(dueWords());
     const list = C.content.words.filter(w => {
@@ -513,13 +529,13 @@ function wordsView() {
       const sorted = sortWords(list);
       wl.innerHTML = `<div class="wrow muted tiny">💬 Phrases</div>${pq.slice(0, 50).map(prow).join("")}` +
         (sorted.length ? `<div class="wrow muted tiny">Words</div>${sorted.slice(0, 300).map(row).join("")}` : "");
-    } else if (!list.length) wl.innerHTML = `<div class="wrow muted">No words here yet.</div>`;
+    } else if (!list.length) wl.innerHTML = phraseGroups(openTopics()) || `<div class="wrow muted">No words here yet.</div>`;
     else if (grouped) {
       const groups = new Map();
       list.forEach(w => { const t = topicName(w.topic); if (!groups.has(t)) groups.set(t, []); groups.get(t).push(w); });
       const open = openTopics();
-      if (wf.f === "all") PT.forEach(t => groups.set("💬 " + t.title, null));   // phrase topics (drawn first by phraseGroups) for Expand all
-      wl.innerHTML = (wf.f === "all" ? phraseGroups(open) : "") + [...groups].filter(([, ws]) => ws).map(([t, ws]) => { const n = ws.filter(w => S.words[w.id]).length;
+      shownPT().forEach(t => groups.set("💬 " + t.title, null));   // phrase topics (drawn first by phraseGroups) for Expand all
+      wl.innerHTML = phraseGroups(open) + [...groups].filter(([, ws]) => ws).map(([t, ws]) => { const n = ws.filter(w => S.words[w.id]).length;
         return `<details class="wgrp" data-t="${esc(t)}" ${open.has(t) ? "open" : ""}><summary><span class="grow">${esc(t)}</span>
           <span class="tiny muted">${n}/${ws.length} learned</span></summary>${ws.map(row).join("")}</details>`; }).join("");
       const allOpen = [...groups.keys()].every(t => open.has(t));
@@ -531,7 +547,7 @@ function wordsView() {
       }));
     } else {
       const sorted = sortWords(list);
-      wl.innerHTML = sorted.slice(0, 300).map(row).join("") +
+      wl.innerHTML = phraseGroups(openTopics()) + sorted.slice(0, 300).map(row).join("") +
         (sorted.length > 300 ? `<div class="wrow muted small">…${sorted.length - 300} more – search to narrow down</div>` : "");
     }
     wireSpeakers(wl);
@@ -685,7 +701,8 @@ function progressView() {
 // ------------------------------------------------------------------ settings
 function settingsView() {
   const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
-  view().innerHTML = `<div class="row"><h1 class="grow">Settings</h1>${userChip()}</div>
+  view().innerHTML = `<div class="row"><h1 class="grow">${courseIcon(C.course.icon)} ${esc(C.course.title)} settings</h1>${userChip()}</div>
+  <p class="muted small" style="margin:-4px 0 8px">These settings are for this track only. Other tracks keep their own.</p>
   <div class="card"><div class="sys-h">Mode</div><div style="font-weight:800">⚔️ Quest Mode</div>
     <label class="toggle">Follow the quest system <input type="checkbox" id="qm" ${questMode() ? "checked" : ""}></label>
     <p class="muted small" style="margin:6px 0 0">${questMode() ? "<b>On:</b> a guided day-by-day Path with a daily goal, daily quests, 💎 diamonds and streak gifts. Missed review days cost XP."
@@ -706,6 +723,8 @@ function settingsView() {
     <label class="toggle">Show Hindi pronunciation hints <input type="checkbox" id="hi" ${S.settings.hindi ? "checked" : ""}></label>
     <label class="toggle">Play audio automatically <input type="checkbox" id="ap" ${S.settings.autoplay ? "checked" : ""}></label>
     <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label>
+    <label class="toggle">🔇 Skip hearing exercises <input type="checkbox" id="nl" ${S.settings.noListen ? "checked" : ""}></label>
+    <p class="muted small" style="margin:4px 0 0">For public places: lessons leave out “What do you hear?” questions. A skipped one isn't counted against you.</p>
     ${speakAvailable() ? `<label class="toggle">🎤 Speaking practice in phrase lessons <input type="checkbox" id="spk" ${S.settings.speak !== false ? "checked" : ""}></label>
     <p class="muted small" style="margin:4px 0 0">Uses the microphone; Chrome sends the audio to Google to recognise it. Optional, never costs XP.</p>` : ""}</div>
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
@@ -752,6 +771,7 @@ function settingsView() {
   v.querySelector("#ap").onchange = e => setS("autoplay", e.target.checked);
   v.querySelector("#snd").onchange = e => setS("sound", e.target.checked);
   const spk = v.querySelector("#spk"); if (spk) spk.onchange = e => setS("speak", e.target.checked);
+  const nl = v.querySelector("#nl"); if (nl) nl.onchange = e => setS("noListen", e.target.checked);
   v.querySelector("#dl").onclick = downloadAudio;
   v.querySelector("#ex").onclick = () => {
     if (window.LevelUpNative) return window.LevelUpNative.saveFile(`deutsch-a1-backup-${today()}.json`, exportState()); // native app: Android save dialog
@@ -933,10 +953,11 @@ function treeView(id) {
       <button class="pgb" id="nx" aria-label="Next branch: ${esc(next.title)}">›</button></div>` : ""}
     <div class="card" style="--c:${br.color}"><div class="row"><div class="grow"><div style="font-weight:800">${br.icon} ${esc(br.title)}</div>
         <div class="muted small">${done} of ${nodes.length} skills learned · about ${nodes.reduce((a, n) => a + n.mins, 0)} min of reading</div></div>
-        ${br.intro != null ? `<button class="btn ghost sm" id="intro" style="width:auto;margin:0">📖 About</button>` : ""}</div>
+        ${br.intro != null ? `<button class="btn ${aboutSeen(br.id) ? "ghost" : "blue"} sm" id="intro" style="width:auto;margin:0">📖 About</button>` : ""}</div>
         <div class="hbar" style="margin-top:8px"><div style="width:${100 * done / nodes.length}%;background:${br.color}"></div></div>
         <div class="row" style="margin-top:8px;gap:8px"><div class="segt" role="group" aria-label="Layout"><button data-l="map" class="${lay === "map" ? "on" : ""}">◎ Map</button><button data-l="path" class="${lay === "path" ? "on" : ""}">↓ Path</button></div><span class="grow"></span></div>
         ${br.reading ? `<div class="tiny muted dlbar" id="dlbar"></div>` : ""}</div>
+      ${br.intro != null && !aboutSeen(br.id) ? `<button class="aboutnudge" id="aboutnudge">👆 New here? Tap the <b>centre circle</b> (or About) to see how this branch works</button>` : ""}
       <div class="treebox" id="tbox">${lay === "map" ? treeOrbit(nodes, br) : treeSVG(nodes, br.color)}</div>
       ${brs.length > 1 ? `<div class="tiny muted" style="text-align:center">‹ ${esc(prev.title)} · swipe · ${esc(next.title)} ›</div>` : ""}`;
   wireTop();
@@ -949,8 +970,9 @@ function treeView(id) {
     g.onclick = () => nodeSheet(g.dataset.id);
     g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); nodeSheet(g.dataset.id); } };
   });
-  const core = view().querySelector(".tcore"); if (core && br.intro != null) core.onclick = () => openReader(br, null);
-  const ib = view().querySelector("#intro"); if (ib) ib.onclick = () => openReader(br, null);
+  const core = view().querySelector(".tcore"); if (core && br.intro != null) core.onclick = () => { aboutMark(br.id); openReader(br, null); };
+  const ib = view().querySelector("#intro"); if (ib) ib.onclick = () => { aboutMark(br.id); openReader(br, null); };
+  const an = view().querySelector("#aboutnudge"); if (an) an.onclick = () => { aboutMark(br.id); openReader(br, null); };
   if (br.reading) fillDownloads(br);
   const tb = view().querySelector("#tbox"); let x0 = null, y0 = null;     // swipe the map/path sideways = next branch
   if (brs.length > 1) {
@@ -997,6 +1019,8 @@ function treeSVG(nodes, color) {
 }
 // Map layout: the skills orbit the branch on a tall oval, in skill order, clockwise from the top.
 // Spokes join each skill to the branch core; exact prerequisite links are shown in Path view.
+const aboutSeen = id => { try { return !!localStorage.getItem("a1.about." + COURSE + "." + id); } catch { return true; } };
+const aboutMark = id => { try { localStorage.setItem("a1.about." + COURSE + "." + id, today()); } catch { /* ignore */ } };
 function treeOrbit(nodes, br) {
   const ns = [...nodes].sort((a, b) => a.n - b.n), N = ns.length, color = br.color;
   const W = 380, cx = 190, a = 84, gap = 86, padT = 84, padB = 70;
@@ -1020,10 +1044,13 @@ function treeOrbit(nodes, br) {
     body += nodeG(n, +x.toFixed(1), +y.toFixed(1), color, lab);
   }
   const done = ns.filter(n => nodeDone(n.id)).length, fr = branchFrac(br), R = 32, Cc = 2 * Math.PI * (R + 6);
-  const core = `<g class="tcore" ${br.intro != null ? `role="button" tabindex="0" aria-label="About ${esc(br.title)}"` : ""} style="--c:${color}">
+  const hasAbout = br.intro != null, fresh = hasAbout && !aboutSeen(br.id);   // feedback 11-23: the centre circle wasn't recognised as a button
+  const core = `<g class="tcore" ${hasAbout ? `role="button" tabindex="0" aria-label="About ${esc(br.title)}: how this branch works"` : ""} style="--c:${color}">
+    ${fresh ? `<circle cx="${cx}" cy="${cy}" r="${R + 6}" class="tpulse"/>` : ""}
     <circle cx="${cx}" cy="${cy}" r="${R + 6}" class="hring"/><circle cx="${cx}" cy="${cy}" r="${R + 6}" class="hring on" style="stroke:${color}" stroke-dasharray="${(Cc * fr).toFixed(1)} ${Cc.toFixed(1)}" transform="rotate(-90 ${cx} ${cy})"/>
     <circle cx="${cx}" cy="${cy}" r="${R}" class="tcore-c"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" font-size="22">${br.icon}</text>
-    <text x="${cx}" y="${cy + 18}" text-anchor="middle" class="tlabel">${done} / ${N}</text></g>`;
+    <text x="${cx}" y="${cy + 18}" text-anchor="middle" class="tlabel">${done} / ${N}</text>
+    ${hasAbout ? `<g class="thint ${fresh ? "fresh" : ""}"><rect x="${cx - 34}" y="${cy + R + 10}" width="68" height="18" rx="9"/><text x="${cx}" y="${cy + R + 23}" text-anchor="middle">ⓘ About</text></g>` : ""}</g>`;
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:440px;display:block;margin:0 auto">${spokes}${track}${core}${body}</svg>`;
 }
 function nodeSheet(id) {
@@ -1440,7 +1467,7 @@ function questStatus(due) {
   const q = [
     { ok: x >= g, txt: `Earn ${g} XP`, v: `${x}/${g}` },
     { ok: newToday >= pg, txt: `Finish ${pg} short part${pg > 1 ? "s" : ""} of any lesson`, v: `${Math.min(newToday, pg)}/${pg}` },
-    { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Review all ${revGoal} words to remember` : "Review words (none due)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
+    { ok: revGoal === 0 || revDone >= revGoal, txt: revGoal ? `Review all ${revGoal} words to remember` : "Review words (none due yet)", v: revGoal ? `${Math.min(revDone, revGoal)}/${revGoal}` : "✓" },
   ];
   return { q, all: q.every(i => i.ok), x, g };
 }
@@ -1452,6 +1479,15 @@ function questPace(g) {
   const end = addDays(today(), Math.ceil(left / Math.max(1, g - 3)) - 1), late = daysBetween(to, end);
   return `<div class="small" style="text-align:center;margin-top:6px;color:${late > 0 ? "var(--red)" : "var(--muted)"}">🎯 At ${g} XP a day, A1 ≈ <b>${fmtDate(end, { day: "numeric", month: "short", year: "numeric" })}</b>${late > 0 ? `: ${late} days after your target. Switch to Auto in Settings to make it` : ", on time"}</div>`;
 }
+// nothing due yet: offer extra recall practice on the most recently learned words (doesn't touch the schedule, XP or penalties)
+const practiceIds = () => Object.entries(S.words).filter(([id]) => C.word[id]).sort((a, b) => (b[1].since || "").localeCompare(a[1].since || "")).slice(0, 10).map(([id]) => id);
+function practiceCard() {
+  const n = practiceIds().length; if (n < 2) return "";
+  return `<div class="card"><div class="sys-h">Memory training</div>
+    <div class="quest" style="border:0"><span class="box">✓</span><div class="grow"><b>Nothing due yet</b>
+      <div class="muted small">Words come back for review after about a day. Want extra recall now? It won't change your schedule or XP.</div></div>
+      <button class="btn blue sm" id="prac">Practise ${n}</button></div></div>`;
+}
 function dailyQuest(due) {
   const { q, all, x, g } = questStatus(due), paid = S.questDays && S.questDays[today()], hit = (S.hit || {})[today()], st = streak();
   return `<div class="card sl-only"><div class="sys-h"><span class="ex">!</span> Daily quest</div>
@@ -1461,7 +1497,7 @@ function dailyQuest(due) {
     <div class="small" style="text-align:center;margin-top:8px;letter-spacing:1px;color:${all ? "#57e3a0" : "var(--muted)"}">
       ${all ? `QUEST COMPLETE · 💎 +${QUEST_GEMS} ${paid ? "COLLECTED" : ""}` : `REWARD: 💎 ${QUEST_GEMS}`}</div>
     ${!hit && st > 0 ? `<div class="warn-line">⚠ Reach ${g} XP today to keep your 🔥 ${st}-day streak · <b id="tleft">${leftToday()}</b> left (${Math.max(0, g - x)} XP to go)</div>`
-      : !all ? `<div class="small muted" style="text-align:center;margin-top:6px">⏳ <b id="tleft">${leftToday()}</b> left today</div>` : ""}</div>`;
+      : !all ? dayLeftBlock() : ""}</div>`;
 }
 function statusWindow(pr, pc, r) {
   const L = level(pr.total), rk = rank(pr.total);
@@ -2369,17 +2405,19 @@ async function goAction(act, arg) {
 ["a1:saved", "a1:sync", "a1:state-replaced", "hashchange", "visibilitychange"].forEach(ev => window.addEventListener(ev, pushWidget));
 
 // ------------------------------------------------------------------ welcome tour (js/tour.js)
-// Runs once per device for each kind of course (language / skill tree), on the course home, the first time it is shown.
+// Runs once per device for EACH course (German, French, Maths, Software Engineering, Hunter's Path; feedback 11-23), on the course
+// home, the first time it is shown. A course the learner already started before this change doesn't replay it.
 // "Take the tour" (Settings → About, account menu) runs it again.
 const tourKind = () => (isLife() ? "life" : courseInfo(COURSE).type === "tree" ? "tree" : "lang");
-const tourKey = k => "a1.tour." + (k === "life" ? "life2" : k);   // life2: the longer Hunter tour (gates and ranks) shows once more
-const tourSeen = k => { try { return !!localStorage.getItem(tourKey(k)); } catch { return true; } };
+const tourKey = k => (k === "life" ? "a1.tour.life2" : `a1.tour.${k}.${COURSE}`);   // life2: the longer Hunter tour (gates and ranks)
+const courseStarted = () => !!S && (Object.keys(S.done || {}).length > 0 || Object.keys(S.tree || {}).length > 0 || Object.keys(S.parts || {}).length > 0);
+const tourSeen = k => { try { return !!localStorage.getItem(tourKey(k)) || (k !== "life" && !!localStorage.getItem("a1.tour." + k) && courseStarted()); } catch { return true; } };
 const tourMark = k => { try { localStorage.setItem(tourKey(k), today()); } catch { /* ignore */ } };
 const cardOf = sel => () => { const e = [...document.querySelectorAll(sel)].find(x => x.offsetParent); return e ? e.closest(".card") || e : null; };
 function langSteps() {
   const quest = questMode();
   return [
-    { title: "Welcome to LevelUp 👋", text: `A quick look at how it works. It takes about 30 seconds. Tap <b>Show me</b>, or anywhere on the screen to go on.` },
+    { title: `Welcome to ${esc((C.course && C.course.title) || "LevelUp")} 👋`, text: `A quick look at how it works. It takes about 30 seconds. Tap <b>Show me</b>, or anywhere on the screen to go on.` },
     { sel: "#uc", title: "Your profile", text: "Your account: invite friends, text size, password, log out, and the app version." },
     { sel: "#cc", title: "Your course", text: "Tap to switch courses: German, French, Maths, Software Engineering. Each one keeps its own progress." },
     { sel: "#gem", title: "XP and diamonds", text: "⚡ XP for every part you finish and every word you recall. 💎 Diamonds for clearing the daily quest. Long streaks earn gift boxes 🎁." },
@@ -2633,6 +2671,7 @@ function shieldSheet(done = () => route()) {
   sheet(`<h2 style="margin-top:0">🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</h2>
     <p class="small">A shield covers one missed or slipped day, so your run doesn't crack. It's used automatically.</p>
     <ul class="small rules"><li><b>Earned, never bought:</b> one for every D-rank gate (14 days) or higher you clear.</li>
+      <li><b>Long gates (28+ days)</b> also give one after <b>14</b> good days and another after <b>28</b>, at most two per gate. If you already hold 2, it waits for a free slot.</li>
       <li>One shield per gate per week, never two days in a row, and not on hard-mode gates.</li>
       <li>No shield? The run <b>cracks ⚠</b> instead. A crack heals by itself after ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly goals). Miss twice in a row, or again while cracked, and the run breaks.</li>
       <li><b>🩹 Heal a crack now</b> for 💎 ${LF.HEAL_COST}, at most once every ${LF.HEAL_BUY_DAYS} days.</li></ul>
@@ -2668,7 +2707,7 @@ function lifeHome() {
     <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}${"DCBAS".includes(tr.reward.g) ? " · 🛡 if you had room" : ""}` : `${esc((tr.st.events.at(-1) || {}).txt || "")}${/keep the XP/.test((tr.st.events.at(-1) || {}).txt || "") ? "" : " You keep the XP you earned."}`}</div></div>
     ${tr.status === "failed" ? `<button class="btn sm" data-re="${tr.id}" style="width:auto;margin:0">Re-enter</button>` : ""}<button class="link" data-seen="${tr.id}" aria-label="Dismiss">✕</button></div>`).join("")}
   <div class="card sysq"><div class="sys-h"><span class="ex">!</span> Daily quests</div>
-    ${list.length ? `<div class="tiny muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">${doneN === list.length ? "ALL QUESTS COMPLETE ✓" : `${doneN} OF ${list.length} DONE · ${leftToday()}`}</div>` : ""}
+    ${list.length ? `<div class="tiny muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">${doneN === list.length ? "ALL QUESTS COMPLETE ✓" : `${doneN} OF ${list.length} DONE`}</div>${doneN === list.length ? "" : dayLeftBlock("quests")}` : ""}
     ${pens.map(tr => `<div class="qrow pen"><span class="qic">⚡</span><div class="grow qmid"><b>Penalty quest</b><div class="tiny">${esc(tr.penalty)} · for ${esc(LF.shown(tr))}</div></div><div class="qact"><button class="qbtn" data-pen="${tr.id}">Done</button></div></div>`).join("")}
     ${back.map(tr => `<div class="qrow back"><span class="qic">${tr.icon}</span><div class="grow qmid"><b>Yesterday: ${esc(LF.shown(tr))}?</b><div class="tiny muted">You didn't check in. Answer before midnight.</div></div>
       <div class="qact"><button class="qbtn" data-yes="${tr.id}">${tr.kind === "abstain" ? "Clean ✓" : "Done ✓"}</button><button class="qlink" data-no="${tr.id}">${tr.kind === "abstain" ? "Slipped" : "Missed"}</button></div></div>`).join("")}
@@ -2681,6 +2720,7 @@ function lifeHome() {
   ${list.length ? `<a class="btn ghost" href="#/gates" style="display:block;text-decoration:none;text-align:center">＋ Enter another gate</a>` : ""}`;
   wireTop(); wireGuideCard(); maybeTour();
   view().querySelector("#shl").onclick = () => shieldSheet(lifeHome);
+  clearInterval(tleftTimer); tleftTimer = setInterval(tickLeft, 30000);
   const nx = view().querySelector("#nudgex"); if (nx) nx.onclick = () => { markNudgesSeen(PG.nudges.map(n => n.id)); PG.nudges = []; lifeHome(); };
   view().querySelectorAll("[data-seen]").forEach(b => (b.onclick = () => { S.tracks[b.dataset.seen].seen = true; save(); lifeHome(); }));
   view().querySelectorAll("[data-re]").forEach(b => (b.onclick = () => { const n = LF.reenter(S.tracks[b.dataset.re]); S.tracks[b.dataset.re].seen = true; save(); toast("Gate re-entered. Day 1."); location.hash = "#/track/" + n.id; }));
@@ -2690,19 +2730,26 @@ function lifeHome() {
 function lifeGates() {
   const all = Object.values(S.tracks || {}), rec = all.filter(tr => tr.status !== "active").sort((a, b) => (b.ended || "").localeCompare(a.ended || ""));
   const open = new Set(LF.active().map(tr => tr.template).filter(Boolean));
+  // a gate you already ran (gave up, failed or cleared) shows how it ended, and entering it again asks first (feedback 11-23)
+  const ran = {}; for (const tr of all) if (tr.template && tr.status !== "active" && (!ran[tr.template] || (tr.ended || "") > (ran[tr.template].ended || ""))) ran[tr.template] = tr;
+  const ranLabel = tr => `${tr.status === "cleared" ? "Cleared ✓" : tr.status === "failed" ? "Failed" : "Gave up"}${tr.ended ? " " + fmtDate(tr.ended) : ""}`;
   view().innerHTML = topRow() + lifeNav("gates") + `
   <a class="card gnew" href="#/new"><span class="qic">✨</span><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div><span class="caret">›</span></a>
   <div class="card rankstrip"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b class="small">Rank = length:</b>${LF.GATES.map(([d, g]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> ${d}d</span>`).join("")}</div>
-    <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎. D-rank and up also earn a 🛡.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
+    <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎. D-rank and up also earn a 🛡; gates of 28+ days earn one at 14 and 28 good days.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
   <div class="sys-h" style="margin:14px 2px 6px">Gate board</div>
   ${lifeTemplates().map(tp => `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start"><span class="qic">${tp.icon}</span>
     <div class="grow"><b>${esc(tp.title)}</b> ${gateBadge(tp.days)}<div class="small muted">${esc(tp.blurb || "")}</div>
       <div class="tiny muted" style="margin-top:3px">${LF.STATS[tp.stat][0]} ${LF.STATS[tp.stat][1]} · ${tp.days ? `${tp.days} days` : "no end"}${tp.private ? " · private" : ""}</div></div>
-    ${open.has(tp.id) ? `<span class="tiny muted">Open ✓</span>` : `<a class="btn sm" href="#/new/${tp.id}" style="width:auto;margin:0;text-decoration:none">Enter</a>`}</div></div>`).join("")}
+    ${open.has(tp.id) ? `<span class="tiny muted">Open ✓</span>` : ran[tp.id] ? `<div style="text-align:right"><div class="tiny muted">${ranLabel(ran[tp.id])}</div><button class="btn ghost sm" data-again="${tp.id}" style="width:auto;margin:4px 0 0">Enter again</button></div>` : `<a class="btn sm" href="#/new/${tp.id}" style="width:auto;margin:0;text-decoration:none">Enter</a>`}</div></div>`).join("")}
   ${rec.length ? `<div class="sys-h" style="margin:14px 2px 6px">Your record</div><div class="card">${rec.slice(0, 30).map(tr => `<div class="recrow" data-open="${tr.id}"><span>${tr.icon}</span><span class="grow">${esc(LF.shown(tr))} ${gateBadge(tr.days)}</span>
     <span class="tiny ${tr.status === "cleared" ? "okc" : "muted"}">${tr.status === "cleared" ? "Cleared" : tr.status === "failed" ? "Failed" : "Ended"} ${tr.ended ? fmtDate(tr.ended) : ""}</span></div>`).join("")}</div>` : ""}`;
   wireTop();
   view().querySelectorAll("[data-open]").forEach(r => (r.onclick = () => (location.hash = "#/track/" + r.dataset.open)));
+  view().querySelectorAll("[data-again]").forEach(b => (b.onclick = () => { const tr = ran[b.dataset.again]; sheet(`<h2 style="margin-top:0">Enter this gate again?</h2>
+    <p class="small">${tr.icon} <b>${esc(LF.shown(tr))}</b>: ${esc(ranLabel(tr))}. A new run starts from Day 1 and the old one stays in your record.</p>
+    <button class="btn" id="ay">Enter again</button><button class="btn ghost" id="an">Not now</button>`, el => {
+    el.querySelector("#ay").onclick = () => { closeSheet(); location.hash = "#/new/" + b.dataset.again; }; el.querySelector("#an").onclick = closeSheet; }); }));
 }
 const ICONS = ["⭐", "🛡", "📚", "🧘", "🏋️", "🏃", "👟", "💧", "🍬", "📵", "⏰", "📓", "🚿", "🌙", "🎓", "🎸", "🎨", "💰", "🥗", "🚭", "🍺", "🙏", "✍️", "🧹"];
 function lifeBuilder(arg) {
@@ -2710,7 +2757,8 @@ function lifeBuilder(arg) {
   const tp = lifeTemplates().find(x => x.id === arg) || null, inParty = pgOk() && !!PG.party;
   const f = tp ? { ...tp, template: tp.id, steps: (tp.steps || []).join("\n") } : { kind: "daily", title: "", icon: "⭐", stat: "discipline", days: 30, schedule: [1, 1, 1, 1, 1, 1, 1], period: "week", steps: "" };
   f.schedule = f.schedule || [1, 1, 1, 1, 1, 1, 1];
-  f.party = arg === "party" && inParty;
+  f.party = inParty && !(tp && tp.private);   // feedback 11-23: party mode is the default for new gates (untick it to run solo)
+  if (f.party && !f.days) f.days = 21;
   if (arg === "party" && !inParty) setTimeout(() => toast(pgOk() ? "Join a party first (Party tab), then start a party gate" : "Party gates need an account"), 300);
   const KINDS = [["daily", "✅", "Daily", "Do it on set days"], ["abstain", "🛡", "Quit", "A clean run: stay off something"], ["target", "🎯", "Target", "An amount per week or in total"], ["milestone", "🏔", "Big goal", "Steps by a date"]];
   const draw = () => {
@@ -2728,7 +2776,7 @@ function lifeBuilder(arg) {
         <div class="chips" style="margin-top:8px">${[["week", "Every week"], ["total", "In total"]].map(([k, l]) => `<button class="chipx ${f.period === k ? "on" : ""}" data-p="${k}">${l}</button>`).join("")}</div>` : ""}
       ${f.kind === "milestone" ? `<label class="f">Steps <span class="muted">(one per line)</span></label><textarea id="st" rows="4" placeholder="Run 3 km&#10;Run 5 km&#10;Run 10 km">${esc(f.steps || "")}</textarea>` : ""}
       <label class="f">${f.kind === "milestone" ? "Finish within" : "How long? (the gate)"}</label><div class="chips">${lens.map(([d, l]) => `<button class="chipx ${(f.days || 0) === d ? "on" : ""}" data-l="${d}">${l} ${d ? gateBadge(d) : ""}</button>`).join("")}</div>
-      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 180 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield.</p></div>
+      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 180 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield, and gates of 28+ days give one at 14 and 28 good days.</p></div>
     <div class="card"><label class="f">Why are you doing this? <span class="muted">(shown when it gets hard)</span></label><textarea id="wy" rows="2" placeholder="${f.kind === "abstain" ? "For the moment an urge hits…" : "What will be better when you've done it?"}">${esc(tp && tp.why && tp.why.startsWith("Why do you") ? "" : f.why || "")}</textarea>
       <label class="f">Penalty quest <span class="muted">(only in System mode)</span></label><input id="pq" value="${esc(f.penalty || "")}" placeholder="e.g. 20 push-ups">
       ${inParty ? `<label class="toggle"><span><b>👥 Run it with my party</b><div class="small muted">Starts tomorrow so everyone can join. The whole team must survive: if one run breaks, the gate fails for all.</div></span><input type="checkbox" id="pty" ${f.party ? "checked" : ""}></label>` : ""}
@@ -2830,6 +2878,7 @@ function lifeTrack(id) {
     ${tr.status === "active" && tr.start <= t ? bigAction(tr) : ""}
     <div class="tstats">${tr.kind === "daily" || tr.kind === "abstain" ? stat(st.run, "current run") + stat(Math.max(st.best, st.run), "best run") + stat(st.good, tr.kind === "abstain" ? "clean days" : "days done") : tr.kind === "target" ? stat(LF.totalCount(tr), `${tr.unit} logged`) + stat(st.good, "weeks hit") + stat(st.bad, "weeks missed") : stat(tr.steps.filter(s => s.d).length + " / " + tr.steps.length, "steps")}${stat(shieldsUsed, "🛡 used")}</div></div>
   ${tr.kind === "milestone" ? `<div class="card">${tr.steps.map((s, i) => `<label class="toggle"><span>${s.d ? "✅" : "⬜"} ${esc(s.t)}${s.d ? ` <span class="tiny muted">${fmtDate(s.d)}</span>` : ""}</span><input type="checkbox" data-step="${i}" ${s.d ? "checked" : ""} ${tr.status !== "active" ? "disabled" : ""}></label>`).join("")}</div>` : ""}
+  ${tr.pgate ? `<div id="tpg"></div>` : ""}
   ${cal ? `<div class="card"><div class="sys-h">Calendar</div>${cal}<div class="tiny muted lleg"><span><i class="ok"></i>done</span><span><i class="bad"></i>missed / slipped</span><span><i class="sh">🛡</i>shield</span></div></div>` : ""}
   ${tr.kind === "abstain" && tr.status === "active" ? `<button class="btn ghost sosbtn" data-sos="${tr.id}">🆘 Urge SOS</button>` : ""}
   ${tr.why ? `<div class="card"><div class="sys-h">Why I'm doing this</div><p style="margin:0">${esc(tr.why)}</p></div>` : ""}
@@ -2844,6 +2893,13 @@ function lifeTrack(id) {
   wireCounter(v, tr, rr); wireHeal(v, rr);
   const bd = v.querySelector("#bigdone"); if (bd) bd.onclick = () => { LF.checkIn(tr, t, LF.doneToday(tr) ? null : true); questToast(tr); rr(); };
   v.querySelector("#ed").onclick = () => editTrackSheet(tr, rr);
+  // party gate: who has checked in today, with a Nudge button for the ones who haven't (feedback 11-23)
+  const tpg = v.querySelector("#tpg");
+  if (tpg) {
+    const drawParty = () => { const g = gateOf(tr); tpg.innerHTML = g ? `<div class="sys-h" style="margin:14px 2px 6px">👥 Your party · ${g.members.filter(m => m.checked === today()).length}/${g.members.length} checked in today</div>${pgateCard(g)}` : "";
+      tpg.querySelectorAll("[data-nudge]").forEach(b => (b.onclick = () => { const [gid, uid] = b.dataset.nudge.split(":"), gg = PG.gates.find(x => x.id === gid); sendNudge(gg, gg.members.find(m => m.id === uid), b); })); };
+    drawParty(); if (pgOk()) syncPartyGates(true).then(drawParty);
+  }
   const gu = v.querySelector("#gu"); if (gu) gu.onclick = () => sheet(`<h2 style="margin-top:0">Give up this gate?</h2><p class="small">It moves to your record as ended. You keep the XP you earned.</p>
     <button class="btn" id="y" style="background:var(--red)">Give up</button><button class="btn ghost" id="n">Keep going</button>`, el => {
     el.querySelector("#y").onclick = () => { tr.status = "archived"; tr.ended = t; tr.seen = true; save(); closeSheet(); location.hash = "#/home"; };
@@ -2892,7 +2948,7 @@ function lifeHunter() {
     ${h.titles.length ? `<div class="chips" style="justify-content:center;margin-top:10px">${h.titles.map(t => `<span class="chipx on">🏅 ${esc(t)}</span>`).join("")}</div>` : ""}</div>
   <div class="card"><div class="sys-h">Stats</div>${radarSVG(vals, max)}<p class="tiny muted" style="text-align:center;margin:0">Each gate trains one stat. A balanced shape beats one huge spike.</p></div>
   <div class="card"><div class="tstats">${[[h.cleared, "gates cleared"], [Object.values(S.tracks).filter(t => t.status === "failed").length, "gates failed"], [streak(), "day streak"], [LF.totalLifeXP() + otherXP(), "all XP (incl. learning)"]].map(([v, l]) => `<div class="tstat"><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>
-  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earned only, by clearing D-rank gates or higher.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
+  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earned only: clear a D-rank gate or higher, or hit 14 and 28 good days in a 28+ day gate.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
   <div class="card"><label class="toggle"><span><b>⚡ System mode</b><div class="small muted">A missed day gives you a penalty quest for the next day. Doing it heals the crack at once.</div></span><input type="checkbox" id="sys" ${h.system ? "checked" : ""}></label>
     ${rem ? `<label class="f">Daily reminder (this phone)</label><select id="rem"><option value="">Off</option>${["07:00", "08:00", "12:00", "18:00", "20:00", "21:00", "22:00"].map(x => `<option ${remAt === x ? "selected" : ""}>${x}</option>`).join("")}</select>
       <p class="tiny muted" style="margin:4px 0 0">Only if some of today's quests are still open.</p>` : ""}</div>
@@ -2949,7 +3005,7 @@ function lifeSteps() {
     { title: "Gate ranks: E to S", text: `The longer the gate, the higher its rank and the bigger the reward:<div class="tl">${ladder}</div><span class="tiny muted">🛡 = clearing it also earns a shield.</span>` },
     { sel: ".hcard", title: "Your Hunter rank", text: `Separate from gate ranks: every check-in earns XP, XP raises your <b>level</b>, and your level sets your rank.<div class="tl-chips">${hr}</div>` },
     { title: "Miss a day? ⚠", text: "First miss: a 🛡 shield covers it, or the run <b>cracks</b>. A crack heals after 7 good days in a row (or right away for 💎).<br><br>Miss <b>twice in a row</b>, or again while cracked, and the gate fails. You keep all XP you earned and can re-enter." },
-    { sel: "#shl", title: "Shields 🛡", text: "You hold up to 2. They're <b>earned only</b>, by clearing D-rank gates or higher. They can't be bought." },
+    { sel: "#shl", title: "Shields 🛡", text: "You hold up to 2. They're <b>earned only</b>: by clearing D-rank gates or higher, or in a long gate (28+ days) after 14 and 28 good days. They can't be bought." },
     { sel: ".lnav", title: "Today · Gates · Hunter · Party", text: "<b>Today</b>: your check-ins. <b>Gates</b>: the board of challenges. <b>Hunter</b>: your stats and rank. <b>Party</b>: run gates together; the whole team must survive." },
     { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Forgot yesterday? You can still answer it today." },
     { sel: ".lnav a[href='#/gates']", title: "Enter your first gate", text: "Pick a ready-made challenge (a book a week, gym 3× a week, no sugar…) or build your own. Start small: an E-rank gate is just 7 days." },
@@ -2971,7 +3027,7 @@ function lifeGuide() {
   ${sec("🌀", "Gates and ranks", `<p>Longer gates rank higher: <b>E</b> 7 days, <b>D</b> 14, <b>C</b> 30, <b>B</b> 60, <b>A</b> 90, <b>S</b> 180. Clearing one pays XP and 💎, and D-rank or higher also gives a 🛡 shield. Fail a gate and you keep the XP you earned; re-enter it right away.</p>`)}
   ${sec("🛡", "Shields and cracks", `<ul class="gtips">
     ${tip(true, "A <b>shield</b> covers one missed or slipped day automatically, so the run goes on.")}
-    ${tip(true, "Hold at most <b>2</b>. Shields are <b>earned only</b>, by clearing D-rank gates or higher. They can't be bought.")}
+    ${tip(true, "Hold at most <b>2</b>. Shields are <b>earned only</b>: by clearing D-rank gates or higher, or in a long gate (28+ days) after 14 and 28 good days (max two per gate). They can't be bought.")}
     ${tip(true, `Cracked? You can <b>heal it at once for 💎 ${LF.HEAL_COST}</b>, at most once every 2 weeks.`)}
     ${tip(true, "No shield? The run <b>cracks ⚠</b>. A crack heals by itself after <b>7 good days</b> in a row (2 good weeks for weekly targets).")}
     ${tip(false, "Miss <b>twice in a row</b>, or again while cracked, and the run breaks. Shields never cover two days in a row, or the same gate twice in a week.")}</ul>`)}

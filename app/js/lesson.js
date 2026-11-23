@@ -315,11 +315,11 @@ export function reviewSteps(ids) {
 let R = null; // current run
 const view = () => document.getElementById("view");
 
-export function runLesson({ title, steps, kind, onFinish }) {
+export function runLesson({ title, steps, kind, onFinish, practice }) {
   document.body.classList.add("in-lesson");
   if (location.hash !== "#/lesson") history.pushState(null, "", "#/lesson");
   R = { title, steps: [...steps], i: 0, done: 0, total: steps.length, right: 0, answered: 0, wrongIds: new Set(),
-        retried: new Set(), firstTry: {}, grades: [0, 0, 0, 0, 0], combo: 0, best: 0, words: new Set(), kind, onFinish, t0: Date.now() };
+        retried: new Set(), firstTry: {}, grades: [0, 0, 0, 0, 0], combo: 0, best: 0, words: new Set(), kind, onFinish, practice: !!practice, t0: Date.now() };
   render();
 }
 export function abortLesson() { stopAudio(); R = null; document.body.classList.remove("in-lesson"); }
@@ -348,6 +348,8 @@ function render() {
   const lb = v.querySelector("#lb");
   lb.classList.add("arming"); setTimeout(() => lb.classList.remove("arming"), 450);
   window.scrollTo(0, 0);
+  // feedback 11-23: no hearing exercises when you can't listen (Settings switch, or "Can't listen now" for this lesson)
+  if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps.splice(R.i, 1); R.total--; return render(); }
   if (s.w) R.words.add(s.w.id);
   ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
 }
@@ -527,6 +529,8 @@ function listen(s, lb) {
   wireSpeakers(lb);
   playSoon(w.a, w.de);
   options(lb, opts.map(o => esc(o.de)), opts.indexOf(w), ok => answered(s, ok, { correctHTML: `${esc(w.de)} = ${esc(w.en)}`, note: ok ? w.en : "" }));
+  lb.insertAdjacentHTML("beforeend", `<button class="link nolisten" id="nolisten" style="display:block;margin:14px auto 0">🔇 Can't listen now? Skip hearing exercises</button>`);
+  lb.querySelector("#nolisten").onclick = () => { stopAudio(); R.noListen = true; R.steps.splice(R.i, 1); R.total--; render(); };
 }
 
 function gender(s, lb) {
@@ -636,12 +640,12 @@ function recall(s, lb) {
     play(w.a, w.de);
     const st = S.words[w.id] || { ivl: 0, ef: 2.5, reps: 0 };
     f.innerHTML = `<div class="small muted" style="text-align:center;margin-bottom:8px">How well did you remember it?</div><div class="grades">${[1, 2, 3, 4].map(g =>
-      `<button class="gr g${g} ${s.dir === "type" && g === suggested ? "sug" : ""}" data-g="${g}"><b>${GRADES[g]}</b><span>${s.relearn ? "" : fmtIvl(g === 1 ? 0 : nextIvl(st, g))}</span></button>`).join("")}</div>`;
+      `<button class="gr g${g} ${s.dir === "type" && g === suggested ? "sug" : ""}" data-g="${g}"><b>${GRADES[g]}</b><span>${s.relearn || R.practice ? "" : fmtIvl(g === 1 ? 0 : nextIvl(st, g))}</span></button>`).join("")}</div>`;
     f.querySelectorAll(".gr").forEach(b => (b.onclick = () => grade(+b.dataset.g)));
   };
   const grade = g => {
     if (!s.relearn) {
-      gradeWord(w.id, g);
+      if (!R.practice) gradeWord(w.id, g);   // extra practice leaves the review schedule alone
       R.grades[g]++; R.answered++; if (g >= 3) R.right++;
       if (g === 1) R.wrongIds.add(w.id);
     }
@@ -948,6 +952,12 @@ export function startVocab(item, bit = 0) {
       return xp;
     },
   });
+}
+/** extra recall practice (feedback 11-23: "why do I not have any recall exercises?"): when nothing is due, drill words anyway.
+ *  Doesn't change the review schedule, XP or penalties. */
+export function startPractice(ids) {
+  runLesson({ title: `${ids.length} words practised`, kind: "review", practice: true, steps: reviewSteps(ids),
+    onFinish: r => { const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy || 1; r.recallRate = Math.round(100 * (hard + good + easy) / n); return 0; } });
 }
 export function startReview(ids) {
   runLesson({

@@ -58,7 +58,7 @@ function mergeTrack(x, y, newerIsY) {
   // giving up (archived) on either device sticks; cleared / failed are worked out again from the merged check-ins
   const status = x.status === "archived" || y.status === "archived" ? "archived" : n.status;
   return { ...n, log, steps, status, urges: maxMap(o.urges, n.urges), pen: unionMap(n.pen, o.pen),
-    reward: n.reward || o.reward, teamBonus: !!(n.teamBonus || o.teamBonus), seen: !!(n.seen || o.seen), pgate: n.pgate || o.pgate, _resettle: true };
+    reward: n.reward || o.reward, mileShields: Math.max(x.mileShields || 0, y.mileShields || 0), teamBonus: !!(n.teamBonus || o.teamBonus), seen: !!(n.seen || o.seen), pgate: n.pgate || o.pgate, _resettle: true };
 }
 function mergeTracks(a = {}, b = {}, bNewer) {
   const o = { ...a };

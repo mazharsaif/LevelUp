@@ -250,7 +250,7 @@ body.theme-sl .card::after{bottom:-3px;right:-3px;border-left:0;border-top:0}
 body.theme-sl .sys-h{display:flex;align-items:center;justify-content:center;gap:8px;margin:-4px -4px 12px;padding:6px 10px;
   border:1px solid rgba(120,190,255,.6);border-radius:3px;font-weight:700;letter-spacing:3px;text-transform:uppercase;font-size:calc(14px*var(--fs));color:#eaf4ff;
   background:linear-gradient(90deg,transparent,rgba(47,140,255,.22),transparent);text-shadow:0 0 8px #2f8cff}
-body.theme-sl .sys-h .ex{all:unset;display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid #9fd6ff;border-radius:50%;font-size:calc(13px*var(--fs));font-weight:800}
+body.theme-sl .sys-h .ex{all:unset;display:inline-grid;place-items:center;width:20px;height:20px;box-sizing:border-box;border:1.5px solid #9fd6ff;border-radius:50%;font-size:calc(13px*var(--fs));font-weight:800;letter-spacing:0;line-height:1;text-indent:0;text-align:center;text-shadow:none;padding:0}
 .sys-h{display:none}
 body.theme-sl .sys-h{display:flex}
 
@@ -1253,3 +1253,22 @@ body.theme-sl button.chipx.on{background:rgba(47,140,255,.25);color:#eaf4ff;bord
 .avcols{display:flex;flex-wrap:wrap;gap:8px}
 .avcol{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
 .avcol.on{border-color:var(--ink)}
+
+/* time left today (feedback 11-23): text + day-gone bar, amber under 4 h, red under 1 h */
+.dayleft{margin:2px 0 10px;padding:9px 12px;border:1px solid var(--line,rgba(150,170,200,.35));border-radius:10px;background:rgba(120,160,255,.08)}
+.dayleft .dl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:calc(15px*var(--fs));font-weight:700}
+.dayleft .dl-top .tiny{font-weight:500;opacity:.75}
+.dayleft .dl-bar{height:6px;border-radius:3px;background:rgba(150,170,200,.25);margin-top:7px;overflow:hidden}
+.dayleft .dl-bar i{display:block;height:100%;background:var(--blue,#4fb3ff);border-radius:3px;transition:width .6s}
+.dayleft.soon{border-color:#ffb84d;background:rgba(255,184,77,.1)}.dayleft.soon .dl-bar i{background:#ffb84d}.dayleft.soon .dl-top b{color:#ffb84d}
+.dayleft.late{border-color:var(--red,#ff5d73);background:rgba(255,93,115,.12)}.dayleft.late .dl-bar i{background:var(--red,#ff5d73)}.dayleft.late .dl-top b{color:var(--red,#ff5d73)}
+@media (prefers-reduced-motion:reduce){.dayleft .dl-bar i{transition:none}}
+
+/* branch centre circle: recognisable as a button (feedback 11-23) */
+.tpulse{fill:none;stroke:var(--c);stroke-width:2.5;transform-box:fill-box;transform-origin:center;animation:tpulse 2.2s ease-out infinite;pointer-events:none}
+@keyframes tpulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.55);opacity:0}}
+.thint rect{fill:var(--card);stroke:var(--c);stroke-width:1.2;opacity:.95}.thint.fresh rect{fill:var(--c)}
+.thint text{font-size:10.5px;font-weight:800;fill:var(--ink);letter-spacing:.3px}.thint.fresh text{fill:#fff}
+.tcore[role=button]:hover .tcore-c{stroke-width:3}
+.aboutnudge{display:block;width:100%;margin:8px 0 0;padding:8px 10px;border:1px dashed var(--accent,var(--blue));border-radius:10px;background:rgba(120,160,255,.1);color:inherit;font:inherit;font-size:calc(13px*var(--fs));text-align:left;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.tpulse{animation:none;opacity:.5}}

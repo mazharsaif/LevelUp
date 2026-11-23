@@ -628,7 +628,8 @@ export function history(st = S) {
 export function pace(st = S) {
   const t = today(), { startDate: start, targetDate: target } = st.settings;
   const span = Math.max(1, daysBetween(start, target));
-  const el = Math.min(Math.max(daysBetween(start, t), 0), span);
+  // feedback 11-23: count today as due, so clearing today's daily quest puts you on the plan (the quest is sized as remaining / days left)
+  const el = Math.min(Math.max(daysBetween(start, t) + 1, 0), span);
   const expected = Math.min(100, 100 * el / span);
   const p = progress(st).coverage;
   const left = Math.max(0, daysBetween(t, target));
@@ -636,8 +637,13 @@ export function pace(st = S) {
   // actual pace: average over the last 14 days (or since start if shorter)
   const win = Math.max(1, Math.min(14, daysBetween(start, t) + 1));
   const from = addDays(t, -win + 1), w = itemWeights();
+  // by finished PARTS (the quest counts parts, and parts rotate between lessons, so whole lessons finish late); old data without part dates falls back to the lesson date
   let recent = 0;
-  for (const [id, d] of Object.entries(st.done)) if (d.date >= from && d.date <= t) recent += w[id] || 0;
+  for (const it of C.content.path) {
+    const bits = (st.bits || {})[it.id] || [], n = bitCount(it), d = st.done[it.id];
+    if (it.kind === "grammar" || !bits.some(Boolean)) { if (d && d.date >= from && d.date <= t) recent += w[it.id] || 0; continue; }
+    recent += (w[it.id] || 0) * bits.filter(x => x && x >= from && x <= t).length / Math.max(1, n);
+  }
   const actualPerDay = recent / win;
   const projDays = actualPerDay > 0 ? Math.ceil((100 - p) / actualPerDay) : null;
   const projected = projDays != null ? addDays(t, projDays) : null;

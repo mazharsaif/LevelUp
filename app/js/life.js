@@ -8,12 +8,15 @@
 //           or a bad slot while cracked, breaks the run (a gate fails; an open-ended track starts a new run).
 // Shields (anti-abuse, feedback 11-22): hold at most 2; earned only, by clearing a D-rank gate or better (no buying, feedback
 // 11-22b); a track can use one at most once a week; never two slots in a row; never on hard-mode tracks.
+// Long gates (28+ days) also earn a 🛡 part-way (feedback 11-23): after 14 good days and again after 28, at most two per gate
+// (`tr.mileShields`), still within the hold-2 limit.
 // 💎 can instead heal a crack at once (healCrack), at most once every 14 days.
 import { S, save, today, addDays, daysBetween, parse } from "./store.js";
 
 export const STATS = { body: ["💪", "Body"], mind: ["🧠", "Mind"], discipline: ["🛡", "Discipline"], health: ["❤️", "Health"] };
 export const GATES = [[7, "E"], [14, "D"], [30, "C"], [60, "B"], [90, "A"], [180, "S"]];
 export const GATE_REWARD = { E: [50, 5], D: [100, 10], C: [250, 25], B: [500, 50], A: [900, 80], S: [2000, 150] }; // [XP, 💎]
+export const MILE_DAYS = [14, 28], MILE_MIN_LEN = 28;
 export const SHIELD_MAX = 2, HEAL_COST = 40, HEAL_BUY_DAYS = 14, SHIELD_TRACK_DAYS = 7, HEAL_DAYS = 7, HEAL_WEEKS = 2;
 export const XP = { day: 5, unit: 2, week: 15, urge: 2, penalty: 3, step: 20, allDone: 5 };
 export const TITLES = [[1, "Gate Opener"], [3, "Dungeon Runner"], [5, "Gatebreaker"], [10, "Raid Leader"], [20, "Monarch"]]; // gates cleared
@@ -149,6 +152,7 @@ function settle(tr) {
     st.settled = s.d;
     if (s.good) {
       st.run++; st.good++; st.best = Math.max(st.best, st.run); st.prevBad = false; st.prevShield = false;
+      mileShield(tr, s.d);
       if (st.cracked) { st.cracked.heal++; if (st.cracked.heal >= (tr.kind === "target" ? HEAL_WEEKS : HEAL_DAYS)) { st.cracked = null; ev(tr, s.d, "heal", "The crack healed."); } }
       continue;
     }
@@ -168,6 +172,15 @@ function settle(tr) {
   }
   if (tr.status === "active" && end && st.settled >= end) clear(tr, end);
   return changed;
+}
+/** long gates: a shield after 14 good days and another after 28 (max two per gate); waits if you already hold 2 */
+function mileShield(tr, d) {
+  if (!tr.days || tr.days < MILE_MIN_LEN || tr.hard) return;
+  const h = H(), n = tr.mileShields || 0;
+  if (n < MILE_DAYS.length && tr.st.good >= MILE_DAYS[n] && h.shields < SHIELD_MAX) {
+    h.shields++; tr.mileShields = n + 1;
+    ev(tr, d, "shield", `🛡 earned: ${MILE_DAYS[n]} good days in this gate.`); note(d, `🛡 earned: ${MILE_DAYS[n]} days of ${shown(tr)}`);
+  }
 }
 function brk(tr, d, why) {
   const st = tr.st;

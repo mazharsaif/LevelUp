@@ -197,6 +197,17 @@ def or_question(q):
         return dict(q=q["q"], a=q["a"], opts=list(m.groups()))
     return q
 
+# ---- Ch 17 prices (feedback 11-23: "why is the euro between the numbers? explain") ----
+PRICE_NOTE = ("<div class=\"note\"><p><b>Why is “Euro” between the numbers?</b> Germans <i>say</i> a price the way English says "
+              "“3 dollars 50”: the money word goes in the middle, and “cents” is left out. <b>zwei Euro fünfzig</b> = 2 euros, 50 (cents). "
+              "In <i>writing</i> it flips: a comma instead of the middle word, and the € sign after the number: <b>2,50 €</b> (German uses a comma "
+              "as the decimal point).</p><p>Under one euro you say only the cents: <b>neunundneunzig Cent</b> (0,99 €). <b>zwölf Euro fünf</b> "
+              "(12,05 €) means 12 euros and 5 cents. After a number the word stays <b>Euro</b>, never “Euros”.</p></div>")
+for g in grammar:
+    if g["id"] == "g17" and "Why is “Euro” between" not in g["body"]:
+        assert "</tbody></table><h3>Phone numbers</h3>" in g["body"]
+        g["body"] = g["body"].replace("</tbody></table><h3>Phone numbers</h3>", "</tbody></table>" + PRICE_NOTE + "<h3>Phone numbers</h3>", 1)
+
 for g in grammar:
     g["q"] = ch1_questions() if g["num"] == 1 else [or_question(q) for q in g["q"] if not q["a"].startswith("(your own")]
 
@@ -315,6 +326,9 @@ def split_alternatives(de: str, en: str) -> list[tuple[str, str]]:
 
 # "a / b" where b is only a fragment: spelled out by hand (keep store.js OLD_SPLIT in step when adding one)
 FRAGMENT_SPLITS = {
+    # feedback 11-23: "Is Entschuldigung the same as apology?" / "It should mention formally"
+    "Entschuldigung! / Entschuldigen Sie!": [("Entschuldigung!", "Excuse me! / Sorry! (short for “an apology”; fine with anyone)"),
+                                             ("Entschuldigen Sie!", "Excuse me! (formal: to someone you call Sie)")],
     "Danke, gut. Und Ihnen? / Und dir?": [("Danke, gut. Und Ihnen?", "Fine, thanks. And you? (polite)"),
                                           ("Danke, gut. Und dir?", "Fine, thanks. And you? (friends)")],
 }
