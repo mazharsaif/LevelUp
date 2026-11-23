@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "An ID token is …",
+  "o": [
+   "a short-lived signed JWT proving who the user is",
+   "the user's password",
+   "a Firebase config file",
+   "a push token"
+  ],
+  "a": 0,
+  "why": "Your backend can verify it with the Admin SDK."
+ },
+ {
+  "t": "mc",
+  "q": "Which call verifies an ID token in Python?",
+  "o": [
+   "auth.verify_id_token(token)",
+   "messaging.send(token)",
+   "firestore.client()",
+   "initialize_app(token)"
+  ],
+  "a": 0,
+  "why": "Add check_revoked=True to catch revoked tokens."
+ },
+ {
+  "t": "mc",
+  "q": "Why is phone sign-in a cost and abuse risk?",
+  "o": [
+   "It sends SMS, which is billed and attractive to bots",
+   "It needs a Blaze server",
+   "It cannot be verified",
+   "It uses push tokens"
+  ],
+  "a": 0,
+  "why": "Pair it with App Check and limits."
+ },
+ {
+  "t": "mf",
+  "q": "If you already have your own accounts, adding Firebase Auth creates a second login to keep in sync.",
+  "a": true,
+  "why": "That is why LevelUp does not need it."
+ }
+]

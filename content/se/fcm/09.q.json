@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Firestore has no joins, so for 'last 20 orders with product name' you usually …",
+  "o": [
+   "copy the product name into each order document",
+   "run a SQL join",
+   "read the whole products collection",
+   "use a spreadsheet"
+  ],
+  "a": 0,
+  "why": "Model data around the screens; it also keeps the price paid."
+ },
+ {
+  "t": "mc",
+  "q": "A query that filters on one field and sorts on another needs …",
+  "o": [
+   "a composite index",
+   "a Blaze plan",
+   "App Check",
+   "a Cloud Function"
+  ],
+  "a": 0,
+  "why": "The error message links to creating it."
+ },
+ {
+  "t": "mc",
+  "q": "A screen loads a 500-document query. What does it cost per load?",
+  "o": [
+   "About 500 billed reads",
+   "One read",
+   "Nothing, it is cached",
+   "500 writes"
+  ],
+  "a": 0,
+  "why": "Reads are billed per document."
+ },
+ {
+  "t": "mc",
+  "q": "Which is true of a Firestore document?",
+  "o": [
+   "It is limited to about 1 MiB",
+   "It can be any size",
+   "It must be a single field",
+   "It cannot contain maps"
+  ],
+  "a": 0,
+  "why": "Store large blobs in Cloud Storage."
+ }
+]

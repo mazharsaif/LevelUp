@@ -175,7 +175,7 @@
     },
     {
       "id": "fcm",
-      "title": "Firebase Push",
+      "title": "Firebase",
       "icon": "🔥",
       "color": "#FF5DA2",
       "status": "open",
@@ -5471,44 +5471,44 @@
       "n": 1,
       "level": 0,
       "col": 1,
-      "icon": "📬",
+      "icon": "🧱",
       "req": [],
       "mins": 5,
       "chapter": 1,
-      "title": "Why push exists",
-      "short": "The pain and the model",
+      "title": "Why Firebase exists",
+      "short": "The backend chores problem",
       "learn": [
-        "Explain why polling and home-made sockets fall short on Android",
-        "Describe the shared connection that push rides on",
-        "Say what FCM transports, and what it never does",
-        "Name the best-effort rule for delivery"
+        "Describe the backend chores Firebase takes off your hands",
+        "Explain what direct-to-service access means",
+        "Name what you trade for speed: control and portability",
+        "State the three facts to keep in mind about any Firebase product"
       ],
       "concepts": [
-        "Polling",
-        "Shared connection",
-        "FCM",
-        "Best-effort delivery"
+        "Managed service",
+        "Direct-to-service",
+        "Security rules",
+        "Billing per operation"
       ],
       "exercises": [
         "Concept check",
-        "Order the flow",
-        "Myth or fact"
+        "Myth or fact",
+        "Order the flow"
       ],
       "parts": [
         {
           "t": [
-            "The pain",
-            "Why polling and sockets fall short"
+            "The pain"
           ],
           "a": 0,
-          "b": 2
+          "b": 1
         },
         {
           "t": [
-            "The shared connection",
-            "What FCM does and does not do"
+            "The core idea",
+            "What you trade",
+            "Three facts to hold on to"
           ],
-          "a": 3,
+          "a": 2,
           "b": 4
         }
       ],
@@ -5519,7 +5519,7 @@
       "branch": "fcm",
       "n": 2,
       "level": 1,
-      "col": 0,
+      "col": 1,
       "icon": "🗺️",
       "req": [
         "fcm.why"
@@ -5531,14 +5531,15 @@
       "learn": [
         "List the main Firebase products and what each is for",
         "Tell the free Spark plan from the pay-as-you-go Blaze plan",
-        "Separate low lock-in products from high lock-in ones",
-        "Pick one product without adopting the catalogue"
+        "Separate easy-to-leave leaves from hard-to-leave roots",
+        "Say why the config file is not a secret but a service-account key is"
       ],
       "concepts": [
+        "Project",
         "Spark",
         "Blaze",
-        "Lock-in",
-        "Leaf and roots"
+        "Leaf and roots",
+        "Service account"
       ],
       "exercises": [
         "Match the terms",
@@ -5548,19 +5549,193 @@
       "parts": [
         {
           "t": [
-            "Firebase is a catalogue",
-            "The products at a glance"
+            "Project, apps and the config file"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Products at a glance"
+          ],
+          "a": 2,
+          "b": 2
+        },
+        {
+          "t": [
+            "Plans and what they cost",
+            "Roots versus leaf",
+            "Firebase sits on Google Cloud"
+          ],
+          "a": 3,
+          "b": 5
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.auth",
+      "branch": "fcm",
+      "n": 3,
+      "level": 2,
+      "col": 0,
+      "icon": "🪪",
+      "req": [
+        "fcm.map"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "Sign-in (Auth)",
+      "short": "ID tokens and your backend",
+      "learn": [
+        "Say what Firebase Authentication gives you",
+        "Explain what an ID token is and who can verify it",
+        "Verify a token in your own FastAPI backend",
+        "Weigh the lock-in and the SMS cost"
+      ],
+      "concepts": [
+        "ID token",
+        "uid",
+        "verify_id_token",
+        "check_revoked"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Concept check",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "What Auth gives you",
+            "The ID token"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Limits and costs"
+          ],
+          "a": 4,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.store",
+      "branch": "fcm",
+      "n": 4,
+      "level": 2,
+      "col": 2,
+      "icon": "🗃️",
+      "req": [
+        "fcm.map"
+      ],
+      "mins": 5,
+      "chapter": 9,
+      "title": "Firestore data",
+      "short": "Documents, no joins, cost",
+      "learn": [
+        "Describe documents, collections and listeners",
+        "Model data around the screens, not around joins",
+        "Estimate reads per screen and per month",
+        "Know the size and index limits that shape a design"
+      ],
+      "concepts": [
+        "Document",
+        "Collection",
+        "Composite index",
+        "Denormalising",
+        "Reads"
+      ],
+      "exercises": [
+        "Scenario",
+        "Fix the code",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Documents and collections"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "No joins: model for the query"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "What it costs",
+            "Limits that shape design"
+          ],
+          "a": 4,
+          "b": 5
+        }
+      ],
+      "quiz": 4
+    },
+    {
+      "id": "fcm.rules",
+      "branch": "fcm",
+      "n": 5,
+      "level": 3,
+      "col": 1,
+      "icon": "🛡️",
+      "req": [
+        "fcm.auth",
+        "fcm.store"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Security rules",
+      "short": "Your whole authorization",
+      "learn": [
+        "Explain why rules replace your backend authorization",
+        "Write a per-owner rule with a separate create case",
+        "Name the four gotchas: filters, cascade, Admin SDK, lookups",
+        "Test rules in the emulator before every deploy"
+      ],
+      "concepts": [
+        "request.auth",
+        "resource",
+        "Test mode",
+        "App Check"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Attack ↔ defence",
+        "Fix the code"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Rules are your backend security",
+            "A first rule set"
           ],
           "a": 0,
           "b": 2
         },
         {
           "t": [
-            "What it costs",
-            "Roots versus leaf"
+            "Four gotchas"
           ],
           "a": 3,
-          "b": 4
+          "b": 3
+        },
+        {
+          "t": [
+            "Test before you deploy",
+            "A second layer: App Check"
+          ],
+          "a": 4,
+          "b": 5
         }
       ],
       "quiz": 4
@@ -5568,21 +5743,21 @@
     {
       "id": "fcm.tokens",
       "branch": "fcm",
-      "n": 3,
-      "level": 1,
-      "col": 2,
-      "icon": "🪪",
+      "n": 6,
+      "level": 4,
+      "col": 0,
+      "icon": "🔔",
       "req": [
-        "fcm.why"
+        "fcm.rules"
       ],
       "mins": 5,
       "chapter": 3,
-      "title": "Tokens & users",
+      "title": "Push tokens",
       "short": "Who gets the message",
       "learn": [
         "Define a registration token and say why it is not a user id",
         "Design the user-to-token table your server keeps",
-        "Explain why users never log in with Google",
+        "Explain why users never log in with Google for push",
         "Clean up stale tokens when UNREGISTERED comes back"
       ],
       "concepts": [
@@ -5617,14 +5792,65 @@
       "quiz": 4
     },
     {
+      "id": "fcm.serverless",
+      "branch": "fcm",
+      "n": 7,
+      "level": 4,
+      "col": 2,
+      "icon": "⚡",
+      "req": [
+        "fcm.rules"
+      ],
+      "mins": 5,
+      "chapter": 11,
+      "title": "Functions & Hosting",
+      "short": "Trusted code, static files",
+      "learn": [
+        "Say when you need a Cloud Function and when you do not",
+        "Name the plan, cold-start and billing limits",
+        "Choose Hosting for static files and why its lock-in is low",
+        "Keep authoritative values behind trusted code"
+      ],
+      "concepts": [
+        "Cloud Functions",
+        "Cold start",
+        "Hosting",
+        "Cloud Storage",
+        "Admin SDK"
+      ],
+      "exercises": [
+        "Scenario",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Cloud Functions",
+            "Hosting"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Cloud Storage for Firebase",
+            "Where trusted logic lives"
+          ],
+          "a": 3,
+          "b": 4
+        }
+      ],
+      "quiz": 4
+    },
+    {
       "id": "fcm.send",
       "branch": "fcm",
-      "n": 4,
-      "level": 2,
-      "col": 1,
+      "n": 8,
+      "level": 5,
+      "col": 0,
       "icon": "🚀",
       "req": [
-        "fcm.map",
         "fcm.tokens"
       ],
       "mins": 5,
@@ -5676,10 +5902,69 @@
       "quiz": 4
     },
     {
+      "id": "fcm.quality",
+      "branch": "fcm",
+      "n": 9,
+      "level": 5,
+      "col": 2,
+      "icon": "📈",
+      "req": [
+        "fcm.serverless"
+      ],
+      "mins": 5,
+      "chapter": 12,
+      "title": "Measure & protect",
+      "short": "Crashes, flags, App Check",
+      "learn": [
+        "Use Crashlytics and Analytics, and export to BigQuery",
+        "Roll out a feature behind a Remote Config flag",
+        "Turn on App Check without locking out real users",
+        "Run the emulators as part of every deploy"
+      ],
+      "concepts": [
+        "Crashlytics",
+        "Analytics",
+        "Remote Config",
+        "App Check",
+        "Emulator Suite"
+      ],
+      "exercises": [
+        "Scenario",
+        "Match the terms",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Crashlytics and Analytics"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Remote Config and A/B testing",
+            "App Check"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "The Emulator Suite and the CLI",
+            "What to add first"
+          ],
+          "a": 4,
+          "b": 5
+        }
+      ],
+      "quiz": 4
+    },
+    {
       "id": "fcm.choose",
       "branch": "fcm",
-      "n": 5,
-      "level": 3,
+      "n": 10,
+      "level": 6,
       "col": 0,
       "icon": "⚖️",
       "req": [
@@ -5690,16 +5975,16 @@
       "title": "Use it, or not?",
       "short": "When, when not, instead",
       "learn": [
-        "List the signals that say FCM fits",
+        "List the signals that say Firebase fits",
         "List the signals that say it does not",
-        "Compare FCM with polling, Web Push and a socket",
-        "Make the call for LevelUp's nudges and walkie-talkie"
+        "Compare it with your own backend, Supabase and others",
+        "Make the call for LevelUp: FCM only"
       ],
       "concepts": [
-        "Web Push",
-        "Foreground service",
-        "UnifiedPush",
-        "Source of truth"
+        "Supabase",
+        "Own backend",
+        "Source of truth",
+        "Two sources of truth"
       ],
       "exercises": [
         "Design decision",
@@ -5709,15 +5994,16 @@
       "parts": [
         {
           "t": [
-            "Use FCM when",
-            "Do not use FCM (or not alone) when"
+            "Use Firebase when",
+            "Do not use Firebase (or not that part) when"
           ],
           "a": 0,
           "b": 2
         },
         {
           "t": [
-            "Alternatives"
+            "Alternatives",
+            "Worked decision: LevelUp"
           ],
           "a": 3,
           "b": 4
@@ -5728,28 +6014,28 @@
     {
       "id": "fcm.pitfalls",
       "branch": "fcm",
-      "n": 6,
-      "level": 3,
+      "n": 11,
+      "level": 6,
       "col": 2,
       "icon": "🕳️",
       "req": [
-        "fcm.send"
+        "fcm.quality"
       ],
       "mins": 5,
       "chapter": 6,
-      "title": "Pitfalls & phones",
-      "short": "Mistakes and battery savers",
+      "title": "Pitfalls & costs",
+      "short": "Mistakes, guardrails, exit",
       "learn": [
-        "Spot the seven common push mistakes and their fixes",
-        "Explain why some phones never receive your push",
-        "Say what push can and cannot do for a call",
-        "Keep the truth in your database, not in the message"
+        "Spot the eight common mistakes and their fixes",
+        "Set billing guardrails on day one",
+        "Plan an exit before you need one",
+        "Explain why some phones never receive your push"
       ],
       "concepts": [
-        "Doze",
-        "Battery optimisation",
-        "Full-screen intent",
-        "Foreground service"
+        "Budget alert",
+        "Open rules",
+        "Exit strategy",
+        "Battery optimisation"
       ],
       "exercises": [
         "Spot the bug",
@@ -5759,23 +6045,24 @@
       "parts": [
         {
           "t": [
-            "Seven mistakes"
+            "Eight mistakes"
           ],
           "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Billing guardrails"
+          ],
+          "a": 3,
           "b": 3
         },
         {
           "t": [
+            "Exit strategy",
             "The phone is the hidden tax"
           ],
           "a": 4,
-          "b": 4
-        },
-        {
-          "t": [
-            "Calls and always-on audio"
-          ],
-          "a": 5,
           "b": 5
         }
       ],
@@ -5784,8 +6071,8 @@
     {
       "id": "fcm.boss",
       "branch": "fcm",
-      "n": 7,
-      "level": 4,
+      "n": 12,
+      "level": 7,
       "col": 1,
       "icon": "🏁",
       "req": [
@@ -5798,15 +6085,15 @@
       "short": "Self-check and cheat sheet",
       "learn": [
         "Answer the eight design-review questions out loud",
-        "Recall the five key terms and five gotchas",
-        "Apply the rule of thumb: adopt the leaf, doubt the roots",
+        "Recall the key terms and gotchas",
+        "Apply the rule of thumb: adopt the leaves, doubt the roots",
         "Know where to read next"
       ],
       "concepts": [
         "Leaf and roots",
+        "Security rules",
         "Data message",
-        "Token table",
-        "Best-effort"
+        "Budget alert"
       ],
       "exercises": [
         "Capstone review",

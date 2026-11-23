@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "In a Firebase app, the only authorization layer between client and database is …",
+  "o": [
+   "security rules",
+   "Hosting",
+   "Remote Config",
+   "Analytics"
+  ],
+  "a": 0,
+  "why": "Rules decide who may read and write."
+ },
+ {
+  "t": "mf",
+  "q": "Rules are filters: a query for all notes returns only the ones you own.",
+  "a": false,
+  "why": "Myth. The query must be provably allowed; filter by owner in the query."
+ },
+ {
+  "t": "mc",
+  "q": "Why does the example have a separate create rule?",
+  "o": [
+   "On a new document, resource is null",
+   "Create is always denied",
+   "It is faster",
+   "Rules cannot combine"
+  ],
+  "a": 0,
+  "why": "A combined rule using resource.data would fail on create."
+ },
+ {
+  "t": "mc",
+  "q": "What does the Admin SDK do with rules?",
+  "o": [
+   "Bypasses them entirely",
+   "Enforces them twice",
+   "Ignores your users",
+   "Requires App Check"
+  ],
+  "a": 0,
+  "why": "That is why the service-account key is so sensitive."
+ }
+]

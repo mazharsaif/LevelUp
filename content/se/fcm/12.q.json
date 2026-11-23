@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which product groups crashes by cause?",
+  "o": [
+   "Crashlytics",
+   "Remote Config",
+   "Hosting",
+   "Auth"
+  ],
+  "a": 0,
+  "why": "It shows which exception hits which phones."
+ },
+ {
+  "t": "mc",
+  "q": "Analytics data can be exported to …",
+  "o": [
+   "BigQuery, for SQL and models",
+   "Cloud Functions only",
+   "Hosting",
+   "A push token"
+  ],
+  "a": 0,
+  "why": "The natural bridge for a data scientist."
+ },
+ {
+  "t": "mc",
+  "q": "Remote Config is for …",
+  "o": [
+   "changing behaviour or flipping a feature without a release",
+   "storing user files",
+   "sending push",
+   "verifying tokens"
+  ],
+  "a": 0,
+  "why": "Keep flags few and delete them after the experiment."
+ },
+ {
+  "t": "mc",
+  "q": "App Check does what?",
+  "o": [
+   "Proves a request comes from your genuine app",
+   "Replaces security rules",
+   "Encrypts the database",
+   "Sends notifications"
+  ],
+  "a": 0,
+  "why": "It is a layer on top of rules, never a replacement."
+ }
+]

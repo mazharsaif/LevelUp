@@ -1,0 +1,44 @@
+[
+ {
+  "t": "mc",
+  "q": "Where should 'award points' logic run?",
+  "o": [
+   "In a Cloud Function or your backend",
+   "In the app",
+   "In Remote Config",
+   "In Hosting"
+  ],
+  "a": 0,
+  "why": "The client is untrusted."
+ },
+ {
+  "t": "mc",
+  "q": "Which is a real cost of Cloud Functions?",
+  "o": [
+   "Cold starts and per-invocation billing",
+   "No Python support",
+   "It cannot use Firestore",
+   "It is read-only"
+  ],
+  "a": 0,
+  "why": "It also requires the Blaze plan."
+ },
+ {
+  "t": "mc",
+  "q": "Firebase Hosting is a good fit for …",
+  "o": [
+   "static files and a web front end on a CDN",
+   "relational reporting",
+   "push messages",
+   "SMS sign-in"
+  ],
+  "a": 0,
+  "why": "Low lock-in: you can move the files anywhere."
+ },
+ {
+  "t": "mf",
+  "q": "Cloud Storage for Firebase is a good place to keep structured app data instead of a database.",
+  "a": false,
+  "why": "It is for blobs such as images and audio, not queryable data."
+ }
+]

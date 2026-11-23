@@ -1,52 +1,104 @@
 {
   "branch": {
     "id": "fcm",
-    "title": "Firebase Push",
+    "title": "Firebase",
     "icon": "🔥",
     "color": "#FF5DA2"
   },
   "nodes": [
     {
-      "key": "why", "level": 0, "col": 1, "req": [], "icon": "📬", "chapter": 1,
-      "title": "Why push exists",
-      "short": "The pain and the model",
+      "key": "why", "level": 0, "col": 1, "req": [], "icon": "🧱", "chapter": 1,
+      "title": "Why Firebase exists",
+      "short": "The backend chores problem",
       "learn": [
-        "Explain why polling and home-made sockets fall short on Android",
-        "Describe the shared connection that push rides on",
-        "Say what FCM transports, and what it never does",
-        "Name the best-effort rule for delivery"
+        "Describe the backend chores Firebase takes off your hands",
+        "Explain what direct-to-service access means",
+        "Name what you trade for speed: control and portability",
+        "State the three facts to keep in mind about any Firebase product"
       ],
-      "concepts": ["Polling", "Shared connection", "FCM", "Best-effort delivery"],
-      "exercises": ["Concept check", "Order the flow", "Myth or fact"]
+      "concepts": ["Managed service", "Direct-to-service", "Security rules", "Billing per operation"],
+      "exercises": ["Concept check", "Myth or fact", "Order the flow"]
     },
     {
-      "key": "map", "level": 1, "col": 0, "req": ["why"], "icon": "🗺️", "chapter": 2,
+      "key": "map", "level": 1, "col": 1, "req": ["why"], "icon": "🗺️", "chapter": 2,
       "title": "The Firebase map",
       "short": "Products, plans, lock-in",
       "learn": [
         "List the main Firebase products and what each is for",
         "Tell the free Spark plan from the pay-as-you-go Blaze plan",
-        "Separate low lock-in products from high lock-in ones",
-        "Pick one product without adopting the catalogue"
+        "Separate easy-to-leave leaves from hard-to-leave roots",
+        "Say why the config file is not a secret but a service-account key is"
       ],
-      "concepts": ["Spark", "Blaze", "Lock-in", "Leaf and roots"],
+      "concepts": ["Project", "Spark", "Blaze", "Leaf and roots", "Service account"],
       "exercises": ["Match the terms", "Design decision", "Concept check"]
     },
     {
-      "key": "tokens", "level": 1, "col": 2, "req": ["why"], "icon": "🪪", "chapter": 3,
-      "title": "Tokens & users",
+      "key": "auth", "level": 2, "col": 0, "req": ["map"], "icon": "🪪", "chapter": 8,
+      "title": "Sign-in (Auth)",
+      "short": "ID tokens and your backend",
+      "learn": [
+        "Say what Firebase Authentication gives you",
+        "Explain what an ID token is and who can verify it",
+        "Verify a token in your own FastAPI backend",
+        "Weigh the lock-in and the SMS cost"
+      ],
+      "concepts": ["ID token", "uid", "verify_id_token", "check_revoked"],
+      "exercises": ["Fill the code", "Concept check", "Design decision"]
+    },
+    {
+      "key": "store", "level": 2, "col": 2, "req": ["map"], "icon": "🗃️", "chapter": 9,
+      "title": "Firestore data",
+      "short": "Documents, no joins, cost",
+      "learn": [
+        "Describe documents, collections and listeners",
+        "Model data around the screens, not around joins",
+        "Estimate reads per screen and per month",
+        "Know the size and index limits that shape a design"
+      ],
+      "concepts": ["Document", "Collection", "Composite index", "Denormalising", "Reads"],
+      "exercises": ["Scenario", "Fix the code", "Design decision"]
+    },
+    {
+      "key": "rules", "level": 3, "col": 1, "req": ["auth", "store"], "icon": "🛡️", "chapter": 10,
+      "title": "Security rules",
+      "short": "Your whole authorization",
+      "learn": [
+        "Explain why rules replace your backend authorization",
+        "Write a per-owner rule with a separate create case",
+        "Name the four gotchas: filters, cascade, Admin SDK, lookups",
+        "Test rules in the emulator before every deploy"
+      ],
+      "concepts": ["request.auth", "resource", "Test mode", "App Check"],
+      "exercises": ["Spot the bug", "Attack ↔ defence", "Fix the code"]
+    },
+    {
+      "key": "tokens", "level": 4, "col": 0, "req": ["rules"], "icon": "🔔", "chapter": 3,
+      "title": "Push tokens",
       "short": "Who gets the message",
       "learn": [
         "Define a registration token and say why it is not a user id",
         "Design the user-to-token table your server keeps",
-        "Explain why users never log in with Google",
+        "Explain why users never log in with Google for push",
         "Clean up stale tokens when UNREGISTERED comes back"
       ],
       "concepts": ["Registration token", "UNREGISTERED", "POST_NOTIFICATIONS", "Token refresh"],
       "exercises": ["Fix the code", "Concept check", "Scenario"]
     },
     {
-      "key": "send", "level": 2, "col": 1, "req": ["map", "tokens"], "icon": "🚀", "chapter": 4,
+      "key": "serverless", "level": 4, "col": 2, "req": ["rules"], "icon": "⚡", "chapter": 11,
+      "title": "Functions & Hosting",
+      "short": "Trusted code, static files",
+      "learn": [
+        "Say when you need a Cloud Function and when you do not",
+        "Name the plan, cold-start and billing limits",
+        "Choose Hosting for static files and why its lock-in is low",
+        "Keep authoritative values behind trusted code"
+      ],
+      "concepts": ["Cloud Functions", "Cold start", "Hosting", "Cloud Storage", "Admin SDK"],
+      "exercises": ["Scenario", "Design decision", "Concept check"]
+    },
+    {
+      "key": "send", "level": 5, "col": 0, "req": ["tokens"], "icon": "🚀", "chapter": 4,
       "title": "Sending a push",
       "short": "v1 API, data messages",
       "learn": [
@@ -59,42 +111,55 @@
       "exercises": ["Fill the code", "Spot the bug", "Design decision"]
     },
     {
-      "key": "choose", "level": 3, "col": 0, "req": ["send"], "icon": "⚖️", "chapter": 5,
+      "key": "quality", "level": 5, "col": 2, "req": ["serverless"], "icon": "📈", "chapter": 12,
+      "title": "Measure & protect",
+      "short": "Crashes, flags, App Check",
+      "learn": [
+        "Use Crashlytics and Analytics, and export to BigQuery",
+        "Roll out a feature behind a Remote Config flag",
+        "Turn on App Check without locking out real users",
+        "Run the emulators as part of every deploy"
+      ],
+      "concepts": ["Crashlytics", "Analytics", "Remote Config", "App Check", "Emulator Suite"],
+      "exercises": ["Scenario", "Match the terms", "Myth or fact"]
+    },
+    {
+      "key": "choose", "level": 6, "col": 0, "req": ["send"], "icon": "⚖️", "chapter": 5,
       "title": "Use it, or not?",
       "short": "When, when not, instead",
       "learn": [
-        "List the signals that say FCM fits",
+        "List the signals that say Firebase fits",
         "List the signals that say it does not",
-        "Compare FCM with polling, Web Push and a socket",
-        "Make the call for LevelUp's nudges and walkie-talkie"
+        "Compare it with your own backend, Supabase and others",
+        "Make the call for LevelUp: FCM only"
       ],
-      "concepts": ["Web Push", "Foreground service", "UnifiedPush", "Source of truth"],
+      "concepts": ["Supabase", "Own backend", "Source of truth", "Two sources of truth"],
       "exercises": ["Design decision", "Scenario", "Match the terms"]
     },
     {
-      "key": "pitfalls", "level": 3, "col": 2, "req": ["send"], "icon": "🕳️", "chapter": 6,
-      "title": "Pitfalls & phones",
-      "short": "Mistakes and battery savers",
+      "key": "pitfalls", "level": 6, "col": 2, "req": ["quality"], "icon": "🕳️", "chapter": 6,
+      "title": "Pitfalls & costs",
+      "short": "Mistakes, guardrails, exit",
       "learn": [
-        "Spot the seven common push mistakes and their fixes",
-        "Explain why some phones never receive your push",
-        "Say what push can and cannot do for a call",
-        "Keep the truth in your database, not in the message"
+        "Spot the eight common mistakes and their fixes",
+        "Set billing guardrails on day one",
+        "Plan an exit before you need one",
+        "Explain why some phones never receive your push"
       ],
-      "concepts": ["Doze", "Battery optimisation", "Full-screen intent", "Foreground service"],
+      "concepts": ["Budget alert", "Open rules", "Exit strategy", "Battery optimisation"],
       "exercises": ["Spot the bug", "Scenario", "Myth or fact"]
     },
     {
-      "key": "boss", "level": 4, "col": 1, "req": ["choose", "pitfalls"], "icon": "🏁", "chapter": 7, "boss": true,
+      "key": "boss", "level": 7, "col": 1, "req": ["choose", "pitfalls"], "icon": "🏁", "chapter": 7, "boss": true,
       "title": "Final review",
       "short": "Self-check and cheat sheet",
       "learn": [
         "Answer the eight design-review questions out loud",
-        "Recall the five key terms and five gotchas",
-        "Apply the rule of thumb: adopt the leaf, doubt the roots",
+        "Recall the key terms and gotchas",
+        "Apply the rule of thumb: adopt the leaves, doubt the roots",
         "Know where to read next"
       ],
-      "concepts": ["Leaf and roots", "Data message", "Token table", "Best-effort"],
+      "concepts": ["Leaf and roots", "Security rules", "Data message", "Budget alert"],
       "exercises": ["Capstone review", "Scenario", "Design decision"]
     }
   ]

@@ -1,44 +1,44 @@
 [
  {
   "t": "mc",
-  "q": "Why can a closed app get a push within seconds, while its own polling job cannot?",
+  "q": "What problem does Firebase mainly solve?",
   "o": [
-   "The phone keeps one shared OS-level connection that every app rides",
-   "FCM keeps your app running in the background",
-   "Push ignores the battery saver",
-   "Polling is blocked by Google"
+   "It replaces backend chores (login, database, push, hosting) with managed services",
+   "It trains machine-learning models",
+   "It makes apps faster by compiling them",
+   "It replaces the phone's operating system"
   ],
   "a": 0,
-  "why": "Your app is woken by the OS when a message arrives."
+  "why": "You trade control and portability for speed."
  },
  {
   "t": "mc",
-  "q": "What does FCM do?",
+  "q": "'Direct-to-service' means the app …",
   "o": [
-   "Transports a small message from your server to one app install",
-   "Stores your users and their data",
-   "Guarantees every message arrives",
-   "Replaces your backend"
+   "talks to Firebase services itself, with rules deciding access",
+   "must always call your own server first",
+   "never needs a login",
+   "runs inside Google's servers"
   ],
   "a": 0,
-  "why": "It is a pipe, not a database or a login."
+  "why": "That is why security rules matter so much."
  },
  {
   "t": "mf",
-  "q": "Push notifications are guaranteed to be delivered.",
+  "q": "With Firebase you no longer need to think about security.",
   "a": false,
-  "why": "Myth. Delivery is best-effort, so keep the truth in your own backend."
+  "why": "Myth. With direct access, your rules are your authorization layer."
  },
  {
   "t": "mc",
-  "q": "Why is polling every few minutes a poor fit on Android?",
+  "q": "Which statement about billing is true?",
   "o": [
-   "Background work is limited to roughly every 15 minutes",
-   "Android blocks all network use",
-   "It needs a Google account",
-   "It costs money per request"
+   "The database bills per operation, so how you read data becomes cost",
+   "Everything is free forever",
+   "You pay per server",
+   "Billing only starts after a million users"
   ],
   "a": 0,
-  "why": "So 'now' becomes 'within a quarter of an hour'."
+  "why": "Usage patterns drive cost."
  }
 ]

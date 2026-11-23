@@ -3,7 +3,7 @@
   "t": "mc",
   "q": "Firebase is best described as …",
   "o": [
-   "a catalogue of separable app services",
+   "a catalogue of separable managed services",
    "a single database product",
    "a hosting plan only",
    "an Android version"
@@ -13,11 +13,11 @@
  },
  {
   "t": "mc",
-  "q": "Which Firebase products carry high lock-in?",
+  "q": "Which products carry the highest lock-in?",
   "o": [
    "Firestore and Authentication",
-   "Cloud Messaging",
    "Hosting",
+   "Cloud Messaging",
    "None of them"
   ],
   "a": 0,
@@ -25,20 +25,20 @@
  },
  {
   "t": "mf",
-  "q": "Sending push through FCM requires the paid Blaze plan.",
+  "q": "The google-services.json config file is a secret that gives admin access.",
   "a": false,
-  "why": "Myth. FCM is free and works on the no-cost Spark plan (verify current pricing)."
+  "why": "Myth. It only identifies your project. A service-account key is the secret."
  },
  {
   "t": "mc",
-  "q": "The rule of thumb 'adopt the leaf, doubt the roots' means …",
+  "q": "Which product needs the Blaze (pay as you go) plan?",
   "o": [
-   "use push, but think hard before using Firebase's database and login",
-   "avoid all of Firebase",
-   "use every product",
-   "only use Hosting"
+   "Cloud Functions",
+   "Cloud Messaging",
+   "Crashlytics",
+   "App Check"
   ],
   "a": 0,
-  "why": "Push is easy to swap out; data and login are not."
+  "why": "Checked 2026-11-23; verify, as plans change."
  }
 ]

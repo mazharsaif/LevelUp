@@ -1,50 +1,50 @@
 [
  {
   "t": "mc",
-  "q": "When is FCM the wrong tool on its own?",
+  "q": "When is Firebase the wrong choice?",
   "o": [
-   "Delivery must be guaranteed or auditable",
-   "A nudge for a small group",
-   "Waking a closed app",
-   "Sending an id to fetch"
+   "Your data is relational and you need joins and SQL reporting",
+   "A small mobile app with document-shaped data",
+   "You need real-time sync",
+   "You want a free crash reporter"
   ],
   "a": 0,
-  "why": "Use an inbox or SMS as the source of truth, with push as a prompt."
+  "why": "Use Postgres for relational data."
  },
  {
   "t": "mc",
-  "q": "Which fits a PWA with no native app?",
+  "q": "You already run a working backend and only lack push. The best move is …",
   "o": [
-   "Web Push",
-   "FCM through Play Services",
-   "A foreground service",
-   "A TURN server"
+   "add only FCM and keep your own backend",
+   "move everything to Firestore",
+   "add Firebase Auth as well",
+   "rewrite the backend"
   ],
   "a": 0,
-  "why": "Browsers have their own standard push."
+  "why": "Take only what you lack; avoid two sources of truth."
  },
  {
   "t": "mc",
-  "q": "A walkie-talkie that stays connected is best built with …",
+  "q": "Which alternative offers Postgres with auth and storage, and is open source?",
   "o": [
-   "a socket for audio, and FCM to wake and reconnect",
-   "FCM carrying the audio",
-   "polling every 15 minutes",
-   "email"
+   "Supabase",
+   "Crashlytics",
+   "Cloud Functions",
+   "Remote Config"
   ],
   "a": 0,
-  "why": "Push wakes the app; the live part needs a socket or WebRTC."
+  "why": "It gives Firebase-like speed with SQL and an easier exit."
  },
  {
   "t": "mc",
-  "q": "Phones without Google Play Services need …",
+  "q": "For LevelUp, which Firebase product does the guide recommend adopting?",
   "o": [
-   "another route, such as UnifiedPush or polling",
-   "nothing, FCM works anyway",
-   "a bigger payload",
-   "iOS"
+   "Cloud Messaging (FCM) only",
+   "Firestore and Auth",
+   "Everything",
+   "Nothing, ever"
   ],
   "a": 0,
-  "why": "FCM on Android depends on Play Services."
+  "why": "Auth and Firestore would duplicate accounts and progress."
  }
 ]

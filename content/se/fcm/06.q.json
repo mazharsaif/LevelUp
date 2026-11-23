@@ -1,44 +1,44 @@
 [
  {
   "t": "mc",
-  "q": "Your handler never fires in the background. A likely cause?",
+  "q": "Which is the most dangerous Firestore mistake?",
   "o": [
-   "You sent a notification message, not a data message",
-   "The token is too long",
-   "TTL is too short",
-   "The payload is too small"
+   "Shipping open 'test mode' rules",
+   "Using a composite index",
+   "Using a long collection name",
+   "Adding Crashlytics"
   ],
   "a": 0,
-  "why": "The OS tray handles notification messages in the background."
+  "why": "It makes the database public."
  },
  {
   "t": "mc",
-  "q": "Not deleting dead tokens leads to …",
+  "q": "A budget alert on Blaze will …",
   "o": [
-   "slower sends and duplicate or wasted work",
-   "faster delivery",
-   "free quota",
-   "nothing"
+   "notify you when spending crosses a threshold",
+   "automatically stop all spending",
+   "refund you",
+   "disable the app"
   ],
   "a": 0,
-  "why": "Clean them when UNREGISTERED comes back."
+  "why": "A hard stop has to be built by you."
  },
  {
   "t": "mf",
   "q": "A service-account key can safely be committed to a private repo.",
   "a": false,
-  "why": "Keep it out of git; a leaked key lets anyone send pushes as you."
+  "why": "Keep it out of git; it grants admin power and bypasses rules."
  },
  {
   "t": "mc",
-  "q": "A user on some phone brands never gets your push. The likely reason?",
+  "q": "Before adopting Firestore, a good exit-strategy question is …",
   "o": [
-   "An aggressive battery manager delays or drops it",
-   "Your server is down",
-   "FCM is blocked in their country",
-   "The payload is encrypted"
+   "If I had to leave in six months, what would I rewrite?",
+   "Is the logo nice?",
+   "How many collections can I make?",
+   "Does it have dark mode?"
   ],
   "a": 0,
-  "why": "You cannot fix this server-side; guide users to whitelist the app."
+  "why": "If the answer is 'everything', that is the lock-in price."
  }
 ]

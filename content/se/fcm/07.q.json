@@ -1,15 +1,15 @@
 [
  {
   "t": "mc",
-  "q": "Why does the guide say keep the truth in your database?",
+  "q": "Why does the guide say adopt the leaves and doubt the roots?",
   "o": [
-   "Push is best-effort and can be late or lost",
-   "FCM deletes messages instantly",
-   "Databases are faster",
-   "It is cheaper"
+   "Push and hosting are easy to swap; Firestore and Auth become your application",
+   "Roots are free and leaves are paid",
+   "Leaves are less secure",
+   "Roots only work on iOS"
   ],
   "a": 0,
-  "why": "The app reads your backend on open; push only says look now."
+  "why": "Lock-in is uneven across products."
  },
  {
   "t": "mc",
@@ -25,15 +25,15 @@
  },
  {
   "t": "mc",
-  "q": "What does choosing FCM commit you to?",
+  "q": "You need joins and SQL reporting for an internal tool. Pick …",
   "o": [
-   "A sender, a token table and Google as a transport",
-   "Google owning your data and logins",
-   "A paid plan",
-   "A rewrite of your backend"
+   "Postgres, or Supabase",
+   "Firestore",
+   "Remote Config",
+   "Hosting"
   ],
   "a": 0,
-  "why": "It is a leaf, so it is easy to remove."
+  "why": "Relational needs point to a relational database."
  },
  {
   "t": "mf",
