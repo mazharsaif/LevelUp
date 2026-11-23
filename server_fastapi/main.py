@@ -18,7 +18,9 @@ import sys
 import threading
 import time
 from datetime import date
+from typing import Literal
 
+import ask
 import auth
 from fastapi import FastAPI, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -748,6 +750,72 @@ def send_nudge(request: Request, body: NudgeIn):
         d["nudges"] = d["nudges"][-NUDGE_KEEP:]
         save_pg(d)
         return {"ok": True}
+
+
+# ---------- study helper (see ask.py and docs/design/chatbot/) ----------
+class AskItem(BaseModel):
+    text: str = Field("", max_length=140)
+    meaning: str = Field("", max_length=140)
+    kind: str = Field("", max_length=20)
+
+
+class AskIn(BaseModel):
+    course: str = Field(DEFAULT_COURSE, pattern=COURSE_RE)
+    target_lang: str = Field("", max_length=20)
+    ui_lang: str = Field("en", max_length=5)
+    lesson: str = Field("", max_length=80)
+    step_type: str = Field("", max_length=20)
+    phase: Literal["before", "after"] = "after"
+    item: AskItem = AskItem()
+    screen_text: str = Field("", max_length=500)
+    card_text: str = Field("", max_length=1500)
+    correct: str = Field("", max_length=140)
+    was_right: bool | None = None
+    question: str = Field(..., max_length=140)
+    chip_id: str = Field("custom", max_length=20)
+    prev_q: str = Field("", max_length=140)
+    prev_a: str = Field("", max_length=400)
+
+
+class AskFeedback(BaseModel):
+    id: str = Field(..., pattern=r"^q_[0-9a-f]{8}$")
+    kind: Literal["up", "down", "wrong"]
+
+
+def ask_err(e: ask.AskError) -> JSONResponse:
+    return JSONResponse({"ok": False, "code": e.code, "message": e.message, **e.extra}, status_code=e.status)
+
+
+@app.get("/api/ask/quota", tags=["study helper"])
+def ask_quota(request: Request):
+    """Is the study helper on, and how many questions are left today?"""
+    denied = need(request)
+    if denied:
+        return denied
+    return {"enabled": ask.enabled(DATA), "cap": ask.CAP, "left_today": ask.left_today(DATA, me(request))}
+
+
+@app.post("/api/ask", tags=["study helper"])
+def ask_question(request: Request, body: AskIn):
+    """One short question about the card the learner is looking at (GroqCloud, brief answers, daily cap)."""
+    denied = need(request)
+    if denied:
+        return denied
+    p = body.model_dump()
+    try:
+        return ask.answer(DATA, me(request), p)
+    except ask.AskError as e:
+        return ask_err(e)
+
+
+@app.post("/api/ask/feedback", tags=["study helper"])
+def ask_feedback(request: Request, body: AskFeedback):
+    """👍 / 👎 / 🚩 on an answer (🚩 removes it from the cache)."""
+    denied = need(request)
+    if denied:
+        return denied
+    ask.feedback(DATA, me(request), body.id, body.kind)
+    return {"ok": True}
 
 
 @app.get("/api/nudges", tags=["party gates"])

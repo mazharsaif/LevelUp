@@ -2,6 +2,7 @@ import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COUR
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
   importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
+import { setAskHost, loadQuota, askOn, askCap, openAsk } from "./ask.js";
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startPractice, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { installBugButton } from "./bugreport.js";
@@ -38,6 +39,7 @@ const closeSheet = () => {
   sheetRoot().innerHTML = "";
   if (window.history.state && window.history.state.sheet) window.history.replaceState({ dead: 1 }, "", location.hash); // its history entry is skipped on back
 };
+setAskHost({ sheet, closeSheet, toast });   // the study helper (js/ask.js) opens its bottom sheet through these
 // ---------- Android back gesture ----------
 // Back closes an open sheet, skips entries of sheets already closed, asks before quitting a lesson (in route()),
 // and on the first page asks for a second back before the app closes instead of dropping to the home screen.
@@ -83,7 +85,7 @@ function route() {
     location.replace(["tree", "life"].includes(courseInfo(COURSE).type) ? "#/home" : "#/today");
     setTimeout(() => goAction(act, decodeURIComponent(arg || "")), 120); return;
   }
-  pushWidget(); checkNudges();
+  pushWidget(); checkNudges(); if (USER) loadQuota();
   if (courseInfo(COURSE).type === "life") return lifeRoute(h);
   if (courseInfo(COURSE).type === "tree") { const [, nm, arg] = h.split("/"); return nm === "guide" ? (document.body.classList.add("in-lesson"), guideView()) : nm === "branch" && arg ? treeView(arg) : seHome(); }
   if (h === "#/guide") { document.querySelectorAll("#tabs a").forEach(a => a.classList.remove("on")); return guideView(); }
@@ -725,6 +727,7 @@ function settingsView() {
     <label class="toggle">Sounds on <input type="checkbox" id="snd" ${S.settings.sound ? "checked" : ""}></label>
     <label class="toggle">🔇 Skip hearing exercises <input type="checkbox" id="nl" ${S.settings.noListen ? "checked" : ""}></label>
     <p class="muted small" style="margin:4px 0 0">For public places: lessons leave out “What do you hear?” questions. A skipped one isn't counted against you.</p>
+    ${askOn() ? `<div style="font-weight:700;margin-top:12px">💬 Study helper</div><p class="muted small" style="margin:4px 0 0">Ask about the card you're on (a hint before you answer, more help after). Free, up to ${askCap()} questions a day. Your question and the card text go to an AI service (Groq) and are saved to improve the answers. Your name and email are never sent. Answers can be wrong: tap 🚩 to report one.</p>` : ""}
     ${speakAvailable() ? `<label class="toggle">🎤 Speaking practice in phrase lessons <input type="checkbox" id="spk" ${S.settings.speak !== false ? "checked" : ""}></label>
     <p class="muted small" style="margin:4px 0 0">Uses the microphone; Chrome sends the audio to Google to recognise it. Optional, never costs XP.</p>` : ""}</div>
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
@@ -1312,11 +1315,16 @@ async function openReader(br, node, partIdx) {
       <div class="reader" id="rd">
         <div class="r-eyebrow">${node ? `${node.icon} ${esc(node.title)}${parts ? ` · Part ${k + 1} of ${parts.length}` : ""}` : `${br.icon} ${esc(br.title)}`}</div>
         <div class="q-title r-sec">${esc(c.s)}</div>${c.sub ? `<div class="r-sub">${esc(c.sub)}</div>` : ""}
-        <div class="rcard">${c.html}</div></div>
+        <div class="rcard">${c.html}</div>
+        ${askOn() ? `<div class="askrow"><button class="askchip" id="explain" type="button">💬 Explain simply</button></div>` : ""}</div>
       <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="rb" ${i === A ? "disabled" : ""} style="margin:0">‹ Back</button>
         <button class="btn grow" id="rn" style="margin:0">${last ? finishLabel : "Next ›"}</button></div></div>`;
     window.scrollTo(0, 0);
     view().querySelector("#rx").onclick = () => { treeView(); };
+    const ex = view().querySelector("#explain");
+    if (ex) ex.onclick = () => { const t = document.createElement("div"); t.innerHTML = c.html;
+      openAsk({ course: COURSE, target_lang: br.title, ui_lang: "en", lesson: node ? node.title : br.title, step_type: "reader_card", phase: "after",
+        item: { text: c.s, meaning: "", kind: "card" }, card_text: (t.textContent || "").replace(/\s+/g, " ").trim().slice(0, 1200) }, "explain", "Explain this simply."); };
     view().querySelector("#rb").onclick = () => { if (i > A) { i--; S.read[key] = i; save(); draw(); } };
     view().querySelector("#rn").onclick = () => {
       if (!last) { i++; S.read[key] = i; save(); draw(); return; }

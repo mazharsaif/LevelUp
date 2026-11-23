@@ -19,8 +19,8 @@ const nodes = T.nodes.filter(n => n.branch === branch), first = nodes.find(n => 
 const b = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: "new" });
 const pg = await b.newPage(); const errs = [], fails = [];
 pg.on("pageerror", e => errs.push(e.message)); pg.on("console", m => m.type() === "error" && !/^Failed to load resource/.test(m.text()) && errs.push("console: " + m.text()));
-// failed requests by URL; /api/auth/* and /api/health are 404s on server.py (no logins, no health check) and expected there
-pg.on("response", r => r.status() >= 400 && !/\/api\/(auth\/|health)/.test(r.url()) && errs.push(`HTTP ${r.status()} ${r.url()}`));
+// failed requests by URL; /api/auth/*, /api/health and /api/ask/* are 404s on server.py (no logins, health check or study helper) and expected there
+pg.on("response", r => r.status() >= 400 && !/\/api\/(auth\/|health|ask\/)/.test(r.url()) && errs.push(`HTTP ${r.status()} ${r.url()}`));
 await pg.emulate({ viewport: { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, userAgent: "Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile" });
 await pg.goto(U, { waitUntil: "networkidle0" });
 const user = (await (await fetch(U + "api/users")).json())[0].id;

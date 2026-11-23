@@ -2,6 +2,7 @@
 import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord, gradeWord, nextIvl, addPenalty, GRADES, completeItem, bitsOf, completeBit, goalFor, XPR, nameSpellQuestion } from "./store.js";
 import { play, blip, stopAudio, playSoon } from "./audio.js";
 import { L } from "./lang.js";
+import { askOn, mountBefore, mountExplain, mountAfter } from "./ask.js";
 import { rankEmblem, applyAura, auraName, STAGES, stageFor } from "./hero.js";
 
 // ---------- tiny helpers ----------
@@ -352,6 +353,11 @@ function render() {
   if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps.splice(R.i, 1); R.total--; return render(); }
   if (s.w) R.words.add(s.w.id);
   ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  // study helper (docs/design/chatbot/): a hint before you answer, "more about this" on teaching cards
+  if (askOn()) {
+    if (["mc", "type", "gender", "read", "cloze", "build", "say", "gq", "gmc"].includes(s.t)) mountBefore(lb, () => askContext(s, "before"));
+    else if (s.t === "intro" || s.t === "flip") mountExplain(lb, () => askContext(s, "after", true, ""), s.t === "intro" ? "💬 More about this word" : "💬 More about this");
+  }
 }
 
 export function confirmQuit() {
@@ -372,6 +378,20 @@ function foot(html) {
 }
 
 function next() { R.i++; R.done++; render(); }
+
+// What the study helper may know about this step. The server decides what reaches the model: before you answer it never sees the
+// answer (only used to check that a hint doesn't give it away). Nothing here identifies the learner.
+function askContext(s, phase, ok, correctHTML) {
+  const lb = document.getElementById("lb"), w = s.w, p = s.p;
+  const item = w ? { text: w.de, meaning: w.en, kind: w.type || "word" } : p ? { text: p.de, meaning: p.en, kind: "phrase" }
+    : { text: s.de || s.sayDe || "", meaning: s.en || "", kind: s.de || s.sayDe ? "phrase" : "" };
+  const plain = h => String(h || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  let correct = plain(correctHTML);
+  if (!correct && phase === "before" && w) correct = s.t === "mc" ? (s.dir === "en_de" ? w.de : w.en) : s.t === "type" ? w.de : "";
+  return { course: (C.course && C.course.id) || "", target_lang: L.name, ui_lang: "en", lesson: R ? R.title : "", step_type: s.t, phase, item,
+    screen_text: (lb ? lb.innerText : "").replace(/\s+/g, " ").slice(0, 480), correct: correct.slice(0, 140), was_right: phase === "after" ? !!ok : null,
+    _options: lb ? [...lb.querySelectorAll(".opt")].map(b => b.textContent.trim()) : [] };
+}
 
 // record an answer, show feedback, requeue on miss
 function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } = {}) {
@@ -401,6 +421,8 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
     <button class="btn ${ok ? "" : "red"}" id="go">Continue</button>`;
   document.querySelectorAll(".lesson-foot").forEach(x => x.remove());
   view().appendChild(f);
+  document.querySelectorAll(".askrow.before").forEach(x => x.remove());
+  mountAfter(f, () => askContext(s, "after", ok, correctHTML));
   const ov = f.querySelector("#ov");
   if (ov) ov.onclick = () => { R.right++; R.firstTry[key] = true; if (s.t === "say" && R.say && !s.retry) R.say[s.de] = true; next(); };
   f.querySelector("#go").onclick = next;
