@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Where should 'award points' logic run?",
+  "q": "A small team builds a mobile app with live updates and offline use, and has no backend. What does Firebase look like?",
   "o": [
-   "In a Cloud Function or your backend",
-   "In the app",
-   "In Remote Config",
-   "In Hosting"
+   "A poor fit",
+   "A good fit",
+   "Only for Hosting",
+   "Only with SQL Connect"
   ],
-  "a": 0,
-  "why": "The client is untrusted."
+  "a": 1,
+  "why": "Small team, real-time, offline and no backend to run are all signals that Firebase fits."
  },
  {
   "t": "mc",
-  "q": "Which is a real cost of Cloud Functions?",
+  "q": "Staff need monthly reports joining customers, invoices and products. What do you choose?",
   "o": [
-   "Cold starts and per-invocation billing",
-   "No Python support",
-   "It cannot use Firestore",
-   "It is read-only"
+   "Firestore with live listeners",
+   "Firestore and many copies",
+   "A SQL database with a reporting tool",
+   "Only Cloud Messaging"
   ],
-  "a": 0,
-  "why": "It also requires the Blaze plan."
+  "a": 2,
+  "why": "Relational data and SQL questions are a weak spot for Firestore, which has no joins in its standard edition and bills per read."
  },
  {
   "t": "mc",
-  "q": "Firebase Hosting is a good fit for …",
+  "q": "A working website only needs push. What is the sensible plan?",
   "o": [
-   "static files and a web front end on a CDN",
-   "relational reporting",
-   "push messages",
-   "SMS sign-in"
+   "Move all data to Firestore",
+   "Rewrite the backend in Functions",
+   "Drop push",
+   "Add only Cloud Messaging; keep the backend"
+  ],
+  "a": 3,
+  "why": "Adopt one piece: save tokens in the existing database and send from the existing server with the Admin SDK."
+ },
+ {
+  "t": "mc",
+  "q": "Which Firebase piece is hardest to leave?",
+  "o": [
+   "Firestore",
+   "Hosting",
+   "Analytics",
+   "Cloud Messaging"
   ],
   "a": 0,
-  "why": "Low lock-in: you can move the files anywhere."
+  "why": "Its data model, rules and live listeners are spread through the whole app."
+ },
+ {
+  "t": "mc",
+  "q": "Users want to search for words inside their notes. What is true for Firestore standard edition?",
+  "o": [
+   "It has built-in full-text search",
+   "Use a search extension or the Enterprise edition",
+   "Use a count query",
+   "Search works offline only"
+  ],
+  "a": 1,
+  "why": "Full-text search is not in the standard edition; use an extension that copies data to a search service, or Enterprise edition text search."
+ },
+ {
+  "t": "mc",
+  "q": "A contract says data must stay in one country. What matters most?",
+  "o": [
+   "The Hosting domain",
+   "The number of functions",
+   "Choosing the Firestore location at creation",
+   "Turning on Analytics"
+  ],
+  "a": 2,
+  "why": "The location is chosen once when you create the database and cannot be changed later."
  },
  {
   "t": "mf",
-  "q": "Cloud Storage for Firebase is a good place to keep structured app data instead of a database.",
+  "q": "Firestore can count, sum and average on the server, and these results update live in a listener.",
   "a": false,
-  "why": "It is for blobs such as images and audio, not queryable data."
+  "why": "Aggregation queries exist, but they do not work with live listeners or offline."
+ },
+ {
+  "t": "mf",
+  "q": "You can use Firebase Hosting alone, without Auth or Firestore.",
+  "a": true,
+  "why": "Each Firebase product works on its own; Hosting is a common single piece and easy to leave."
  }
 ]

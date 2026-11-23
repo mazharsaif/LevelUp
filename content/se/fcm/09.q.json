@@ -1,50 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Firestore has no joins, so for 'last 20 orders with product name' you usually …",
+  "q": "Scripts create accounts and flood your Notes app with writes. Your rules are correct. What do you add?",
   "o": [
-   "copy the product name into each order document",
-   "run a SQL join",
-   "read the whole products collection",
-   "use a spreadsheet"
+   "Another Analytics event",
+   "App Check, monitored then enforced",
+   "A Remote Config flag",
+   "Performance Monitoring"
   ],
-  "a": 0,
-  "why": "Model data around the screens; it also keeps the price paid."
+  "a": 1,
+  "why": "App Check rejects requests that do not come from your genuine app; rules alone cannot tell a script from your app."
  },
  {
   "t": "mc",
-  "q": "A query that filters on one field and sorts on another needs …",
+  "q": "You turn on App Check enforcement on launch day. What is the likely result?",
   "o": [
-   "a composite index",
-   "a Blaze plan",
-   "App Check",
-   "a Cloud Function"
+   "Nothing changes",
+   "Firestore gets faster",
+   "Users on older versions get errors",
+   "Rules stop working"
   ],
-  "a": 0,
-  "why": "The error message links to creating it."
+  "a": 2,
+  "why": "Enforcement rejects unverified requests. Watch the metrics first, then enforce one product at a time."
  },
  {
   "t": "mc",
-  "q": "A screen loads a 500-document query. What does it cost per load?",
+  "q": "Which event parameter is fine to send to Analytics?",
   "o": [
-   "About 500 billed reads",
-   "One read",
-   "Nothing, it is cached",
-   "500 writes"
+   "The note text",
+   "The user's email",
+   "has_photo: \"yes\"",
+   "The user's uid"
   ],
-  "a": 0,
-  "why": "Reads are billed per document."
+  "a": 2,
+  "why": "Send categories, never personal data such as text, emails or ids."
  },
  {
   "t": "mc",
-  "q": "Which is true of a Firestore document?",
+  "q": "Photo uploads fail in production. What lets you hide the feature in minutes?",
   "o": [
-   "It is limited to about 1 MiB",
-   "It can be any size",
-   "It must be a single field",
-   "It cannot contain maps"
+   "A feature flag in Remote Config",
+   "A new app store release",
+   "Deleting the Storage bucket",
+   "A Crashlytics custom key"
   ],
   "a": 0,
-  "why": "Store large blobs in Cloud Storage."
+  "why": "If the app already reads a flag with a default, you change the value in the console and apps pick it up on their next fetch."
+ },
+ {
+  "t": "mc",
+  "q": "Why does Crashlytics group crash reports into issues?",
+  "o": [
+   "To lower the bill",
+   "To hide rare crashes",
+   "To make apps smaller",
+   "To show which problem hits most users"
+  ],
+  "a": 3,
+  "why": "Grouping turns thousands of reports into a few issues, ranked by users affected, so you fix the biggest first."
+ },
+ {
+  "t": "mc",
+  "q": "You want a new reminder screen to reach users slowly and safely. Which approach fits best?",
+  "o": [
+   "A/B test with ten users",
+   "Remote Config rollout by percentage",
+   "Ship to everyone and watch",
+   "Store the screen in Analytics"
+  ],
+  "a": 1,
+  "why": "A rollout gives the new value to a small share first; you raise it while watching crashes and events, and can roll back."
+ },
+ {
+  "t": "mf",
+  "q": "Remote Config is a safe place to store an API secret because only your app fetches it.",
+  "a": false,
+  "why": "Values reach the client, so anyone inspecting the app can read them. Keep secrets on a server."
+ },
+ {
+  "t": "mf",
+  "q": "In the lab, the app keeps working with its default value even when the fetch fails.",
+  "a": true,
+  "why": "Defaults set in code are used until a fetch succeeds, which is also how the app behaves offline."
  }
 ]

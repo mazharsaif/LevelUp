@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "In a Firebase app, the only authorization layer between client and database is …",
+  "q": "Your budget alert at 100% arrives by email. What has happened to the app?",
   "o": [
-   "security rules",
-   "Hosting",
-   "Remote Config",
-   "Analytics"
+   "It is paused",
+   "It keeps running and costing",
+   "Billing is removed",
+   "Firestore goes read-only"
+  ],
+  "a": 1,
+  "why": "Alerts only notify; they never stop spending, and billing data arrives with a delay."
+ },
+ {
+  "t": "mc",
+  "q": "The Notes home screen lists notes with no limit(). What happens to reads as users write more notes?",
+  "o": [
+   "They grow with the data",
+   "They stay flat",
+   "They drop to zero",
+   "They are free after 50"
   ],
   "a": 0,
-  "why": "Rules decide who may read and write."
+  "why": "Each returned document is a read, so an unbounded query costs more every month. Add limit() and paginate."
+ },
+ {
+  "t": "mc",
+  "q": "A function runs on each write to a note and updates that same note. What goes wrong?",
+  "o": [
+   "The note is deleted",
+   "Rules block it",
+   "It triggers itself in a loop",
+   "Nothing at all"
+  ],
+  "a": 2,
+  "why": "Each update is a new write that starts the function again. Exit early when nothing changed."
+ },
+ {
+  "t": "mc",
+  "q": "You want spending to stop by itself at a limit. What does disabling billing by code cost you?",
+  "o": [
+   "Nothing, it is safe",
+   "Only Functions pause",
+   "A small fee",
+   "All services stop; data may be lost"
+  ],
+  "a": 3,
+  "why": "Removing the billing account shuts down every service in the project, and resources might be deleted for good."
+ },
+ {
+  "t": "mc",
+  "q": "One screen reads 20 notes per open, opened 5 times a day by 1,000 users. Reads per day?",
+  "o": [
+   "100,000",
+   "20,000",
+   "5,000",
+   "1,000,000"
+  ],
+  "a": 0,
+  "why": "1,000 x 5 x 20 = 100,000 reads; subtract the free daily quota to find billable reads."
+ },
+ {
+  "t": "mc",
+  "q": "Which item is a real pre-launch risk?",
+  "o": [
+   "The web apiKey in the app",
+   "Owner-based rules with tests",
+   "A service-account key in the repo",
+   "Budget alerts to a team inbox"
+  ],
+  "a": 2,
+  "why": "A service-account key gives full admin access. The web config is not a secret."
  },
  {
   "t": "mf",
-  "q": "Rules are filters: a query for all notes returns only the ones you own.",
+  "q": "Moving to Blaze removes the free quotas, so a small app suddenly costs money.",
   "a": false,
-  "why": "Myth. The query must be provably allowed; filter by owner in the query."
+  "why": "Blaze keeps the free quotas and charges only for usage above them."
  },
  {
-  "t": "mc",
-  "q": "Why does the example have a separate create rule?",
-  "o": [
-   "On a new document, resource is null",
-   "Create is always denied",
-   "It is faster",
-   "Rules cannot combine"
-  ],
-  "a": 0,
-  "why": "A combined rule using resource.data would fail on create."
- },
- {
-  "t": "mc",
-  "q": "What does the Admin SDK do with rules?",
-  "o": [
-   "Bypasses them entirely",
-   "Enforces them twice",
-   "Ignores your users",
-   "Requires App Check"
-  ],
-  "a": 0,
-  "why": "That is why the service-account key is so sensitive."
+  "t": "mf",
+  "q": "You can export your users, but password hashes use Firebase's own scrypt variant, so the new system must support it or users reset passwords.",
+  "a": true,
+  "why": "firebase auth:export includes the hashes; importing them elsewhere needs the hash settings and support for that variant."
  }
 ]

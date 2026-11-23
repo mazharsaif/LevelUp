@@ -1,50 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "When is Firebase the wrong choice?",
+  "q": "Your Notes app hides other people's notes in the screens. Why is that not enough?",
   "o": [
-   "Your data is relational and you need joins and SQL reporting",
-   "A small mobile app with document-shaped data",
-   "You need real-time sync",
-   "You want a free crash reporter"
+   "Screens run slowly on old phones",
+   "Anyone can send requests straight to Firestore with your public config",
+   "Firestore deletes hidden notes",
+   "Google reviews your screens before launch"
   ],
-  "a": 0,
-  "why": "Use Postgres for relational data."
+  "a": 1,
+  "why": "The client talks to the database directly. Only security rules decide which requests succeed."
  },
  {
   "t": "mc",
-  "q": "You already run a working backend and only lack push. The best move is …",
+  "q": "In an update rule, which check stops a user from changing a note's owner?",
   "o": [
-   "add only FCM and keep your own backend",
-   "move everything to Firestore",
-   "add Firebase Auth as well",
-   "rewrite the backend"
+   "request.auth != null",
+   "resource.data.text is string",
+   "request.resource.data.ownerId == resource.data.ownerId",
+   "request.time > resource.data.createdAt"
   ],
-  "a": 0,
-  "why": "Take only what you lack; avoid two sources of truth."
+  "a": 2,
+  "why": "It compares the owner after the write with the stored owner, so the owner field cannot change."
  },
  {
   "t": "mc",
-  "q": "Which alternative offers Postgres with auth and storage, and is open source?",
+  "q": "With owner-only read rules, getDocs(collection(db, \"notes\")) fails. What should you do?",
   "o": [
-   "Supabase",
-   "Crashlytics",
-   "Cloud Functions",
-   "Remote Config"
+   "Add where(\"ownerId\", \"==\", uid) to the query",
+   "Allow read for all signed-in users",
+   "Use the Admin SDK in the browser",
+   "Wait a few minutes and retry"
   ],
   "a": 0,
-  "why": "It gives Firebase-like speed with SQL and an easier exit."
+  "why": "Rules are not filters. The query must only be able to return documents the caller may read."
+ },
+ {
+  "t": "mf",
+  "q": "A rule on users/{uid} also protects users/{uid}/tokens.",
+  "a": false,
+  "why": "Rules do not cascade to subcollections. The tokens subcollection needs its own match and allow."
  },
  {
   "t": "mc",
-  "q": "For LevelUp, which Firebase product does the guide recommend adopting?",
+  "q": "Your database still uses the test mode rule. What is the real risk?",
   "o": [
-   "Cloud Messaging (FCM) only",
-   "Firestore and Auth",
-   "Everything",
-   "Nothing, ever"
+   "Only the app gets slower",
+   "Anyone can read, change or delete all data until the date",
+   "Only signed-in users can write",
+   "Writes are free until the date"
   ],
-  "a": 0,
-  "why": "Auth and Firestore would duplicate accounts and progress."
+  "a": 1,
+  "why": "The test mode rule matches every document and allows all reads and writes until the date in it."
+ },
+ {
+  "t": "mc",
+  "q": "A Cloud Function updates another user's note and it works, even with strict rules. Why?",
+  "o": [
+   "The rules file failed to deploy",
+   "Functions run in test mode",
+   "The Admin SDK bypasses security rules",
+   "The emulator is still running"
+  ],
+  "a": 2,
+  "why": "Server code with the Admin SDK ignores rules, so it must make its own checks."
+ },
+ {
+  "t": "mf",
+  "q": "A get() lookup inside a rule is free if the request is denied.",
+  "a": false,
+  "why": "Each get() or exists() is billed as a read, even when the request is denied."
+ },
+ {
+  "t": "mc",
+  "q": "Which test best proves your owner-only read rule works?",
+  "o": [
+   "Ana reads her own note and it succeeds",
+   "Ben reads Ana's note and assertFails passes",
+   "The app starts with no errors",
+   "The console shows no warnings"
+  ],
+  "a": 1,
+  "why": "A rule that allows too much shows no errors in normal use. Only a test of the denied case catches the leak."
  }
 ]

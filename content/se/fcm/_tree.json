@@ -7,160 +7,370 @@
   },
   "nodes": [
     {
-      "key": "why", "level": 0, "col": 1, "req": [], "icon": "🧱", "chapter": 1,
+      "key": "why",
+      "level": 0,
+      "col": 1,
+      "req": [],
+      "icon": "🧱",
+      "chapter": 1,
       "title": "Why Firebase exists",
-      "short": "The backend chores problem",
+      "short": "The problem it solves",
       "learn": [
-        "Describe the backend chores Firebase takes off your hands",
-        "Explain what direct-to-service access means",
-        "Name what you trade for speed: control and portability",
-        "State the three facts to keep in mind about any Firebase product"
+        "Name the chores a backend must do before the first user arrives",
+        "Explain what Firebase is, and what it is not",
+        "Describe how an app talks to Firebase directly",
+        "Weigh the trade: speed against control and lock-in"
       ],
-      "concepts": ["Managed service", "Direct-to-service", "Security rules", "Billing per operation"],
-      "exercises": ["Concept check", "Myth or fact", "Order the flow"]
+      "concepts": [
+        "Backend",
+        "Managed service",
+        "SDK",
+        "Lock-in"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact",
+        "Match the terms"
+      ],
+      "mins": 9
     },
     {
-      "key": "map", "level": 1, "col": 1, "req": ["why"], "icon": "🗺️", "chapter": 2,
-      "title": "The Firebase map",
-      "short": "Products, plans, lock-in",
-      "learn": [
-        "List the main Firebase products and what each is for",
-        "Tell the free Spark plan from the pay-as-you-go Blaze plan",
-        "Separate easy-to-leave leaves from hard-to-leave roots",
-        "Say why the config file is not a secret but a service-account key is"
+      "key": "map",
+      "level": 1,
+      "col": 1,
+      "req": [
+        "why"
       ],
-      "concepts": ["Project", "Spark", "Blaze", "Leaf and roots", "Service account"],
-      "exercises": ["Match the terms", "Design decision", "Concept check"]
+      "icon": "🛠️",
+      "chapter": 2,
+      "title": "Project & plans",
+      "short": "Set up and test for free",
+      "learn": [
+        "Create a project and register a web app",
+        "Explain why the config object is not a secret",
+        "Install the CLI and start the Emulator Suite",
+        "Tell the Spark plan from the Blaze plan"
+      ],
+      "concepts": [
+        "Project",
+        "Config object",
+        "Firebase CLI",
+        "Emulator Suite",
+        "Spark and Blaze"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Concept check",
+        "Design decision"
+      ],
+      "mins": 10
     },
     {
-      "key": "auth", "level": 2, "col": 0, "req": ["map"], "icon": "🪪", "chapter": 8,
+      "key": "auth",
+      "level": 2,
+      "col": 0,
+      "req": [
+        "map"
+      ],
+      "icon": "🪪",
+      "chapter": 3,
       "title": "Sign-in (Auth)",
-      "short": "ID tokens and your backend",
+      "short": "Users, uid and tokens",
       "learn": [
-        "Say what Firebase Authentication gives you",
-        "Explain what an ID token is and who can verify it",
-        "Verify a token in your own FastAPI backend",
-        "Weigh the lock-in and the SMS cost"
+        "Sign users up and in with email and Google",
+        "React to the signed-in state in your app",
+        "Explain what the uid is and why everything uses it",
+        "Verify an ID token on your own server"
       ],
-      "concepts": ["ID token", "uid", "verify_id_token", "check_revoked"],
-      "exercises": ["Fill the code", "Concept check", "Design decision"]
+      "concepts": [
+        "Authentication",
+        "uid",
+        "ID token",
+        "Auth state",
+        "Provider"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Concept check",
+        "Scenario"
+      ],
+      "mins": 9
     },
     {
-      "key": "store", "level": 2, "col": 2, "req": ["map"], "icon": "🗃️", "chapter": 9,
+      "key": "store",
+      "level": 2,
+      "col": 2,
+      "req": [
+        "map"
+      ],
+      "icon": "🗃️",
+      "chapter": 4,
       "title": "Firestore data",
-      "short": "Documents, no joins, cost",
+      "short": "Documents, queries, cost",
       "learn": [
-        "Describe documents, collections and listeners",
-        "Model data around the screens, not around joins",
-        "Estimate reads per screen and per month",
-        "Know the size and index limits that shape a design"
+        "Create, read, update and delete documents",
+        "Query data and listen for live changes",
+        "Model data without joins",
+        "Estimate what your reads and writes cost"
       ],
-      "concepts": ["Document", "Collection", "Composite index", "Denormalising", "Reads"],
-      "exercises": ["Scenario", "Fix the code", "Design decision"]
+      "concepts": [
+        "Document",
+        "Collection",
+        "Query",
+        "Index",
+        "Listener"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Scenario",
+        "Design decision"
+      ],
+      "mins": 10
     },
     {
-      "key": "rules", "level": 3, "col": 1, "req": ["auth", "store"], "icon": "🛡️", "chapter": 10,
+      "key": "rules",
+      "level": 3,
+      "col": 1,
+      "req": [
+        "auth",
+        "store"
+      ],
+      "icon": "🛡️",
+      "chapter": 5,
       "title": "Security rules",
-      "short": "Your whole authorization",
+      "short": "Who may read and write",
       "learn": [
-        "Explain why rules replace your backend authorization",
-        "Write a per-owner rule with a separate create case",
-        "Name the four gotchas: filters, cascade, Admin SDK, lookups",
-        "Test rules in the emulator before every deploy"
+        "Explain why rules are your main protection",
+        "Write owner-only rules for your data",
+        "Avoid the classic rule mistakes",
+        "Test rules in the emulator before you deploy"
       ],
-      "concepts": ["request.auth", "resource", "Test mode", "App Check"],
-      "exercises": ["Spot the bug", "Attack ↔ defence", "Fix the code"]
+      "concepts": [
+        "Security rules",
+        "request.auth",
+        "Test mode",
+        "Rules unit test"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Fix the code",
+        "Attack ↔ defence"
+      ],
+      "mins": 10
     },
     {
-      "key": "tokens", "level": 4, "col": 0, "req": ["rules"], "icon": "🔔", "chapter": 3,
-      "title": "Push tokens",
-      "short": "Who gets the message",
-      "learn": [
-        "Define a registration token and say why it is not a user id",
-        "Design the user-to-token table your server keeps",
-        "Explain why users never log in with Google for push",
-        "Clean up stale tokens when UNREGISTERED comes back"
+      "key": "serverless",
+      "level": 4,
+      "col": 1,
+      "req": [
+        "rules"
       ],
-      "concepts": ["Registration token", "UNREGISTERED", "POST_NOTIFICATIONS", "Token refresh"],
-      "exercises": ["Fix the code", "Concept check", "Scenario"]
-    },
-    {
-      "key": "serverless", "level": 4, "col": 2, "req": ["rules"], "icon": "⚡", "chapter": 11,
+      "icon": "⚡",
+      "chapter": 6,
       "title": "Functions & Hosting",
-      "short": "Trusted code, static files",
+      "short": "Cloud code, web, photos",
       "learn": [
-        "Say when you need a Cloud Function and when you do not",
-        "Name the plan, cold-start and billing limits",
-        "Choose Hosting for static files and why its lock-in is low",
-        "Keep authoritative values behind trusted code"
+        "Decide when you need a Cloud Function",
+        "Write a function that runs when data changes",
+        "Deploy a web app to Hosting",
+        "Upload photos to Cloud Storage safely"
       ],
-      "concepts": ["Cloud Functions", "Cold start", "Hosting", "Cloud Storage", "Admin SDK"],
-      "exercises": ["Scenario", "Design decision", "Concept check"]
+      "concepts": [
+        "Cloud Functions",
+        "Trigger",
+        "Hosting",
+        "Cloud Storage",
+        "Cold start"
+      ],
+      "exercises": [
+        "Scenario",
+        "Fill the code",
+        "Design decision"
+      ],
+      "mins": 9
     },
     {
-      "key": "send", "level": 5, "col": 0, "req": ["tokens"], "icon": "🚀", "chapter": 4,
-      "title": "Sending a push",
-      "short": "v1 API, data messages",
-      "learn": [
-        "Send a message with a service account through HTTP v1",
-        "Choose a data message over a notification message",
-        "Set priority and a short TTL on purpose",
-        "Keep payloads small and secret-free"
+      "key": "tokens",
+      "level": 5,
+      "col": 0,
+      "req": [
+        "serverless"
       ],
-      "concepts": ["HTTP v1", "Service account", "Data message", "Priority", "TTL"],
-      "exercises": ["Fill the code", "Spot the bug", "Design decision"]
+      "icon": "🔔",
+      "chapter": 7,
+      "title": "Push basics",
+      "short": "Tokens, permission, receiving",
+      "learn": [
+        "Explain how a push reaches a closed app",
+        "Ask for permission and get a registration token",
+        "Handle messages in the foreground and background",
+        "Save and clean up tokens for each user"
+      ],
+      "concepts": [
+        "Push notification",
+        "Registration token",
+        "Service worker",
+        "Permission"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Concept check",
+        "Scenario"
+      ],
+      "mins": 10
     },
     {
-      "key": "quality", "level": 5, "col": 2, "req": ["serverless"], "icon": "📈", "chapter": 12,
+      "key": "quality",
+      "level": 5,
+      "col": 2,
+      "req": [
+        "serverless"
+      ],
+      "icon": "📈",
+      "chapter": 9,
       "title": "Measure & protect",
-      "short": "Crashes, flags, App Check",
+      "short": "Analytics, crashes, App Check",
       "learn": [
-        "Use Crashlytics and Analytics, and export to BigQuery",
-        "Roll out a feature behind a Remote Config flag",
-        "Turn on App Check without locking out real users",
-        "Run the emulators as part of every deploy"
+        "Log events and read usage data",
+        "Find and fix crashes with Crashlytics",
+        "Change app behaviour with Remote Config",
+        "Block fake traffic with App Check"
       ],
-      "concepts": ["Crashlytics", "Analytics", "Remote Config", "App Check", "Emulator Suite"],
-      "exercises": ["Scenario", "Match the terms", "Myth or fact"]
+      "concepts": [
+        "Analytics",
+        "Crashlytics",
+        "Remote Config",
+        "App Check"
+      ],
+      "exercises": [
+        "Scenario",
+        "Match the terms",
+        "Myth or fact"
+      ],
+      "mins": 10
     },
     {
-      "key": "choose", "level": 6, "col": 0, "req": ["send"], "icon": "⚖️", "chapter": 5,
+      "key": "send",
+      "level": 6,
+      "col": 0,
+      "req": [
+        "tokens"
+      ],
+      "icon": "🚀",
+      "chapter": 8,
+      "title": "Sending push",
+      "short": "From your server or a function",
+      "learn": [
+        "Send a message with the Admin SDK",
+        "Choose data, notification or both",
+        "Set priority and a short lifetime on purpose",
+        "Handle errors and remove stale tokens"
+      ],
+      "concepts": [
+        "Admin SDK",
+        "Data message",
+        "Priority",
+        "TTL",
+        "Stale token"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Design decision"
+      ],
+      "mins": 10
+    },
+    {
+      "key": "pitfalls",
+      "level": 6,
+      "col": 2,
+      "req": [
+        "quality"
+      ],
+      "icon": "💸",
+      "chapter": 10,
+      "title": "Costs & safety",
+      "short": "Bills, budgets, checklists",
+      "learn": [
+        "Estimate your bill before you launch",
+        "Set budget alerts and know their limits",
+        "Run a pre-launch security checklist",
+        "Plan how you would leave, before you need to"
+      ],
+      "concepts": [
+        "Pay as you go",
+        "Budget alert",
+        "Quota",
+        "Exit plan"
+      ],
+      "exercises": [
+        "Scenario",
+        "Spot the bug",
+        "Myth or fact"
+      ],
+      "mins": 10
+    },
+    {
+      "key": "choose",
+      "level": 7,
+      "col": 1,
+      "req": [
+        "send",
+        "pitfalls"
+      ],
+      "icon": "⚖️",
+      "chapter": 11,
       "title": "Use it, or not?",
-      "short": "When, when not, instead",
+      "short": "A decision for your project",
       "learn": [
-        "List the signals that say Firebase fits",
-        "List the signals that say it does not",
-        "Compare it with your own backend, Supabase and others",
-        "Make the call for LevelUp: FCM only"
+        "List the signs that Firebase fits your project",
+        "List the signs that it does not",
+        "Compare it fairly with the alternatives",
+        "Choose to adopt only one piece when that is enough"
       ],
-      "concepts": ["Supabase", "Own backend", "Source of truth", "Two sources of truth"],
-      "exercises": ["Design decision", "Scenario", "Match the terms"]
+      "concepts": [
+        "Document database",
+        "Alternatives",
+        "Adopt one piece",
+        "Portability"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario",
+        "Match the terms"
+      ],
+      "mins": 10
     },
     {
-      "key": "pitfalls", "level": 6, "col": 2, "req": ["quality"], "icon": "🕳️", "chapter": 6,
-      "title": "Pitfalls & costs",
-      "short": "Mistakes, guardrails, exit",
-      "learn": [
-        "Spot the eight common mistakes and their fixes",
-        "Set billing guardrails on day one",
-        "Plan an exit before you need one",
-        "Explain why some phones never receive your push"
+      "key": "boss",
+      "level": 8,
+      "col": 1,
+      "req": [
+        "choose"
       ],
-      "concepts": ["Budget alert", "Open rules", "Exit strategy", "Battery optimisation"],
-      "exercises": ["Spot the bug", "Scenario", "Myth or fact"]
-    },
-    {
-      "key": "boss", "level": 7, "col": 1, "req": ["choose", "pitfalls"], "icon": "🏁", "chapter": 7, "boss": true,
-      "title": "Final review",
-      "short": "Self-check and cheat sheet",
+      "icon": "🏁",
+      "chapter": 12,
+      "boss": true,
+      "title": "Final project",
+      "short": "Build and ship the Notes app",
       "learn": [
-        "Answer the eight design-review questions out loud",
-        "Recall the key terms and gotchas",
-        "Apply the rule of thumb: adopt the leaves, doubt the roots",
-        "Know where to read next"
+        "Follow a build plan from empty folder to launch",
+        "Verify each step before moving on",
+        "Review security, cost, privacy and reliability",
+        "Choose what to learn next"
       ],
-      "concepts": ["Leaf and roots", "Security rules", "Data message", "Budget alert"],
-      "exercises": ["Capstone review", "Scenario", "Design decision"]
+      "concepts": [
+        "Build plan",
+        "Launch checklist",
+        "Verification",
+        "Review"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Scenario",
+        "Design decision"
+      ],
+      "mins": 9
     }
   ]
 }

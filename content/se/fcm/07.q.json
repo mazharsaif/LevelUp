@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Why does the guide say adopt the leaves and doubt the roots?",
+  "q": "Why can a reminder reach a phone while the Notes app is closed?",
   "o": [
-   "Push and hosting are easy to swap; Firestore and Auth become your application",
-   "Roots are free and leaves are paid",
-   "Leaves are less secure",
-   "Roots only work on iOS"
+   "The app keeps a hidden connection open",
+   "The OS keeps one push connection for all apps",
+   "Firestore listeners run in the background",
+   "FCM sends an SMS instead"
   ],
-  "a": 0,
-  "why": "Lock-in is uneven across products."
+  "a": 1,
+  "why": "The operating system or browser listens to its push service, so your app does not need to run."
  },
  {
   "t": "mc",
-  "q": "Fraud alerts in a payments app should use push as …",
+  "q": "A user has a phone and a laptop. How many push tokens should you expect for them?",
   "o": [
-   "a 'check the app' signal with no sensitive content",
-   "the only record",
-   "the full message body",
-   "a replacement for SMS"
+   "One, linked to their uid",
+   "One per Google account",
+   "One per app install, so two",
+   "None until they buy a plan"
   ],
-  "a": 0,
-  "why": "Auditable delivery lives in your backend."
- },
- {
-  "t": "mc",
-  "q": "You need joins and SQL reporting for an internal tool. Pick …",
-  "o": [
-   "Postgres, or Supabase",
-   "Firestore",
-   "Remote Config",
-   "Hosting"
-  ],
-  "a": 0,
-  "why": "Relational needs point to a relational database."
+  "a": 2,
+  "why": "A token belongs to one install of the app, not to a person."
  },
  {
   "t": "mf",
-  "q": "Push alone is enough to carry live walkie-talkie audio.",
+  "q": "Users must sign in with a Google account to receive push notifications.",
   "a": false,
-  "why": "Push only wakes the app; audio needs a socket or WebRTC."
+  "why": "Push works with any sign-in method; the device or browser only needs push support."
+ },
+ {
+  "t": "mc",
+  "q": "When should the Notes app ask for notification permission?",
+  "o": [
+   "On the very first screen",
+   "When the user sets their first reminder",
+   "Never; it is granted by default",
+   "Only after the user signs out"
+  ],
+  "a": 1,
+  "why": "Asking at a moment that makes sense gets more yes answers, and a Block is hard to undo."
+ },
+ {
+  "t": "mc",
+  "q": "Your page is open and focused. A test notification arrives but no system alert appears. Why?",
+  "o": [
+   "The VAPID key is wrong",
+   "The token has expired",
+   "Foreground messages go to onMessage",
+   "Permission was denied"
+  ],
+  "a": 2,
+  "why": "In the foreground your code receives the message and decides what to show."
+ },
+ {
+  "t": "mc",
+  "q": "Where should the Notes app store push tokens?",
+  "o": [
+   "One document per token in users/{uid}/tokens",
+   "A single token field on users/{uid}",
+   "Inside each note document",
+   "In localStorage only"
+  ],
+  "a": 0,
+  "why": "Many devices per user, no duplicates, and the server can read them all."
+ },
+ {
+  "t": "mc",
+  "q": "A shared laptop: user A signs out, user B signs in, and B sees A's reminders. What was missed?",
+  "o": [
+   "Calling onMessage",
+   "Deleting A's token before signOut",
+   "Generating a new VAPID key",
+   "Using a data message"
+  ],
+  "a": 1,
+  "why": "The token stayed under A's uid, so A's reminders still went to that browser."
+ },
+ {
+  "t": "mf",
+  "q": "You can test sending push fully offline with the Firebase Emulator Suite.",
+  "a": false,
+  "why": "There is no FCM emulator; test sends go through the real, free service."
  }
 ]

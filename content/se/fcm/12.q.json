@@ -1,50 +1,110 @@
 [
  {
   "t": "mc",
-  "q": "Which product groups crashes by cause?",
+  "q": "A user sees another person's notes. Which test would have caught it?",
   "o": [
-   "Crashlytics",
-   "Remote Config",
-   "Hosting",
-   "Auth"
+   "A Hosting deploy test",
+   "A rules test where Bob reads Alice's note and fails",
+   "A budget alert",
+   "An App Check metric"
   ],
-  "a": 0,
-  "why": "It shows which exception hits which phones."
+  "a": 1,
+  "why": "Security rules tests in the emulator should include one user trying to read another user's note."
  },
  {
   "t": "mc",
-  "q": "Analytics data can be exported to …",
+  "q": "Your bill doubled the day after a release. What do you check first?",
   "o": [
-   "BigQuery, for SQL and models",
-   "Cloud Functions only",
-   "Hosting",
-   "A push token"
+   "The Hosting domain",
+   "The App Check provider",
+   "Unlimited list queries and self-triggering functions",
+   "The Analytics events"
   ],
-  "a": 0,
-  "why": "The natural bridge for a data scientist."
+  "a": 2,
+  "why": "Reads on whole collections and functions that trigger themselves in a loop are the usual causes of sudden cost."
  },
  {
   "t": "mc",
-  "q": "Remote Config is for …",
+  "q": "After you enforce App Check, many users get errors. What went wrong?",
   "o": [
-   "changing behaviour or flipping a feature without a release",
-   "storing user files",
-   "sending push",
-   "verifying tokens"
+   "Enforcement came before most requests were verified",
+   "The budget was too low",
+   "The rules were too strict",
+   "Hosting was not deployed"
   ],
   "a": 0,
-  "why": "Keep flags few and delete them after the experiment."
+  "why": "Watch App Check metrics first; enforce only when most requests are verified."
  },
  {
   "t": "mc",
-  "q": "App Check does what?",
+  "q": "Reminders stopped for one user but reach everyone else. Likely cause?",
   "o": [
-   "Proves a request comes from your genuine app",
-   "Replaces security rules",
-   "Encrypts the database",
-   "Sends notifications"
+   "The function was deleted",
+   "Firestore is down",
+   "Hosting is broken",
+   "A stale token or removed permission"
+  ],
+  "a": 3,
+  "why": "If others get messages, the send works; that one device's token or permission is the problem. See the send errors."
+ },
+ {
+  "t": "mc",
+  "q": "A user deletes their account. What else must go?",
+  "o": [
+   "Nothing; Auth handles it",
+   "Their notes, photos and users/{uid} data with tokens",
+   "Only their photos",
+   "The whole notes collection"
+  ],
+  "a": 1,
+  "why": "Account deletion should remove all their data, which a function can do in one place."
+ },
+ {
+  "t": "mc",
+  "q": "When should you set a budget alert?",
+  "o": [
+   "After the first bill",
+   "Only before launch",
+   "The day you move to Blaze",
+   "Never; Spark is enough"
+  ],
+  "a": 2,
+  "why": "Costs can start as soon as you are on Blaze, which may be at the photo upload step."
+ },
+ {
+  "t": "mc",
+  "q": "Where should you build and test steps 1 to 4?",
+  "o": [
+   "In the Emulator Suite",
+   "On the live project",
+   "On the Hosting site",
+   "In the Cloud Scheduler page"
   ],
   "a": 0,
-  "why": "It is a layer on top of rules, never a replacement."
+  "why": "The emulator is free and keeps test data away from real users and your bill."
+ },
+ {
+  "t": "mc",
+  "q": "A new client needs monthly SQL reports across all customers. Best move?",
+  "o": [
+   "More Firestore indexes",
+   "A live listener on every collection",
+   "Copy data into every note",
+   "An analytics database or SQL Connect"
+  ],
+  "a": 3,
+  "why": "Reports across many records need SQL; Firestore has no joins in its standard edition and bills per read."
+ },
+ {
+  "t": "mf",
+  "q": "A budget alert stops your project from spending more than the budget.",
+  "a": false,
+  "why": "A budget alert only warns you by email; it does not stop spending."
+ },
+ {
+  "t": "mf",
+  "q": "Push messages cannot be fully tested in the Emulator Suite, so you test the send with a real device.",
+  "a": true,
+  "why": "There is no Cloud Messaging emulator; deploy the function and check that the phone gets the notification."
  }
 ]

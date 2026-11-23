@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Which message type runs your code when the app is in the background?",
+  "q": "A screen lists a user's notes with no limit. What happens as the user writes more notes?",
   "o": [
-   "A data message",
-   "A notification message",
-   "Both always",
-   "Neither"
+   "Nothing changes",
+   "The query gets an index error",
+   "The cost of each open grows with the notes",
+   "Firestore returns the first 20 only"
   ],
-  "a": 0,
-  "why": "Notification messages are shown by the OS tray instead."
+  "a": 2,
+  "why": "You pay one read per document returned, so an unlimited query costs more as data grows."
  },
  {
   "t": "mc",
-  "q": "For a 'ring now' message you should set …",
+  "q": "where on ownerId plus orderBy on createdAt fails in production with a link in the error. What do you do?",
   "o": [
-   "high priority and a TTL of a few minutes",
-   "normal priority and a TTL of four weeks",
-   "no priority",
-   "a huge payload"
+   "Remove the orderBy for good",
+   "Create the composite index from the link",
+   "Switch on offline persistence",
+   "Use offset instead"
   ],
-  "a": 0,
-  "why": "A stale ring is worse than no ring."
+  "a": 1,
+  "why": "Filtering and sorting on two fields needs a composite index, which you create yourself."
  },
  {
   "t": "mc",
-  "q": "How does your server authenticate to the FCM HTTP v1 API?",
+  "q": "A shared board shows 20 notes with author names and opens very often. Best design?",
   "o": [
-   "With a service-account key (OAuth2)",
-   "With the user's Google password",
-   "With the registration token alone",
-   "It needs no credentials"
+   "Copy authorName into each note",
+   "Read users/{ownerId} for each note",
+   "Store all notes in one document",
+   "Join notes and users in a query"
   ],
   "a": 0,
-  "why": "The legacy server-key API has been shut down (verify)."
+  "why": "Copying a rarely changing name makes the board one query; the cost is extra writes when a name changes."
+ },
+ {
+  "t": "mc",
+  "q": "Ana renames herself and has 300 notes with authorName copied. What is the cost?",
+  "o": [
+   "Nothing, names update by themselves",
+   "One write",
+   "300 reads only",
+   "About 300 writes to update copies"
+  ],
+  "a": 3,
+  "why": "Each copy is its own field in its own document, so each must be rewritten."
+ },
+ {
+  "t": "mc",
+  "q": "You call setDoc on users/{uid} with only { name }. The photo field disappears. Why?",
+  "o": [
+   "The rules removed it",
+   "setDoc replaced the whole document",
+   "The index dropped it",
+   "Offline mode lost it"
+  ],
+  "a": 1,
+  "why": "Without { merge: true }, setDoc replaces the document. Use merge or updateDoc."
+ },
+ {
+  "t": "mc",
+  "q": "To show page 50 of notes cheaply, you should use …",
+  "o": [
+   "offset(980)",
+   "A bigger limit",
+   "startAfter the last document seen",
+   "A new listener per page"
+  ],
+  "a": 2,
+  "why": "offset still reads and bills every skipped document; a cursor starts right after the last one."
  },
  {
   "t": "mf",
-  "q": "It is fine to put a user's private message text in the push payload.",
+  "q": "A live listener costs reads only once, when it starts.",
   "a": false,
-  "why": "Send an id and fetch the content from your own API; the payload passes through Google and is size-limited."
+  "why": "It costs one read per document in the first result, then one read for each added, changed or removed document."
+ },
+ {
+  "t": "mf",
+  "q": "A note's photo should go in Cloud Storage, with only its path saved in Firestore.",
+  "a": true,
+  "why": "A document can be at most 1 MiB and every read would download the photo; files belong in Cloud Storage."
  }
 ]

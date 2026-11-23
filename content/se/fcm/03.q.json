@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "A registration token identifies …",
+  "q": "In the Notes app, which value should each note store in ownerId?",
   "o": [
-   "one app install on one device",
-   "one user account",
-   "one Google account",
-   "one server"
+   "The user's email",
+   "The user's display name",
+   "The user's uid",
+   "The device id"
   ],
-  "a": 0,
-  "why": "A user can have several, and a token can change."
+  "a": 2,
+  "why": "The uid never changes for an account and is not personal data; emails and names can change."
  },
  {
   "t": "mc",
-  "q": "Where does the user-to-token mapping live?",
+  "q": "After a page reload, a signed-in user briefly sees the sign-in screen. Most likely cause?",
   "o": [
-   "In your own server's database",
-   "In Firebase, keyed by username",
-   "In the user's Google account",
-   "Nowhere; FCM guesses"
+   "The password expired",
+   "The code reads auth.currentUser at start-up",
+   "Google sign-in is switched off",
+   "The uid changed"
   ],
-  "a": 0,
-  "why": "Firebase never learns your usernames."
+  "a": 1,
+  "why": "currentUser is null until Auth restores the user. Decide the screen inside onAuthStateChanged."
  },
  {
   "t": "mc",
-  "q": "FCM answers UNREGISTERED. What should your server do?",
+  "q": "A guest wrote notes with an anonymous account and now sets a password. What keeps the notes?",
   "o": [
-   "Delete that token",
-   "Retry forever",
-   "Log the user out",
-   "Switch to polling"
+   "Create a new account and copy notes",
+   "Sign out, then sign up",
+   "Export with auth:export",
+   "linkWithCredential to the same account"
+  ],
+  "a": 3,
+  "why": "Linking adds the new sign-in method to the same account, so the uid and all notes stay."
+ },
+ {
+  "t": "mc",
+  "q": "Your own server must know who is calling. What should the client send?",
+  "o": [
+   "Its ID token, which the server verifies",
+   "Its uid as plain text",
+   "Its email and password",
+   "The web apiKey"
   ],
   "a": 0,
-  "why": "Dead tokens waste work and slow fan-out."
+  "why": "Only a uid inside a token verified with the Admin SDK can be trusted; anyone can send a plain uid."
+ },
+ {
+  "t": "mc",
+  "q": "Every Google sign-in attempt fails with auth/operation-not-allowed. What do you check first?",
+  "o": [
+   "The user's password",
+   "The Firestore indexes",
+   "Whether the Google provider is enabled",
+   "The ID token lifetime"
+  ],
+  "a": 2,
+  "why": "A provider that is not switched on in the console refuses every attempt."
+ },
+ {
+  "t": "mc",
+  "q": "You want SMS phone sign-in. What is the main risk to plan for?",
+  "o": [
+   "Users cannot sign out",
+   "Fake SMS traffic causing a large bill",
+   "Uids become phone numbers",
+   "It only works on the web"
+  ],
+  "a": 1,
+  "why": "Each SMS is billed and attackers can trigger many; limit countries and set a budget alert."
  },
  {
   "t": "mf",
-  "q": "Users must sign in with Google to receive your pushes.",
+  "q": "Firebase Auth blocks users who have not verified their email.",
   "a": false,
-  "why": "Myth. The token comes from the app's Firebase config, not a Google login (confirm on a test phone)."
+  "why": "Auth only reports emailVerified; your app (and your rules) decide what unverified users may do."
+ },
+ {
+  "t": "mf",
+  "q": "Leaving Firebase Auth later is possible but takes work: export users, handle the password hash format, and keep or remap uids.",
+  "a": true,
+  "why": "auth:export gives the accounts, but the new system must accept the modified scrypt hashes or users must reset passwords."
  }
 ]

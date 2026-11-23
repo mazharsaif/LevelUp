@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Firebase is best described as …",
+  "q": "You typed the project ID with a spelling mistake and created the project. What now?",
   "o": [
-   "a catalogue of separable managed services",
-   "a single database product",
-   "a hosting plan only",
-   "an Android version"
+   "Rename it in settings",
+   "Edit .firebaserc",
+   "Run firebase use to fix it",
+   "Create a new project"
   ],
-  "a": 0,
-  "why": "You can adopt one product and ignore the rest."
+  "a": 3,
+  "why": "A project ID can never be changed after creation. The display name can change, the ID cannot."
  },
  {
   "t": "mc",
-  "q": "Which products carry the highest lock-in?",
+  "q": "A reviewer finds your web apiKey in public code. What is the right response?",
   "o": [
-   "Firestore and Authentication",
-   "Hosting",
-   "Cloud Messaging",
-   "None of them"
+   "Rotate it at once",
+   "It is fine; check rules are strict",
+   "Move it to a server",
+   "Delete the web app"
+  ],
+  "a": 1,
+  "why": "The web config is public by design. Data is protected by security rules and App Check, not by hiding the key."
+ },
+ {
+  "t": "mc",
+  "q": "Which of these must never be shipped inside app code?",
+  "o": [
+   "A service account key",
+   "The projectId",
+   "The authDomain",
+   "The appId"
   ],
   "a": 0,
-  "why": "They become your data and identity layer."
+  "why": "A service account key gives full admin power over the project. The config values only identify the project."
+ },
+ {
+  "t": "mc",
+  "q": "You run emulators:start and it fails with a Java error. What is the likely fix?",
+  "o": [
+   "Upgrade to Blaze",
+   "Run firebase login again",
+   "Install JDK 21 or later",
+   "Change the Firestore port"
+  ],
+  "a": 2,
+  "why": "Some emulators are Java programs, and current CLI versions need Java 21 or later."
+ },
+ {
+  "t": "mc",
+  "q": "The Notes app needs photo uploads. Which plan does Cloud Storage need?",
+  "o": [
+   "Spark is enough",
+   "Blaze",
+   "No plan, it is always free",
+   "A separate Storage plan"
+  ],
+  "a": 1,
+  "why": "Cloud Storage, including the default bucket, needs the Blaze plan. You can still test free in the Storage emulator."
+ },
+ {
+  "t": "mc",
+  "q": "Most of your users are in one country. When do you choose the Firestore location?",
+  "o": [
+   "After launch, when traffic grows",
+   "Any time in settings",
+   "It is always us-central1",
+   "When creating the database"
+  ],
+  "a": 3,
+  "why": "Firestore's location is set when the database is created and cannot be changed later, so choose one close to your users."
  },
  {
   "t": "mf",
-  "q": "The google-services.json config file is a secret that gives admin access.",
+  "q": "A budget alert on the Blaze plan stops all spending when the budget is reached.",
   "a": false,
-  "why": "Myth. It only identifies your project. A service-account key is the secret."
+  "why": "Myth. A budget alert only sends a notification. It does not cap usage or charges."
  },
  {
-  "t": "mc",
-  "q": "Which product needs the Blaze (pay as you go) plan?",
-  "o": [
-   "Cloud Functions",
-   "Cloud Messaging",
-   "Crashlytics",
-   "App Check"
-  ],
-  "a": 0,
-  "why": "Checked 2026-11-23; verify, as plans change."
+  "t": "mf",
+  "q": "On the Spark plan, passing a free quota stops that product until the quota resets, and you are not charged.",
+  "a": true,
+  "why": "Fact. Spark never charges you; the product stops working for the project until the quota resets."
  }
 ]

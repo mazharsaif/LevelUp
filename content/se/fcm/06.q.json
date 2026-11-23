@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "Which is the most dangerous Firestore mistake?",
+  "q": "Which Notes app task truly needs a Cloud Function?",
   "o": [
-   "Shipping open 'test mode' rules",
-   "Using a composite index",
-   "Using a long collection name",
-   "Adding Crashlytics"
+   "Showing the user's own notes",
+   "Deleting your own note",
+   "Keeping a note count users cannot fake",
+   "Editing a note's text"
   ],
-  "a": 0,
-  "why": "It makes the database public."
+  "a": 2,
+  "why": "A trusted count must not be written by the client. The other tasks are plain reads and writes that rules can protect."
  },
  {
   "t": "mc",
-  "q": "A budget alert on Blaze will …",
+  "q": "You want code to run every morning at 9, even when no app is open. Which trigger fits?",
   "o": [
-   "notify you when spending crosses a threshold",
-   "automatically stop all spending",
-   "refund you",
-   "disable the app"
+   "onRequest",
+   "onSchedule",
+   "onDocumentCreated",
+   "onCall"
   ],
-  "a": 0,
-  "why": "A hard stop has to be built by you."
+  "a": 1,
+  "why": "Scheduled functions run on a timetable using Cloud Scheduler."
+ },
+ {
+  "t": "mc",
+  "q": "Your function needs a mail service API key. Where should the key live?",
+  "o": [
+   "In the web config object",
+   "In a Firestore document",
+   "In Secret Manager, read with defineSecret",
+   "Hard-coded in index.js"
+  ],
+  "a": 2,
+  "why": "Secrets set with functions:secrets:set are stored encrypted and given only to functions that list them."
  },
  {
   "t": "mf",
-  "q": "A service-account key can safely be committed to a private repo.",
+  "q": "You must upgrade to the Blaze plan before you can run a Cloud Function in the Emulator Suite.",
   "a": false,
-  "why": "Keep it out of git; it grants admin power and bypasses rules."
+  "why": "The emulator runs functions on your computer on any plan. Blaze is needed only to deploy."
  },
  {
   "t": "mc",
-  "q": "Before adopting Firestore, a good exit-strategy question is …",
+  "q": "Users say the first tap on a rarely used function is slow. What is the likely cause?",
   "o": [
-   "If I had to leave in six months, what would I rewrite?",
-   "Is the logo nice?",
-   "How many collections can I make?",
-   "Does it have dark mode?"
+   "A cold start",
+   "A broken security rule",
+   "A missing index",
+   "An expired preview channel"
   ],
   "a": 0,
-  "why": "If the answer is 'everything', that is the lock-in price."
+  "why": "A function that has been idle needs a fresh copy started. minInstances can help, but you pay for idle copies."
+ },
+ {
+  "t": "mc",
+  "q": "Reloading the page at /notes/n1 on your hosted single-page app shows Not found. What fixes it?",
+  "o": [
+   "Deploy functions again",
+   "A rewrite of ** to /index.html",
+   "A new preview channel",
+   "Move to the Blaze plan"
+  ],
+  "a": 1,
+  "why": "The rewrite makes Hosting serve the app's index.html for every path so the app can handle routing."
+ },
+ {
+  "t": "mf",
+  "q": "Saving a photo's download URL in a private note is safe because Storage rules still protect the file.",
+  "a": false,
+  "why": "A download URL carries a token; anyone with it can open the file. Store the path instead."
+ },
+ {
+  "t": "mc",
+  "q": "You want a teammate to test a new feature without changing the live site. What do you do?",
+  "o": [
+   "firebase deploy --only hosting",
+   "Edit files on the live site",
+   "Deploy to a preview channel",
+   "Start the emulator on their phone"
+  ],
+  "a": 2,
+  "why": "A preview channel gives a temporary URL separate from the live site and expires on its own."
  }
 ]

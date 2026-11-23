@@ -1,44 +1,86 @@
 [
  {
   "t": "mc",
-  "q": "An ID token is …",
+  "q": "Where should the Notes app send reminder pushes from?",
   "o": [
-   "a short-lived signed JWT proving who the user is",
-   "the user's password",
-   "a Firebase config file",
-   "a push token"
+   "A Cloud Function or trusted server",
+   "The web app, using the config",
+   "The user's browser console",
+   "A Firestore security rule"
   ],
   "a": 0,
-  "why": "Your backend can verify it with the Admin SDK."
+  "why": "Sending needs Admin SDK credentials, which must never be inside the app."
  },
  {
   "t": "mc",
-  "q": "Which call verifies an ID token in Python?",
+  "q": "A reminder must appear even when the app is closed, and a tap must open the right note. Which message?",
   "o": [
-   "auth.verify_id_token(token)",
-   "messaging.send(token)",
-   "firestore.client()",
-   "initialize_app(token)"
+   "Data only, with the note text",
+   "Notification only",
+   "Notification plus data with noteId",
+   "A topic message"
   ],
-  "a": 0,
-  "why": "Add check_revoked=True to catch revoked tokens."
+  "a": 2,
+  "why": "The notification part is shown by the system; the data part tells the app which note to open."
  },
  {
   "t": "mc",
-  "q": "Why is phone sign-in a cost and abuse risk?",
+  "q": "What should the reminder push contain?",
   "o": [
-   "It sends SMS, which is billed and attractive to bots",
-   "It needs a Blaze server",
-   "It cannot be verified",
-   "It uses push tokens"
+   "The full note text and photo",
+   "The user's ID token",
+   "The service-account key",
+   "A short alert and the noteId"
+  ],
+  "a": 3,
+  "why": "Payloads are small, pass through third parties and may show on a locked screen."
+ },
+ {
+  "t": "mc",
+  "q": "A send fails with messaging/registration-token-not-registered. What do you do?",
+  "o": [
+   "Delete that token's document",
+   "Retry it every minute",
+   "Switch to a topic",
+   "Raise the TTL"
   ],
   "a": 0,
-  "why": "Pair it with App Check and limits."
+  "why": "The app install is gone, so the token will never work again."
  },
  {
   "t": "mf",
-  "q": "If you already have your own accounts, adding Firebase Auth creates a second login to keep in sync.",
-  "a": true,
-  "why": "That is why LevelUp does not need it."
+  "q": "Naming a topic after a user's uid is a safe way to send that user private reminders.",
+  "a": false,
+  "why": "On mobile any app install can subscribe to any topic name, so anyone who guesses it gets the messages."
+ },
+ {
+  "t": "mc",
+  "q": "A reminder is useless if it arrives more than an hour late. What do you set?",
+  "o": [
+   "High priority only",
+   "A larger payload",
+   "A TTL of one hour",
+   "A condition"
+  ],
+  "a": 2,
+  "why": "TTL tells FCM how long to keep trying; after that the message is dropped."
+ },
+ {
+  "t": "mc",
+  "q": "You run your own server (not Cloud Functions). How does the Admin SDK get credentials?",
+  "o": [
+   "The web apiKey",
+   "A service-account key file kept out of Git",
+   "The user's ID token",
+   "No credentials are needed"
+  ],
+  "a": 1,
+  "why": "A service-account key authorises the server; it is a real secret and must never be committed."
+ },
+ {
+  "t": "mf",
+  "q": "When send returns a message id, the user has seen the notification.",
+  "a": false,
+  "why": "It only means FCM accepted it; delivery is best effort, so keep the truth in Firestore."
  }
 ]
