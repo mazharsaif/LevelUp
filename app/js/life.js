@@ -238,7 +238,7 @@ function resettle(tr) {
 function clear(tr, d) {
   tr.status = "cleared"; tr.ended = d;
   if (tr.reward) { ev(tr, d, "clear", `${tr.reward.g}-rank gate cleared`); return; }   // already paid (e.g. re-checked after a merge)
-  const g = gateRank(tr.days || daysBetween(tr.start, d) + 1) || "E", [x, dm] = GATE_REWARD[g];
+  const g = (tr.days && tr.rank) || gateRank(tr.days || daysBetween(tr.start, d) + 1) || "E", [x, dm] = GATE_REWARD[g];   // a raised rank (feedback 951f) pays its own reward
   award(x, tr.stat, `Gate cleared: ${shown(tr)}`); gems(dm, `${g}-rank gate cleared`);
   const h = H(); h.cleared++;
   if ("DCBAS".includes(g) && h.shields < SHIELD_MAX) { h.shields++; note(d, `🛡 earned: ${g}-rank gate`); }

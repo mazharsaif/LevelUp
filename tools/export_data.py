@@ -431,7 +431,7 @@ NOTES = {
              p="The gender of a noun is part of the word. Nothing in the meaning tells you that Glückwunsch is “der” but Mädchen is “das”, so you can't work it out later. Learn “der Glückwunsch” as one piece, never just “Glückwunsch”.",
              ex=[("der Glückwunsch", "the congratulations"), ("die Gratulation", "the congratulation"), ("das Mädchen", "the girl (neuter, even though she is female)")]),
         dict(h="Why it matters",
-             p="Other words change with the gender: ein / eine, er / sie / es, and endings on adjectives. Only the plural is easy: it is always “die”. When you meet a new noun, say it aloud with its article, and the app's DER / DIE / DAS tag will help it stick.")])],
+             p="Other words change with the gender: ein / eine, er / sie / es, and endings on adjectives. Only the plural is easy: it is always “die”. When you meet a new noun, say it aloud with its article, and the app's DER / DIE / DAS tag will help it stick. This is just the basics: you will learn more about genders as the course goes on.")])],
 }
 NOTES["p1"] = [dict(at="Gern geschehen.", cards=[dict(
     h="Bitte schön or gern geschehen?",

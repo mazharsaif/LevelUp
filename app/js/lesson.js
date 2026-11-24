@@ -746,6 +746,7 @@ function recall(s, lb) {
     if (!s.relearn) {
       if (!R.practice) gradeWord(w.id, g);   // extra practice leaves the review schedule alone
       R.grades[g]++; R.answered++; if (g >= 3) R.right++;
+      R.combo = g >= 3 ? R.combo + 1 : g === 2 ? R.combo : 0; R.best = Math.max(R.best, R.combo);   // Good/Easy build the combo, Hard keeps it, Again breaks it
       if (g === 1) R.wrongIds.add(w.id);
     }
     if (g === 1 && !s.relearn) { R.steps.push({ ...s, dir: "en_de", relearn: true }); R.total++; }
@@ -982,7 +983,7 @@ function finish() {
     <div class="tiles"><div class="tile"><b style="color:${xp < 0 ? "var(--red)" : "#ffc800"}">${xp < 0 ? "" : "+"}${xp}</b><span>XP</span></div>
     <div class="tile"><b style="color:var(--green)">${acc}%</b><span>Accuracy</span></div>
     <div class="tile"><b style="color:#ff9f43">${r.best}</b><span>Best combo</span></div></div>
-    ${r.kind === "review" ? reviewXpWhy(r, xp) : ""}
+    ${r.kind === "review" ? (r.practice ? practiceNote() : reviewXpWhy(r, xp)) : ""}
     ${words.length ? `<div class="card" style="text-align:left"><div style="font-weight:800;margin-bottom:6px">🗣 ${words.length} word${words.length > 1 ? "s" : ""} practised · ${mins} min</div>
       <div class="chips">${words.map(w => `<button class="chip spkchip" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊 ${esc(w.de)}</button>`).join("")}</div></div>` : ""}
     ${goalHit ? `<div class="card" style="background:var(--amber-l)">🎯 <b>Daily goal reached!</b> Your streak is safe for today.</div>` : ""}
@@ -999,6 +1000,8 @@ function finish() {
   (ft.querySelector("#go") || ft.querySelector("#home")).onclick = home;
   const nb = ft.querySelector("#nb"); if (nb) nb.onclick = goNext;
 }
+const practiceNote = () => `<details class="card xpwhy" style="text-align:left"><summary style="font-weight:800;cursor:pointer">Why +0 XP?</summary>
+    <p class="muted small" style="margin:8px 0 0">Memory training is extra practice: it earns no XP and never changes when your words come back for review. The accuracy and combo above are just for you.</p></details>`;
 // "How was this XP worked out?" for review sessions (feedback 2682: "why did my xp drop by 1?"); open by default when the total is below zero
 function reviewXpWhy(r, xp) {
   const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy;

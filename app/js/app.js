@@ -2992,6 +2992,7 @@ function editTrackSheet(tr, done) {
   sheet(`<h2 style="margin-top:0">Edit</h2><label class="f">Name</label><input id="ti" value="${esc(tr.title)}" maxlength="60">
     <label class="f">Name on widgets and in Party</label><input id="al" value="${esc(tr.alias || "")}" placeholder="optional">
     <label class="toggle">Private <input type="checkbox" id="pv" ${tr.private ? "checked" : ""}></label>
+    ${tr.days ? (() => { const cur = LF.rankOf(tr), all = Object.keys(LF.GATE_REWARD), up = all.slice(all.indexOf(cur)); return `<label class="f">Gate rank <span class="muted">(you can make it harder, not easier: a higher rank pays more XP and 💎)</span></label><select id="rk">${up.map(r => `<option value="${r}" ${r === cur ? "selected" : ""}>${r}-rank${r === cur ? " (current)" : ` · ${LF.GATE_REWARD[r][0]} XP · ${LF.GATE_REWARD[r][1]} 💎`}</option>`).join("")}</select>`; })() : ""}
     <label class="f">Why</label><textarea id="wy" rows="2">${esc(tr.why || "")}</textarea>
     <label class="f">Penalty quest</label><input id="pq" value="${esc(tr.penalty || "")}">
     <label class="f">Icon</label><div class="icons">${ICONS.map(i => `<button class="ico ${tr.icon === i ? "on" : ""}" data-i="${i}">${i}</button>`).join("")}</div>
@@ -3000,6 +3001,7 @@ function editTrackSheet(tr, done) {
     el.querySelectorAll("[data-i]").forEach(b => (b.onclick = () => { icon = b.dataset.i; el.querySelectorAll("[data-i]").forEach(x => x.classList.toggle("on", x === b)); }));
     el.querySelector("#ok").onclick = () => {
       const ti = el.querySelector("#ti").value.trim(); if (!ti) return toast("Give it a name");
+      const rk = el.querySelector("#rk"); if (rk && rk.value !== LF.rankOf(tr)) tr.rank = rk.value;
       Object.assign(tr, { title: ti, alias: el.querySelector("#al").value.trim(), private: el.querySelector("#pv").checked, why: el.querySelector("#wy").value, penalty: el.querySelector("#pq").value, icon });
       save(); closeSheet(); done();
     };

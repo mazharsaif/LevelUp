@@ -96,7 +96,7 @@ def apply(content, say, notes):
     word_unit = {wid: placed[wid][0] for wid in placed}
     notes_new = {}
     old_vocab_words = {it["id"]: it["words"] for it in content["path"] if it["kind"] == "vocab"}
-    NOTE_UNIT = {"v4": 7}   # the "learn every noun with its der/die/das" cards: start of unit 7 (family), the first noun-heavy unit
+    NOTE_UNIT = {"v4": 1}   # the "learn every noun with its der/die/das" cards: start of the German track (feedback 68f2, 11-24)
     for oid, lst in notes.items():
         for n in lst:
             if oid in NOTE_UNIT:
@@ -111,6 +111,17 @@ def apply(content, say, notes):
                     if any(i["de"] == de for i in s["items"]):
                         notes_new.setdefault(f"u{uu}p", []).append(n)
                         break
+
+    # extra teaching cards, placed right before the word's card (feedback 1d53 and 5a3a, 11-24)
+    EXTRA = [
+        ("einundzwanzig", [dict(h="21 to 99: the ones come first", p="From 21 on, German says the small number first, then “und”, then the tens: 21 is “one-and-twenty”. The tens themselves (20, 30, 40…) are separate words you learn next. So read these numbers backwards from how you write them.",
+            ex=[("einundzwanzig", "21 = one-and-twenty"), ("vierunddreißig", "34 = four-and-thirty"), ("neunundneunzig", "99 = nine-and-ninety")])]),
+        ("das Wiedersehen (Auf Wiedersehen)", [dict(h="Why is “Auf Wiedersehen” in brackets?", p="The word itself is “das Wiedersehen”, a noun meaning “seeing each other again”. Germans almost never say it alone: they say “Auf Wiedersehen” (literally “until seeing again”), which is the polite way to say goodbye. The brackets only show where you will meet the word. In a conversation, say the whole phrase.",
+            ex=[("Auf Wiedersehen!", "Goodbye! (polite)"), ("Tschüss!", "Bye! (casual)")])]),
+    ]
+    for de, cards in EXTRA:
+        w = next(x for x in content["words"] if x["de"] == de)
+        notes_new.setdefault(f"u{word_unit[w['id']]}v", []).append(dict(at=w["id"], cards=cards))
 
     # --- path
     path, units, order = [], [], {}
