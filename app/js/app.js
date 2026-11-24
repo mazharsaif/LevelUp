@@ -76,6 +76,7 @@ function route() {
   if (inLesson()) abortLesson();
   document.body.classList.remove("in-lesson");
   applyTheme();
+  applyUnlocks();
   if (!USER || !S) return whoView();
   // a home-screen widget tap opens a route straight away: use the last course instead of asking first
   if (!picked() && lastCourse(USER) === COURSE && (h.startsWith("#/go/") || (/[?&]src=native\b/.test(location.search) && /^#\/(today|ranks|progress|words|home)$/.test(h)))) markPicked();
@@ -156,6 +157,10 @@ function setupView() {
   const tgt = in3Months();
   view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>${L.code === "fr" ? "Bienvenue" : "Willkommen"}, ${esc(userInfo(USER).name)}! 👋</h1>
   <p class="muted">${courseIcon(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
+  <div class="card"><label class="f" style="margin-top:0">How do you like to learn?</label>
+    <div class="choices" id="md" role="radiogroup">${[["calm", "Calm", "Simple screens, no penalties. More of the app appears over your first days."], ["planner", "Planner", "A plan to your date: pace, progress and reviews up front."], ["game", "Game", "Ranks, streaks and daily quests from the start."]]
+      .map(([v, l, d], i) => `<label class="choice"><input type="radio" name="md" value="${v}" ${i ? "" : "checked"}><span><b>${l}</b><small>${d}</small></span></label>`).join("")}</div>
+    <p class="muted small" style="margin:6px 0 0">You can change this any time in Settings.</p></div>
   <div class="card">
     <label class="f">When do you want to finish A1?</label>
     <div class="row" style="align-items:center;gap:10px"><input type="date" id="tg" value="${tgt}" min="${addDays(today(), 1)}" style="flex:1"><b id="tgd" class="small" style="white-space:nowrap">${daysText(tgt)}</b></div>
@@ -187,8 +192,26 @@ function setupView() {
     const gv = view().querySelector("#dg input:checked")?.value || "auto";
     if (gv === "auto") S.settings.goalMode = "auto"; else { S.settings.goalMode = "manual"; S.settings.dailyGoal = +gv; }
     if (S.settings.targetDate <= today()) return toast("Pick a target date in the future");
+    const md = view().querySelector("#md input:checked")?.value || "calm";
+    S.settings.mode = md; S.settings.modeStart = today(); S.settings.quest = md !== "calm";   // Calm = no daily goal, quests or penalties
     S.setup = true; save(); document.body.classList.remove("in-lesson"); location.hash = "#/today"; route();
   };
+}
+
+// Gradual unlock (feedback 8f95, 11-24): per style, the day (counted from setup) each tab appears. Learners without a style
+// (everyone before this) and learners who switch on "Show every feature now" see everything.
+const UNLOCK = { calm: { words: 3, path: 7, progress: 7, party: 14 }, planner: { words: 3, path: 0, progress: 0, party: 14 }, game: { words: 3, path: 3, progress: 7, party: 3 } };
+const TAB_LABEL = { words: "Words", path: "Path", progress: "Progress", party: "Party" };
+const langCourse = () => !["life", "tree"].includes(courseInfo(COURSE).type);
+const tabLocked = tab => { const m = S && S.settings && S.settings.mode, d = m && !S.settings.showAll && S.setup ? (UNLOCK[m] || {})[tab] : null; return d != null && daysBetween(S.settings.modeStart || today(), today()) < d; };
+function applyUnlocks() {
+  const on = !!(USER && S && langCourse());
+  document.querySelectorAll("#tabs a").forEach(a => { a.style.display = on && tabLocked(a.dataset.tab) ? "none" : ""; });
+  if (!on || !S.setup || !S.settings.mode || S.settings.showAll) return;
+  const seen = S.settings.unlocked || [], fresh = Object.keys(UNLOCK[S.settings.mode] || {}).filter(t => UNLOCK[S.settings.mode][t] > 0 && !tabLocked(t) && !seen.includes(t));
+  if (!fresh.length) return;
+  S.settings.unlocked = [...seen, ...fresh]; save();
+  toast(`🔓 New: ${fresh.map(t => TAB_LABEL[t]).join(", ")} ${fresh.length > 1 ? "tabs" : "tab"} unlocked`);
 }
 
 function markDone(it, date = today()) {
@@ -765,6 +788,10 @@ function settingsView() {
   const p = weekPlan(), daysLeft = daysBetween(today(), S.settings.targetDate);
   view().innerHTML = `<div class="row"><h1 class="grow">${courseIcon(C.course.icon)} ${esc(C.course.title)} settings</h1>${userChip()}</div>
   <p class="muted small" style="margin:-4px 0 8px">These settings are for this track only. Other tracks keep their own.</p>
+  <div class="card"><div class="sys-h">Style</div>
+    <label class="f" style="margin-top:0">How you like to learn</label><select id="md2">${[["", "Everything (original)"], ["calm", "Calm"], ["planner", "Planner"], ["game", "Game"]].map(([v, l]) => `<option value="${v}" ${(S.settings.mode || "") === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <label class="toggle">Show every feature now <input type="checkbox" id="sa" ${S.settings.showAll ? "checked" : ""}></label>
+    <p class="muted small" style="margin:6px 0 0">Calm, Planner and Game reveal tabs over your first days. Choosing a style also sets Quest Mode (Calm turns it off). Your progress is never affected.</p></div>
   <div class="card"><div class="sys-h">Mode</div><div style="font-weight:800">⚔️ Quest Mode</div>
     <label class="toggle">Follow the quest system <input type="checkbox" id="qm" ${questMode() ? "checked" : ""}></label>
     <p class="muted small" style="margin:6px 0 0">${questMode() ? "<b>On:</b> a guided day-by-day Path with a daily goal, daily quests, 💎 diamonds and streak gifts. Missed review days cost XP."
@@ -828,6 +855,8 @@ function settingsView() {
   v.querySelector("#sd").onchange = e => { if (e.target.value && e.target.value < S.settings.targetDate) { setS("startDate", e.target.value); settingsView(); } else { toast("Start must be before the target"); e.target.value = S.settings.startDate; } };
   const dg = v.querySelector("#dg"); if (dg) dg.onchange = e => setS("dailyGoal", Math.max(5, +e.target.value || 20));
   v.querySelector("#gm").onchange = e => { setS("goalMode", e.target.value); if (e.target.value === "manual" && !S.settings.dailyGoal) setS("dailyGoal", goalFor()); settingsView(); };
+  v.querySelector("#md2").onchange = e => { const m = e.target.value; setS("mode", m || null); if (m) { if (!S.settings.modeStart) setS("modeStart", today()); setS("quest", m !== "calm"); if (m !== "calm") { S.penChecked = addDays(today(), -1); save(); } } toast(m ? `Style: ${m[0].toUpperCase() + m.slice(1)}` : "Style: everything"); route(); };
+  v.querySelector("#sa").onchange = e => { setS("showAll", e.target.checked); toast(e.target.checked ? "All features shown" : "Features follow your style"); route(); };
   v.querySelector("#qm").onchange = e => { setS("quest", e.target.checked); if (e.target.checked) S.penChecked = addDays(today(), -1), save(); toast(e.target.checked ? "Quest Mode on" : "Quest Mode off – skill map"); route(); };
   v.querySelector("#th").onchange = e => { setS("theme", e.target.value); applyTheme(); settingsView(); };
   v.querySelector("#hi").onchange = e => setS("hindi", e.target.checked);
@@ -2485,7 +2514,19 @@ const tourSeen = k => { try { return !!localStorage.getItem(tourKey(k)) || (k !=
 const tourMark = k => { try { localStorage.setItem(tourKey(k), today()); } catch { /* ignore */ } };
 const cardOf = sel => () => { const e = [...document.querySelectorAll(sel)].find(x => x.offsetParent); return e ? e.closest(".card") || e : null; };
 function langSteps() {
-  const quest = questMode();
+  const quest = questMode(), m = S.settings.mode;
+  if (m) {   // short tour for the three styles (feedback 8f95): the long one named every tab and gem before a first lesson
+    const ready = { title: "You're ready 🎉", text: `Start your first part. Little and often beats long sessions.` };
+    const next = { sel: ".next-card", title: "Your next lesson", text: "Lessons come in short parts of a few minutes. Tap <b>Start</b>." };
+    const course = { sel: "#cc", title: "Your course", text: "Tap to switch courses: German, French, Maths, Software Engineering. Each one keeps its own progress." };
+    const welcome = { title: `Welcome to ${esc((C.course && C.course.title) || "LevelUp")} 👋`, text: m === "calm" ? "Short lessons, no penalties. More of the app appears over your first days. Tap <b>Show me</b>." : m === "planner" ? "A plan to your date: pace, progress and reviews are all here. Tap <b>Show me</b>." : "XP, ranks, streaks and daily quests: climb as you learn. Tap <b>Show me</b>." };
+    return (m === "game" ? [welcome, { sel: "#gem", title: "XP and diamonds", text: "⚡ XP for every part you finish and every word you recall. 💎 Diamonds for clearing the daily quest." },
+        { sel: ".player .emb-link, #xpring", title: "Level and rank", text: "Your rank climbs from E to S as you learn. Tap it to see every rank." },
+        quest && { find: cardOf(".quest"), title: "Daily quest", text: "Three goals a day. Reaching the XP goal keeps your 🔥 streak." }, next, course, ready]
+      : m === "planner" ? [welcome, next, { find: cardOf("#rev"), title: "Memory training", text: "Learned words come back right before you'd forget them. Review them so they stay fresh." },
+        { sel: '#tabs a[data-tab="progress"]', title: "Progress", text: "How much of A1 you know and your pace to the target date." }, course, ready]
+      : [welcome, next, course, { sel: '#tabs a[data-tab="settings"]', title: "Settings", text: "Text size and more. <b>Show every feature now</b> is there if you want everything at once." }, ready]).filter(Boolean);
+  }
   return [
     { title: `Welcome to ${esc((C.course && C.course.title) || "LevelUp")} 👋`, text: `A quick look at how it works. It takes about 30 seconds. Tap <b>Show me</b>, or anywhere on the screen to go on.` },
     { sel: "#uc", title: "Your profile", text: "Your account: invite friends, text size, password, log out, and the app version." },
@@ -2628,7 +2669,7 @@ function lifeRoute(h) {
   if (nm === "hunter") return lifeHunter();
   return lifeHome();
 }
-const lifeNav = cur => `<div class="lnav">${[["home", "⚔️ Today"], ["gates", "🌀 Gates"], ["hunter", "🧬 Hunter"], ["party", "👥 Party"]].map(([k, l]) =>
+const lifeNav = cur => `<div class="lnav">${[["home", "⚔️ Today"], ["gates", "🌀 Gates"], ["hunter", "🧬 License"], ["party", "👥 Party"]].map(([k, l]) =>
   `<a href="#/${k}" class="${cur === k ? "on" : ""}">${l}</a>`).join("")}</div>`;
 const hunter = () => { const lv = LF.hunterLevel(LF.totalLifeXP()); return { ...lv, rk: LF.hunterRank(lv.lv) }; };
 // Gate emblem (feedback 82bb): solid shield (Classic/Calm) or glow hex (Hunter), coloured by stat, text = the gate's rank letter ("∞" open-ended, "+" create). CSS picks the variant per theme.
@@ -3090,7 +3131,7 @@ function lifeSteps() {
     { sel: ".hcard", title: "Your Hunter rank", text: `Separate from gate ranks: every check-in earns XP, XP raises your <b>level</b>, and your level sets your rank.<div class="tl-chips">${hr}</div>` },
     { title: "Miss a day? ⚠", text: "First miss: a 🛡 shield covers it (not on gates of 7 days or fewer), or the run <b>cracks</b>. A crack heals after up to 7 good days in a row (or right away for 💎, when there is time left).<br><br>Miss <b>twice in a row</b>, or again while cracked, and the gate fails. In <b>hard mode</b> a single miss fails it. You keep all XP you earned and can re-enter." },
     { sel: "#shl", title: "Shields 🛡", text: "You hold up to 2. They're <b>earned only</b>: by clearing D-rank gates or higher, or in a long gate (28+ days) after 14 and 28 good days. They can't be bought." },
-    { sel: ".lnav", title: "Today · Gates · Hunter · Party", text: "<b>Today</b>: your check-ins. <b>Gates</b>: the board of challenges. <b>Hunter</b>: your stats and rank. <b>Party</b>: run gates together; the whole team must survive." },
+    { sel: ".lnav", title: "Today · Gates · License · Party", text: "<b>Today</b>: your check-ins. <b>Gates</b>: the board of challenges. <b>License</b>: your stats and rank. <b>Party</b>: run gates together; the whole team must survive." },
     { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Forgot yesterday? You can still answer it today." },
     { sel: ".lnav a[href='#/gates']", title: "Enter your first gate", text: "Pick a ready-made challenge (a book a week, gym 3× a week, no sugar…) or build your own. Start small: an E-rank gate is just 7 days." },
     { title: "You're ready 🎉", text: `Go clear your first gate.<br><button class="link" data-guide style="padding:0;margin-top:6px">📘 Read how Hunter's Path works</button>` },
@@ -3120,7 +3161,7 @@ function lifeGuide() {
     ${tip(true, "Start with one or two gates. Add more once they feel easy.")}
     ${tip(true, "Check in at the same time every day, for example before bed.")}
     ${tip(true, "Write your <b>why</b>. It's shown when it gets hard.")}
-    ${tip(true, "Turn on <b>System mode</b> on the Hunter page if you want penalty quests after a miss.")}
+    ${tip(true, "Turn on <b>System mode</b> on the License page if you want penalty quests after a miss.")}
     ${tip(false, "Don't tick quests you didn't do. The only person it fools is you.")}</ul>`)}
   <div class="gend"><a class="btn" href="#/gates" style="display:block;text-align:center;text-decoration:none">🌀 Open the gate board</a><button class="btn ghost" data-tour>🧭 Take the 1-minute tour</button></div></div>`;
   window.scrollTo(0, 0);
