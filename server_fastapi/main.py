@@ -190,7 +190,13 @@ COLORS = ["#1c7cd6", "#ce4fa0", "#2f9e6b", "#e8590c", "#7048e8", "#0c8599", "#d6
 
 def me(request: Request) -> str | None:
     uid = auth.session_uid(DATA, request.cookies.get(auth.COOKIE))
-    return uid if uid and user_ok(uid) else None
+    if uid and user_ok(uid):
+        try:
+            auth.touch_seen(DATA, uid)
+        except OSError:
+            pass   # activity logging must never break a request
+        return uid
+    return None
 
 
 def is_https(request: Request) -> bool:
@@ -204,6 +210,10 @@ def client_ip(request: Request) -> str:
 def logged_in(request: Request, uid: str) -> JSONResponse:
     """Response that starts a session for uid (cookie) and returns the profile."""
     token = auth.new_session(DATA, uid)
+    try:
+        auth.record_login(DATA, uid)
+    except OSError:
+        pass
     u = next(x for x in users() if x["id"] == uid)
     r = JSONResponse({k: u[k] for k in ("id", "name", "color", "avatar") if k in u})
     r.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_DAYS * 86400, httponly=True, samesite="lax",

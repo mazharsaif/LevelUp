@@ -3,6 +3,7 @@
 Files (in the data folder, next to users.json; both chmod 600, never served):
   auth.json      {uid: {"salt": hex, "hash": hex, "iter": int, "changed": "YYYY-MM-DD"}}
   sessions.json  {sha256(token): {"uid": str, "exp": unix seconds}}
+  activity.json  {uid: {"last_login": unix, "logins": int, "last_seen": unix}} (no IPs; last_seen is written at most hourly)
 Passwords: PBKDF2-HMAC-SHA256 with a random 16-byte salt (stdlib only, no extra dependency).
 Sessions: a random token in an HttpOnly cookie; only its SHA-256 is stored, so a leaked
 sessions.json can't be replayed.
@@ -111,6 +112,40 @@ def new_session(data: str, uid: str) -> str:
         s[_th(token)] = {"uid": uid, "exp": int(now + SESSION_DAYS * 86400)}
         _save(sess_file, s)
     return token
+
+
+# ---------- activity (when did they last log in / open the app) ----------
+_seen_written: dict[str, float] = {}
+
+
+def _activity_file(data: str) -> str:
+    return os.path.join(data, "activity.json")
+
+
+def record_login(data: str, uid: str) -> None:
+    now = int(time.time())
+    f = _activity_file(data)
+    with _lock:
+        a = _load(f)
+        r = a.setdefault(uid, {})
+        r["last_login"] = now
+        r["logins"] = int(r.get("logins", 0)) + 1
+        r["last_seen"] = now
+        _save(f, a)
+        _seen_written[uid] = now
+
+
+def touch_seen(data: str, uid: str) -> None:
+    """Called for every request on a valid session; writes at most once an hour per learner."""
+    now = time.time()
+    if now - _seen_written.get(uid, 0) < 3600:
+        return
+    f = _activity_file(data)
+    with _lock:
+        _seen_written[uid] = now
+        a = _load(f)
+        a.setdefault(uid, {})["last_seen"] = int(now)
+        _save(f, a)
 
 
 def session_uid(data: str, token: str | None) -> str | None:
