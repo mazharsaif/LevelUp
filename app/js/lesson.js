@@ -89,7 +89,8 @@ function distractors(w, field, n = 3) {
   const bad = x => overlaps(x.en, w.en) || baseDe(x.de) === baseDe(w.de);
   const pools = [all.filter(x => x.topic === w.topic && x.type === w.type), all.filter(x => x.type === w.type), all];
   const out = [];
-  for (const pool of pools) for (const x of shuffle(pool)) {
+  const known = x => (S.words && S.words[x.id] ? 1 : 0); // words met in earlier lessons first: every wrong option is also a review
+  for (const pool of pools) for (const x of shuffle(pool).sort((a, b) => known(b) - known(a))) {
     if (out.length >= n) break;
     const k = norm(val(x));
     if (x.id === w.id || seen.has(k) || bad(x) || out.some(o => overlaps(o.en, x.en))) continue;
@@ -338,7 +339,8 @@ export function lessonDebug() {
 
 function header() {
   const pct = Math.min(100, 100 * R.done / R.total);
-  return `<div class="lesson-top"><button class="x" id="quit">✕</button><div class="bar"><div style="width:${pct}%"></div></div><button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button></div>`;
+  const cb = R.combo >= 5 ? "c5" : R.combo >= 3 ? "c3" : ""; // the bar goes gold at 3 in a row, orange at 5+
+  return `<div class="lesson-top">${R.combo >= 3 ? `<span class="combo-l ${cb}">COMBO ×${R.combo}</span>` : ""}<button class="x" id="quit">✕</button><div class="bar ${cb}"><div style="width:${pct}%"></div></div><button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button></div>`;
 }
 
 function render() {
@@ -347,15 +349,28 @@ function render() {
   const s = R.steps[R.i];
   if (!s) return finish();
   const v = view();
+  if (s.retry && !R.retryIntro) {   // first retried item: say what is happening, once
+    R.retryIntro = true;
+    v.innerHTML = header() + `<div class="lesson-body"><div class="card" style="text-align:center;margin-top:28px"><div style="font-size:44px">↻</div><h2 style="margin:6px 0">Let’s fix some mistakes</h2><p class="muted">These come back once more. No penalty: they don’t count against your accuracy.</p></div></div>`;
+    v.querySelector("#quit").onclick = () => confirmQuit();
+    foot(`<button class="btn" id="rgo">Continue</button>`).querySelector("#rgo").onclick = () => render();
+    return;
+  }
   v.innerHTML = header() + `<div class="lesson-body" id="lb"></div>`;
   v.querySelector("#quit").onclick = () => confirmQuit();
   const lb = v.querySelector("#lb");
   lb.classList.add("arming"); setTimeout(() => lb.classList.remove("arming"), 450);
   window.scrollTo(0, 0);
   // feedback 11-23: no hearing exercises when you can't listen (Settings switch, or "Can't listen now" for this lesson)
-  if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps.splice(R.i, 1); R.total--; return render(); }
+  // can't listen (Settings switch, or "Can't listen now" for this lesson): the same word is asked as text instead, nothing is dropped
+  if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen" }; return render(); }
   if (s.w) R.words.add(s.w.id);
   ({ intro, note, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  if (s.retry) lb.insertAdjacentHTML("afterbegin", `<div class="retag">↻ Previous mistake · free</div>`);
+  if (s.sub === "listen" && R.noListen && !s.retry) {
+    lb.insertAdjacentHTML("beforeend", `<button class="link" id="unskip" style="display:block;margin:14px auto 0">↩ Undo: bring back hearing exercises</button>`);
+    lb.querySelector("#unskip").onclick = () => { R.noListen = false; R.steps[R.i] = { t: "listen", w: s.w }; render(); };
+  }
   // study helper (docs/design/chatbot/): a hint before you answer, "more about this" on teaching cards
   if (askOn()) {
     if (["mc", "type", "gender", "read", "cloze", "build", "say", "gq", "gmc"].includes(s.t)) mountBefore(lb, () => askContext(s, "before"));
@@ -578,7 +593,7 @@ function listen(s, lb) {
   playSoon(w.a, w.de);
   options(lb, opts.map(o => esc(o.de)), opts.indexOf(w), ok => answered(s, ok, { correctHTML: `${esc(w.de)} = ${esc(w.en)}`, note: ok ? w.en : "" }));
   lb.insertAdjacentHTML("beforeend", `<button class="link nolisten" id="nolisten" style="display:block;margin:14px auto 0">🔇 Can't listen now? Skip hearing exercises</button>`);
-  lb.querySelector("#nolisten").onclick = () => { stopAudio(); R.noListen = true; R.steps.splice(R.i, 1); R.total--; render(); };
+  lb.querySelector("#nolisten").onclick = () => { stopAudio(); R.noListen = true; R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen" }; render(); };
 }
 
 function gender(s, lb) {
@@ -1019,9 +1034,9 @@ export function startVocab(item, bit = 0) {
 }
 /** extra recall practice (feedback 11-23: "why do I not have any recall exercises?"): when nothing is due, drill words anyway.
  *  Doesn't change the review schedule, XP or penalties. */
-export function startPractice(ids) {
+export function startPractice(ids, onDone) {
   runLesson({ title: `${ids.length} words practised`, kind: "review", practice: true, steps: reviewSteps(ids),
-    onFinish: r => { const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy || 1; r.recallRate = Math.round(100 * (hard + good + easy) / n); return 0; } });
+    onFinish: r => { const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy || 1; r.recallRate = Math.round(100 * (hard + good + easy) / n); if (onDone) onDone(r); return 0; } });
 }
 export function startReview(ids) {
   runLesson({

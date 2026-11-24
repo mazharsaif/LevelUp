@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gate board v2: letter emblems (feedback 82bb)</title>
+<style>
+:root{--pbg:#eef0f3;--pink:#1f2328}
+*{box-sizing:border-box}
+body{margin:0;background:#e9ebee;color:#1f2328;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.page{max-width:1320px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:26px;margin:0 0 4px} h2{font-size:21px;margin:44px 0 6px;border-top:2px solid #cfd3d8;padding-top:22px} h3{font-size:16px;margin:0 0 6px}
+.lead{color:#555;max-width:820px}
+.note{background:#fff;border:1px solid #d5d9de;border-radius:10px;padding:12px 16px;margin:14px 0;max-width:900px}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:900px;margin:10px 0}
+.pc div{background:#fff;border-radius:10px;padding:10px 14px;border:1px solid #d5d9de;font-size:14px}
+.pc .p{border-left:4px solid #2fb36b}.pc .c{border-left:4px solid #e5484d}
+.rec{background:#fff7d6;border:1px solid #ecd37a;border-radius:10px;padding:10px 14px;max-width:900px;font-size:14px}
+.themes{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start;margin-top:12px}
+.tcol small{display:block;font-weight:700;margin-bottom:6px;color:#444}
+.ph{width:390px;padding:14px 14px 18px;border-radius:22px;border:1px solid #b9bec5;box-shadow:0 6px 20px rgba(0,0,0,.12);overflow:hidden}
+.ph .sysh{margin:2px 2px 8px;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+/* ---- app tokens copied from app/styles.css ---- */
+.t-classic{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#6b7280;--line:#e5e7eb;--green:#58a700;--green-d:#3f7a00;--blue:#1c7cd6;--r:16px;--shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+  background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+.t-calm{--bg:#f6f3ee;--card:#fffdf9;--ink:#22303c;--muted:#6b7682;--line:#e4ddd2;--green:#2f6f73;--green-d:#24575a;--blue:#3d5a98;--r:14px;--shadow:0 1px 2px rgba(60,40,20,.06);
+  background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+.t-hunter{--bg:#04060c;--card:rgba(10,20,40,.78);--ink:#dbeaff;--muted:#7f97b8;--line:rgba(80,160,255,.28);--green:#2f8cff;--blue:#2f8cff;--r:4px;
+  font-family:"Rajdhani","Barlow Semi Condensed","Roboto Condensed",system-ui,sans-serif;color:var(--ink);
+  background:radial-gradient(900px 400px at 50% -10%,rgba(47,110,255,.22),transparent 60%),linear-gradient(rgba(80,160,255,.05) 1px,transparent 1px) 0 0/100% 28px,linear-gradient(90deg,rgba(80,160,255,.05) 1px,transparent 1px) 0 0/28px 100%,#04060c;border-color:#1c3a66}
+.ph .card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:12px;position:relative}
+.t-calm .card{border-radius:14px}
+.t-hunter .card{border:0;border-radius:4px;box-shadow:0 0 0 1px rgba(90,170,255,.55),0 0 14px rgba(47,140,255,.35),inset 0 0 18px rgba(47,140,255,.12)}
+.t-hunter .card::before,.t-hunter .card::after{content:"";position:absolute;width:14px;height:14px;border:2px solid #8fd0ff;filter:drop-shadow(0 0 4px #2f8cff)}
+.t-hunter .card::before{top:-3px;left:-3px;border-right:0;border-bottom:0}.t-hunter .card::after{bottom:-3px;right:-3px;border-left:0;border-top:0}
+.ph .muted{color:var(--muted)}.ph .small{font-size:13px}.ph .tiny{font-size:12px}
+.t-hunter .sysh{color:#9fd6ff;text-shadow:0 0 8px #2f8cff;text-align:center;letter-spacing:2px}
+.row{display:flex;align-items:center;gap:10px}.grow{flex:1;min-width:0}
+.btn{display:inline-block;border:0;border-radius:14px;padding:9px 12px;font-weight:800;font-size:14px;letter-spacing:.3px;background:var(--green);color:#fff;box-shadow:0 4px 0 var(--green-d);text-align:center;text-transform:uppercase;text-decoration:none;font-family:inherit}
+.t-calm .btn{border-radius:12px;box-shadow:none;text-transform:none;font-weight:700}
+.t-hunter .btn{background:linear-gradient(180deg,rgba(47,140,255,.28),rgba(20,60,130,.35));color:#eaf4ff;border:1px solid #6fb8ff;border-radius:3px;box-shadow:0 0 12px rgba(47,140,255,.45),inset 0 0 10px rgba(47,140,255,.25);letter-spacing:3px;font-weight:700;text-shadow:0 0 8px #2f8cff}
+.btn.block{display:block;width:100%}
+.qic{font-size:30px;line-height:1;flex:none}
+.gbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:5px;font-size:11px;font-weight:900;color:#fff;vertical-align:1px}
+.g-E{background:#7d8590}.g-D{background:#2fb36b}.g-C{background:#3b82f6}.g-B{background:#8b5cf6}.g-A{background:#ec4899}.g-S{background:linear-gradient(135deg,#f5b700,#ff7a00)}
+.tl-chip{display:inline-flex;gap:4px;align-items:center;font-size:12px;margin-right:6px}
+.emb{display:block;flex:none}.emb.hunter{filter:drop-shadow(0 0 6px var(--glow))}
+
+/* ---- option layouts ---- */
+.c-a .rcol{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none;width:76px}
+.c-b{text-align:center}.c-b .ttl{font-size:17px}.c-b .meta{margin:4px 0 12px}.c-b .emb{margin:14px auto 0}
+.c-b .btn{width:78%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 .card{margin:0;padding:12px 10px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.grid2 .ttl{font-size:14px;line-height:1.2;min-height:34px}
+.grid2 .btn{width:100%;margin-top:8px}.grid2 .emb{margin-top:10px}
+.grid2 .gbadge{margin-top:4px}
+
+/* ---- emblem gallery ---- */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
+.gi{background:#fff;border:1px solid #d5d9de;border-radius:10px;padding:10px;font-size:12px}
+.gi b{font-size:13px}.gi .sz{display:flex;align-items:flex-end;gap:10px;margin-top:6px}
+.gal.dark .gi{background:#070d1b;color:#cfe2ff;border-color:#1c3a66}
+.stylebox{margin-top:12px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin:8px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.cur-lab{font-size:13px;color:#555;margin:4px 0 6px;max-width:700px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.vi{background:#fff;border:1px solid #d5d9de;border-radius:10px;padding:8px;font-size:12px}
+.vi b{font-size:12px}.vi .sz{display:flex;align-items:flex-end;gap:8px;margin-top:4px}
+.dark .vi{background:#070d1b;color:#cfe2ff;border-color:#1c3a66}
+.vh{margin:26px 0 4px;font-size:16px}
+.map{border-collapse:collapse;background:#fff;font-size:13px}.map td,.map th{border:1px solid #d5d9de;padding:3px 9px;text-align:left}
+</style>
+<body><div class="page">
+<h1>Gate board v2: simple letter emblems</h1>
+<p class="lead">Round 2 for feedback <b>20261124-053734-batul-82bb</b>. Mazhar disliked the picture emblems (v1 is untouched in <code>gate-board-82bb.html</code>). Now: same shapes and colours, but only letters inside. Colour = stat (Body orange, Mind blue, Discipline purple, Health green); the rank colour is the ring or pip, as before. Design only, nothing under <code>app/</code> changed.</p>
+<div class="note"><b>Letter map</b> (1-letter and 2-letter forms, chosen to be unique):<br><table class="map" id="map"></table></div>
+
+<h2>1. Emblem variants (14 types, big 72px and small 32px)</h2>
+<div id="vars"></div>
+<div class="pc"><div class="p"><b>What each variant is good at</b><br>V1/V2 are the plainest. V3 and V5 carry the rank in a pip so the rank is readable at a glance. V4 shows only the rank, so it says nothing about the gate type. V6 is the Hunter look.</div><div class="c"><b>Watch-outs</b><br>1 letter is the cleanest but only 14 letters fit (all unique here, but custom gates use "+"). 2 letters are easier to guess (BK, GY) but are smaller. Outline versions are lighter but less readable at 32px.</div></div>
+
+<h2>2. Layout A (right rail) with the letter emblems</h2>
+<p class="lead">Enter button on top, 72px emblem right under it. Classic and Calm use V3 (solid shield, 2 letters, rank pip); Hunter uses V6 (glow hex, 2 letters).</p>
+<div class="themes" id="optA"></div>
+<h3 style="margin-top:30px">Same, with the 1-letter solid circle (V1) and 1-letter shield (V5)</h3>
+<div class="themes" id="optA2"></div>
+
+<h2>3. Layouts B and C with the letter emblems</h2>
+<h3>Option B: portal card (96px)</h3><div class="themes" id="optB"></div>
+<h3 style="margin-top:30px">Option C: two-column tiles (84px)</h3><div class="themes" id="optC"></div>
+
+<h2>4. Pros, cons, recommendation</h2>
+<div class="pc"><div class="p"><b>Letter emblems: pros</b><br>Crisp at any size, no art to maintain, works in every theme and with the user's text size, easy to ship as plain SVG/CSS, rank readable with the pip.</div><div class="c"><b>Cons</b><br>Less playful than emoji; letters need a learning moment (BK, NS); custom gates share one "+" emblem.</div></div>
+<div class="rec"><b>Pick: Option A with V3 (solid shield, 2-letter abbreviation, rank pip) in Classic and Calm, and V6 (glow hex, 2 letters) in the Hunter themes, at 72px.</b> Two letters read as a name tag ("NS" = no sugar), the pip keeps the rank visible, and the solid stat colour keeps the board scannable. If Mazhar wants even plainer, V1 (one letter in a circle) is the fallback. Layout A stays the least code change; C is the better bigger step.</div>
+</div>
+<script>
+const STAT={body:{n:"Body",e:"💪",c:"#e8590c",neon:"#ff6b8a"},mind:{n:"Mind",e:"🧠",c:"#1c7cd6",neon:"#5aa9ff"},discipline:{n:"Discipline",e:"🛡",c:"#7b3fa0",neon:"#b48cff"},health:{n:"Health",e:"❤️",c:"#2e9e5b",neon:"#57e3a0"}};
+const RANKC={E:"#7d8590",D:"#2fb36b",C:"#3b82f6",B:"#8b5cf6",A:"#ec4899",S:"#f5a000"};
+const rankOf=d=>d>=180?"S":d>=90?"A":d>=60?"B":d>=30?"C":d>=14?"D":"E";
+const T=[
+["book4","📚","1 book a week for a month",28,"mind","Log a book when you finish it. One per week, four weeks.","B","BK"],
+["meditate30","🧘","Meditate 10 minutes a day",30,"mind","Ten minutes of quiet, every day for a month.","M","MD"],
+["gym3","🏋️","Gym 3 times a week",56,"body","Log each workout. Three a week for eight weeks.","G","GY"],
+["steps10k","👟","10,000 steps a day",21,"body","Enter your steps from your phone's step counter.","S","ST"],
+["nosugar21","🍬","No sugar for 21 days",21,"health","No sweets, soft drinks or desserts. Fruit is fine.","N","NS"],
+["nophone22","📵","No social media after 22:00",14,"discipline","Check in each night: did you stay off after 22:00?","P","NP"],
+["wake6","⏰","Wake up at 6:00",21,"discipline","Tick it when you're up by 6:00.","W","WK"],
+["journal30","📓","Journal every day",30,"mind","A few lines every day: what happened, what you learned.","J","JR"],
+["cold14","🚿","Cold shower",14,"discipline","End every shower with 30 seconds of cold water.","C","CS"],
+["water30","💧","Drink 2 litres of water",30,"health","Eight glasses a day.","D","DW"],
+["sleep21","🌙","In bed by 23:00",21,"health","Tick it when you're in bed by 23:00.","Z","ZZ"],
+["learn30","🎓","Reach my LevelUp daily goal",30,"mind","Ticks itself on days you reach the daily XP goal in a language course.","L","LU"],
+["run10k","🏃","Run a 10K",60,"body","Four steps to your first 10 km, within 60 days.","R","RN"],
+["custom","✨","Create your own gate",0,"mind","A habit to build, something to quit, a target, or a big goal with steps.","+","+"]
+].map(([id,e,t,d,s,b,l1,l2])=>({id,e,t,d,s,b,l1,l2,r:d?rankOf(d):"E"}));
+const byId=Object.fromEntries(T.map(t=>[t.id,t]));
+const VARS={
+ V1:"V1 Circle, solid, 1 letter, rank ring",
+ V2:"V2 Circle, outline, 2 letters",
+ V3:"V3 Shield, solid, 2 letters, rank pip (recommended for Classic/Calm)",
+ V4:"V4 Hex, solid, rank letter only",
+ V5:"V5 Shield, outline, 1 letter, rank pip",
+ V6:"V6 Hex, Hunter glow, 2 letters (recommended for Hunter)"};
+const SHIELD="M32 3L58 11V33C58 47 46 57 32 62C18 57 6 47 6 33V11Z";
+const HEX="32,2 58,17 58,47 32,62 6,47 6,17";
+let uid=0;
+const FF="font-family=\"system-ui,-apple-system,Segoe UI,Roboto,sans-serif\"";
+const txt=(s,x,y,size,fill,extra="")=>`<text x="${x}" y="${y}" text-anchor="middle" ${FF} font-weight="900" font-size="${size}" fill="${fill}" ${extra}>${s}</text>`;
+const pip=(t,x,y)=>t.d?`<circle cx="${x}" cy="${y}" r="10" fill="${RANKC[t.r]}" stroke="#fff" stroke-width="2"/>${txt(t.r,x,y+4.2,12,"#fff")}`:"";
+function emblem(t,v,px){
+  const st=STAT[t.s],rk=t.d?RANKC[t.r]:"#cfd3d8";let inner="",cls="emb";
+  const one=t.l1,two=t.l2,sz2=two.length>1?25:34;
+  if(v==="V1") inner=`<circle cx="32" cy="32" r="29" fill="${st.c}" stroke="${rk}" stroke-width="4"/>${txt(one,32,44,34,"#fff")}`;
+  else if(v==="V2") inner=`<circle cx="32" cy="32" r="28" fill="none" stroke="${st.c}" stroke-width="4"/><circle cx="32" cy="32" r="22" fill="${st.c}" fill-opacity=".12"/>${txt(two,32,32+sz2*.36,sz2,st.c)}`+(t.d?`<circle cx="32" cy="32" r="28" fill="none" stroke="${rk}" stroke-width="4" stroke-dasharray="14 162" stroke-dashoffset="-70"/>`:"");
+  else if(v==="V3") inner=`<path d="${SHIELD}" fill="${st.c}" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linejoin="round"/>${txt(two,32,32+sz2*.36+2,sz2,"#fff")}${pip(t,51,12)}`;
+  else if(v==="V4") inner=`<polygon points="${HEX}" fill="${t.d?rk:st.c}" stroke="${st.c}" stroke-width="5" stroke-linejoin="round"/>${txt(t.d?t.r:one,32,45,36,"#fff")}`;
+  else if(v==="V5") inner=`<path d="${SHIELD}" fill="${st.c}" fill-opacity=".1" stroke="${st.c}" stroke-width="4.5" stroke-linejoin="round"/>${txt(one,32,44,34,st.c)}${pip(t,51,12)}`;
+  else {cls+=" hunter";inner=`<polygon points="${HEX}" fill="#060c18" stroke="${st.neon}" stroke-width="2.6" stroke-linejoin="round"/><polygon points="32,8 52,20 52,44 32,56 12,44 12,20" fill="${st.neon}" fill-opacity=".1" stroke="${st.neon}" stroke-opacity=".4"/>${txt(two,32,32+sz2*.36,sz2,"#eaf6ff",`style="filter:drop-shadow(0 0 4px ${st.neon})"`)}${t.d?`<circle cx="32" cy="60" r="4" fill="${rk}"/>`:""}`;}
+  return `<svg class="${cls}" style="--glow:${st.neon};width:${px}px;height:${px}px" viewBox="0 0 64 64" role="img" aria-label="${t.t} emblem">${inner}</svg>`;
+}
+const badge=r=>`<span class="gbadge g-${r}">${r}</span>`;
+const meta=t=>`${STAT[t.s].e} ${STAT[t.s].n} · ${t.d?t.d+" days":"no end"}`;
+const cardA=(t,v,px)=>`<div class="card c-a"><div class="row" style="align-items:flex-start"><div class="grow"><b>${t.t}</b> ${badge(t.r)}<div class="small muted">${t.b}</div><div class="tiny muted" style="margin-top:3px">${meta(t)}</div></div><div class="rcol" style="width:${px+8}px"><a class="btn">Enter</a>${emblem(t,v,px)}</div></div></div>`;
+const cardB=(t,v,px)=>`<div class="card c-b"><div class="ttl"><b>${t.t}</b> ${badge(t.r)}</div><div class="small muted">${t.b}</div><div class="tiny muted meta">${meta(t)}</div><a class="btn block" style="width:78%;margin:0 auto">Enter</a>${emblem(t,v,px)}</div>`;
+const cardC=(t,v,px)=>`<div class="card"><div class="ttl"><b>${t.t}</b></div>${badge(t.r)}<div class="tiny muted" style="margin:3px 0 0">${STAT[t.s].e} ${t.d} days</div><a class="btn">Enter</a>${emblem(t,v,px)}</div>`;
+const TH=[["t-classic","Classic (Playful)","V3"],["t-calm","Calm (Plain)","V3"],["t-hunter","Hunter System","V6"]];
+const TH2=[["t-classic","Classic: V1","V1"],["t-calm","Calm: V5","V5"],["t-hunter","Hunter: V1 (for contrast)","V1"]];
+const phone=(th,inner)=>`<div class="tcol"><small>${th[1]}</small><div class="ph ${th[0]}"><div class="sysh">Gate board</div>${inner}</div></div>`;
+const sample=["book4","nosugar21","run10k"];
+document.getElementById("map").innerHTML="<tr><th>Gate</th><th>1 letter</th><th>2 letters</th><th>Stat colour</th></tr>"+T.map(t=>`<tr><td>${t.t}</td><td>${t.l1}</td><td>${t.l2}</td><td>${STAT[t.s].n}</td></tr>`).join("");
+document.getElementById("vars").innerHTML=Object.entries(VARS).map(([v,l])=>`<h3 class="vh">${l}</h3><div class="${v==="V6"?"dark":""}"><div class="vgrid" style="${v==="V6"?"background:#04060c;padding:8px;border-radius:10px":""}">${T.map(t=>`<div class="vi"><b>${t.t.length>20?t.t.slice(0,19)+"…":t.t}</b><div class="sz">${emblem(t,v,72)}${emblem(t,v,32)}</div></div>`).join("")}</div></div>`).join("");
+document.getElementById("optA").innerHTML=TH.map(th=>phone(th,sample.map(i=>cardA(byId[i],th[2],72)).join(""))).join("");
+document.getElementById("optA2").innerHTML=TH2.map(th=>phone(th,sample.map(i=>cardA(byId[i],th[2],72)).join(""))).join("");
+document.getElementById("optB").innerHTML=TH.map(th=>phone(th,["book4","run10k"].map(i=>cardB(byId[i],th[2],96)).join(""))).join("");
+document.getElementById("optC").innerHTML=TH.map(th=>phone(th,`<div class="grid2">${["book4","meditate30","gym3","steps10k","nosugar21","nophone22"].map(i=>cardC(byId[i],th[2],84)).join("")}</div>`)).join("");
+</script></body></html>

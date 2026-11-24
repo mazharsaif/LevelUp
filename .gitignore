@@ -31,3 +31,6 @@ android/*.idsig
 # Secrets (API keys); never commit
 .env
 **/.env
+
+# Local reports built from live user data (tools/dashboard.py)
+private/

@@ -1,10 +1,11 @@
 import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COURSES, COURSE, loadCourses, courseInfo, lastCourse, startedLocal, startedRemote, setCourse, switchCourse, fetchAllStates, summary, refreshFromServer,
   save, loadContent, addXP, today, addDays, daysBetween, fmtDate, parse, streak, xpToday, totalXP,
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
-  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts } from "./store.js";
+  importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts , unitOf } from "./store.js";
 import { setAskHost, loadQuota, askOn, askCap, askLimited, openAsk } from "./ask.js";
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startPractice, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
+import { mountTranslator } from "./translate.js";
 import { installBugButton } from "./bugreport.js";
 import { rankEmblem, applyAura, aura, auraName, AURA_FULL_LEVEL } from "./hero.js";
 import { RANKS } from "./store.js";
@@ -268,6 +269,7 @@ function todayView() {
   ${it ? `<div class="card next-card"><div class="sys-h"><span class="ex">!</span> New quest</div>
       <div class="small row" style="font-weight:800;opacity:.9;gap:6px">${kicon(it.kind, false, true)} NEXT · ${KIND[it.kind].toUpperCase()} · WEEK ${weekOf(it)}</div>
       <div style="font-size:calc(21px*var(--fs));font-weight:800;margin-top:4px">${esc(itemName(it))}</div>
+      ${unitOf(it) ? `<div class="small" style="opacity:.9">Unit ${it.unit} · ${esc(unitOf(it).title)} · <a class="link" id="gbk" style="padding:0">📖 Guidebook</a></div>` : ""}
       ${partBar(it)}
       <div class="muted small">${[partLabel(it), it.kind === "vocab" ? `${bitsOf(it)[nextBit(it)].length} new words` : it.kind === "phrases" ? `${bitsOf(it)[nextBit(it)].length} new phrases` : ""].filter(Boolean).join(" · ")}</div>
       ${bitCount(it) > 1 ? `<div class="muted tiny">This lesson has ${bitCount(it)} short parts${minPerPart() ? ` (about ${minPerPart()} min each)` : ""}. Each part you finish counts for the daily quest.</div>` : ""}
@@ -281,6 +283,7 @@ function todayView() {
     ${memWarn()}</div>` : practiceCard()}`;
   appendStories();
   const nb = view().querySelector("#next"); if (nb) nb.onclick = () => startItem(it);
+  const gb = view().querySelector("#gbk"); if (gb) gb.onclick = () => guidebookSheet(it.unit);
   const rv = view().querySelector("#rev"); if (rv) rv.onclick = () => startReview(due.slice(0, 20));
   const pr = view().querySelector("#prac"); if (pr) pr.onclick = () => startPractice(practiceIds());
   clearInterval(tleftTimer); tleftTimer = setInterval(tickLeft, 30000);
@@ -402,22 +405,71 @@ function nodeRing(it) {
     return `<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${R},${R} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${ex.toFixed(1)},${ey.toFixed(1)}" class="${all || b[k] ? "on" : ""}"/>`;
   }).join("")}</svg>`;
 }
+// ---- units (situation-first A1): header above the first item of each unit, and the Guidebook sheet
+const unitHead = (u, prev) => `<div class="unit-h">${!prev || prev.stage !== u.stage ? `<div class="tiny muted uh-st">STAGE ${u.stage} · ${esc(u.stageTitle.toUpperCase())}</div>` : ""}
+  <div class="uh-t">Unit ${u.n} · ${esc(u.title)}</div><div class="small muted">I can ${esc(u.cando)}</div>
+  <button class="btn ghost sm gbtn" data-gb="${u.n}">📖 Guidebook</button></div>`;
+const ckHead = c => `<div class="ck-h"><button class="btn ghost sm ckbtn" data-ck="${c.n}">${S.checks && S.checks[c.n] ? "✓" : "✔"} Checkpoint ${c.n} · units ${c.from}–${c.after} · mixed recall${S.checks && S.checks[c.n] ? " · done" : ""}</button></div>`;
+// before the first item of a unit: the checkpoint that closes the previous block of three units, then the unit header
+function unitLead(i, st) {
+  const un = unitOf(i); if (!un || (st.u && st.u.n === un.n)) return "";
+  const ck = st.u && (C.content.checkpoints || []).find(c => c.after === st.u.n);
+  const h = (ck ? ckHead(ck) : "") + unitHead(un, st.u); st.u = un; return h;
+}
+function wireUnits(root) {
+  root.querySelectorAll("[data-gb]").forEach(b => (b.onclick = e => { e.stopPropagation(); guidebookSheet(+b.dataset.gb); }));
+  root.querySelectorAll("[data-ck]").forEach(b => (b.onclick = e => { e.stopPropagation(); checkpointSheet(+b.dataset.ck); }));
+}
+// Checkpoint: a recall of up to 20 words from the block's units, the weakest first. No new words, and it never touches the review schedule.
+function checkpointSheet(n) {
+  const c = (C.content.checkpoints || []).find(x => x.n === n); if (!c) return;
+  const known = c.words.filter(id => S.words[id] && C.word[id]).sort((a, b) => health(S.words[a]) - health(S.words[b]));
+  const ids = known.slice(0, 20), done = S.checks && S.checks[n];
+  sheet(`<div class="small muted" style="font-weight:800">CHECKPOINT ${n} · UNITS ${c.from}–${c.after}</div><h2 style="margin:2px 0 6px">Do you still remember them?</h2>
+    <p class="small">A mixed recall of words from these three units. No new words, no pressure, and it does not change your review schedule.</p>
+    ${done ? `<p class="small"><span class="pill green">✓ Done ${fmtDate(done)}</span></p>` : ""}
+    ${ids.length < 4 ? `<p class="small muted">Learn a few more words from these units first (you know ${known.length} so far).</p>` : `<p class="small muted">${ids.length} words, the ones you are least sure of first.</p>`}
+    <button class="btn" id="go" ${ids.length < 4 ? "disabled" : ""}>${done ? "Do it again" : "Start checkpoint"}</button>`,
+  el => { el.querySelector("#go").onclick = () => { closeSheet(); startPractice(ids, () => { S.checks = S.checks || {}; S.checks[n] = today(); save(); }); }; });
+}
+function guidebookSheet(n) {
+  const u = C.content.units.find(x => x.n === n); if (!u) return;
+  const sec = C.phrases[`u${n}p`], keys = u.keys.map(k => sec.items[k]).filter(Boolean);
+  const chapters = u.items.filter(id => /^g\d+$/.test(id)).map(id => C.grammar[id]).filter(Boolean);
+  const parts = g => C.gparts[g.id] || [g.id], gdone = g => parts(g).every(id => S.done[id]);
+  const left = u.items.map(id => (C.gparts[id] || [id]).map(x => C.item[x])).flat().find(i => i && !S.done[i.id]);
+  sheet(`<div class="small muted" style="font-weight:800">UNIT ${u.n} · ${esc(u.stageTitle.toUpperCase())}</div><h2 style="margin:2px 0 4px">${esc(u.title)}</h2>
+    <p class="small" style="margin:0 0 8px"><b>I can</b> ${esc(u.cando)}.</p>
+    <div class="sys-h">Key phrases</div>
+    ${keys.map(p => `<div class="ex"><button class="spk sm" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button><div class="t"><div>${esc(p.de)}</div><div class="muted small">${esc(p.en)}</div></div></div>`).join("")}
+    ${chapters.length ? `<div class="sys-h" style="margin-top:10px">Grammar tips</div><div class="parts">${chapters.map(g => `<button class="part ${gdone(g) ? "ok" : ""}" data-g="${g.id}"><span class="pn">${gdone(g) ? "✓" : "📐"}</span><span class="grow pl">Ch ${g.num}: ${esc(g.title)}</span><span>›</span></button>`).join("")}</div>` : ""}
+    ${(u.revisit || []).length ? `<div class="sys-h" style="margin-top:10px">↻ Revisit from earlier</div><div class="parts">${u.revisit.map(id => C.grammar[id]).filter(Boolean).map(g => `<button class="part" data-r="${g.id}"><span class="pn">↻</span><span class="grow pl">Ch ${g.num}: ${esc(g.title)}</span><span>Practise ›</span></button>`).join("")}</div>` : ""}
+    <p class="small muted" style="margin-top:10px">${u.nWords ? `${u.nCore} core words + ${u.nWords - u.nCore} extra · ` : ""}${u.nPhrases} phrases</p>
+    <button class="btn" id="go">${left ? (u.items.some(id => (C.gparts[id] || [id]).some(x => S.done[x])) ? "Continue this unit" : "Start this unit") : "Practise again"}</button>`,
+  el => {
+    wireSpeakers(el);
+    el.querySelectorAll("[data-r]").forEach(b => (b.onclick = () => { closeSheet(); startGrammarPractice(C.grammar[b.dataset.r]); }));
+    el.querySelectorAll("[data-g]").forEach(b => (b.onclick = () => { const g = C.grammar[b.dataset.g], id = parts(g).find(x => !S.done[x]) || parts(g)[0]; closeSheet(); location.hash = "#/grammar/" + id; }));
+    el.querySelector("#go").onclick = () => { closeSheet(); const it = left || C.item[u.items[0]]; it.kind === "grammar" ? (location.hash = "#/grammar/" + it.id) : startItem(it); };
+  });
+}
 function pathView() {
   if (!questMode()) return skillMapView();
   const nx = nextPick();
   const plan = weekPlan();
-  let k = 0;
+  let k = 0; const ust = { u: null };
   view().innerHTML = `<h1>Your path to A1</h1>${paceCard(pace())}<p class="muted small">Everything is open – tap any lesson.</p>${allLessonsBtn()}` +
     plan.weeks.map(W => [W, W.items]).map(([W, items]) => `<div class="week"><div class="week-h">${weekHead(W, items)}</div>
       <div class="nodes">${items.map(i => {
         const off = Math.round(Math.sin(k++ * 0.95) * 64);
         const done = !!S.done[i.id], cur = nx && nx.id === i.id;
-        const side = off > 0 ? "l" : "r";
-        return `<button class="node ${i.kind} ${done ? "done" : "avail"} ${cur ? "cur" : ""}" data-id="${i.id}" style="transform:translateX(${off}px)">
+        const side = off > 0 ? "l" : "r", uh = unitLead(i, ust);
+        return uh + `<button class="node ${i.kind} ${done ? "done" : "avail"} ${cur ? "cur" : ""}" data-id="${i.id}" style="transform:translateX(${off}px)">
           ${nodeRing(i)}${cur ? `<span class="start-tip">${bitsDone(i) ? `Part ${Math.min(bitsDone(i) + 1, bitCount(i))}/${bitCount(i)}` : "START"}</span>` : ""}<span class="nglyph">${done ? "✓" : GLYPH[i.kind]}</span>
           <span class="lbl ${side}">${esc(i.kind === "vocab" ? `${i.n}. ${i.title}` : i.title)}</span></button>`;
       }).join("")}</div></div>`).join("");
   view().querySelectorAll(".node").forEach(b => (b.onclick = () => itemSheet(C.item[b.dataset.id])));
+  wireUnits(view());
   view().querySelector("#pacecard").onclick = () => (location.hash = "#/progress");
   const cur = view().querySelector(".node.cur");
   if (cur) setTimeout(() => cur.scrollIntoView({ block: "center" }), 30);
@@ -430,6 +482,7 @@ function itemSheet(it, refresh = pathView) {
   if (it.kind === "grammar") { const g = grammarOf(it), P = gPart(it); body = `${P ? `<p class="small"><b>Part ${it.part + 1} of ${it.of}</b> · ${P.q.length ? `${P.q.length} question${P.q.length > 1 ? "s" : ""}` : "short read"}</p>` : ""}<p class="small muted">${esc(g.intro).slice(0, 220)}…</p>`; }
   if (it.kind === "phrases") body = `<p class="small muted">${C.phrases[it.id].items.length} phrases</p>`;
   sheet(`<div class="small muted row" style="font-weight:800;gap:6px">${kicon(it.kind, false, true)} ${KIND[it.kind].toUpperCase()}${questMode() ? ` · WEEK ${weekOf(it)}` : ""}</div>
+    ${unitOf(it) ? `<div class="small muted" style="margin-top:2px">Unit ${it.unit} · ${esc(unitOf(it).title)}</div>` : ""}
     <h2 style="margin-top:4px">${esc(it.kind === "vocab" ? `Lesson ${it.n}: ${it.title}` : it.title)}</h2>${body}
     ${d ? `<p class="small"><span class="pill green">✓ Done ${fmtDate(d.date)}${d.score != null ? ` · ${d.score}%` : ""}</span></p>` : ""}
     ${bitCount(it) > 1 ? `<div class="parts">${bitsOf(it).map((b, k) => { const ok = d || (S.bits[it.id] || [])[k];
@@ -500,6 +553,7 @@ function sortWords(list) {
 function wordsView() {
   const r = retention(), PT = phraseTopics(), pAll = PT.flatMap(t => t.items), pN = pAll.filter(p => p.learned).length;
   view().innerHTML = `<h1>Words</h1><p class="muted small">${r.learned} of ${r.total} words learned · ${r.mastered} mastered${pAll.length ? ` · 💬 ${pN} of ${pAll.length} phrases learned` : ""}</p>
+    ${C.content && C.content.words && (L.code === "de" || L.code === "fr") ? `<div id="trhost"></div>` : ""}
     <input class="search" id="q" placeholder="Search ${L.name} or English…" value="${esc(wf.q)}">
     <div class="seg" id="seg">${[["all", "All"], ["due", "Due"], ["learning", "Learning"], ["known", "Known"], ["mastered", "Mastered"], ["new", "New"], ["core", "★ Core"]]
       .map(([k, l]) => `<button data-f="${k}" class="${wf.f === k ? "on" : ""}">${l}</button>`).join("")}</div>
@@ -560,6 +614,7 @@ function wordsView() {
     wireSpeakers(wl);
     wl.querySelectorAll(".wrow[data-id]").forEach(r => (r.onclick = () => wordSheet(C.word[r.dataset.id])));
   };
+  const trh = view().querySelector("#trhost"); if (trh) mountTranslator(trh, { openWord: wordSheet, toast, onChange: wordsView });   // translator card (js/translate.js)
   view().querySelector("#q").oninput = e => { wf.q = e.target.value; draw(); };
   view().querySelector("#ws").onchange = e => { wf.sort = e.target.value; lsSet("a1.wordSort", wf.sort); draw(); };
   view().querySelectorAll("#seg button").forEach(b => (b.onclick = () => { wf.f = b.dataset.f; wordsView(); }));
@@ -1807,7 +1862,7 @@ function introView() {
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:4vh"><img src="icons/icon.svg" alt="" width="72" height="72" style="border-radius:18px"><div class="brand">LevelUp</div>
     <h1>Level up in languages and skills</h1><p class="muted">Short daily lessons that turn into real knowledge, one level at a time.</p></div>
     <div class="card">
-      ${f("📚", "Courses", "German A1 (821 words, 20 grammar chapters, everyday phrases), French A1 for the DELF A1, a Software Engineering skill tree and Mathematics. More languages and subjects are coming.")}
+      ${f("📚", "Courses", "German A1 (34 everyday situations, 821 words, 26 grammar chapters, phrases), French A1 for the DELF A1, a Software Engineering skill tree and Mathematics. More languages and subjects are coming.")}
       ${f("🧠", "Spaced repetition", "Every word comes back for review just before you would forget it. Words you know well return less often, hard ones more often.")}
       ${f("🎯", "Targets that fit you", "Pick a finish date and the app sets your daily goal. Choose Quest Mode (levels, ranks, streaks, diamonds, daily quests) or a plain mode with just the lessons.")}
       ${f("🔊", "Hear and speak", "Native-style audio for every word and phrase, and optional speaking practice.")}

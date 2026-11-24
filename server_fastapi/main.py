@@ -782,6 +782,12 @@ class AskIn(BaseModel):
     prev_a: clip(1000) = ""
 
 
+class TranslateIn(BaseModel):
+    lang: clip(5) = "de"          # course language: de | fr (anything else falls back to de)
+    dir: clip(8) = "to_en"        # to_en | from_en
+    text: clip(200) = ""          # clipped, never a 422 (the server also cleans it)
+
+
 class AskFeedback(BaseModel):
     id: str = Field(..., pattern=r"^q_[0-9a-f]{8}$")
     kind: Literal["up", "down", "wrong"]
@@ -809,6 +815,18 @@ def ask_question(request: Request, body: AskIn):
     p = body.model_dump()
     try:
         return ask.answer(DATA, me(request), p)
+    except ask.AskError as e:
+        return ask_err(e)
+
+
+@app.post("/api/translate", tags=["study helper"])
+def translate_text(request: Request, body: TranslateIn):
+    """Words-tab translator: one word or sentence, German/French <-> English, JSON result (same key, rate limit, cache and log as the helper)."""
+    denied = need(request)
+    if denied:
+        return denied
+    try:
+        return ask.translate(DATA, me(request), body.model_dump())
     except ask.AskError as e:
         return ask_err(e)
 

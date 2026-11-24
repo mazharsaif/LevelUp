@@ -23,11 +23,12 @@ export async function loadContent(courseId = COURSE) {
   C.content = c; C.course = info; COURSE = info.id;
   setLang(c.lang || info.lang || "de"); // target-language profile (field `de` holds the target language in every file)
   C.word = {}; C.item = {}; C.grammar = {}; C.phrases = {};
-  _w = null; _plan = null; _planKey = "";
+  _w = null; _plan = null; _planKey = ""; C.unitMap = null;
   (c.words || []).forEach(w => (C.word[w.id] = w));
   (c.grammar || []).forEach(g => (C.grammar[g.id] = g));
   C.gparts = {};
-  if (c.grammar && c.path && !c._expanded) { c.path = spreadPath(expandGrammar(c.path)); c._expanded = true; }
+  // unit content (situation-first roadmap) is already in teaching order: split long chapters into parts but do not re-spread topics
+  if (c.grammar && c.path && !c._expanded) { c.path = expandGrammar(c.path); if (!c.units) c.path = spreadPath(c.path); c._expanded = true; }
   (c.path || []).forEach(p => { if (p.gid) (C.gparts[p.gid] = C.gparts[p.gid] || []).push(p.id); });
   numberTopics(c.path || []);
   (c.path || []).forEach(p => (C.item[p.id] = p));
@@ -98,6 +99,8 @@ function expandGrammar(path) {
   return out;
 }
 export const grammarOf = it => C.grammar[it.gid || it.id];
+// situation-first A1: the unit a path item belongs to ({n, title, cando, stage, stageTitle, items, keys, ...}) or null
+export const unitOf = it => { const us = C.content && C.content.units; if (!us || !it || !it.unit) return null; return (C.unitMap || (C.unitMap = Object.fromEntries(us.map(u => [u.n, u]))))[it.unit] || null; };
 export const gPart = it => { const g = grammarOf(it); return it.gid ? g.parts[it.part] : null; };
 // Spread the path so the same topic doesn't come back-to-back: an item waits until none of the last
 // GAP items share its topic (grammar parts of one chapter wait GAP_G). Looks ahead at most LOOK items,
@@ -278,10 +281,27 @@ export const blank = () => ({
   say: {},        // phrase (target language) -> times produced correctly in "Say it in …"
   hit: {},        // date -> daily XP goal reached that day (counts for the streak in Quest Mode)
   time: {},       // date -> [seconds active in the app, seconds of that in lessons]
+  checks: {},     // German A1 checkpoints: checkpoint number -> date finished
 });
+// Situation-first A1 roadmap (11-24): every learner starts German A1 again, once. Gems, streak days, activity and other courses stay.
+const ROADMAP_V = 2;
+function roadmapReset(st) {
+  const c = C.content;
+  if (!st || !c || !c.units || (st.settings || {}).roadmapV >= ROADMAP_V) return;
+  st.settings = st.settings || {};
+  if (startedState(st)) {
+    Object.assign(st, { words: {}, done: {}, bits: {}, say: {}, checks: {}, log: [], xp: {}, reviews: {}, pen: {}, penLog: [], penChecked: today(), lastLv: 1, goalDay: null });
+    st.settings.startDate = today();
+    // all 821 words are scheduled, so a short window is steep: anyone with less than 12 weeks left gets the setup default (92 days); a later date they chose stays
+    if (!st.settings.targetDate || daysBetween(today(), st.settings.targetDate) < 84) st.settings.targetDate = addDays(today(), 92);
+    st.updated = Date.now();
+  }
+  st.settings.roadmapV = ROADMAP_V;
+}
 function normalize(st) {
   const b = blank();
   st = st || b;
+  roadmapReset(st);
   const oldXP = !(st.settings || {}).xp2; // saved before XP scheme 2
   st.settings = { ...b.settings, ...(st.settings || {}) };
   for (const k of Object.keys(b)) if (st[k] === undefined) st[k] = b[k];
@@ -323,12 +343,12 @@ export async function switchUser(id) {
   // one-time migration of progress made before profiles existed
   const legacy = JSON.parse(ls.get(LEGACY) || "null");
   if (!server && !local && legacy && legacy.setup && id === USERS[0].id) { local = legacy; local.updated = Date.now(); ls.del(LEGACY); }
-  const p = pick(local, server);
+  const p = pick(local, server), upd = p.st && p.st.updated;
   S = normalize(p.st);
   ls.set(cacheKey(id), JSON.stringify(S));
   checkMissed();
   if (p.merged) window.dispatchEvent(new Event("a1:merged"));
-  if (p.push) push(); // local changes (or a merge) to upload
+  if (p.push || (p.st && S.updated !== upd)) push(); // local changes, a merge or the roadmap reset to upload
   return S;
 }
 // Switch the active course for the current learner: save the old course first, then load the new one's content + progress.

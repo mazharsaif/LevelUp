@@ -459,8 +459,13 @@ content = dict(
     path=path,
     roadmap=roadmap,
 )
+# Situation-first A1 roadmap (docs/german/a1-situation-roadmap.md): re-cut path, phrases and grammar into units.
+sys.path.insert(0, HERE)
+import build_de_units  # noqa: E402
+content = build_de_units.apply(content, say, NOTES)
+path = content["path"]
 os.makedirs(OUT, exist_ok=True)
 json.dump(content, open(os.path.join(OUT, "content.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 json.dump(AUDIO, open(os.path.join(ROOT, "tools", "audio_manifest.json"), "w"), ensure_ascii=False, indent=0)
-print(f"words {len(words)} · grammar {len(grammar)} · phrase sections {len(phrases)} · path items {len(path)} · audio clips {len(AUDIO)}")
+print(f"words {len(words)} · grammar {len(content['grammar'])} · phrase sections {len(content['phrases'])} · path items {len(path)} · units {len(content['units'])} · audio clips {len(AUDIO)}")
 print("typeable words:", sum(1 for w in words if "type_ans" in w), "· nouns with single gender:", sum(1 for w in words if "g" in w))

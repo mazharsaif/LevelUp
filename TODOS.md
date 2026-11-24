@@ -12,9 +12,9 @@ Two lists. **Mine** = Mazhar's own todos and feedback (accounts `mazhar` / `taha
 - Party join system: list parties, request to join, any member accepts, max 10, party tab
 
 ### Todos
-- German plan remap (0bf8, decided 11-24: later): reviews/day grow ~10 → ~57 over 12 weeks; see `docs/decisions/feedback-decisions-2026-11-24.md` §3
+- German plan remap (0bf8): **built as the situation-first A1 roadmap** (`docs/german/a1-situation-roadmap.md`, 34 units, all words scheduled, everyone restarts; see PROJECT_LOG State 11-24). **Not deployed yet: ship = rsync audio + deploy.** Follow-ups: checkpoint days, revisit cards, unit-35 mock exams, load is about the same as before with all words (peak ~54 vs ~59 cards/day), so consider a longer default date. Old diagnosis: `docs/decisions/feedback-decisions-2026-11-24.md` §3
+- Lesson quick wins from the Duolingo review (independent of the roadmap): combo colour on the progress bar, labelled free mistakes round, listening skip that substitutes a text item + Undo, distractors from the previous lesson (roadmap §3, §10 P1)
 - Gate board emblems (82bb): pick layout + variant from `docs/designs/gate-board-82bb-v2.html`, then build
-- Translator (41ab, approved 11-24): designs in `docs/designs/translator-41ab.html`, then build
 - Push notifications / reminders (11-15): Web Push for PWA; native app already has local notifications for nudges and Hunter reminders
 - Alpha test 2 bugs B1–B6 (11-19), nothing fixed yet: grammar part passes at 0%, mid-lesson reload loses the lesson, Party table shows all users to any sign-up, … (see `docs/reviews/alpha2-2026-11-19.md`); also audible Ch 1 drills, progress-number fixes, content error table
 - Alpha test 1 medium items (11-15): onboarding leads with "Create profile" + Playful/Plain theme + light theme; hero/aura visible on Today; diamonds purpose/shop + gift rarity; real review-summary screen; honest weekly gates; tune SR; reconcile ETA/pace math; rebalance early path; even card density + mobile code/table + search/bookmarks
@@ -38,11 +38,12 @@ Two lists. **Mine** = Mazhar's own todos and feedback (accounts `mazhar` / `taha
 |---|---|---|
 | batul | Flip cards without "Still learning / I knew it", meaning shown directly | needs approval (phrase flip cards done 11-21) |
 | batul | "Wrong when right": Check is enabled after one tile (Say-it with only "Wie geht" placed) | needs approval (Check unlock fixed 11-21, re-verify) |
-| batul | Translator: German ↔ English lookup for words and sentences | parked 11-22 |
+| batul | Translator: German ↔ English lookup for words and sentences | done 11-24 (not deployed) |
 | batul | Remove the Lessons tab | done 11-24 (not deployed) |
 
 Rule: reports from `taha` / `mazhar` are implemented directly; others wait for Mazhar's approval.
 
 ## Done
 - (move finished items here with the date)
+- 2026-11-24: Translator (41ab, option A): Translate card on Words, local lookup first, AI for the rest via `/api/translate` (built, tested on the scratch server, not deployed)
 - 2026-11-23: single live environment (dropped the dev/main two-instance idea); `_` developer accounts + `devaccounts.py`; test notifications to mazhar
