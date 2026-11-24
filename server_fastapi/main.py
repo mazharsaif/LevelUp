@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 from datetime import date
-from typing import Literal
+from typing import Annotated, Literal
 
 import ask
 import auth
@@ -27,7 +27,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)  # LevelUp/
@@ -753,28 +753,33 @@ def send_nudge(request: Request, body: NudgeIn):
 
 
 # ---------- study helper (see ask.py and docs/design/chatbot/) ----------
+def clip(n: int):
+    """Text field cut to n characters instead of rejected: a 422 (e.g. a long previous answer or branch title) reached the learner as "Something went wrong"."""
+    return Annotated[str, BeforeValidator(lambda v: v[:n] if isinstance(v, str) else v)]
+
+
 class AskItem(BaseModel):
-    text: str = Field("", max_length=140)
-    meaning: str = Field("", max_length=140)
-    kind: str = Field("", max_length=20)
+    text: clip(140) = ""
+    meaning: clip(140) = ""
+    kind: clip(20) = ""
 
 
 class AskIn(BaseModel):
     course: str = Field(DEFAULT_COURSE, pattern=COURSE_RE)
-    target_lang: str = Field("", max_length=20)
-    ui_lang: str = Field("en", max_length=5)
-    lesson: str = Field("", max_length=80)
-    step_type: str = Field("", max_length=20)
+    target_lang: clip(20) = ""
+    ui_lang: clip(5) = "en"
+    lesson: clip(80) = ""
+    step_type: clip(20) = ""
     phase: Literal["before", "after"] = "after"
     item: AskItem = AskItem()
-    screen_text: str = Field("", max_length=500)
-    card_text: str = Field("", max_length=1500)
-    correct: str = Field("", max_length=140)
+    screen_text: clip(500) = ""
+    card_text: clip(1500) = ""
+    correct: clip(140) = ""
     was_right: bool | None = None
-    question: str = Field(..., max_length=140)
-    chip_id: str = Field("custom", max_length=20)
-    prev_q: str = Field("", max_length=140)
-    prev_a: str = Field("", max_length=400)
+    question: clip(140)
+    chip_id: clip(20) = "custom"
+    prev_q: clip(140) = ""
+    prev_a: clip(1000) = ""
 
 
 class AskFeedback(BaseModel):
@@ -792,7 +797,7 @@ def ask_quota(request: Request):
     denied = need(request)
     if denied:
         return denied
-    return {"enabled": ask.enabled(DATA), "cap": ask.CAP, "left_today": ask.left_today(DATA, me(request))}
+    return {"enabled": ask.enabled(DATA), "cap": ask.CAP, "limit": ask.LIMIT_ON, "left_today": ask.left_today(DATA, me(request))}
 
 
 @app.post("/api/ask", tags=["study helper"])

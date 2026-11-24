@@ -285,7 +285,10 @@ function matchStep(ws) {
 export function vocabBitSteps(item, bit) {
   const ids = bitsOf(item)[bit], ws = ids.map(id => C.word[id]);
   const steps = [];
+  // teaching cards (path item `notes`, from export_data.py): before the lesson's first word ("start") or right before a given word
+  const notes = (item.notes || []).filter(n => (n.at === "start" ? bit === 0 : ids.includes(n.at)));
   ws.forEach((w, i) => {
+    notes.filter(n => (n.at === "start" ? i === 0 : n.at === w.id)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     steps.push(st.intro(w));
     steps.push(i % 2 ? st.en_de(w) : st.de_en(w));          // test the new word right away
     if (i >= 1) {                                          // then mix with what came before
@@ -352,7 +355,7 @@ function render() {
   // feedback 11-23: no hearing exercises when you can't listen (Settings switch, or "Can't listen now" for this lesson)
   if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps.splice(R.i, 1); R.total--; return render(); }
   if (s.w) R.words.add(s.w.id);
-  ({ intro, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  ({ intro, note, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
   // study helper (docs/design/chatbot/): a hint before you answer, "more about this" on teaching cards
   if (askOn()) {
     if (["mc", "type", "gender", "read", "cloze", "build", "say", "gq", "gmc"].includes(s.t)) mountBefore(lb, () => askContext(s, "before"));
@@ -506,10 +509,33 @@ function speak(s, lb) {
   };
 }
 
+// ---------- extra-info tidbits (feedback 11-24): content `tidbit` {h, p, ex?} on a word or phrase = a small 💡 button ----------
+const tidbitBtn = t => (t ? `<div style="text-align:center"><button class="tidbit-btn" type="button" aria-label="Extra info">💡 Extra info</button></div>` : "");
+function wireTidbit(lb, t) {
+  const b = lb.querySelector(".tidbit-btn"); if (!b || !t) return;
+  b.onclick = () => {
+    const bg = document.createElement("div"); bg.className = "sheet-bg tidbit-bg";
+    bg.innerHTML = `<div class="sheet"><h2 style="margin-top:0">💡 ${esc(t.h || "Good to know")}</h2><p>${esc(t.p)}</p>
+      ${(t.ex || []).map(([de, en]) => `<div style="margin:6px 0"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div>`).join("")}
+      <button class="btn" type="button">Got it</button></div>`;
+    const close = () => bg.remove();
+    bg.onclick = e => { if (e.target === bg) close(); };
+    bg.querySelector(".btn").onclick = close;
+    document.body.appendChild(bg);
+  };
+}
+
 // ---------- step renderers ----------
+function note(s, lb) {
+  const c = s.c;
+  lb.innerHTML = `<div class="q-title">Good to know</div><div class="card note-card"><h3 style="margin-top:0">${esc(c.h)}</h3><p>${esc(c.p)}</p>
+    ${(c.ex || []).map(([de, en]) => `<div style="margin:6px 0"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div>`).join("")}</div>`;
+  foot(`<button class="btn" id="go">Got it</button>`).querySelector("#go").onclick = next;
+}
+
 function intro(s, lb) {
-  lb.innerHTML = `<div class="q-title">New word</div><div class="card">${wordCard(s.w)}</div>`;
-  wireSpeakers(lb);
+  lb.innerHTML = `<div class="q-title">New word</div><div class="card">${wordCard(s.w)}</div>${tidbitBtn(s.w.tidbit)}`;
+  wireSpeakers(lb); wireTidbit(lb, s.w.tidbit);
   if (S.settings.autoplay) play(s.w.a, s.w.de);
   foot(`<button class="btn" id="go">Got it</button>`).querySelector("#go").onclick = next;
 }
@@ -702,8 +728,8 @@ function flip(s, lb) {
   lb.innerHTML = `<div class="q-title">${esc(s.sec)}${p.grp ? ` · <span class="muted">${esc(p.grp)}</span>` : ""}</div>
     <div class="card flip" id="fc"><div class="row" style="justify-content:center"><div class="de">${esc(p.de)}</div></div>
     <div class="en" id="en" style="color:var(--ink)">${phone(esc(p.en))}</div></div>
-    <div style="text-align:center"><button class="spk" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button></div>`;
-  wireSpeakers(lb);
+    <div style="text-align:center"><button class="spk" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button></div>${tidbitBtn(p.tidbit)}`;
+  wireSpeakers(lb); wireTidbit(lb, p.tidbit);
   if (S.settings.autoplay) play(p.a, p.de);
   const f = foot(`<button class="btn" id="nx">Next</button>`);
   f.querySelector("#nx").onclick = next;
@@ -783,7 +809,7 @@ function build(s, lb) {
   wireGloss(lb.querySelector("#ans"));
   const slots = [...lb.querySelectorAll(".slot")];
   const f = foot(`<button class="btn" id="chk" disabled>Check</button>`), btn = f.querySelector("#chk");
-  const upd = () => (btn.disabled = slots.some(x => !x.dataset.i));
+  const upd = () => (btn.disabled = !slots.some(x => x.dataset.i));   // feedback 11-23: Check opens with any tile placed; missing blanks count as wrong
   lb.querySelectorAll("#bank .tile-w").forEach(b => (b.onclick = () => {
     if (b.classList.contains("used")) return;
     const slot = slots.find(x => !x.dataset.i); if (!slot) return;
@@ -823,8 +849,7 @@ function say(s, lb) {
   };
   if (s.mode === "tiles") {
     const ans = lb.querySelector("#ans"), placed = [];
-    // Check unlocks only once enough words are placed (feedback 11-19, batul: a stray tap checked "Wie geht" half-built)
-    const need = Math.max(1, tokens(s.de).length); // the tiles are exactly these tokens plus a few distractors
+    // Check opens as soon as one word is placed (feedback 11-23, mazhar; it was "all words" after 11-19); a short answer is graded wrong
     const draw = () => {
       ans.innerHTML = placed.map((i, k) => `<button class="tile-w" data-k="${k}">${esc(s.tiles[i])}</button>`).join("");
       ans.querySelectorAll(".tile-w").forEach(b => (b.onclick = () => {
@@ -832,7 +857,7 @@ function say(s, lb) {
         const i = placed.splice(+b.dataset.k, 1)[0];
         lb.querySelector(`#bank .tile-w[data-i="${i}"]`).classList.remove("used"); draw();
       }));
-      btn.disabled = placed.length < need;
+      btn.disabled = !placed.length;
     };
     lb.querySelectorAll("#bank .tile-w").forEach(b => (b.onclick = () => {
       if (b.classList.contains("used") || btn.dataset.done) return;
@@ -906,6 +931,7 @@ function finish() {
     <div class="tiles"><div class="tile"><b style="color:${xp < 0 ? "var(--red)" : "#ffc800"}">${xp < 0 ? "" : "+"}${xp}</b><span>XP</span></div>
     <div class="tile"><b style="color:var(--green)">${acc}%</b><span>Accuracy</span></div>
     <div class="tile"><b style="color:#ff9f43">${r.best}</b><span>Best combo</span></div></div>
+    ${r.kind === "review" ? reviewXpWhy(r, xp) : ""}
     ${words.length ? `<div class="card" style="text-align:left"><div style="font-weight:800;margin-bottom:6px">🗣 ${words.length} word${words.length > 1 ? "s" : ""} practised · ${mins} min</div>
       <div class="chips">${words.map(w => `<button class="chip spkchip" data-a="${w.a || ""}" data-t="${esc(w.de)}">🔊 ${esc(w.de)}</button>`).join("")}</div></div>` : ""}
     ${goalHit ? `<div class="card" style="background:var(--amber-l)">🎯 <b>Daily goal reached!</b> Your streak is safe for today.</div>` : ""}
@@ -922,10 +948,26 @@ function finish() {
   (ft.querySelector("#go") || ft.querySelector("#home")).onclick = home;
   const nb = ft.querySelector("#nb"); if (nb) nb.onclick = goNext;
 }
+// "How was this XP worked out?" for review sessions (feedback 2682: "why did my xp drop by 1?"); open by default when the total is below zero
+function reviewXpWhy(r, xp) {
+  const [, again, hard, good, easy] = r.grades, n = again + hard + good + easy;
+  if (!n) return "";
+  const fmt = v => (v < 0 ? "−" : "+") + Math.abs(+v.toFixed(1));
+  const parts = [];
+  if (again) parts.push(`${again} Again × −0.5 = ${fmt(XPR.forgot * again)}`);
+  if (good + easy) parts.push(`${good + easy} Good/Easy × +0.2 = ${fmt(XPR.recall * (good + easy))}`);
+  if (hard) parts.push(`${hard} Hard × 0`);
+  const rate = Math.round(100 * (hard + good + easy) / n), bonus = rate >= 80;
+  const raw = XPR.recall * (good + easy) + XPR.forgot * again + (bonus ? XPR.reviewBonus : 0);
+  const rounded = Math.abs(raw - xp) > 0.001;
+  return `<details class="card xpwhy" style="text-align:left"${raw < 0 ? " open" : ""}><summary style="font-weight:800;cursor:pointer">How was this calculated?</summary>
+    <p class="small" style="margin:8px 0 4px">${parts.join(" · ")}${bonus ? ` · recall bonus +1` : ""}<br><b>= ${fmt(raw)}${rounded ? `, rounded to ${fmt(xp)}` : ""} XP</b></p>
+    <p class="muted small" style="margin:4px 0 0">You remembered ${rate}% of the words${bonus ? ", so you got the +1 bonus." : ". Get 80% or more and you earn a +1 bonus."} Forgetting a word costs a bit more than remembering one earns.</p></details>`;
+}
 let NEXT_HOOK = null; // () => {label, go} | null, set by the app (Quest Mode path order)
 export const setNextHook = f => { NEXT_HOOK = f; };
 function evolveCard(r) {
-  return `<div class="evolve">✦ Rank up ✦<br><b>${r}-Rank</b></div>`;
+  return `<div class="evolve">✦ Rank up ✦<br><b>${r}-Rank</b><br><span class="tiny">in ${C.course ? C.course.title : "this course"}</span></div>`;
 }
 const CHEERS = {
   perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – even the dictionary is impressed."], ["🚀", "Not a single slip. Your brain should be in a museum."],
@@ -1023,7 +1065,9 @@ export function startPhrases(sec, item, bit = 0) {
   const repeat = !!(item && (S.done[item.id] || ((S.bits || {})[item.id] || [])[bit])); // this part was finished before
   // 🎤 speaking practice for up to 2 phrases per part (optional; skipped when the mic or the setting is off)
   const toSpeak = new Set(speakOn() ? shuffle(items.filter(speakable)).slice(0, 2) : []);
+  const pnotes = (item && item.notes) || []; // teaching cards: at "start" (first part) or right before a given phrase
   items.forEach((p, i) => {
+    pnotes.filter(n => (n.at === "start" ? bit === 0 && i === 0 : n.at === p.de)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     steps.push({ t: "flip", p, sec: sec.title });
     if (toSpeak.has(p)) steps.push({ t: "speak", p, key: "speak:" + p.de });
     steps.push(q(p, false));

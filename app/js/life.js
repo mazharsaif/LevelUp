@@ -10,18 +10,32 @@
 // 11-22b); a track can use one at most once a week; never two slots in a row; never on hard-mode tracks.
 // Long gates (28+ days) also earn a 🛡 part-way (feedback 11-23): after 14 good days and again after 28, at most two per gate
 // (`tr.mileShields`), still within the hold-2 limit.
+// "I missed this" (feedback 11-24): a daily or abstain track can be marked missed/slipped today (log "slip"); it settles at once
+// like an automatic miss (shield / crack / break) and isn't reversible from the UI.
 // 💎 can instead heal a crack at once (healCrack), at most once every 14 days.
+// Rule set of 11-24 (docs/decisions/feedback-decisions-2026-11-24.md §2; gates created from then carry `tr.v = 2`):
+//   1 gates of 7 days or fewer never spend a shield; 2 the heal timer is min(7, days left - 1) good days, or none when that is
+//   under 3 (or the gate is 7 days or fewer); 3 the 💎 heal is offered only when it can work and be paid; 4 a shield and a
+//   penalty quest never stack; 5 hard mode (new gates only, v2) fails the gate on the first miss; 6 any heal clears the pending
+//   penalty; 7 a second miss in a row, or a miss while cracked (and not shielded), fails the gate.
+// Gate lengths (feedback bf7a, 11-24): E 7, D 14, C 30, B 45, A 60, S 120. A gate keeps the rank it was created with (`tr.rank`;
+// gates made before 11-24 have none and use LEGACY_GATES: B 60, A 90, S 180).
 import { S, save, today, addDays, daysBetween, parse } from "./store.js";
 
 export const STATS = { body: ["💪", "Body"], mind: ["🧠", "Mind"], discipline: ["🛡", "Discipline"], health: ["❤️", "Health"] };
-export const GATES = [[7, "E"], [14, "D"], [30, "C"], [60, "B"], [90, "A"], [180, "S"]];
+export const GATES = [[7, "E"], [14, "D"], [30, "C"], [45, "B"], [60, "A"], [120, "S"]];
+export const LEGACY_GATES = [[7, "E"], [14, "D"], [30, "C"], [60, "B"], [90, "A"], [180, "S"]]; // gates created before 11-24 keep these
+export const RULES_V = 2; // `tr.v`: rule set a gate was created under (2 = 11-24: hard mode fails on the first miss)
 export const GATE_REWARD = { E: [50, 5], D: [100, 10], C: [250, 25], B: [500, 50], A: [900, 80], S: [2000, 150] }; // [XP, 💎]
 export const MILE_DAYS = [14, 28], MILE_MIN_LEN = 28;
 export const SHIELD_MAX = 2, HEAL_COST = 40, HEAL_BUY_DAYS = 14, SHIELD_TRACK_DAYS = 7, HEAL_DAYS = 7, HEAL_WEEKS = 2;
 export const XP = { day: 5, unit: 2, week: 15, urge: 2, penalty: 3, step: 20, allDone: 5 };
 export const TITLES = [[1, "Gate Opener"], [3, "Dungeon Runner"], [5, "Gatebreaker"], [10, "Raid Leader"], [20, "Monarch"]]; // gates cleared
 
-export const gateRank = days => { if (!days) return null; let r = "E"; for (const [d, g] of GATES) if (days >= d) r = g; return r; };
+export const gateRank = (days, legacy) => { if (!days) return null; let r = "E"; for (const [d, g] of legacy ? LEGACY_GATES : GATES) if (days >= d) r = g; return r; };
+/** the rank a track was created with (older tracks have no `rank`: they use the old length table) */
+export const rankOf = tr => (tr.days ? tr.rank || gateRank(tr.days, true) : null);
+export const hardFails = tr => !!tr.hard && (tr.v || 1) >= 2;
 export const H = () => {
   S.tracks = S.tracks || {};
   S.hunter = S.hunter || {};
@@ -57,7 +71,7 @@ export function newTrack(o) {
     id, kind: o.kind, title: o.title.trim(), icon: o.icon || "⭐", stat: o.stat || "discipline", private: !!o.private, alias: (o.alias || "").trim(),
     start: o.start || t, days: o.days || null, schedule: o.schedule || [1, 1, 1, 1, 1, 1, 1], amount: o.amount || null, unit: o.unit || "",
     period: o.period || "week", steps: (o.steps || []).map(s => (typeof s === "string" ? { t: s, d: null } : s)), why: o.why || "", penalty: o.penalty || "",
-    hard: !!o.hard, template: o.template || null, auto: o.auto || null, party: o.party || null,
+    hard: !!o.hard, template: o.template || null, auto: o.auto || null, party: o.party || null, v: RULES_V, rank: o.days ? gateRank(o.days) : null,
     log: {}, urges: {}, pen: {}, status: "active",
     st: { settled: addDays(o.start || t, -1), run: 0, best: 0, good: 0, bad: 0, cracked: null, prevBad: false, prevShield: false, lastShield: null, shielded: {}, pendingPen: null, events: [] },
   };
@@ -144,7 +158,7 @@ function settle(tr) {
       if (d === y && dayValue(tr, d) === null) break;   // yesterday can still be filled in today; it settles tomorrow
       slots.push({ d, good: dayValue(tr, d) === true });
     }
-    if (tr.kind === "abstain" && tr.log[t] === "slip" && st.settled < t && (!end || t <= end)) slots.push({ d: t, good: false, slip: true });
+    if ((tr.kind === "abstain" || tr.kind === "daily") && tr.log[t] === "slip" && st.settled < t && (!end || t <= end)) slots.push({ d: t, good: false, slip: true });
   }
   for (const s of slots) {
     if (tr.status !== "active") break;
@@ -153,15 +167,16 @@ function settle(tr) {
     if (s.good) {
       st.run++; st.good++; st.best = Math.max(st.best, st.run); st.prevBad = false; st.prevShield = false;
       mileShield(tr, s.d);
-      if (st.cracked) { st.cracked.heal++; if (st.cracked.heal >= (tr.kind === "target" ? HEAL_WEEKS : HEAL_DAYS)) { st.cracked = null; ev(tr, s.d, "heal", "The crack healed."); } }
+      if (st.cracked) { st.cracked.heal++; const need = healNeed(tr, st.cracked); if (need && st.cracked.heal >= need) { st.cracked = null; st.pendingPen = null; ev(tr, s.d, "heal", "The crack healed."); } }
       continue;
     }
     st.bad++;
     const h = H();
-    const canShield = !tr.hard && h.shields > 0 && !st.prevBad && (!st.lastShield || daysBetween(st.lastShield, s.d) >= SHIELD_TRACK_DAYS);
+    const canShield = shieldUsable(tr, s.d);
     if (st.prevBad && !st.prevShield) { brk(tr, s.d, "Two misses in a row."); continue; }
+    if (hardFails(tr)) { brk(tr, s.d, "Hard mode: one miss ends the gate."); continue; }
     if (canShield) {
-      h.shields--; st.lastShield = s.d; st.shielded[s.d] = true; st.prevBad = true; st.prevShield = true;
+      h.shields--; st.lastShield = s.d; st.shielded[s.d] = true; st.prevBad = true; st.prevShield = true; st.pendingPen = null; // shield and penalty quest never stack
       ev(tr, s.d, "shield", "A shield covered this day."); note(s.d, `🛡 used on ${shown(tr)}`);
       continue;
     }
@@ -172,6 +187,22 @@ function settle(tr) {
   }
   if (tr.status === "active" && end && st.settled >= end) clear(tr, end);
   return changed;
+}
+/** can a shield cover a miss on day d? (not hard mode, not a gate of 7 days or fewer, one held, not two in a row, one a week per track) */
+function shieldUsable(tr, d) {
+  const st = tr.st;
+  if (tr.hard || (tr.days && tr.days <= 7)) return false;
+  return H().shields > 0 && !st.prevBad && (!st.lastShield || daysBetween(st.lastShield, d) >= SHIELD_TRACK_DAYS);
+}
+/** good slots a crack needs to heal by itself: min(7, days left - 1), none (null) when that is under 3 or the gate is 7 days or
+ *  fewer; weekly goals min(2, weeks left), none when no week is left. Open-ended tracks: 7 days / 2 weeks. */
+export function healNeed(tr, c) {
+  const end = endDate(tr), weekly = tr.kind === "target";
+  if (weekly) { if (!end) return HEAL_WEEKS; const wl = Math.floor(daysBetween(c.at, end) / 7); return wl >= 1 ? Math.min(HEAL_WEEKS, wl) : null; }
+  if (!end) return HEAL_DAYS;
+  if (tr.days <= 7) return null;
+  const n = Math.min(HEAL_DAYS, daysBetween(c.at, end) - 1);
+  return n >= 3 ? n : null;
 }
 /** long gates: a shield after 14 good days and another after 28 (max two per gate); waits if you already hold 2 */
 function mileShield(tr, d) {
@@ -256,25 +287,27 @@ export const todayList = () => active().filter(tr => tr.kind === "target" || tr.
 export function healShop(tr) {
   const h = H(), t = today();
   const next = h.healAt ? addDays(h.healAt, HEAL_BUY_DAYS) : t;
-  const why = !tr || !tr.st.cracked || tr.status !== "active" ? "none" : next > t ? "wait" : (S.gems || 0) < HEAL_COST ? "gems" : null;
+  const end = tr && endDate(tr);
+  const why = !tr || !tr.st.cracked || tr.status !== "active" || (end && daysBetween(t, end) < 1) ? "none" : next > t ? "wait" : (S.gems || 0) < HEAL_COST ? "gems" : null;
   return { ok: !why, why, next, cost: HEAL_COST };
 }
 export function healCrack(tr) {
   const s = healShop(tr); if (!s.ok) return false;
-  const h = H(), t = today(); h.healAt = t; tr.st.cracked = null;
+  const h = H(), t = today(); h.healAt = t; tr.st.cracked = null; tr.st.pendingPen = null;
   gems(-HEAL_COST, "Crack healed"); note(t, `🩹 crack healed: ${shown(tr)}`); ev(tr, t, "heal", `Healed with 💎 ${HEAL_COST}.`); save();
   return true;
 }
 
 /** what a miss or slip would do right now (for the slip sheet) */
 export function missOutcome(tr, d = today()) {
-  const st = tr.st, h = H();
+  const st = tr.st;
   if (st.prevBad && !st.prevShield) return "break";
-  if (!tr.hard && h.shields > 0 && !st.prevBad && (!st.lastShield || daysBetween(st.lastShield, d) >= SHIELD_TRACK_DAYS)) return "shield";
+  if (hardFails(tr)) return "break";
+  if (shieldUsable(tr, d)) return "shield";
   return st.cracked ? "break" : "crack";
 }
 export function reenter(tr) {
-  const o = { ...tr, start: today(), steps: tr.steps.map(s => ({ t: s.t, d: null })) };
+  const o = { ...tr, start: today(), v: undefined, rank: undefined, steps: tr.steps.map(s => ({ t: s.t, d: null })) };
   tr.status = "archived";
   return newTrack(o);
 }

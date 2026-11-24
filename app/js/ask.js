@@ -19,6 +19,7 @@ export async function loadQuota(force) {
 }
 export const askOn = () => !!(quota && quota.enabled);
 export const askCap = () => (quota && quota.cap) || 10;
+export const askLimited = () => !!(quota && quota.limit !== false);
 
 const CHIP_Q = {
   hint: "Give me a hint, but do not tell me the answer.",
@@ -80,7 +81,8 @@ export function openAsk(ctx, firstChip, firstQuestion) {
     const log = el.querySelector(".ask-log"), inp = el.querySelector("input"), foot = el.querySelector(".ask-foot"), off = el.querySelector(".ask-offline");
     let busy = false, prev = null;
     const left = () => (quota ? quota.left_today : "?");
-    const drawFoot = () => { foot.textContent = quota && quota.left_today <= 0 ? "No questions left today. They come back tomorrow." : `${left()} of ${quota ? quota.cap : 10} questions left today · free · answers can be wrong`; };
+    const limited = () => !!(quota && quota.limit !== false);   // server says limit:false = no daily cap
+    const drawFoot = () => { foot.textContent = !limited() ? "Free · answers can be wrong" : quota && quota.left_today <= 0 ? "No questions left today. They come back tomorrow." : `${left()} of ${quota ? quota.cap : 10} questions left today · free · answers can be wrong`; };
     const lock = on => { busy = on; el.querySelectorAll(".askchip, .ask-send").forEach(b => (b.disabled = on || (before && b.classList.contains("ask-send")))); if (!before) inp.disabled = on; };
     const bubble = (cls, html) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; log.appendChild(d); d.scrollIntoView({ block: "nearest" }); return d; };
     const online = () => { off.hidden = navigator.onLine; };
@@ -89,21 +91,21 @@ export function openAsk(ctx, firstChip, firstQuestion) {
     async function send(question, chipId) {
       if (busy || !question.trim()) return;
       if (!navigator.onLine) { online(); return; }
-      if (quota && quota.left_today <= 0) { drawFoot(); return; }
+      if (limited() && quota.left_today <= 0) { drawFoot(); return; }
       bubble("ask-q", esc(question));
       const dots = bubble("ask-a ask-dots", `<span></span><span></span><span></span>`);
       lock(true);
-      const body = { ...ctx, question, chip_id: chipId, ...(prev ? { prev_q: prev.q, prev_a: prev.a } : {}) };
+      const body = { ...ctx, question, chip_id: chipId, ...(prev ? { prev_q: prev.q.slice(0, 140), prev_a: prev.a.slice(0, 300) } : {}) };
       delete body._options;
       let j = null;
       try {
         const r = await fetch("api/ask", { method: "POST", headers: JSONH, body: JSON.stringify(body) });
         j = await r.json().catch(() => null);
-        if (!j) j = { ok: false, code: "upstream", message: "The helper couldn't answer. Try again." };
+        if (!j || (!j.ok && !j.message)) j = { ok: false, code: "upstream", message: "The helper couldn't answer. Try again." };   // non-JSON or a validation error (422) has no message
       } catch { j = { ok: false, code: "network", message: "No connection. Try again." }; }
       dots.remove();
       if (j.ok) {
-        if (quota) quota.left_today = j.left_today;
+        if (quota && limited()) quota.left_today = j.left_today;
         prev = { q: question, a: j.answer };
         const a = bubble("ask-a", `<div>${esc(j.answer)}</div><div class="ask-act"><button class="link" data-k="up" aria-label="Helpful" type="button">👍</button>
           <button class="link" data-k="wrong" type="button">🚩 Report wrong</button></div>`);
@@ -112,13 +114,13 @@ export function openAsk(ctx, firstChip, firstQuestion) {
           a.querySelector(".ask-act").textContent = b.dataset.k === "up" ? "Thanks!" : "Thanks, we'll check this answer.";
         }));
       } else {
-        if (j.code === "cap" && quota) quota.left_today = 0;
+        if (j.code === "cap" && quota) { quota.limit = true; quota.left_today = 0; }
         const retry = ["upstream", "network", "slow_down"].includes(j.code);
         const e = bubble("ask-a ask-err", `<div>${esc(j.message || "Something went wrong.")}</div>${retry ? `<div class="ask-act"><button class="link" data-r="1" type="button">Try again</button></div>` : ""}`);
         const rb = e.querySelector("[data-r]"); if (rb) rb.onclick = () => { e.previousSibling && e.previousSibling.remove(); e.remove(); send(question, chipId); };
       }
       drawFoot(); lock(false);
-      if (quota && quota.left_today <= 0) { inp.disabled = true; el.querySelectorAll(".askchip").forEach(b => (b.disabled = true)); }
+      if (limited() && quota.left_today <= 0) { inp.disabled = true; el.querySelectorAll(".askchip").forEach(b => (b.disabled = true)); }
     }
     el.querySelectorAll(".askchip").forEach(b => (b.onclick = () => {
       if (b.dataset.c === "custom") { inp.focus(); return; }

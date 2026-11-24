@@ -5,7 +5,7 @@ Design: docs/design/chatbot/ (README.md, prompt-and-api.md). Rules implemented h
 - one turn (plus the previous question/answer for a follow-up), max ~4 short sentences, small output cap
 - anti-cheat: before the learner answers, only a hint; the correct answer is never put in the prompt, and a hint that
   contains it is replaced by a canned one
-- 10 questions per learner per day (cached answers and failed calls don't count), 1 request per 2 s, 30 per hour
+- 10 questions per learner per day, only while LIMIT_ON (off for now) (cached answers and failed calls don't count), 1 request per 2 s, 30 per hour
 - identical questions on the same item are answered from a cache (a 🚩 report evicts the entry)
 - every call is logged to <data>/ask/YYYY-MM.jsonl for quality review
 
@@ -26,6 +26,8 @@ from datetime import date, datetime
 GROQ_URL = os.environ.get("ASK_GROQ_URL", "https://api.groq.com/openai/v1/chat/completions")
 MODEL = os.environ.get("ASK_MODEL", "openai/gpt-oss-120b")
 CAP = int(os.environ.get("ASK_DAILY_CAP", "10"))
+# Daily question limit: OFF for now (feedback 11-23). Set LIMIT_ON = True (or env ASK_LIMIT=1) to bring back CAP questions per learner per day.
+LIMIT_ON = os.environ.get("ASK_LIMIT", "") == "1"
 MAX_TOKENS = int(os.environ.get("ASK_MAX_TOKENS", "450"))
 CACHE_TTL = 90 * 86400
 CACHE_KEEP = 5000
@@ -108,12 +110,16 @@ def _write(path: str, obj) -> None:
 
 
 def left_today(data: str, uid: str) -> int:
+    if not LIMIT_ON:
+        return CAP
     q = _read(_quota_file(data), {}).get(uid) or {}
     used = q.get("n", 0) if q.get("day") == date.today().isoformat() else 0
     return max(0, CAP - used)
 
 
 def _spend(data: str, uid: str) -> int:
+    if not LIMIT_ON:
+        return CAP
     qs = _read(_quota_file(data), {})
     today = date.today().isoformat()
     q = qs.get(uid) or {}

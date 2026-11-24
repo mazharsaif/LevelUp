@@ -16,6 +16,6 @@
     { "id": "water30", "title": "Drink 2 litres of water", "icon": "💧", "kind": "daily", "days": 30, "amount": 8, "unit": "glasses", "stat": "health", "penalty": "Ten glasses tomorrow", "blurb": "Eight glasses a day." },
     { "id": "sleep21", "title": "In bed by 23:00", "icon": "🌙", "kind": "daily", "days": 21, "stat": "health", "penalty": "In bed by 22:30", "blurb": "Tick it when you're in bed by 23:00." },
     { "id": "learn30", "title": "Reach my LevelUp daily goal", "icon": "🎓", "kind": "daily", "days": 30, "stat": "mind", "auto": "learn", "penalty": "One extra lesson part", "blurb": "Ticks itself on days you reach the daily XP goal in a language course." },
-    { "id": "run10k", "title": "Run a 10K", "icon": "🏃", "kind": "milestone", "days": 60, "stat": "body", "steps": ["Run 3 km without stopping", "Run 5 km", "Run 7 km", "Run 10 km"], "blurb": "Four steps to your first 10 km, within 60 days." }
+    { "id": "run10k", "title": "Run a 10K", "icon": "🏃", "kind": "milestone", "days": 45, "stat": "body", "steps": ["Run 3 km without stopping", "Run 5 km", "Run 7 km", "Run 10 km"], "blurb": "Four steps to your first 10 km, within 45 days." }
   ]
 }

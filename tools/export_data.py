@@ -386,8 +386,63 @@ for c in grammar:
 for n, d in PHRASE_DAY.items():
     items.append((d, 2, dict(id=f"p{n}", kind="phrases", title=phrases[n]["title"])))
 items.sort(key=lambda t: (t[0], t[1]))
+# "Extra info" tidbits (feedback 11-24): a small 💡 button on a word card or phrase card opens a short note. Authoring route:
+# add {german text exactly as shown on the card: dict(h=title, p=text, ex=[(de, en), ...] optional)} to TIDBITS; the exporter
+# attaches it as `tidbit` to the matching word (by `de`) and phrase (by `de`). Lesson-level cards: `notes` below.
+TIDBITS = {
+    "bitte": dict(h="One word, four jobs", p="Bitte means “please”, “you're welcome”, “here you are” (handing something over) and, with a questioning voice, “pardon?”. Context tells you which one.",
+                  ex=[("Einen Kaffee, bitte.", "A coffee, please."), ("Danke! – Bitte!", "Thanks! – You're welcome."), ("Bitte?", "Pardon? / Sorry, what?")]),
+    "danke": dict(h="Making thanks stronger", p="Danke is the everyday “thanks”. Add schön or sehr to be warmer (Danke schön, Danke sehr), or say Vielen Dank for “thank you very much”."),
+    "gern(e)": dict(h="gern = gladly", p="Gern(e) says you like doing something or are happy to. It works in replies (Ja, gern!), in “you're welcome” (Gern geschehen) and later with verbs: Ich trinke gern Tee = I like drinking tea. It sits after the verb."),
+    "eins": dict(h="eins, ein or eine?", p="Eins is the number when you count or say it alone. Before a noun it becomes ein (der / das nouns) or eine (die nouns): ein Mann, eine Frau, ein Kind."),
+    "elf": dict(h="Two odd ones", p="Elf (11) and zwölf (12) are their own words. From 13 the pattern is simple: drei + zehn = dreizehn, vier + zehn = vierzehn."),
+    "Guten Tag!": dict(h="When to say it", p="Guten Tag! is polite and works from late morning until evening, with strangers and in shops. Hallo! is more relaxed and fits almost anywhere."),
+    "Willkommen!": dict(h="herzlich = from the heart", p="Herzlich means “warmly” or “heartily”. You will also meet it in Herzlichen Glückwunsch! (congratulations)."),
+    "Wie geht’s?": dict(h="A greeting more than a question", p="Wie geht’s? is often just “hello”, so a short answer is enough: Gut, danke. And you? Und dir? A long answer about your week is not expected."),
+    "Bitte.": dict(h="Bitte has several meanings", p="Bitte is “please” when you ask for something, and also “you're welcome” when someone thanks you. Alone it can also mean “here you are”.",
+                   ex=[("Einen Tee, bitte.", "A tea, please."), ("Danke! – Bitte.", "Thanks! – You're welcome.")]),
+    "Danke schön.": dict(h="schön adds warmth", p="Schön means “nice” or “beautiful”. Danke schön is a little warmer than plain Danke. The usual reply is Bitte schön."),
+    "Bitte schön.": dict(h="Also “here you are”", p="Bitte schön is the standard reply to Danke. It is also what a shop assistant or waiter says when they hand you something: “Here you are.”"),
+    "Entschuldigung!": dict(h="Two uses", p="Use it to get attention (Entschuldigung, wo ist der Bahnhof?) and to say sorry for a small thing like bumping into someone. For a bigger apology use Es tut mir leid."),
+    "Es tut mir leid.": dict(h="Literally “it does me sorrow”", p="Leid means sorrow or pain. Very often the Es is dropped: Tut mir leid. Both are normal and polite enough."),
+    "Prost!": dict(h="A small custom", p="When you clink glasses in Germany, people usually look each other in the eye. It is seen as polite and friendly."),
+    "Guten Appetit!": dict(h="Said before eating", p="Germans often say it at the start of a meal, also to people at the next table or colleagues in a canteen. A natural reply is Danke, gleichfalls (thanks, same to you)."),
+    "Herzlichen Glückwunsch!": dict(h="For good news", p="Use it for birthdays, weddings, exams and new jobs. Glückwunsch is a der-noun: der Glückwunsch. On birthdays you will also hear Alles Gute zum Geburtstag!"),
+    "Ja, gern!": dict(h="Saying yes politely", p="Ja, gern! is a friendly “yes, I'd like that” when someone offers you something. Nein, danke is the polite no."),
+}
+for w in words:
+    if w["de"] in TIDBITS:
+        w["tidbit"] = TIDBITS[w["de"]]
+for sec in phrases:
+    for it in sec["items"]:
+        if it["de"] in TIDBITS:
+            it["tidbit"] = TIDBITS[it["de"]]
+
+# Teaching cards shown inside a vocab lesson (feedback 11-23): {path id: [{at: word id | "start", cards: [{h, p, ex?}]}]}.
+# "start" = before the first word of the lesson; a word id = right before that word's card. Shown once per lesson run, not per bit.
+NOTES = {
+    "v3": [dict(at="w35", cards=[dict(
+        h="der, die or das? It depends on the noun",
+        p="Every German noun has a gender: masculine (der), feminine (die) or neuter (das). The little word in front follows the noun, so “the first” changes with it. We will come back to genders properly later; for now just notice the pattern.",
+        ex=[("der erste Tag", "the first day (Tag is masculine)"), ("die erste Woche", "the first week (Woche is feminine)"),
+            ("das erste Mal", "the first time (Mal is neuter)")])])],
+    "v4": [dict(at="start", cards=[
+        dict(h="Learn every noun with its der, die or das",
+             p="The gender of a noun is part of the word. Nothing in the meaning tells you that Glückwunsch is “der” but Mädchen is “das”, so you can't work it out later. Learn “der Glückwunsch” as one piece, never just “Glückwunsch”.",
+             ex=[("der Glückwunsch", "the congratulations"), ("die Gratulation", "the congratulation"), ("das Mädchen", "the girl (neuter, even though she is female)")]),
+        dict(h="Why it matters",
+             p="Other words change with the gender: ein / eine, er / sie / es, and endings on adjectives. Only the plural is easy: it is always “die”. When you meet a new noun, say it aloud with its article, and the app's DER / DIE / DAS tag will help it stick.")])],
+}
+NOTES["p1"] = [dict(at="Gern geschehen.", cards=[dict(
+    h="Bitte schön or gern geschehen?",
+    p="Both answer “Danke”, and both mean “you're welcome”. Bitte schön is the standard reply: neutral, polite, and also what you say when you hand something over (“here you are”). Gern geschehen means “it happened gladly”, so you are saying it was a pleasure. It sounds a little warmer, and fits best after you really did something for the person. Bitte alone works too. Among friends you can also just say Kein Problem.",
+    ex=[("– Danke schön! – Bitte schön.", "Thank you! – You're welcome. (everyday, shop, café)"),
+        ("– Vielen Dank für Ihre Hilfe! – Gern geschehen.", "Thank you for your help! – My pleasure."),
+        ("– Danke! – Kein Problem.", "Thanks! – No problem. (casual)")])])]
 path = []
 for day, _, it in items:
+    if it["id"] in NOTES:
+        it["notes"] = NOTES[it["id"]]
     it["week"] = day // 7 + 1
     it["day"] = day
     path.append(it)
