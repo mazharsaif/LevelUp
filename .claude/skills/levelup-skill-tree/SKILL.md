@@ -1,6 +1,6 @@
 ---
 name: levelup-skill-tree
-description: Turn a learning guide (usually a Claude Doc link, or a topic the user names) into a new branch of the LevelUp app's Software Engineering skill tree, or update an existing branch when the guide grows. Use whenever the user asks to "create a skill tree", "add a branch / track / topic to the SE path", "make this doc a skill tree", or to add new chapters from an updated guide to the app.
+description: Turn a learning guide (a markdown guide in the repo, a Claude Doc link, or a topic the user names) into a new branch of a LevelUp skill-tree course (Software Engineering `se`, Mathematics `math`, Economics & Finance `econ`), or update an existing branch when the guide grows. Use whenever the user asks to "create a skill tree", "add a branch / track / topic to the SE path", "make this doc a skill tree", or to add new chapters from an updated guide to the app.
 ---
 
 # LevelUp skill trees
@@ -9,14 +9,18 @@ LevelUp (this repo) has a **Software Engineering** course (`se-path`) that is a 
 
 Read `PROJECT_LOG.md` first (the project's CLAUDE.md requires it). Then follow the steps below. The scripts are in this skill's `scripts/` folder.
 
+**Trees (courses).** Every skill-tree course has a short tree name `<tree>`: `se` (Software Engineering), `math` (Mathematics), `econ` (Economics & Finance, MSc prep). Source chapters live in `content/<tree>/<branch>/`, the built cards in `app/data/<tree>/<branch>/`, the tree in `app/data/<tree>-path.json`. Pass `--tree <tree>` to `build_se_content.py` and `add_branch.py`, and `TREE=<tree> COURSE=<course-id> node tree_check.mjs <branch>` for the check. **A new tree needs one registry entry** in `app/data/courses.json` (`{id, title, short, subtitle, group, icon, color, status:"ready", type:"tree", content:"data/<tree>-path.json"}`; `econ-core` for econ) and an empty `{"branches": [], "nodes": {}}`-style path file copied in shape from `math-path.json`; add it before the first branch. The subtitle's skill count is updated by hand at the end.
+
+**Reading first, tree second.** The user wants the reading material written and reviewed before any lessons or tree exist. Plan docs go in `docs/<subject>/`, guides in `docs/guides/<tree>-<branch>.md` (the project keeps docs as markdown in the repo, not as Claude Docs or artifacts).
+
 ## The pipeline
 
 ```
-source guide (Claude Doc / topic)
-  → content/se/<branch>/NN.md          00 = About, 01.. = one chapter per skill
-  → uv run tools/build_se_content.py  → app/data/se/<branch>/NN.json + index.json (cards + parts),
-                                         and copies each chapter's parts onto its node in se-path.json
-  → nodes + branch in app/data/se-path.json   (scripts/add_branch.py from a spec)
+source guide (docs/guides/<tree>-<branch>.md / Claude Doc / topic)
+  → content/<tree>/<branch>/NN.md          00 = About, 01.. = one chapter per skill
+  → uv run tools/build_se_content.py [--tree X]  → app/data/<tree>/<branch>/NN.json + index.json (cards + parts),
+                                         and copies each chapter's parts onto its node in <tree>-path.json
+  → nodes + branch in app/data/<tree>-path.json   (scripts/add_branch.py from a spec)
   → test on the scratch server (scripts/tree_check.mjs) → update PROJECT_LOG.md
 ```
 
@@ -25,7 +29,8 @@ The FastAPI server on port 8766 serves `app/` straight from disk, so new files a
 ## Step 1: Get the source
 
 - **Claude Doc link** (`claude.ai/artifact/...`): never web-fetch it. Load the docs skill and tools, `read` the project to get the tab, then `export` the tab as `markdown`. A large export is saved to a tool-results file as JSON. Decode `data.bytes_b64` with base64 into the session scratchpad (for example `jwt.md`). Read the whole file before planning.
-- **A topic with no doc** (like `sysd`): the user's preference is **reading document first, tree second**. Create a Claude Doc guide: the skeleton first (title, byline, one pending block per chapter, with a "How to read this guide" section first), open it, then fill **one chapter per call** while they watch. Research official sources (man pages, product docs) before writing, and follow "Writing new content". Then export the finished doc and continue from Step 2, exactly as for a user's doc. Avoid `|` inside table cells (even in code); it breaks the card builder's table split.
+- **A topic with no doc** (maths, economics, finance, econometrics and most new tracks): write the **guide as markdown in the repo first**: a plan (`docs/<subject>/…-plan.md`: branches, skills per branch, prerequisites, schedule), then `docs/guides/<tree>-<branch>.md` (a "How to use this track" section first, then one `## N. Title` chapter per skill). The user reviews the guide; only then continue from Step 2. (Older tracks such as `sysd` used a Claude Doc; do that only if the user asks.) Avoid `|` inside table cells (even in code); it breaks the card builder's table split. Follow "Writing new content".
+- **Very large tracks** (dozens of skills): write one branch per session step, shortest prerequisites first, and get the outline approved before the long writing. Parallel writer subagents (one per branch, with `docs/design/track-writing-brief.md` as the template: audience, running example, format rules, 'do not touch other files') only when the user asks for them.
 - **A Typst book** (like `../German Learning/cicd-tutorial/source`): `scripts/typ2md.py <source> <out>` converts every chapter verbatim (book `==` → `###`, boxes such as What-if / Watch out / exercises → labelled paragraphs, `#file` listings read from `../code`, `#tbl` → tables, `#fig` → `![caption](img/x.svg)`). Then group the sections into skills with a small script; `content/se/cicd/_group.py` is the worked example. Copy the listed diagrams into `content/se/<branch>/img/`.
 - **Images**: a line `![caption](img/name.svg)` becomes a figure card (white background, caption below); the build copies `content/se/<branch>/img/` to `app/data/se/<branch>/img/`.
 - Check for **sections the guide promises but doesn't contain yet** (reading maps, "see section X"). Build only what exists, and tell the user which chapters are missing. Don't invent content for the user's own guide unless they ask.
@@ -105,8 +110,18 @@ Then **look at the screenshots** (`1_tree.png`, `4_reader_mid.png`, `5_after_fin
 
 ## Writing new content (when there's no source doc)
 
-Follow the `awsml` chapters as the model:
+Follow the `awsml` chapters (tools/cloud) or the Mathematics chapters (`content/math/*`, for subjects built on numbers) as the model:
 - 700–1,200 words per chapter, in plain English. The first sentence says what the skill covers and why it matters.
 - Use `###` sections: the ideas (with tables for comparisons), the AWS or tool specifics, a **Lab** (numbered steps, with the cost if there is one), and a **Self-check** with **Answers**.
 - Facts come from official sources opened during the session. Label anything from memory as approximate.
 - Code blocks are short. Use tables instead of long bullet lists.
+
+### Textbook subjects (maths, economics, finance, statistics, econometrics)
+Used for the MSc-prep tracks (`docs/econ/sem1-plan.md`). The reader may start at school level, so:
+- **Level**: assume only the branches listed as prerequisites in the plan. Define every term in bold the first time. Say what the formula means in words before using it.
+- **Numbers first**: every skill has at least one fully worked numeric example with every step shown (small, round numbers, a calculator is enough). Check every figure by hand or with a short script before saving; wrong arithmetic is the worst bug in this kind of material.
+- **Economics-flavoured examples** (wages, prices, a firm's accounts, returns), not abstract symbols. One running case per branch when it helps (for finance a small firm; for econometrics one dataset of wages and education).
+- **Software**: Gretl is the course software for econometrics; say which menu or command to use only after checking it in the Gretl manual. Do not invent menu paths.
+- **Chapter shape**: intro, 4+ `###` sections (180–350 words each), `### Exercises` (3–6 problems), then `**Answers.**` with the worked solutions (hidden behind a tap by the build), and a **Common mistakes** section where students usually slip. 800–1,200 words (the Mathematics chapters average about 900; shorter than 700 is too thin for a school-level start).
+- **Map to the real course**: each branch's `About` (00.md) says which university subject and exam topics it prepares for, and which of the user's other tracks to read first.
+- **Facts**: formulas are standard; textbook names and Gretl/Excel behaviour must be checked, and anything not verified is left out or said generally.
