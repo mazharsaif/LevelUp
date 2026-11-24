@@ -2631,6 +2631,9 @@ function lifeRoute(h) {
 const lifeNav = cur => `<div class="lnav">${[["home", "⚔️ Today"], ["gates", "🌀 Gates"], ["hunter", "🧬 Hunter"], ["party", "👥 Party"]].map(([k, l]) =>
   `<a href="#/${k}" class="${cur === k ? "on" : ""}">${l}</a>`).join("")}</div>`;
 const hunter = () => { const lv = LF.hunterLevel(LF.totalLifeXP()); return { ...lv, rk: LF.hunterRank(lv.lv) }; };
+// Gate emblem (feedback 82bb): solid shield (Classic/Calm) or glow hex (Hunter), coloured by stat, text = the gate's rank letter ("∞" open-ended, "+" create). CSS picks the variant per theme.
+const gateEmblem = (letter, stat, px, label) => `<span class="gemb gs-${stat}" style="width:${px}px;height:${px}px" role="img" aria-label="${esc(label)}"><svg viewBox="0 0 64 64" aria-hidden="true"><g class="gv3"><path d="M32 3L58 11V33C58 47 46 57 32 62C18 57 6 47 6 33V11Z" fill="var(--gc)" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linejoin="round"/><text x="32" y="46" text-anchor="middle" font-weight="900" font-size="34" fill="#fff">${letter}</text></g><g class="gv6"><polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="#060c18" stroke="var(--gn)" stroke-width="2.6" stroke-linejoin="round"/><polygon points="32,8 52,20 52,44 32,56 12,44 12,20" fill="var(--gn)" fill-opacity=".1" stroke="var(--gn)" stroke-opacity=".4"/><text x="32" y="44" text-anchor="middle" font-weight="900" font-size="34" fill="#eaf6ff">${letter}</text></g></svg></span>`;
+const gateEmb = (days, tr, stat, px = 72) => { const g = tr ? LF.rankOf(tr) : LF.gateRank(days); return gateEmblem(g || "∞", stat, px, g ? `${g}-rank gate` : "Open-ended gate"); };
 const gateBadge = (days, tr) => { const g = tr ? LF.rankOf(tr) : LF.gateRank(days); return g ? `<span class="gbadge g-${g}">${g}</span>` : `<span class="gbadge g-open">∞</span>`; };
 function crackText(tr) {
   const c = tr.st.cracked; if (!c) return "";
@@ -2810,14 +2813,15 @@ function lifeGates() {
   const ran = {}; for (const tr of all) if (tr.template && tr.status !== "active" && (!ran[tr.template] || (tr.ended || "") > (ran[tr.template].ended || ""))) ran[tr.template] = tr;
   const ranLabel = tr => `${tr.status === "cleared" ? "Cleared ✓" : tr.status === "failed" ? "Failed" : "Gave up"}${tr.ended ? " " + fmtDate(tr.ended) : ""}`;
   view().innerHTML = topRow() + lifeNav("gates") + `
-  <a class="card gnew" href="#/new"><span class="qic">✨</span><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div><span class="caret">›</span></a>
+  <a class="card gnew" href="#/new"><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div>${gateEmblem("+", "mind", 72, "Create your own gate")}</a>
   <div class="card rankstrip"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b class="small">Rank = length:</b>${LF.GATES.map(([d, g]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> ${d}d</span>`).join("")}</div>
     <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎. D-rank and up also earn a 🛡; gates of 28+ days earn one at 14 and 28 good days.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
   <div class="sys-h" style="margin:14px 2px 6px">Gate board</div>
-  ${lifeTemplates().map(tp => `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start"><span class="qic">${tp.icon}</span>
-    <div class="grow"><b>${esc(tp.title)}</b> ${gateBadge(tp.days)}<div class="small muted">${esc(tp.blurb || "")}</div>
+  ${lifeTemplates().map(tp => { const atr = all.find(x => x.template === tp.id && x.status === "active"), rtr = ran[tp.id], etr = atr || (open.has(tp.id) ? null : rtr);
+    return `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start">
+    <div class="grow"><b>${esc(tp.title)}</b><div class="small muted">${esc(tp.blurb || "")}</div>
       <div class="tiny muted" style="margin-top:3px">${LF.STATS[tp.stat][0]} ${LF.STATS[tp.stat][1]} · ${tp.days ? `${tp.days} days` : "no end"}${tp.private ? " · private" : ""}</div></div>
-    ${open.has(tp.id) ? `<span class="tiny muted">Open ✓</span>` : ran[tp.id] ? `<div style="text-align:right"><div class="tiny muted">${ranLabel(ran[tp.id])}</div><button class="btn ghost sm" data-again="${tp.id}" style="width:auto;margin:4px 0 0">Enter again</button></div>` : `<a class="btn sm" href="#/new/${tp.id}" style="width:auto;margin:0;text-decoration:none">Enter</a>`}</div></div>`).join("")}
+    <div class="grail">${open.has(tp.id) ? `<span class="tiny muted">Open ✓</span>` : rtr ? `<div class="tiny muted">${ranLabel(rtr)}</div><button class="btn ghost sm" data-again="${tp.id}" style="width:auto;margin:0">Enter again</button>` : `<a class="btn sm" href="#/new/${tp.id}" style="width:auto;margin:0;text-decoration:none">Enter</a>`}${gateEmb(tp.days, etr, tp.stat)}</div></div></div>`; }).join("")}
   ${rec.length ? `<div class="sys-h" style="margin:14px 2px 6px">Your record</div><div class="card">${rec.slice(0, 30).map(tr => `<div class="recrow" data-open="${tr.id}"><span>${tr.icon}</span><span class="grow">${esc(LF.shown(tr))} ${gateBadge(tr.days, tr)}</span>
     <span class="tiny ${tr.status === "cleared" ? "okc" : "muted"}">${tr.status === "cleared" ? "Cleared" : tr.status === "failed" ? "Failed" : "Ended"} ${tr.ended ? fmtDate(tr.ended) : ""}</span></div>`).join("")}</div>` : ""}`;
   wireTop();
