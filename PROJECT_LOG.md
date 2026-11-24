@@ -260,3 +260,5 @@ German content comes from `../German Learning/legacy/Data/Iteration_v3/_source` 
 - 11-13: first build: data export, audio, PWA, path/lessons/reviews/progress/pace, server-side progress.
 
 - 11-24 (late): German A1 situation roadmap shipped: 35 units, all 821 words, 28 grammar chapters (6 new + 2 mock exams), checkpoints every 3 units, Guidebook revisit cards, unit-35 mocks; lesson combo bar, labelled free retries, listening skip substitutes a text step (Undo), distractors prefer known words. German A1 progress reset once on first load (backup taken).
+- 11-24 (lesson rebuild, NOT yet deployed): vocab parts are now sentence-led: Meet (card + check + sentence-listen of an earlier word) → Use it (pairs, gap-fills, hear a sentence) → Say it (hard stretch, ends with a whole sentence typed from English, only from known words). 15-26 steps/part (median 20, was ~27). New step `slisten`, phase tags, SW v81.
+- 11-24 (track + lessons, NOT yet deployed): unit titles rewritten as actions (24 of 35); phrase lessons tagged Meet / Use it / Say it; grammar lessons ordered pick-then-type (Pick it / Type it), mock papers keep paper order; SW v82.

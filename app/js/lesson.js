@@ -225,11 +225,11 @@ export function sayItems(p) {
   return out.filter(x => TOKEN_OK.test(x.de) && tokens(x.de).length >= 2 && tokens(x.de).length <= 10)
     .map(x => ({ ...x, note: notes.join("; "), ctx: p.grp || "", a: de.length === 1 ? p.a : null }));
 }
-export function sayStep(p, pool, { forceTiles = false } = {}) {
+export function sayStep(p, pool, { forceTiles = false, forceType = false } = {}) {
   const its = sayItems(p); if (!its.length) return null;
   const it = its[Math.floor(Math.random() * its.length)];
   const n = ((S && S.say) || {})[it.de] || 0;
-  const mode = forceTiles || n === 0 ? "tiles" : Math.random() < Math.min(0.65, 0.35 + 0.1 * n) ? "type" : "tiles";
+  const mode = forceType ? "type" : forceTiles || n === 0 ? "tiles" : Math.random() < Math.min(0.65, 0.35 + 0.1 * n) ? "type" : "tiles";
   const toks = tokens(it.de), have = new Set(toks.map(norm)), extra = [];
   const want = toks.length <= 3 ? 2 : 3;
   for (const q of shuffle(pool)) {
@@ -282,27 +282,53 @@ function matchStep(ws) {
   for (const x of shuffle(ws)) if (mws.length < 5 && !mws.some(o => overlaps(o.en, x.en) || baseDe(o.de) === baseDe(x.de))) mws.push(x);
   return mws.length >= 3 ? { t: "match", ws: mws } : null;
 }
-// One bit: teach a word → test it right away → next word → mix → sentences → final round
+// ---- sentence-led lessons (Duolingo review 11-24): meet a word → use it in sentences → say a whole sentence ----
+// A sentence is fair to ask for when every token belongs to a word the learner has met or is learning in this part.
+const knownList = ws => [...new Map([...ws, ...Object.keys((S && S.words) || {}).map(id => C.word[id]).filter(Boolean)].map(x => [x.id, x])).values()];
+function fairSentence(w, ws, { min = 3, max = 8 } = {}) {
+  const known = knownList(ws);
+  const ok = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && !/[()…=/]/.test(e.de) && tokens(e.de).length >= min && tokens(e.de).length <= max
+    && tokens(e.de).every(t => known.some(k => tokenIs(t, k))));
+  return ok.length ? ok[Math.floor(Math.random() * ok.length)] : null;
+}
+// hear a whole sentence, choose what it means
+function slistenFor(w) {
+  const e = (w.ex || []).filter(x => x.a && TOKEN_OK.test(x.de) && !/[()…=/]/.test(x.de) && tokens(x.de).length >= 3 && tokens(x.de).length <= 9)[0];
+  if (!e) return null;
+  const pool = [];
+  for (const x of shuffle(C.content.words)) {
+    if (pool.length >= 3) break;
+    const o = (x.ex || []).find(y => y.en && y.en !== e.en && !/[()=]/.test(y.en) && Math.abs(y.en.length - e.en.length) < 25);
+    if (x.id !== w.id && o && !pool.includes(o.en) && !overlaps(x.en, w.en)) pool.push(o.en);
+  }
+  return pool.length >= 2 ? { t: "slisten", w, ex: e, opts: [e.en, ...pool], key: "sl:" + e.de } : null;
+}
+// One part (4 words): MEET each word (card + instant check + a sentence from the words before it) → USE (pairs, gap-fills,
+// a sentence to hear) → SAY IT (hard stretch, easy to hard, ending with a whole sentence typed from English).
 export function vocabBitSteps(item, bit) {
   const ids = bitsOf(item)[bit], ws = ids.map(id => C.word[id]);
-  const steps = [];
-  // teaching cards (path item `notes`, from export_data.py): before the lesson's first word ("start") or right before a given word
+  const steps = [], add = (ph, x) => x && steps.push({ ...x, ph });
   const notes = (item.notes || []).filter(n => (n.at === "start" ? bit === 0 : ids.includes(n.at)));
   ws.forEach((w, i) => {
     notes.filter(n => (n.at === "start" ? i === 0 : n.at === w.id)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
-    steps.push(st.intro(w));
-    steps.push(i % 2 ? st.en_de(w) : st.de_en(w));          // test the new word right away
-    if (i >= 1) {                                          // then mix with what came before
+    add("Meet", st.intro(w));
+    add("Meet", i % 2 ? st.en_de(w) : st.de_en(w));
+    if (i >= 1) {                                          // mix with an earlier word of this part, in a sentence where possible
       const prev = ws[Math.floor(Math.random() * i)];
-      steps.push(prev.a && Math.random() < 0.5 ? st.listen(prev) : canGender(prev) ? st.gender(prev) : st.en_de(prev));
+      add("Meet", (Math.random() < 0.6 && slistenFor(prev)) || (canGender(prev) ? st.gender(prev) : st.en_de(prev)));
     }
   });
-  const m = matchStep(ws); if (m) steps.push(m);
-  // sentence work: one build + one gap-fill where possible
-  const sb = shuffle(ws).map(w => buildFor(w, ws)).find(Boolean); if (sb) steps.push(sb);
-  const sc = shuffle(ws).map(clozeFor).find(Boolean); if (sc) steps.push(sc);
-  shuffle(ws).forEach((w, i) => steps.push(hardStep(w, i + Math.floor(Math.random() * 4))));
-  const sb2 = shuffle(ws).filter(w => !sb || w.id !== sb.w.id).map(w => buildFor(w, ws)).find(Boolean); if (sb2) steps.push(sb2);
+  add("Use it", matchStep(ws));
+  const cl = shuffle(ws).map(clozeFor).filter(Boolean);
+  cl.slice(0, 2).forEach(x => add("Use it", x));
+  add("Use it", shuffle(ws).map(slistenFor).find(Boolean));
+  // hard stretch: single-word recall first, then sentences from tiles, last a whole sentence typed from English
+  shuffle(ws).slice(0, 2).forEach((w, i) => add("Say it", hardStep(w, i + Math.floor(Math.random() * 4))));
+  const bs = shuffle(ws).map(w => buildFor(w, ws)).filter(Boolean);
+  bs.slice(0, 2).forEach(x => add("Say it", x));
+  let cap = null;
+  for (const w of [...shuffle(ws), ...shuffle(knownList(ws).filter(k => !ws.includes(k))).slice(0, 40)]) { const e = fairSentence(w, ws); const sy = e && sayStep({ de: e.de, en: e.en, a: e.a }, ws.flatMap(x => x.ex || []).filter(x => x.de && x.en), { forceType: true }); if (sy) { cap = { ...sy, w }; break; } }
+  if (cap) add("Say it", cap); else { const g = shuffle(ws).map(w => buildFor(w, ws)).filter(x => x && !bs.slice(0, 2).includes(x))[0]; if (g) add("Say it", g); }
   return steps;
 }
 export function vocabSteps(item) { return bitsOf(item).flatMap((_, i) => vocabBitSteps(item, i)); }
@@ -363,9 +389,10 @@ function render() {
   window.scrollTo(0, 0);
   // feedback 11-23: no hearing exercises when you can't listen (Settings switch, or "Can't listen now" for this lesson)
   // can't listen (Settings switch, or "Can't listen now" for this lesson): the same word is asked as text instead, nothing is dropped
-  if (s.t === "listen" && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen" }; return render(); }
+  if ((s.t === "listen" || s.t === "slisten") && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen", ph: s.ph }; return render(); }
   if (s.w) R.words.add(s.w.id);
-  ({ intro, note, mc, listen, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  ({ intro, note, mc, listen, slisten, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  if (s.ph && !s.retry) lb.insertAdjacentHTML("afterbegin", `<div class="phase">${s.ph}</div>`);
   if (s.retry) lb.insertAdjacentHTML("afterbegin", `<div class="retag">↻ Previous mistake · free</div>`);
   if (s.sub === "listen" && R.noListen && !s.retry) {
     lb.insertAdjacentHTML("beforeend", `<button class="link" id="unskip" style="display:block;margin:14px auto 0">↩ Undo: bring back hearing exercises</button>`);
@@ -428,7 +455,7 @@ function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } 
     R.total++;
   }
   blip(ok);
-  if (s.w && s.t !== "listen" && (s.t !== "mc" || s.dir === "en_de" || !ok)) play(s.w.a, s.w.de);
+  if (s.w && s.t !== "listen" && s.t !== "slisten" && (s.t !== "mc" || s.dir === "en_de" || !ok)) play(s.w.a, s.w.de);
   const f = document.createElement("div");
   f.className = "feedback " + (ok ? "ok" : "bad");
   f.innerHTML = `<h3>${ok ? pick(L.praise, 1)[0] : "Not quite"}</h3>
@@ -585,6 +612,15 @@ function mc(s, lb) {
   }
 }
 
+function slisten(s, lb) {
+  const e = s.ex, opts = shuffle(s.opts);
+  lb.innerHTML = `<div class="q-title">What does this sentence mean?</div><button class="spk xl" data-a="${e.a || ""}" data-t="${esc(e.de)}">🔊</button>`;
+  wireSpeakers(lb);
+  playSoon(e.a, e.de);
+  options(lb, opts.map(esc), opts.indexOf(e.en), ok => answered(s, ok, { correctHTML: esc(e.en), note: e.de }));
+  lb.insertAdjacentHTML("beforeend", `<button class="link nolisten" id="nolisten" style="display:block;margin:14px auto 0">🔇 Can't listen now? Skip hearing exercises</button>`);
+  lb.querySelector("#nolisten").onclick = () => { stopAudio(); R.noListen = true; R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen", ph: s.ph }; render(); };
+}
 function listen(s, lb) {
   const w = s.w;
   const opts = shuffle([w, ...distractors(w, "de")]);
@@ -1065,7 +1101,11 @@ export function grammarXP(g, item, acc) {
 }
 export function startGrammarPractice(g, item) {
   const P = item && item.gid ? g.parts[item.part] : null, idx = P ? P.q : g.q.map((_, i) => i); // a part asks only its own questions
-  const qs = idx.map((qi, i) => { const q = g.q[qi].myName ? { ...g.q[qi], ...nameSpellQuestion() } : g.q[qi]; return { t: q.opts ? "gmc" : "gq", q, n: i + 1, of: idx.length }; });
+  let qs = idx.map(qi => { const q = g.q[qi].myName ? { ...g.q[qi], ...nameSpellQuestion() } : g.q[qi]; return { t: q.opts ? "gmc" : "gq", q }; });
+  // easy to hard: pick-the-answer first, then type it yourself (the mock papers keep their paper order)
+  const mock = g.id === "g27" || g.id === "g28";
+  if (!mock) qs = [...qs.filter(x => x.t === "gmc"), ...qs.filter(x => x.t === "gq")];
+  qs = qs.map((x, i) => ({ ...x, n: i + 1, of: qs.length, ph: mock ? "Mock exam" : x.t === "gmc" ? "Pick it" : "Type it" }));
   runLesson({
     title: P ? item.title : `Ch ${g.num}: ${g.title}`, kind: "grammar", steps: qs,
     onFinish: (r, acc) => { const xp = grammarXP(g, item, acc); addXP(xp); return xp; },
@@ -1083,19 +1123,19 @@ export function startPhrases(sec, item, bit = 0) {
   const pnotes = (item && item.notes) || []; // teaching cards: at "start" (first part) or right before a given phrase
   items.forEach((p, i) => {
     pnotes.filter(n => (n.at === "start" ? bit === 0 && i === 0 : n.at === p.de)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
-    steps.push({ t: "flip", p, sec: sec.title });
-    if (toSpeak.has(p)) steps.push({ t: "speak", p, key: "speak:" + p.de });
-    steps.push(q(p, false));
-    if (i >= 1) steps.push(q(items[Math.floor(Math.random() * i)], true));
+    steps.push({ t: "flip", p, sec: sec.title, ph: "Meet" });
+    if (toSpeak.has(p)) steps.push({ t: "speak", p, key: "speak:" + p.de, ph: "Meet" });
+    steps.push({ ...q(p, false), ph: "Meet" });
+    if (i >= 1) steps.push({ ...q(items[Math.floor(Math.random() * i)], true), ph: "Meet" });
   });
   // spaced practice: up to 2 phrases from earlier parts of this topic that they've already produced correctly
   const say = (S && S.say) || {};
   shuffle(all.filter(p => !items.includes(p) && sayItems(p).some(x => say[x.de])))
-    .slice(0, 2).forEach(p => { const x = sayStep(p, all); if (x) steps.push(x); });
+    .slice(0, 2).forEach(p => { const x = sayStep(p, all); if (x) steps.push({ ...x, ph: "Use it" }); });
   // final round: produce each phrase (bubbles while new, a mix with typing later); phrases that can't be built stay multiple choice
   shuffle(items).forEach((p, i) => {
     const fresh = !repeat && !sayItems(p).some(x => say[x.de]);
-    steps.push((fresh && guidedSayStep(p, all)) || sayStep(p, all, { forceTiles: fresh }) || q(p, i % 2 === 1));
+    steps.push({ ...((fresh && guidedSayStep(p, all)) || sayStep(p, all, { forceTiles: fresh }) || q(p, i % 2 === 1)), ph: "Say it" });
   });
   const n = item ? bitsOf(item).length : 1;
   runLesson({

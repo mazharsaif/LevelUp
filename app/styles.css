@@ -1394,3 +1394,5 @@ body.theme-sl .gemb{filter:drop-shadow(0 0 6px var(--gn))}body.theme-sl3 .gemb{f
 .grail{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none;width:80px;text-align:center}
 .grail .btn{width:100%!important;box-sizing:border-box;padding-left:6px;padding-right:6px}
 .gnew .gemb{margin:0 4px}
+
+.phase{font-size:calc(11px*var(--fs));font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#888);margin:0 0 6px}
