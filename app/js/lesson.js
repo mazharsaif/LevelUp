@@ -773,6 +773,11 @@ function gmc(s, lb) {
 }
 
 // phrase flip card (self-rated)
+function breakdownHTML(de) {
+  const b = phraseBreakdown(de);
+  if (b.total < 2 || b.known * 2 < b.total) return "";
+  return `<div class="wbw"><div class="muted tiny" style="text-align:center;margin:10px 0 4px">WORD BY WORD · A GUIDE, NOT THE TRANSLATION</div><div class="wbw-row">${b.rows.map(r => `<div class="wbw-c"><div class="de">${esc(r.t)}</div><div class="${r.m ? "" : "muted"}">${r.m ? esc(r.m) : "–"}</div></div>`).join("")}</div></div>`;
+}
 function flip(s, lb) {
   // a teaching card (feedback 11-20, batul): meaning shown right away under the phrase, one Next button. Self-grading
   // ("Still learning / I knew it") lives only in the recall reviews, so these cards don't count toward accuracy.
@@ -780,7 +785,7 @@ function flip(s, lb) {
   lb.innerHTML = `<div class="q-title">${esc(s.sec)}${p.grp ? ` · <span class="muted">${esc(p.grp)}</span>` : ""}</div>
     <div class="card flip" id="fc"><div class="row" style="justify-content:center"><div class="de">${esc(p.de)}</div></div>
     <div class="en" id="en" style="color:var(--ink)">${phone(esc(p.en))}</div></div>
-    <div style="text-align:center"><button class="spk" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button></div>${tidbitBtn(p.tidbit)}`;
+    <div style="text-align:center"><button class="spk" data-a="${p.a || ""}" data-t="${esc(p.de)}">🔊</button></div>${breakdownHTML(p.de)}${tidbitBtn(p.tidbit)}`;
   wireSpeakers(lb); wireTidbit(lb, p.tidbit);
   if (S.settings.autoplay) play(p.a, p.de);
   const f = foot(`<button class="btn" id="nx">Next</button>`);
@@ -839,6 +844,13 @@ function glossOf(tok, first) {
 function glossTok(tok, first) {
   const g = glossOf(tok, first);
   return g ? `<span class="gw" data-g="${esc(g)}">${esc(tok)}</span>` : esc(tok);
+}
+// Word by word: each German word of a phrase with its meaning (feedback b383, 11-24: "no background of what the words mean").
+// Words we can't explain show a dash, and the whole panel is skipped when fewer than half are known.
+export function phraseBreakdown(de) {
+  const toks = String(de).split(/\s+/).filter(t => /[\p{L}]/u.test(t));
+  const rows = toks.map((t, i) => { const g = glossOf(t, i === 0), m = !g ? "" : g.includes(" = ") ? g.split(" = ").slice(1).join(" = ") : g; return { t: t.replace(/[.,!?…]+$/, ""), m }; });
+  return { rows, known: rows.filter(r => r.m).length, total: rows.length };
 }
 function wireGloss(root) {
   root.addEventListener("click", e => {
