@@ -12,6 +12,9 @@ Two lists. **Mine** = Mazhar's own todos and feedback (accounts `mazhar` / `taha
 - Party join system: list parties, request to join, any member accepts, max 10, party tab
 
 ### Todos
+- **Finish the server move (11-26)**: set up StayLit on the new droplet (404 now); power off old droplet 168.144.78.71, delete spare droplets 167.71.237.48 / 206.189.136.229 / 206.189.138.165; decide sfo2 vs Bangalore. Details: PROJECT_LOG Pending
+- Install the dev tools on the Lenovo laptop (later): `uv`, Node, Chrome/Chromium. Until then no builds, `node --check`, tree_check or deploy pre-flight on the laptop
+- Add a second way into the droplet (second SSH key from another device, or a tested Droplet Console login), so losing one laptop can't lock us out again
 - German plan remap (0bf8): **built as the situation-first A1 roadmap** (`docs/german/a1-situation-roadmap.md`, 34 units, all words scheduled, everyone restarts; see PROJECT_LOG State 11-24). **Not deployed yet: ship = rsync audio + deploy.** Follow-ups: checkpoint days, revisit cards, unit-35 mock exams, load is about the same as before with all words (peak ~54 vs ~59 cards/day), so consider a longer default date. Old diagnosis: `docs/decisions/feedback-decisions-2026-11-24.md` §3
 - Lesson quick wins from the Duolingo review (independent of the roadmap): combo colour on the progress bar, labelled free mistakes round, listening skip that substitutes a text item + Undo, distractors from the previous lesson (roadmap §3, §10 P1)
 - Gate board emblems (82bb): pick layout + variant from `docs/designs/gate-board-82bb-v2.html`, then build
@@ -24,7 +27,7 @@ Two lists. **Mine** = Mazhar's own todos and feedback (accounts `mazhar` / `taha
 - Decide whether XP / streak / diamonds should be global per learner (now per course)
 - Confirm domain auto-renew (`levelrise.org`, `level-up.com.de`)
 - Re-add the no-porn gate to Hunter's Path when wanted (taken off 11-23)
-- Fetch droplet feedback: `tools/feedback.sh` (session-start fetch failed 11-23, droplet unreachable)
+- Review droplet feedback: `tools/feedback.sh` works again from the laptop (11-26: 6 open reports)
 - Update the deck screenshots (new hero forms, Settings tab, auto goal, icon)
 - Possible extra branches: VPNs / WireGuard / Tailscale, mkcert and local names
 - Extend 🎤 Speak it to vocab

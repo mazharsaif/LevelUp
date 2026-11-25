@@ -3,7 +3,9 @@
 # Paste into: Create Droplet -> Advanced Options -> Add Initialization scripts.
 #
 # GitHub access uses SSH agent forwarding: no private key ever lives on the droplet.
-# After boot, from the Mac:   ssh -A mazhar@<droplet-ip>   then run:   levelup-deploy
+# Only the LenovoLaptop personal key can log in (as mazhar). Endolit keys get no access:
+# root login is off and any key DigitalOcean installs for root is deleted.
+# After boot, from the laptop:   ssh -A mazhar@<droplet-ip>   then run:   levelup-deploy
 # (first run clones the repo and starts the app; later runs pull + restart)
 #
 # Logs on the droplet:  /var/log/cloud-init-output.log   journalctl -u levelup -f
@@ -21,16 +23,16 @@ users:
     shell: /bin/bash
     sudo: "ALL=(ALL) NOPASSWD:ALL"
     ssh_authorized_keys:
-      # your Mac's personal key: lets you `ssh mazhar@<droplet-ip>`
-      - &personal_pub ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIDwLb/sCvCs3Srip/sZ0mjySH0HxakeGusBUT3RlyLN mazharsaif@outlook.com
+      # your LenovoLaptop's personal key: lets you `ssh mazhar@<droplet-ip>`
+      - &personal_pub ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHuxo5ZPGnrrTaG2XwLYmyTcwZ2fKxVWrpQ2YGYYDHd LenovoLaptop
 
 ssh_pwauth: false
 disable_root: true
 
 write_files:
-  # PUBLIC half of the personal key. With agent forwarding, the Mac agent holds both
-  # the Endolit and personal keys; pointing IdentityFile at this .pub makes ssh offer
-  # only the personal key to GitHub (otherwise it may log in as mazhar-endolit).
+  # PUBLIC half of the personal key. With agent forwarding, pointing IdentityFile at
+  # this .pub makes ssh offer only the personal key to GitHub, never any other key
+  # that happens to be in the forwarded agent.
   - path: /home/mazhar/.ssh/github_personal.pub
     owner: mazhar:mazhar
     permissions: "0644"
@@ -130,6 +132,8 @@ runcmd:
   - ufw allow 80/tcp
   - ufw allow 443/tcp
   - ufw --force enable
+  # remove any key DigitalOcean installed for root at creation (e.g. an Endolit key)
+  - rm -f /root/.ssh/authorized_keys
   # daily automatic security updates
   - dpkg-reconfigure -f noninteractive unattended-upgrades
   # GitHub host key, uv, data folder

@@ -18,7 +18,7 @@
 }
 
 # LevelUp, main site (from 11-20). The Android app (APK) opens this address too, so keep it stable.
-# Cloudflare DNS: A "@" and A "www" -> 168.144.78.71 (DNS only, grey cloud).
+# Cloudflare DNS: A "@" and A "www" -> 206.189.213.12 (DNS only, grey cloud).
 levelrise.org {
 	import common
 	reverse_proxy 127.0.0.1:8000
@@ -31,7 +31,7 @@ www.levelrise.org, level-up.com.de, dev.level-up.com.de, app.level-up.com.de {
 }
 
 # StayLit: static clock that keeps the screen awake. Files: /var/www/staylit (synced by staylit-deploy).
-# Cloudflare DNS: A "staylit" -> 168.144.78.71 (DNS only, grey cloud).
+# Cloudflare DNS: A "staylit" -> 206.189.213.12 (DNS only, grey cloud).
 staylit.levelrise.org {
 	import common
 	root * /var/www/staylit

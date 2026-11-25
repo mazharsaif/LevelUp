@@ -34,7 +34,7 @@ git fetch --tags origin
 git tag --points-at HEAD --list 'v20*'      # already tagged (a re-deploy)? then skip the tag
 V="$(tools/next_version.sh)"                # e.g. 2026.11.20.02
 git tag -a "v$V" -m "Release $V"
-git push origin main "v$V"                  # remote = git@github-personal:mazharsaif/LevelUp.git (personal key)
+git push origin main "v$V"                  # remote = https://github.com/mazharsaif/LevelUp.git (auth via gh)
 ```
 
 If push is rejected (remote ahead): delete the local tag (`git tag -d "v$V"`), `git pull --rebase origin main`,
@@ -43,15 +43,18 @@ The server reads the tag on its commit at startup and reports it in `/api/health
 
 ## 3. Load the personal key into the agent
 
-The droplet's `git pull` uses the forwarded agent (`ForwardAgent yes` is set for `levelup-droplet` in `~/.ssh/config`).
+The droplet's `git pull` uses the forwarded agent (`ForwardAgent yes` is set for `levelup-droplet` in `~/.ssh/config`
+on the Lenovo laptop; the Mac is gone since 11-26). The key is `~/.ssh/id_ed25519` (label `LenovoLaptop`), the only key
+the droplet and GitHub accept.
 
 ```bash
-ssh-add -T ~/.ssh/id_ed25519_personal.pub 2>/dev/null || ssh-add --apple-use-keychain ~/.ssh/id_ed25519_personal
+ssh-add -T ~/.ssh/id_ed25519.pub 2>/dev/null || ssh-add ~/.ssh/id_ed25519
 # (ssh-add -l shows the key comment, not the file name, so don't grep it for the path)
 ```
 
-If `ssh-add` asks for a passphrase and fails non-interactively, ask the user to run
-`! ssh-add --apple-use-keychain ~/.ssh/id_ed25519_personal` and continue after.
+If `ssh-add` says it can't connect to an agent, or asks for a passphrase and fails non-interactively, ask the user to run
+`! ssh-add ~/.ssh/id_ed25519` and continue after. If `levelup-droplet` doesn't resolve, the alias is missing from
+`~/.ssh/config` (host 206.189.213.12, user mazhar, ForwardAgent yes); see PROJECT_LOG Run.
 
 ## 4. Deploy
 
