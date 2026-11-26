@@ -333,4 +333,20 @@ export function reportOf(tr) {
   return { track: tr.id, status, run: tr.st.run, day: Math.max(0, Math.min(dayNo(tr), tr.days || 9999)), today: tr.start <= today() && doneToday(tr),
     cracked: !!tr.st.cracked, date: today(), why: status === "failed" ? String((tr.st.events.at(-1) || {}).txt || "").slice(0, 120) : "" };
 }
+/** You're in a party gate on the server but this device has no track for it (progress reset, new device, lost save):
+ *  rebuild it from the gate so it shows on Today again. Days before today count as settled (nothing is judged
+ *  retroactively, so a rebuild can never fail the gate for the party); run and crack come from the server. */
+export function restoreTrack(g, mine) {
+  const sp = g.spec || {}, t = today();
+  const tr = newTrack({ kind: g.kind, title: g.title, icon: g.icon, days: g.days, start: g.start, private: false, stat: sp.stat, schedule: sp.schedule,
+    amount: sp.amount, unit: sp.unit, period: sp.period, steps: sp.steps || [], penalty: sp.penalty || "" });
+  delete S.tracks[tr.id]; tr.id = mine.track; S.tracks[tr.id] = tr;
+  tr.pgate = g.id;
+  tr.st.settled = g.start < t ? addDays(t, -1) : addDays(g.start, -1);
+  tr.st.run = tr.st.best = mine.run || 0;
+  if (mine.cracked) tr.st.cracked = { at: addDays(t, -1), heal: 0 };
+  ev(tr, t, "info", "Restored from your party gate on this device.");
+  save();
+  return tr;
+}
 export const upcoming = () => Object.values(H() && S.tracks).filter(tr => tr.status === "active" && tr.start > today());

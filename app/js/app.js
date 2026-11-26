@@ -3185,7 +3185,11 @@ function applyPartyGates() {
   let changed = false;
   for (const g of PG.gates) {
     const mine = g.members.find(m => m.id === USER); if (!mine) continue;
-    const tr = S.tracks[mine.track]; if (!tr) continue;
+    let tr = S.tracks[mine.track] || Object.values(S.tracks).find(t => t.pgate === g.id);
+    if (!tr) {   // in the gate on the server, but no track here (progress reset, new device): rebuild it so Today shows it (3e90)
+      if (g.status !== "active" || mine.status !== "active") continue;
+      tr = LF.restoreTrack(g, mine); changed = true;
+    }
     if (tr.pgate !== g.id) { tr.pgate = g.id; changed = true; }
     if (g.status === "failed" && tr.status === "active") { LF.teamFail(tr, g.failedBy === USER ? "Your" : `${g.failedByName}'s`); changed = true; }
     if (g.status === "cleared" && LF.teamClear(tr)) { changed = true; toast(`👥 The whole party cleared ${g.title}! +${LF.TEAM_BONUS.xp} XP · 💎 ${LF.TEAM_BONUS.gems}`); }
