@@ -3057,7 +3057,7 @@ function raiseRankSheet(days, cur, pick) {
   const own = LF.gateRank(days), ks = Object.keys(LF.GATE_REWARD), up = ks.slice(ks.indexOf(own) + 1), sel = LF.raisedRank(days, cur);
   sheet(`<h2 style="margin-top:0">⬆ Raise this gate's rank?</h2>
     <p class="small">Its length gives it <b>${own}-rank</b>. Raise it only if you truly believe the challenge is harder than that. Example: 150 push-ups a day for a week is easily A- or B-rank, even though 7 days alone is E.</p>
-    <div class="card" style="border-color:var(--red);margin:10px 0"><b>⚠️ Don't raise it for XP or streaks.</b><div class="small muted">A higher rank pays more XP and 💎 when you clear it. Ranking an easy gate up only inflates your numbers, and you can't lower it later.</div></div>
+    <div class="warnbox"><b>⚠️ Don't raise it for XP or streaks.</b><div class="small muted">A higher rank pays more XP and 💎 when you clear it. Ranking an easy gate up only inflates your numbers, and you can't lower it later.</div></div>
     <div class="chips">${up.map(r => `<button class="chipx ${r === sel ? "on" : ""}" data-r="${r}"><span class="gbadge g-${r}">${r}</span> ${LF.GATE_REWARD[r][0]} XP · ${LF.GATE_REWARD[r][1]} 💎</button>`).join("")}</div>
     <button class="btn" id="ry" style="margin-top:12px" disabled>Raise rank</button><button class="btn ghost" id="rn">Keep ${own}-rank</button>`, el => {
     let r = sel !== own ? sel : null; const go = el.querySelector("#ry"); go.disabled = !r;

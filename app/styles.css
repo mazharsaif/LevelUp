@@ -1413,3 +1413,6 @@ body.in-lesson .lnav{display:flex}
 .wbw-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .wbw-c{border:1px solid var(--line);border-radius:10px;padding:5px 9px;text-align:center;background:var(--card);font-size:calc(13px*var(--fs))}
 .wbw-c .de{font-weight:800;font-size:calc(15px*var(--fs));margin-bottom:1px}
+
+/* red warning box (raise-rank sheet); not a .card, so the themes' card borders and corner marks don't override it */
+.warnbox{border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;margin:10px 0;background:color-mix(in srgb,var(--red) 12%,transparent)}
