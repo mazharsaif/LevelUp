@@ -118,6 +118,20 @@ def apply(content, say, notes):
             ex=[("einundzwanzig", "21 = one-and-twenty"), ("vierunddreißig", "34 = four-and-thirty"), ("neunundneunzig", "99 = nine-and-ninety")])]),
         ("das Wiedersehen (Auf Wiedersehen)", [dict(h="Why is “Auf Wiedersehen” in brackets?", p="The word itself is “das Wiedersehen”, a noun meaning “seeing each other again”. Germans almost never say it alone: they say “Auf Wiedersehen” (literally “until seeing again”), which is the polite way to say goodbye. The brackets only show where you will meet the word. In a conversation, say the whole phrase.",
             ex=[("Auf Wiedersehen!", "Goodbye! (polite)"), ("Tschüss!", "Bye! (casual)")])]),
+        # educator review (11-26): overview cards that tie together what the word cards show one by one
+        ("bitte", [dict(h="Six sounds to get right from day one", p="German is spelled almost the way it sounds, so once you know the sounds you can read any word aloud. These six work differently from English; get them right now and every new word is easier. Chapter 1 (week 2) covers the whole alphabet.",
+            ex=[("Wie geht's?", "w sounds like English v"), ("zwei", "z sounds like ts"), ("drei · vier", "ei sounds like “eye”, ie like “ee”"),
+                ("ich · acht", "ch: soft after i and e, from the throat after a, o, u"), ("Schule · sprechen", "sch = sh; sp and st at the start = shp, sht"), ("Vater", "-er at the end sounds like “uh”: FAA-tuh")])]),
+        ("der Inder / die Inderin", [dict(h="One role, two words: the -in ending", p="Most words for jobs, nationalities and roles have a female form ending in -in. It is always a die word, and its plural ends in -innen. Some add an umlaut, and words ending in -e drop the e. When you say what you are, use no article: Ich bin Inderin.",
+            ex=[("der Lehrer, die Lehrerin", "teacher (man, woman)"), ("die Lehrerinnen", "teachers (women, plural)"), ("der Arzt, die Ärztin", "doctor (umlaut added)"), ("der Kollege, die Kollegin", "colleague (the -e goes)")])]),
+        ("der Bruder", [dict(h="Plurals: the article is easy, the ending isn't", p="In the plural the article is always die. The ending has to be learnt with each noun, which is why every noun card shows its plural. Five patterns cover most nouns, and most feminine nouns take -n or -en.",
+            ex=[("der Tisch, die Tische", "-e"), ("die Schwester, die Schwestern", "-n / -en: most feminine nouns"), ("der Bruder, die Brüder", "no ending, maybe an umlaut: der and das words in -er, -el, -en"),
+                ("das Kind, die Kinder", "-er, often with an umlaut (das Buch, die Bücher)"), ("das Handy, die Handys", "-s: mostly foreign words")])]),
+        ("die Wohnung", [dict(h="Endings that give the gender away", p="You can't guess every gender, but some endings are reliable. -ung, -heit, -keit, -ion and -ei are die words. -chen and -lein are always das. Days, months and seasons are der. In a compound word, the last part decides the gender.",
+            ex=[("die Wohnung", "-ung → die"), ("die Information", "-ion → die"), ("das Brötchen", "-chen → always das"), ("der Kühlschrank", "kühl + der Schrank → der")])]),
+        ("bekommen", [dict(h="False friends: they look English, but they aren't", p="Some German words look like English ones and mean something else. These come up at A1, so learn the trap with the word.",
+            ex=[("bekommen", "to get, to receive (“to become” is werden)"), ("also", "so, therefore (“also” is auch)"), ("wer · wo", "who · where"),
+                ("Er will Kaffee.", "He wants coffee (not “he will”)"), ("bald · fast", "soon · almost"), ("das Handy · der Chef", "mobile phone · boss")])]),
     ]
     for de, cards in EXTRA:
         w = next(x for x in content["words"] if x["de"] == de)
