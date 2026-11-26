@@ -12,8 +12,7 @@ Two lists. **Mine** = Mazhar's own todos and feedback (accounts `mazhar` / `taha
 - Party join system: list parties, request to join, any member accepts, max 10, party tab
 
 ### Todos
-- **Finish the server move (11-26)**: set up StayLit on the new droplet (404 now); power off old droplet 168.144.78.71, delete spare droplets 167.71.237.48 / 206.189.136.229 / 206.189.138.165; decide sfo2 vs Bangalore. Details: PROJECT_LOG Pending
-- Install the dev tools on the Lenovo laptop (later): `uv`, Node, Chrome/Chromium. Until then no builds, `node --check`, tree_check or deploy pre-flight on the laptop
+- **Finish the server move (11-26)**: old droplets are powered off; delete 168.144.78.71, 167.71.237.48, 206.189.136.229, 206.189.138.165 once sure; decide sfo2 vs Bangalore. Details: PROJECT_LOG Pending
 - Add a second way into the droplet (second SSH key from another device, or a tested Droplet Console login), so losing one laptop can't lock us out again
 - German plan remap (0bf8): **built as the situation-first A1 roadmap** (`docs/german/a1-situation-roadmap.md`, 34 units, all words scheduled, everyone restarts; see PROJECT_LOG State 11-24). **Not deployed yet: ship = rsync audio + deploy.** Follow-ups: checkpoint days, revisit cards, unit-35 mock exams, load is about the same as before with all words (peak ~54 vs ~59 cards/day), so consider a longer default date. Old diagnosis: `docs/decisions/feedback-decisions-2026-11-24.md` §3
 - Lesson quick wins from the Duolingo review (independent of the roadmap): combo colour on the progress bar, labelled free mistakes round, listening skip that substitutes a text item + Undo, distractors from the previous lesson (roadmap §3, §10 P1)
@@ -48,5 +47,6 @@ Rule: reports from `taha` / `mazhar` are implemented directly; others wait for M
 
 ## Done
 - (move finished items here with the date)
+- 2026-11-26: dev tools on the Lenovo laptop (uv, Node via nvm, Chrome); steps in `~/Documents/NewSystemSetup.txt`. StayLit dropped.
 - 2026-11-24: Translator (41ab, option A): Translate card on Words, local lookup first, AI for the rest via `/api/translate` (built, tested on the scratch server, not deployed)
 - 2026-11-23: single live environment (dropped the dev/main two-instance idea); `_` developer accounts + `devaccounts.py`; test notifications to mazhar
