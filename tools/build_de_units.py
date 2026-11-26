@@ -136,6 +136,11 @@ def apply(content, say, notes):
     for de, cards in EXTRA:
         w = next(x for x in content["words"] if x["de"] == de)
         notes_new.setdefault(f"u{word_unit[w['id']]}v", []).append(dict(at=w["id"], cards=cards))
+    # a clip for every teaching-card example (feedback 6347, 11-27: the Android app has no phone voice, so 🔊 needs a clip)
+    for lst in notes_new.values():
+        for n in lst:
+            for cd in n["cards"]:
+                cd["ex"] = [(x[0], x[1], say(x[0])) for x in cd.get("ex", [])]
 
     # --- path
     path, units, order = [], [], {}

@@ -154,10 +154,11 @@ function sentenceFor(w, maxTok = 8) {
   return ok.length ? ok[Math.floor(Math.random() * ok.length)] : null;
 }
 const coreWord = w => nounOnly(w).replace(/\s*\(.*$/, "").trim();
-function clozeFor(w) {
+function clozeFor(w, ctx) {
   const core = coreWord(w);
   if (!core || /\s|\//.test(core)) return null;
-  const ex = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && tokens(e.de).some(t => t.toLowerCase() === core.toLowerCase()) && tokens(e.de).length <= 10);
+  const ex = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && tokens(e.de).some(t => t.toLowerCase() === core.toLowerCase()) && tokens(e.de).length <= 10
+    && sentFair(e.de, ctx, tokens(e.de).findIndex(t => t.toLowerCase() === core.toLowerCase())));
   if (!ex.length) return null;
   const e = ex[Math.floor(Math.random() * ex.length)];
   const others = [];
@@ -178,6 +179,36 @@ function tokenIs(tok, w) {
   const stem = c.replace(/(en|er|e|n)$/, "");
   return stem.length >= 3 && t.length >= 3 && (t.startsWith(stem) && t.length - stem.length <= 3);
 }
+// ---- fair sentences (feedback fa5e, 11-27): only words the learner has met ----
+// ctx = { known: words met (this part so far + learned), gt: tokens taught by grammar chapters before this lesson }.
+// Without a fairness profile (L.fair, e.g. French for now) every sentence counts as fair, as before.
+const altCores = w => [w.de, ...String(w.de).split(/\s*\/\s*/)].map(x => coreWord({ de: x })).filter(c => c && !/\s|\//.test(c));
+function wordHas(t, w) {
+  if (tokenIs(t, w) || altCores(w).some(c => tokenIs(t, { de: c }))) return true;
+  const low = t.toLowerCase();
+  if (w.pl && String(w.pl).split(/\s*\/\s*/).some(p => coreWord({ de: p.replace(/\(.*?\)/g, "").trim() }).toLowerCase() === low)) return true;
+  const m = String(w.de).match(/\(([^)]*)\)/);                       // "viel (viele)", "mein (meine)"
+  return !!m && m[1].split(",").some(x => tokenIs(t, { de: x.trim() }));
+}
+function tokFair(t, ctx) {
+  const F = L.fair; if (!F || !ctx) return true;
+  const low = t.toLowerCase();
+  if (ctx.gt.has(t) || ctx.gt.has(low) || F.always.includes(t) || F.always.includes(low) || F.names.includes(t) || /^\d/.test(t)) return true;
+  const lem = F.forms[t] || F.forms[low];
+  if (lem) return ctx.gt.has(lem) || ctx.gt.has(lem.toLowerCase()) || ctx.known.some(k => tokenIs(lem, k) || coreWord(k).toLowerCase() === lem.toLowerCase());
+  return ctx.known.some(k => wordHas(t, k));
+}
+const sentFair = (de, ctx, skip = -1) => tokens(de).every((t, i) => i === skip || tokFair(t, ctx));
+/** tokens taught by the grammar chapters that come before this item on the path */
+function gramTokens(item) {
+  const F = L.fair, out = new Set(); if (!F || !C.content.path) return out;
+  for (const it of C.content.path) {
+    if (item && it.id === item.id) break;
+    const g = it.kind === "grammar" && F.grammar[it.id];
+    if (g) g.split(" ").forEach(x => { out.add(x); out.add(x.toLowerCase()); });
+  }
+  return out;
+}
 // The English to translate: own look (tagged, lighter) so it isn't confused with the title or the German
 function enPrompt(en, hint = "") {
   return `<div class="en-prompt"><span class="en-tag">English</span><div class="en-text">${phone(esc(en))}</div>${hint ? `<div class="muted small" style="margin-top:6px">${phone(hint)}</div>` : ""}</div>`;
@@ -186,9 +217,9 @@ function enPrompt(en, hint = "") {
 export const phone = html => String(html).replace(/(\(?)on the phone/i, "$1📞 on the phone");
 // Build the sentence: only words the learner knows (this part's words + already learned ones) become tiles;
 // everything else is pre-filled so they are never asked to place words they haven't met.
-function buildFor(w, pool) {
+function buildFor(w, pool, ctx) {
   const known = [...new Map([...pool, ...Object.keys((S && S.words) || {}).map(id => C.word[id]).filter(Boolean)].map(x => [x.id, x])).values()];
-  const cands = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && !/[()…=/]/.test(e.de) && tokens(e.de).length >= 3 && tokens(e.de).length <= 10);
+  const cands = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && !/[()…=/]/.test(e.de) && tokens(e.de).length >= 3 && tokens(e.de).length <= 10 && sentFair(e.de, ctx));
   for (const e of shuffle(cands)) {
     const toks = tokens(e.de);
     const ti = toks.findIndex(t => tokenIs(t, w));
@@ -285,15 +316,15 @@ function matchStep(ws) {
 // ---- sentence-led lessons (Duolingo review 11-24): meet a word → use it in sentences → say a whole sentence ----
 // A sentence is fair to ask for when every token belongs to a word the learner has met or is learning in this part.
 const knownList = ws => [...new Map([...ws, ...Object.keys((S && S.words) || {}).map(id => C.word[id]).filter(Boolean)].map(x => [x.id, x])).values()];
-function fairSentence(w, ws, { min = 3, max = 8 } = {}) {
+function fairSentence(w, ws, { min = 3, max = 8 } = {}, ctx = null) {
   const known = knownList(ws);
   const ok = (w.ex || []).filter(e => TOKEN_OK.test(e.de) && !/[()…=/]/.test(e.de) && tokens(e.de).length >= min && tokens(e.de).length <= max
-    && tokens(e.de).every(t => known.some(k => tokenIs(t, k))));
+    && (L.fair && ctx ? sentFair(e.de, ctx) : tokens(e.de).every(t => known.some(k => tokenIs(t, k)))));
   return ok.length ? ok[Math.floor(Math.random() * ok.length)] : null;
 }
 // hear a whole sentence, choose what it means
-function slistenFor(w) {
-  const e = (w.ex || []).filter(x => x.a && TOKEN_OK.test(x.de) && !/[()…=/]/.test(x.de) && tokens(x.de).length >= 3 && tokens(x.de).length <= 9)[0];
+function slistenFor(w, ctx) {
+  const e = shuffle((w.ex || []).filter(x => x.a && TOKEN_OK.test(x.de) && !/[()…=/]/.test(x.de) && tokens(x.de).length >= 3 && tokens(x.de).length <= 9 && sentFair(x.de, ctx)))[0];
   if (!e) return null;
   const pool = [];
   for (const x of shuffle(C.content.words)) {
@@ -309,26 +340,30 @@ export function vocabBitSteps(item, bit) {
   const ids = bitsOf(item)[bit], ws = ids.map(id => C.word[id]);
   const steps = [], add = (ph, x) => x && steps.push({ ...x, ph });
   const notes = (item.notes || []).filter(n => (n.at === "start" ? bit === 0 : ids.includes(n.at)));
+  // a teaching card comes right after the card of the word it explains (feedback 3b12: introduce the word first);
+  // "start" cards (e.g. der/die/das in Lesson 1) come after the first noun of the first part
+  const startAt = (ws.find(w => w.g) || ws[0] || {}).id;
+  const gt = gramTokens(item), learned = knownList([]), ctxAt = k => ({ known: [...learned, ...ws.slice(0, k + 1)], gt }), ctxAll = ctxAt(ws.length - 1);
   ws.forEach((w, i) => {
-    notes.filter(n => (n.at === "start" ? i === 0 : n.at === w.id)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     add("Meet", st.intro(w));
+    notes.filter(n => (n.at === "start" ? w.id === startAt : n.at === w.id)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     add("Meet", i % 2 ? st.en_de(w) : st.de_en(w));
     if (i >= 1) {                                          // mix with an earlier word of this part, in a sentence where possible
       const prev = ws[Math.floor(Math.random() * i)];
-      add("Meet", (Math.random() < 0.6 && slistenFor(prev)) || (canGender(prev) ? st.gender(prev) : st.en_de(prev)));
+      add("Meet", (Math.random() < 0.6 && slistenFor(prev, ctxAt(i))) || (canGender(prev) ? st.gender(prev) : st.en_de(prev)));
     }
   });
   add("Use it", matchStep(ws));
-  const cl = shuffle(ws).map(clozeFor).filter(Boolean);
+  const cl = shuffle(ws).map(w => clozeFor(w, ctxAll)).filter(Boolean);
   cl.slice(0, 2).forEach(x => add("Use it", x));
-  add("Use it", shuffle(ws).map(slistenFor).find(Boolean));
+  add("Use it", shuffle(ws).map(w => slistenFor(w, ctxAll)).find(Boolean));
   // hard stretch: single-word recall first, then sentences from tiles, last a whole sentence typed from English
   shuffle(ws).slice(0, 2).forEach((w, i) => add("Say it", hardStep(w, i + Math.floor(Math.random() * 4))));
-  const bs = shuffle(ws).map(w => buildFor(w, ws)).filter(Boolean);
+  const bs = shuffle(ws).map(w => buildFor(w, ws, ctxAll)).filter(Boolean);
   bs.slice(0, 2).forEach(x => add("Say it", x));
   let cap = null;
-  for (const w of [...shuffle(ws), ...shuffle(knownList(ws).filter(k => !ws.includes(k))).slice(0, 40)]) { const e = fairSentence(w, ws); const sy = e && sayStep({ de: e.de, en: e.en, a: e.a }, ws.flatMap(x => x.ex || []).filter(x => x.de && x.en), { forceType: true }); if (sy) { cap = { ...sy, w }; break; } }
-  if (cap) add("Say it", cap); else { const g = shuffle(ws).map(w => buildFor(w, ws)).filter(x => x && !bs.slice(0, 2).includes(x))[0]; if (g) add("Say it", g); }
+  for (const w of [...shuffle(ws), ...shuffle(knownList(ws).filter(k => !ws.includes(k))).slice(0, 40)]) { const e = fairSentence(w, ws, undefined, ctxAll); const sy = e && sayStep({ de: e.de, en: e.en, a: e.a }, ws.flatMap(x => x.ex || []).filter(x => x.de && x.en), { forceType: true }); if (sy) { cap = { ...sy, w }; break; } }
+  if (cap) add("Say it", cap); else { const g = shuffle(ws).map(w => buildFor(w, ws, ctxAll)).filter(x => x && !bs.slice(0, 2).includes(x))[0]; if (g) add("Say it", g); }
   return steps;
 }
 export function vocabSteps(item) { return bitsOf(item).flatMap((_, i) => vocabBitSteps(item, i)); }
@@ -366,7 +401,7 @@ export function lessonDebug() {
 function header() {
   const pct = Math.min(100, 100 * R.done / R.total);
   const cb = R.combo >= 5 ? "c5" : R.combo >= 3 ? "c3" : ""; // the bar goes gold at 3 in a row, orange at 5+
-  return `<div class="lesson-top">${R.combo >= 3 ? `<span class="combo-l ${cb}">COMBO ×${R.combo}</span>` : ""}<button class="x" id="quit">✕</button><div class="bar ${cb}"><div style="width:${pct}%"></div></div><button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button></div>`;
+  return `<div class="lesson-top">${R.combo >= 3 ? `<span class="combo-l ${cb}">COMBO ×${R.combo}</span>` : ""}<button class="x" id="quit">✕</button>${R.past && R.past.length ? `<button class="x lback" id="lback" aria-label="Previous cards" title="Previous cards">‹</button>` : ""}<div class="bar ${cb}"><div style="width:${pct}%"></div></div><button class="aa" data-aa aria-label="Text size" title="Text size"><span class="aa-s">A</span><span class="aa-l">A</span></button></div>`;
 }
 
 function render() {
@@ -384,6 +419,7 @@ function render() {
   }
   v.innerHTML = header() + `<div class="lesson-body" id="lb"></div>`;
   v.querySelector("#quit").onclick = () => confirmQuit();
+  const lbk = v.querySelector("#lback"); if (lbk) lbk.onclick = () => pastCards();
   const lb = v.querySelector("#lb");
   lb.classList.add("arming"); setTimeout(() => lb.classList.remove("arming"), 450);
   window.scrollTo(0, 0);
@@ -392,6 +428,7 @@ function render() {
   if ((s.t === "listen" || s.t === "slisten") && ((S.settings && S.settings.noListen) || R.noListen)) { R.steps[R.i] = { t: "mc", w: s.w, dir: "en_de", sub: "listen", ph: s.ph }; return render(); }
   if (s.w) R.words.add(s.w.id);
   ({ intro, note, mc, listen, slisten, type, gender, match, gq, gmc, flip, read, recall, build, cloze, say, speak }[s.t])(s, lb);
+  lb.querySelectorAll(".gqtext").forEach(wireGloss);
   if (s.ph && !s.retry) lb.insertAdjacentHTML("afterbegin", `<div class="phase">${s.ph}</div>`);
   if (s.retry) lb.insertAdjacentHTML("afterbegin", `<div class="retag">↻ Previous mistake · free</div>`);
   if (s.sub === "listen" && R.noListen && !s.retry) {
@@ -422,7 +459,32 @@ function foot(html) {
   return f;
 }
 
-function next() { R.i++; R.done++; render(); }
+// feedback 895a: go back to earlier cards. Word, phrase and teaching cards are kept as you leave them and can be looked at
+// again (read-only, 🔊 works); exercises aren't replayed, so a lesson's score can't change by going back.
+const CARD_STEPS = ["intro", "note", "flip"];
+function keepCard() {
+  const s = R && R.steps[R.i], lb = document.getElementById("lb");
+  if (!s || !lb || !CARD_STEPS.includes(s.t)) return;
+  const c = lb.cloneNode(true); c.querySelectorAll(".askrow,.ask-before,.phase,.retag,#unskip").forEach(x => x.remove());
+  (R.past = R.past || []).push(c.innerHTML);
+}
+function pastCards() {
+  if (!R || !R.past || !R.past.length) return;
+  let k = R.past.length - 1;
+  const root = document.createElement("div"); root.className = "pastcards";
+  const draw = () => {
+    root.innerHTML = `<div class="pc-in"><div class="pc-top"><b class="small">Earlier card ${k + 1} of ${R.past.length}</b><button class="x" id="pcx" aria-label="Close">✕</button></div>
+      <div class="lesson-body pc-body">${R.past[k]}</div>
+      <div class="pc-nav"><button class="btn ghost" id="pcp" ${k ? "" : "disabled"}>‹ Earlier</button><button class="btn ghost" id="pcn" ${k < R.past.length - 1 ? "" : "disabled"}>Later ›</button></div>
+      <button class="btn" id="pcb">Back to the lesson</button></div>`;
+    root.querySelectorAll("button[data-a],button[data-t]").forEach(b => (b.onclick = e => { e.stopPropagation(); play(b.dataset.a, b.dataset.t); }));
+    const close = () => { stopAudio(); root.remove(); };
+    root.querySelector("#pcx").onclick = close; root.querySelector("#pcb").onclick = close;
+    root.querySelector("#pcp").onclick = () => { k--; draw(); }; root.querySelector("#pcn").onclick = () => { k++; draw(); };
+  };
+  draw(); document.body.appendChild(root);
+}
+function next() { keepCard(); R.i++; R.done++; render(); }
 
 // What the study helper may know about this step. The server decides what reaches the model: before you answer it never sees the
 // answer (only used to check that a hint doesn't give it away). Nothing here identifies the learner.
@@ -572,7 +634,7 @@ const noteClip = de => { for (const w of Object.values(C.word || {})) if (w.de =
 function note(s, lb) {
   const c = s.c;
   lb.innerHTML = `<div class="q-title">Good to know</div><div class="card note-card"><h3 style="margin-top:0">${esc(c.h)}</h3><p>${esc(c.p)}</p>
-    ${(c.ex || []).map(([de, en]) => `<div class="ex"><button class="spk sm" data-a="${noteClip(de)}" data-t="${esc(de)}">🔊</button><div class="t"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div></div>`).join("")}</div>`;
+    ${(c.ex || []).map(([de, en, a]) => `<div class="ex"><button class="spk sm" data-a="${a || noteClip(de)}" data-t="${esc(de)}">🔊</button><div class="t"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div></div>`).join("")}</div>`;
   wireSpeakers(lb);   // feedback d294: 🔊 on the note's examples (the word's own clip when the course has it, else the phone's voice)
   foot(`<button class="btn" id="go">Got it</button>`).querySelector("#go").onclick = next;
 }
@@ -696,7 +758,7 @@ function match(s, lb) {
 
 // grammar question (typed, lenient, with override)
 function gq(s, lb) {
-  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:calc(19px*var(--fs));font-weight:700">${esc(s.q.q)}</div></div>
+  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div class="gqtext" style="font-size:calc(19px*var(--fs));font-weight:700">${glossQ(s.q.q)}</div></div>
     <input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer">
     ${keysHTML()}`;
   const inp = lb.querySelector("#inp");
@@ -767,7 +829,7 @@ function recall(s, lb) {
 // grammar multiple choice, optionally with a listening prompt (e.g. "which letter do you hear?")
 function gmc(s, lb) {
   const q = s.q, opts = shuffle(q.opts);
-  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div style="font-size:calc(19px*var(--fs));font-weight:700">${esc(q.q)}</div></div>
+  lb.innerHTML = `<div class="q-title">Practice ${s.n}/${s.of}</div><div class="card"><div class="gqtext" style="font-size:calc(19px*var(--fs));font-weight:700">${glossQ(q.q)}</div></div>
     ${q.audio ? `<button class="spk xl" data-a="${q.audio}" data-t="${esc(q.say || "")}">🔊</button>` : ""}`;
   wireSpeakers(lb);
   if (q.audio) playSoon(q.audio, q.say);
@@ -843,6 +905,13 @@ function glossOf(tok, first) {
   return w ? `${w.de} = ${firstMeaning(w.en)}` : null;
 }
 // a German token as HTML; known words get a dotted underline and show their meaning when tapped
+// grammar practice (feedback fa5e/3b12): the German after the instruction ("Which pronoun? …: Wo wohnst ___?") gets tap-for-meaning,
+// so a word the course hasn't taught yet is explained where it is used
+function glossQ(text) {
+  const i = String(text).lastIndexOf(": ");
+  if (i < 0) return esc(text);
+  return esc(text.slice(0, i + 2)) + text.slice(i + 2).split(/(\s+)/).map((t, k) => (/^\s+$/.test(t) ? t : glossTok(t, k === 0))).join("");
+}
 function glossTok(tok, first) {
   const g = glossOf(tok, first);
   return g ? `<span class="gw" data-g="${esc(g)}">${esc(tok)}</span>` : esc(tok);
@@ -1133,8 +1202,8 @@ export function startPhrases(sec, item, bit = 0) {
   const toSpeak = new Set(speakOn() ? shuffle(items.filter(speakable)).slice(0, 2) : []);
   const pnotes = (item && item.notes) || []; // teaching cards: at "start" (first part) or right before a given phrase
   items.forEach((p, i) => {
-    pnotes.filter(n => (n.at === "start" ? bit === 0 && i === 0 : n.at === p.de)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     steps.push({ t: "flip", p, sec: sec.title, ph: "Meet" });
+    pnotes.filter(n => (n.at === "start" ? bit === 0 && i === 0 : n.at === p.de)).forEach(n => n.cards.forEach(c => steps.push({ t: "note", c })));
     if (toSpeak.has(p)) steps.push({ t: "speak", p, key: "speak:" + p.de, ph: "Meet" });
     steps.push({ ...q(p, false), ph: "Meet" });
     if (i >= 1) steps.push({ ...q(items[Math.floor(Math.random() * i)], true), ph: "Meet" });

@@ -1416,3 +1416,11 @@ body.in-lesson .lnav{display:flex}
 
 /* red warning box (raise-rank sheet); not a .card, so the themes' card borders and corner marks don't override it */
 .warnbox{border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;margin:10px 0;background:color-mix(in srgb,var(--red) 12%,transparent)}
+
+/* earlier cards in a lesson (feedback 895a) */
+.lesson-top .lback{font-size:calc(26px*var(--fs));line-height:1;padding:0 6px}
+.pastcards{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto}
+.pastcards .pc-in{max-width:640px;margin:0 auto;padding:16px}
+.pastcards .pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pastcards .pc-nav{display:flex;gap:10px;margin-top:12px}
+.pastcards .pc-nav .btn{flex:1;margin:0}
