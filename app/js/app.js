@@ -1864,7 +1864,7 @@ function loginView(msg = "") {
     if (wasGuest && up) claimGuest(r.user.id); // keep what they learned as a guest
     else if (wasGuest) leaveGuest();
     await loadUsers(); await switchUser(r.user.id); unpick(); askCourse = true; document.body.classList.remove("in-lesson");
-    toast(up ? `Willkommen, ${r.user.name}!` : `Hallo ${r.user.name}!`);
+    toast(up ? `Welcome, ${r.user.name}!` : `Welcome back, ${r.user.name}!`);
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
   };
 }
