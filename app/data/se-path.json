@@ -5569,23 +5569,23 @@
             "Register a web app and read the config"
           ],
           "a": 0,
-          "b": 4
+          "b": 5
         },
         {
           "t": [
             "Install and initialise the SDK",
             "The CLI and firebase init"
           ],
-          "a": 5,
-          "b": 9
+          "a": 6,
+          "b": 10
         },
         {
           "t": [
             "The Emulator Suite",
             "Spark, Blaze and regions"
           ],
-          "a": 10,
-          "b": 16
+          "a": 11,
+          "b": 17
         },
         {
           "t": [
@@ -5593,8 +5593,8 @@
             "Common mistakes",
             "Check yourself"
           ],
-          "a": 17,
-          "b": 23
+          "a": 18,
+          "b": 24
         }
       ],
       "quiz": 8

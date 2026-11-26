@@ -79,7 +79,7 @@ function route() {
   applyUnlocks();
   if (!USER || !S) return whoView();
   // a home-screen widget tap opens a route straight away: use the last course instead of asking first
-  if (!picked() && lastCourse(USER) === COURSE && (h.startsWith("#/go/") || (/[?&]src=native\b/.test(location.search) && /^#\/(today|ranks|progress|words|home)$/.test(h)))) markPicked();
+  if (!picked() && !askCourse && lastCourse(USER) === COURSE && (h.startsWith("#/go/") || (/[?&]src=native\b/.test(location.search) && /^#\/(today|ranks|progress|words|home)$/.test(h)))) markPicked();
   if (!picked()) return courseView();
   if (h === "#/party") {
     document.querySelectorAll("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.tab === "party"));
@@ -930,7 +930,9 @@ function askMicForSpeakIt(cid) {
 }
 function picked() { try { return sessionStorage.getItem(pickKey()) === COURSE; } catch { return true; } }
 function unpick() { try { sessionStorage.removeItem(pickKey()); } catch { /* ignore */ } }
-function markPicked() { try { sessionStorage.setItem(pickKey(), COURSE); } catch { /* ignore */ } }
+function markPicked() { askCourse = false; try { sessionStorage.setItem(pickKey(), COURSE); } catch { /* ignore */ } }
+// set right after a log-in or player switch: always show the course picker then, even in the native app (feedback 032c)
+let askCourse = false;
 function courseView() {
   document.body.classList.add("in-lesson"); // full-screen, no tabs
   const groups = {};
@@ -1159,8 +1161,8 @@ function nodeSheet(id) {
       <div class="partlist">${nodeParts(n).map((p, k) => `<button class="partrow ${partDone(n, k) ? "ok" : ""}" data-p="${k}" ${st === "locked" ? "disabled" : ""}>
         <span class="pn">${partDone(n, k) ? "✓" : k + 1}</span><span class="grow"><b>${esc(p.t[0])}</b>${p.t.length > 1 ? `<span class="tiny muted"> · ${esc(p.t.slice(1).join(" · "))}</span>` : ""}</span>
         <span class="tiny muted">${p.b - p.a + 1} cards</span></button>`).join("")}</div>` : ""}
-    ${practiceBlock(n, st)}
     ${st !== "locked" ? `<button class="btn" id="read" style="margin-top:14px">${readLabel(n, st)}</button><div class="tiny muted" id="dlst" style="text-align:center;margin-top:4px"></div>` : ""}
+    ${practiceBlock(n, st)}
     ${st === "done" ? `<div class="note" style="margin-top:8px">✅ Learned on ${fmtDate(S.tree[id])}</div>${dependents.length ? "" : `<button class="link" id="undo">Undo</button>`}` : ""}
     <button class="btn ghost" id="close">Close</button>`, el => {
     el.querySelector("#close").onclick = closeSheet;
@@ -1193,10 +1195,13 @@ const QMODE = { quiz: { key: "quiz", label: "Practice", none: "No practice quest
 function practiceBlock(n, st) {
   const kinds = `<div class="chips">${n.exercises.map(c => `<span class="chipx dim">${esc(c)}</span>`).join("")}</div>`;
   if (!n.quiz) return `<div style="font-weight:800;margin:12px 0 6px">Exercises <span class="tiny muted">(coming soon)</span></div>${kinds}`;
+  // feedback 1a0c: questions on a skill you haven't read yet feel like they test things never taught
+  const unread = st === "open" && !partsDoneCount(n) && !(S.quiz || {})[n.id];
   const r = (S.quiz || {})[n.id], best = r ? `best ${r.best}/${r.of}${r.best >= Math.ceil(QUIZ_PASS * r.of) ? " ✓" : ""}` : `+${QUIZ_XP} XP at 80 %`;
   const c = (S.cc || {})[n.id], cbest = c ? `best ${c.best}/${c.of}${c.best >= Math.ceil(QUIZ_PASS * c.of) ? " ✓" : ""}` : `+${QUIZ_XP} XP at 80 %`;
   return `<div style="font-weight:800;margin:14px 0 6px">Practice <span class="tiny muted">${n.quiz} questions · ${best}</span></div>
-    <button class="btn ghost" id="practice" ${st === "locked" ? "disabled" : ""} style="margin:0">🧠 ${r ? "Practise again" : "Practise"}</button>
+    ${unread ? `<div class="tiny muted" style="margin:0 2px 6px">Read the parts first: the questions are about them.</div>` : ""}
+    <button class="btn ghost" id="practice" ${st === "locked" ? "disabled" : ""} style="margin:0">🧠 ${r ? "Practise again" : unread ? "Practise anyway" : "Practise"}</button>
     ${n.cc ? `<div style="font-weight:800;margin:14px 0 2px">Concept check <span class="tiny muted">${n.cc} questions · ${cbest}</span></div>
     <div class="tiny muted" style="margin-bottom:6px">Why it works, not just how: common mistakes, spot the wrong step, always or never true. Misses point to the skill to revisit.</div>
     <button class="btn ghost" id="ccheck" ${st === "locked" ? "disabled" : ""} style="margin:0">🔍 ${c ? "Check again" : "Check my understanding"}</button>` : ""}`;
@@ -1858,7 +1863,7 @@ function loginView(msg = "") {
     if (!r.ok) { er.textContent = r.error; return; }
     if (wasGuest && up) claimGuest(r.user.id); // keep what they learned as a guest
     else if (wasGuest) leaveGuest();
-    await loadUsers(); await switchUser(r.user.id); unpick(); document.body.classList.remove("in-lesson");
+    await loadUsers(); await switchUser(r.user.id); unpick(); askCourse = true; document.body.classList.remove("in-lesson");
     toast(up ? `Willkommen, ${r.user.name}!` : `Hallo ${r.user.name}!`);
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
   };
@@ -1872,7 +1877,7 @@ async function whoView() {
       <div class="muted small" data-s="${u.id}">&nbsp;</div></div><span style="font-size:calc(24px*var(--fs));color:var(--muted)">›</span></button>`).join("")}</div>`;
   view().querySelector("#gear").onclick = themeSheet;
   view().querySelectorAll(".who button").forEach(b => (b.onclick = async () => {
-    b.disabled = true; await switchUser(b.dataset.u); unpick(); document.body.classList.remove("in-lesson");
+    b.disabled = true; await switchUser(b.dataset.u); unpick(); askCourse = true; document.body.classList.remove("in-lesson");
     if (location.hash !== "#/today") location.hash = "#/today"; else route();
   }));
   const all = await fetchAllStates();
