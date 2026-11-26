@@ -274,7 +274,7 @@ export function mountTranslator(host, { openWord, toast, onChange }) {
     } else if (j.code === "cap") {
       st.res = { type: "err", title: "No AI answers left today.", msg: j.message, retry: false }; drawRes();
     } else {
-      st.res = { type: "err", title: "Could not translate.", msg: (j.message || "Something went wrong."), retry: j.code !== "bad_input" && j.code !== "not_configured" }; drawRes();
+      st.res = { type: "err", title: "Could not translate.", msg: (j.message || "Something went wrong."), retry: !["bad_input", "not_configured", "unavailable"].includes(j.code) }; drawRes();
     }
   }
 
