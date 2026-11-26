@@ -2916,7 +2916,9 @@ function lifeBuilder(arg) {
         <div class="chips" style="margin-top:8px">${[["week", "Every week"], ["total", "In total"]].map(([k, l]) => `<button class="chipx ${f.period === k ? "on" : ""}" data-p="${k}">${l}</button>`).join("")}</div>` : ""}
       ${f.kind === "milestone" ? `<label class="f">Steps <span class="muted">(one per line)</span></label><textarea id="st" rows="4" placeholder="Run 3 km&#10;Run 5 km&#10;Run 10 km">${esc(f.steps || "")}</textarea>` : ""}
       <label class="f">${f.kind === "milestone" ? "Finish within" : "How long? (the gate)"}</label><div class="chips">${lens.map(([d, l]) => `<button class="chipx ${(f.days || 0) === d ? "on" : ""}" data-l="${d}">${l} ${d ? gateBadge(d) : ""}</button>`).join("")}</div>
-      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 120 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield, and gates of 28+ days give one at 14 and 28 good days.</p></div>
+      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 120 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield, and gates of 28+ days give one at 14 and 28 good days.</p>
+      ${f.days ? `<div class="row" style="gap:8px;align-items:center;margin-top:10px"><span class="grow small">Rank: ${gateBadge(f.days, { days: f.days, rank: LF.raisedRank(f.days, f.rank) })} ${LF.raisedRank(f.days, f.rank) !== LF.gateRank(f.days) ? `<span class="muted">raised from ${LF.gateRank(f.days)} (length)</span> <button class="link" id="rkx" style="padding:0">undo</button>` : `<span class="muted">from its length</span>`}</span>
+        ${LF.gateRank(f.days) !== "S" ? `<button class="btn ghost sm" id="rku" style="width:auto;margin:0">⬆ Raise rank</button>` : ""}</div>` : ""}</div>
     <div class="card"><label class="f">Why are you doing this? <span class="muted">(shown when it gets hard)</span></label><textarea id="wy" rows="2" placeholder="${f.kind === "abstain" ? "For the moment an urge hits…" : "What will be better when you've done it?"}">${esc(tp && tp.why && tp.why.startsWith("Why do you") ? "" : f.why || "")}</textarea>
       <label class="f">Penalty quest <span class="muted">(only in System mode)</span></label><input id="pq" value="${esc(f.penalty || "")}" placeholder="e.g. 20 push-ups">
       ${inParty ? `<label class="toggle"><span><b>👥 Run it with my party</b><div class="small muted">Starts tomorrow so everyone can join. The whole team must survive: if one run breaks, the gate fails for all.</div></span><input type="checkbox" id="pty" ${f.party ? "checked" : ""}></label>` : ""}
@@ -2937,6 +2939,8 @@ function lifeBuilder(arg) {
     v.querySelectorAll("[data-d]").forEach(b => (b.onclick = () => { keep(); f.schedule[+b.dataset.d] = f.schedule[+b.dataset.d] ? 0 : 1; draw(); }));
     v.querySelectorAll("[data-p]").forEach(b => (b.onclick = () => { keep(); f.period = b.dataset.p; if (f.period === "week" && f.days % 7) f.days = 28; draw(); }));
     v.querySelectorAll("[data-l]").forEach(b => (b.onclick = () => { keep(); f.days = +b.dataset.l || null; draw(); }));
+    const rku = v.querySelector("#rku"); if (rku) rku.onclick = () => { keep(); raiseRankSheet(f.days, f.rank, r => { f.rank = r; draw(); }); };
+    const rkx = v.querySelector("#rkx"); if (rkx) rkx.onclick = () => { keep(); f.rank = null; draw(); };
     const pt = v.querySelector("#pty"); if (pt) pt.onchange = () => { keep(); if (f.party && !f.days) f.days = 21; draw(); };
     v.querySelector("#go").onclick = () => {
       keep();
@@ -3047,6 +3051,20 @@ function lifeTrack(id) {
     el.querySelector("#y").onclick = () => { tr.status = "archived"; tr.ended = t; tr.seen = true; save(); closeSheet(); location.hash = "#/home"; };
     el.querySelector("#n").onclick = closeSheet; });
   const re = v.querySelector("#re"); if (re) re.onclick = () => { const nt = LF.reenter(tr); tr.seen = true; save(); toast("Gate re-entered. Day 1."); location.hash = "#/track/" + nt.id; };
+}
+// raise a new gate's rank above what its length gives (for a truly harder challenge, e.g. 150 push-ups a day for a week)
+function raiseRankSheet(days, cur, pick) {
+  const own = LF.gateRank(days), ks = Object.keys(LF.GATE_REWARD), up = ks.slice(ks.indexOf(own) + 1), sel = LF.raisedRank(days, cur);
+  sheet(`<h2 style="margin-top:0">⬆ Raise this gate's rank?</h2>
+    <p class="small">Its length gives it <b>${own}-rank</b>. Raise it only if you truly believe the challenge is harder than that. Example: 150 push-ups a day for a week is easily A- or B-rank, even though 7 days alone is E.</p>
+    <div class="card" style="border-color:var(--red);margin:10px 0"><b>⚠️ Don't raise it for XP or streaks.</b><div class="small muted">A higher rank pays more XP and 💎 when you clear it. Ranking an easy gate up only inflates your numbers, and you can't lower it later.</div></div>
+    <div class="chips">${up.map(r => `<button class="chipx ${r === sel ? "on" : ""}" data-r="${r}"><span class="gbadge g-${r}">${r}</span> ${LF.GATE_REWARD[r][0]} XP · ${LF.GATE_REWARD[r][1]} 💎</button>`).join("")}</div>
+    <button class="btn" id="ry" style="margin-top:12px" disabled>Raise rank</button><button class="btn ghost" id="rn">Keep ${own}-rank</button>`, el => {
+    let r = sel !== own ? sel : null; const go = el.querySelector("#ry"); go.disabled = !r;
+    el.querySelectorAll("[data-r]").forEach(b => (b.onclick = () => { r = b.dataset.r; el.querySelectorAll("[data-r]").forEach(x => x.classList.toggle("on", x === b)); go.disabled = false; go.textContent = `Raise to ${r}-rank`; }));
+    go.onclick = () => { closeSheet(); pick(r); };
+    el.querySelector("#rn").onclick = () => { closeSheet(); pick(null); };
+  });
 }
 function editTrackSheet(tr, done) {
   sheet(`<h2 style="margin-top:0">Edit</h2><label class="f">Name</label><input id="ti" value="${esc(tr.title)}" maxlength="60">
@@ -3277,14 +3295,14 @@ async function fillPartyGates(box) {
 async function joinPartyGate(g, box) {
   const sp = g.spec || {};
   const tr = LF.newTrack({ kind: g.kind, title: g.title, icon: g.icon, days: g.days, start: g.start, private: false, stat: sp.stat, schedule: sp.schedule,
-    amount: sp.amount, unit: sp.unit, period: sp.period, steps: sp.steps || [], why: "", penalty: sp.penalty || "" });
+    amount: sp.amount, unit: sp.unit, period: sp.period, steps: sp.steps || [], why: "", penalty: sp.penalty || "", rank: sp.rank });
   const r = await fetch(`api/party-gates/${g.id}/join`, { method: "POST", headers: JSONH, body: JSON.stringify({ track: tr.id }) }).catch(() => null);
   if (!r || !r.ok) { delete S.tracks[tr.id]; save(); const j = r ? await r.json().catch(() => ({})) : {}; return toast(j.error || "Couldn't join"); }
   tr.pgate = g.id; save(); PG = { ...(await r.json()), at: Date.now() };
   askNotify(); toast(`👥 Joined ${g.title}. Everyone must survive!`); fillPartyGates(box);
 }
 async function createPartyGate(tr) {
-  const spec = { stat: tr.stat, schedule: tr.schedule, amount: tr.amount, unit: tr.unit, period: tr.period, steps: tr.steps.map(s => s.t), penalty: tr.penalty };
+  const spec = { stat: tr.stat, schedule: tr.schedule, amount: tr.amount, unit: tr.unit, period: tr.period, steps: tr.steps.map(s => s.t), penalty: tr.penalty, rank: tr.rank };
   const r = await fetch("api/party-gates", { method: "POST", headers: JSONH, body: JSON.stringify({ track: tr.id, title: tr.title, icon: tr.icon, kind: tr.kind, days: tr.days, start: tr.start, spec }) }).catch(() => null);
   if (!r || !r.ok) { const j = r ? await r.json().catch(() => ({})) : {}; toast(j.error ? `Party gate: ${j.error}` : "Couldn't open the party gate (offline?)"); return false; }
   const j = await r.json(); tr.pgate = j.id; save(); PG = { ...j, at: Date.now() }; askNotify();

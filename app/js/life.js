@@ -33,6 +33,9 @@ export const XP = { day: 5, unit: 2, week: 15, urge: 2, penalty: 3, step: 20, al
 export const TITLES = [[1, "Gate Opener"], [3, "Dungeon Runner"], [5, "Gatebreaker"], [10, "Raid Leader"], [20, "Monarch"]]; // gates cleared
 
 export const gateRank = (days, legacy) => { if (!days) return null; let r = "E"; for (const [d, g] of legacy ? LEGACY_GATES : GATES) if (days >= d) r = g; return r; };
+/** a rank picked at creation may only be higher than the length's own rank (feedback: "raise rank" when creating a gate) */
+export const raisedRank = (days, want) => { const own = gateRank(days), ks = Object.keys(GATE_REWARD);
+  return want && ks.indexOf(want) > ks.indexOf(own) ? want : own; };
 /** the rank a track was created with (older tracks have no `rank`: they use the old length table) */
 export const rankOf = tr => (tr.days ? tr.rank || gateRank(tr.days, true) : null);
 export const hardFails = tr => !!tr.hard && (tr.v || 1) >= 2;
@@ -71,7 +74,7 @@ export function newTrack(o) {
     id, kind: o.kind, title: o.title.trim(), icon: o.icon || "⭐", stat: o.stat || "discipline", private: !!o.private, alias: (o.alias || "").trim(),
     start: o.start || t, days: o.days || null, schedule: o.schedule || [1, 1, 1, 1, 1, 1, 1], amount: o.amount || null, unit: o.unit || "",
     period: o.period || "week", steps: (o.steps || []).map(s => (typeof s === "string" ? { t: s, d: null } : s)), why: o.why || "", penalty: o.penalty || "",
-    hard: !!o.hard, template: o.template || null, auto: o.auto || null, party: o.party || null, v: RULES_V, rank: o.days ? gateRank(o.days) : null,
+    hard: !!o.hard, template: o.template || null, auto: o.auto || null, party: o.party || null, v: RULES_V, rank: o.days ? raisedRank(o.days, o.rank) : null,
     log: {}, urges: {}, pen: {}, status: "active",
     st: { settled: addDays(o.start || t, -1), run: 0, best: 0, good: 0, bad: 0, cracked: null, prevBad: false, prevShield: false, lastShield: null, shielded: {}, pendingPen: null, events: [] },
   };
@@ -307,7 +310,7 @@ export function missOutcome(tr, d = today()) {
   return st.cracked ? "break" : "crack";
 }
 export function reenter(tr) {
-  const o = { ...tr, start: today(), v: undefined, rank: undefined, steps: tr.steps.map(s => ({ t: s.t, d: null })) };
+  const o = { ...tr, start: today(), v: undefined, rank: tr.rank, steps: tr.steps.map(s => ({ t: s.t, d: null })) };
   tr.status = "archived";
   return newTrack(o);
 }
