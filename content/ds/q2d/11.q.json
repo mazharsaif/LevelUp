@@ -1,0 +1,48 @@
+[
+ {
+  "t": "mc",
+  "q": "Every segment held steady, but the total fell. What happened?",
+  "o": [
+   "The product got worse",
+   "A mix shift",
+   "A tracking bug",
+   "Seasonality"
+  ],
+  "a": 1,
+  "why": "The group sizes shifted toward a lower-rate segment."
+ },
+ {
+  "t": "num",
+  "q": "Before: 85% of sign-ups at 33% and 15% at 13%. Overall activation rate in %?",
+  "a": 30,
+  "why": "0.85 × 33 + 0.15 × 13 = 28.05 + 1.95 = 30.",
+  "unit": "%"
+ },
+ {
+  "t": "num",
+  "q": "After: 50% of sign-ups at 33% and 50% at 15%. Overall activation rate in %?",
+  "a": 24,
+  "why": "0.5 × 33 + 0.5 × 15 = 16.5 + 7.5 = 24.",
+  "unit": "%"
+ },
+ {
+  "t": "num",
+  "q": "Test group 16.5%, control 15.3%. Relative lift in % (one decimal)?",
+  "a": 7.8,
+  "why": "1.2 ÷ 15.3 ≈ 7.8%, 'about 8%'.",
+  "tol": 0.05,
+  "unit": "%"
+ },
+ {
+  "t": "mc",
+  "q": "Word Bank users buy Plus at 3× the rate of non-users. The honest recommendation?",
+  "o": [
+   "Ship it everywhere",
+   "Run a randomised test",
+   "Remove Word Bank",
+   "Raise the price"
+  ],
+  "a": 1,
+  "why": "Intent may drive both; only a test shows what the feature causes."
+ }
+]

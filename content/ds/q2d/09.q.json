@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "'Ping me if cancellations jump over 10%' is a…",
+  "o": [
+   "Number pull",
+   "Monitoring report",
+   "Proactive alert",
+   "Deep dive"
+  ],
+  "a": 2,
+  "why": "Same metric, watched against a threshold."
+ },
+ {
+  "t": "mc",
+  "q": "What should you do with repeated questions with stable logic?",
+  "o": [
+   "Deep-dive them",
+   "Automate them",
+   "Skip them",
+   "Escalate them"
+  ],
+  "a": 1,
+  "why": "Save your judgment for questions where the logic keeps changing."
+ },
+ {
+  "t": "mc",
+  "q": "A finding has a number, a comparison and a segment. What's the next rung?",
+  "o": [
+   "Add a recommendation",
+   "Add a cause",
+   "Add a chart",
+   "Add a guardrail"
+  ],
+  "a": 1,
+  "why": "Number → comparison → segment → cause → recommendation."
+ },
+ {
+  "t": "mc",
+  "q": "When do you stop an analysis?",
+  "o": [
+   "When you run out of things to look at",
+   "When the question is answered to the depth the decision needs",
+   "After a week",
+   "When the AI says so"
+  ],
+  "a": 1,
+  "why": "The support spike collapsed to a one-line rollback once the cause was found."
+ },
+ {
+  "t": "tf",
+  "q": "A two-day copy fix needs a five-week deep dive before approval.",
+  "a": false,
+  "why": "Match the depth to the stakes."
+ }
+]

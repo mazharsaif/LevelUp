@@ -1,0 +1,51 @@
+[
+ {
+  "t": "mc",
+  "q": "Which half of the close-the-loop checklist is usually skipped?",
+  "o": [
+   "At follow-up",
+   "At decision time",
+   "Both equally",
+   "Neither"
+  ],
+  "a": 1,
+  "why": "Write the target, date and owner the day the decision is made."
+ },
+ {
+  "t": "mc",
+  "q": "Why not measure the redesign during Black Friday week?",
+  "o": [
+   "Too little data",
+   "The sale is a confound",
+   "Servers are busy",
+   "It's a holiday"
+  ],
+  "a": 1,
+  "why": "The promotion moves the metric by itself."
+ },
+ {
+  "t": "num",
+  "q": "Predicted +2.0 points; the design alone gave 6.0% → 6.5%. How many points short of the prediction (one decimal)?",
+  "a": 1.5,
+  "why": "2.0 − 0.5 = 1.5 points.",
+  "tol": 0.01
+ },
+ {
+  "t": "mc",
+  "q": "Which step improves your judgment most?",
+  "o": [
+   "Documenting the decision",
+   "Comparing actual to predicted",
+   "Setting a date",
+   "Sharing slides"
+  ],
+  "a": 1,
+  "why": "That's where you learn how good your estimates are."
+ },
+ {
+  "t": "tf",
+  "q": "Sharing the result is just a courtesy.",
+  "a": false,
+  "why": "It starts the next, sharper analysis."
+ }
+]

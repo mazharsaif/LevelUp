@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "In the six questions exercise, what do the winning questions share?",
+  "o": [
+   "They ask for a chart",
+   "They state the decision options and the metrics first",
+   "They are the shortest",
+   "They avoid numbers"
+  ],
+  "a": 1,
+  "why": "Winners state the decision explicitly; losers skip it, hide it or ask for a chart."
+ },
+ {
+  "t": "mc",
+  "q": "A question is fascinating but no decision depends on it. Which quadrant?",
+  "o": [
+   "Do first",
+   "Do later",
+   "Be careful",
+   "Skip"
+  ],
+  "a": 2,
+  "why": "Be careful is the danger zone where strong analysts lose a week."
+ },
+ {
+  "t": "mc",
+  "q": "\"What was the daily active user count last Tuesday?\" lands in…",
+  "o": [
+   "Do first",
+   "Do later",
+   "Be careful",
+   "Skip"
+  ],
+  "a": 1,
+  "why": "Important but dull: a five-minute lookup, or automate it."
+ },
+ {
+  "t": "mc",
+  "q": "Seven of your eight questions sit in Do first. What does that mean?",
+  "o": [
+   "You have a great backlog",
+   "You haven't sorted, you've panicked",
+   "Hire more analysts",
+   "Skip the rest"
+  ],
+  "a": 1,
+  "why": "Force some questions into Be careful."
+ },
+ {
+  "t": "mc",
+  "q": "Which brief field asks what result would change your mind?",
+  "o": [
+   "Success",
+   "Rejection condition",
+   "Data status",
+   "Sign-off"
+  ],
+  "a": 1,
+  "why": "If nothing would change your mind, you're collecting backup, not testing."
+ }
+]

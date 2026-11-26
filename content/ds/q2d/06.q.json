@@ -1,0 +1,46 @@
+[
+ {
+  "t": "mc",
+  "q": "What makes a set of numbers a metric tree?",
+  "o": [
+   "They're all on one dashboard",
+   "The children rebuild the parent when multiplied or added",
+   "They share a name",
+   "They move together"
+  ],
+  "a": 1,
+  "why": "Otherwise it's a vibe map, not a tree."
+ },
+ {
+  "t": "num",
+  "q": "Revenue = members × payments per member × average payment. 20,000 members × 6 payments × $8. Revenue in dollars?",
+  "a": 960000,
+  "why": "20,000 × 6 = 120,000 payments; × $8 = $960,000.",
+  "unit": "$"
+ },
+ {
+  "t": "num",
+  "q": "Members rise from 20,000 to 32,000 and average monthly revenue per member falls from $8.00 to $7.50. By what percent does monthly revenue change?",
+  "a": 50,
+  "why": "$160,000 → $240,000 is +50%.",
+  "unit": "%"
+ },
+ {
+  "t": "mc",
+  "q": "Payments grew 6×, almost all from more members, while payments per member stayed flat. What's the warning?",
+  "o": [
+   "A top-of-funnel problem",
+   "A retention problem hiding in a good headline",
+   "Prices are too low",
+   "Nothing; celebrate"
+  ],
+  "a": 1,
+  "why": "The drivers that signal loyalty are flat or falling."
+ },
+ {
+  "t": "mf",
+  "q": "A driver called 'active learners' under a top metric 'active learners' is a fine decomposition.",
+  "a": false,
+  "why": "Myth. That's the parent in disguise: you renamed it, not split it."
+ }
+]

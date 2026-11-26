@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which line of the 3-line recommendation is most often skipped?",
+  "o": [
+   "What we found",
+   "What it means",
+   "What to do",
+   "None"
+  ],
+  "a": 1,
+  "why": "Skipping the 'so what' gets you 'interesting' instead of 'let's do it'."
+ },
+ {
+  "t": "mf",
+  "q": "\"We recommend further investigation\" is a good third line.",
+  "a": false,
+  "why": "Myth. It isn't an ask anyone can approve."
+ },
+ {
+  "t": "mc",
+  "q": "Whom do you lead with requirements and level of effort?",
+  "o": [
+   "Executives",
+   "Product team",
+   "Engineering",
+   "Data team"
+  ],
+  "a": 2,
+  "why": "Feasibility, scope and effort, up front."
+ },
+ {
+  "t": "mc",
+  "q": "What may change between audiences?",
+  "o": [
+   "The finding",
+   "The numbers",
+   "Depth, format and opening line",
+   "The conclusion"
+  ],
+  "a": 2,
+  "why": "Changing what's true between rooms is spin."
+ },
+ {
+  "t": "tf",
+  "q": "Naming uncertainty ('if we close even half the gap') makes a recommendation weaker.",
+  "a": false,
+  "why": "It makes it stronger: it shows you know where the risk is."
+ }
+]

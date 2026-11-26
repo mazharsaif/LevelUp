@@ -1,0 +1,100 @@
+[
+ {
+  "t": "mc",
+  "q": "Nadia: 'People seem to be quitting the Spanish course.' First move?",
+  "o": [
+   "Pull week-4 retention",
+   "Climb the ladder: goal and decision first",
+   "Build a dashboard",
+   "Rewrite the course"
+  ],
+  "a": 1,
+  "why": "Front of the loop first."
+ },
+ {
+  "t": "num",
+  "q": "Before: 75% organic at 35% and 25% paid at 15%. Week-4 retention in %?",
+  "a": 30,
+  "why": "0.75 × 35 + 0.25 × 15 = 26.25 + 3.75 = 30.",
+  "unit": "%"
+ },
+ {
+  "t": "num",
+  "q": "After: 55% organic at 35% and 45% paid at 15%. Week-4 retention in %?",
+  "a": 26,
+  "why": "0.55 × 35 + 0.45 × 15 = 19.25 + 6.75 = 26.",
+  "unit": "%"
+ },
+ {
+  "t": "mc",
+  "q": "Neither channel's retention changed. What explains the drop?",
+  "o": [
+   "Worse content",
+   "Mix shift toward paid ads",
+   "Seasonality",
+   "Tracking bug"
+  ],
+  "a": 1,
+  "why": "The share of lower-retention paid learners grew."
+ },
+ {
+  "t": "mc",
+  "q": "Lesson 6 has a 40% quit rate, and had it last quarter too. What is it?",
+  "o": [
+   "The cause of this quarter's drop",
+   "A separate, older leak worth fixing",
+   "Noise",
+   "A guardrail"
+  ],
+  "a": 1,
+  "why": "It didn't cause the drop, but it's the biggest leak."
+ },
+ {
+  "t": "num",
+  "q": "20,000 learners reach lesson 6. Quit rate falls from 40% to 25%. How many more learners stay?",
+  "a": 3000,
+  "why": "15% × 20,000 = 3,000."
+ },
+ {
+  "t": "mc",
+  "q": "Which guardrail fits a targeting change for the Spanish ads?",
+  "o": [
+   "Spanish week-4 retention",
+   "New Spanish learners per week mustn't drop past an agreed amount",
+   "Ad clicks",
+   "Total downloads"
+  ],
+  "a": 1,
+  "why": "Better targeting may bring fewer, better learners; agree the limit first."
+ },
+ {
+  "t": "mc",
+  "q": "When should the follow-up be measured?",
+  "o": [
+   "During the next promotion",
+   "30 days after release, outside promotions, channel mix held constant",
+   "The next day",
+   "Whenever someone asks"
+  ],
+  "a": 1,
+  "why": "A clean window, so neither a sale nor a mix shift can fake a win."
+ },
+ {
+  "t": "mf",
+  "q": "Since the drop is all mix shift, there's nothing for the content team to do.",
+  "a": false,
+  "why": "Myth. Lesson 6 is still the biggest leak in the biggest course."
+ },
+ {
+  "t": "mc",
+  "q": "Which depth did the Spanish question need?",
+  "o": [
+   "A state-of-the-business report",
+   "An initial exploration that answered it",
+   "A monitoring report",
+   "A five-week deep dive"
+  ],
+  "a": 1,
+  "why": "It answered the decision; a one-week content change needs no deep dive."
+ }
+]

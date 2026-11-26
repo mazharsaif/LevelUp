@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "Which step comes right after Metric in the analytics loop?",
+  "o": [
+   "Insight",
+   "Analysis",
+   "Decision",
+   "Story"
+  ],
+  "a": 1,
+  "why": "Goal → Question → Metric → Analysis → Insight → Decision → Story."
+ },
+ {
+  "t": "mc",
+  "q": "Where do the best analysts spend most of their time?",
+  "o": [
+   "Analysis",
+   "Goal, question and metric",
+   "Story",
+   "Building dashboards"
+  ],
+  "a": 1,
+  "why": "Get the first three steps right and the analysis almost writes itself."
+ },
+ {
+  "t": "mc",
+  "q": "Three teams report three different numbers for the same thing. Which step was skipped?",
+  "o": [
+   "Goal",
+   "Metric",
+   "Story",
+   "Decision"
+  ],
+  "a": 1,
+  "why": "Without a defined metric, each team computes its own version."
+ },
+ {
+  "t": "mc",
+  "q": "A finding dies in a Slack thread. Which step was skipped?",
+  "o": [
+   "Decision",
+   "Question",
+   "Metric",
+   "Analysis"
+  ],
+  "a": 0,
+  "why": "Skip the decision and nobody acts on the finding."
+ },
+ {
+  "t": "mf",
+  "q": "Jumping straight to pulling data is the fastest way to a useful answer.",
+  "a": false,
+  "why": "Myth. It's the junior move: without goal, question and metric you often answer the wrong thing."
+ }
+]

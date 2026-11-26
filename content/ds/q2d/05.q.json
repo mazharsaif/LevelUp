@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which part of a metric is 'out of what population'?",
+  "o": [
+   "Numerator",
+   "Denominator",
+   "Inclusions",
+   "Rationale"
+  ],
+  "a": 1,
+  "why": "The denominator is the bottom of the fraction."
+ },
+ {
+  "t": "mc",
+  "q": "Why start Android checkout conversion at the payment screen?",
+  "o": [
+   "It gives a bigger number",
+   "It isolates the checkout step itself",
+   "It's the only data we have",
+   "It excludes refunds"
+  ],
+  "a": 1,
+  "why": "Starting at app open would mix the checkout step with everything before it."
+ },
+ {
+  "t": "tf",
+  "q": "A purchase refunded a week later still counts as a completed checkout in most teams' conversion metric.",
+  "a": true,
+  "why": "Most teams keep it and track refunds separately."
+ },
+ {
+  "t": "mc",
+  "q": "What does the two-person test ask?",
+  "o": [
+   "Do two teams agree the metric matters?",
+   "Could two people, given only the spec, compute the same number?",
+   "Did two analysts review the query?",
+   "Is the metric in two dashboards?"
+  ],
+  "a": 1,
+  "why": "If two careful analysts could get different results, the spec has a hole."
+ },
+ {
+  "t": "mf",
+  "q": "Leaving internal test accounts in a metric doesn't matter much.",
+  "a": false,
+  "why": "Myth. Leave them in and you're measuring your own QA team."
+ }
+]

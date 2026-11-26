@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "\"What are users thinking when they leave the payment screen?\" fails which check?",
+  "o": [
+   "Decision-tied",
+   "Data-grounded",
+   "Specific enough",
+   "None"
+  ],
+  "a": 1,
+  "why": "Thoughts aren't in a behavioural database; it needs a survey or interview."
+ },
+ {
+  "t": "mc",
+  "q": "A question names the metric and window but no decision. What's its score?",
+  "o": [
+   "0 of 3",
+   "1 of 3",
+   "2 of 3",
+   "3 of 3"
+  ],
+  "a": 2,
+  "why": "Data-grounded and specific pass; decision-tied fails."
+ },
+ {
+  "t": "mc",
+  "q": "A strong question needs data from a test that ends next month. What do you do?",
+  "o": [
+   "Answer it now with partial data",
+   "Drop it",
+   "Grade it strong and park it until the data exists",
+   "Rewrite it as a survey"
+  ],
+  "a": 2,
+  "why": "Timing is part of data-grounded: data that won't exist yet isn't available data."
+ },
+ {
+  "t": "mc",
+  "q": "Which is the template that passes all three checks by construction?",
+  "o": [
+   "[metric] + [timeframe or comparison] + so we can decide: [action]",
+   "[goal] + [hypothesis]",
+   "[chart] + [table]",
+   "[question] + [owner]"
+  ],
+  "a": 0,
+  "why": "The metric makes it grounded, the window makes it specific, the action makes it decision-tied."
+ },
+ {
+  "t": "mf",
+  "q": "\"What are our key metrics this quarter?\" is ready for analysis.",
+  "a": false,
+  "why": "Myth. It scores 1 of 3: there's still no decision."
+ }
+]

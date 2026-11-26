@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "State the independence test for a guardrail.",
+  "o": [
+   "It moves with the success metric",
+   "If the change works as intended, it shouldn't move",
+   "It's owned by your team",
+   "It has the biggest number"
+  ],
+  "a": 1,
+  "why": "A real guardrail watches a different system your change could damage."
+ },
+ {
+  "t": "mc",
+  "q": "A cheaper Plus Lite plan aims to raise checkout conversion. Which is a diagnostic, not a guardrail?",
+  "o": [
+   "Average revenue per paying member",
+   "14-day refund rate",
+   "Checkout conversion on the yearly plan only",
+   "Margin per member"
+  ],
+  "a": 2,
+  "why": "It re-measures the success metric on a slice."
+ },
+ {
+  "t": "mf",
+  "q": "\"Monitor the app rating\" is a guardrail.",
+  "a": false,
+  "why": "Myth. A guardrail needs a numeric roll-back rule decided before shipping."
+ },
+ {
+  "t": "mc",
+  "q": "How many guardrails per change?",
+  "o": [
+   "One",
+   "Two or three",
+   "Ten",
+   "As many as possible"
+  ],
+  "a": 1,
+  "why": "Twelve guardrails means nobody watches any."
+ },
+ {
+  "t": "mc",
+  "q": "Conversion went 6.0% → 6.5% with the redesign, 9.5% in the Black Friday sale, 6.5% after. What did the redesign do?",
+  "o": [
+   "+3.5 points",
+   "+0.5 points",
+   "Nothing",
+   "+9.5 points"
+  ],
+  "a": 1,
+  "why": "The sale did the rest; never let one number take credit for another."
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "A course shows a 44% conversion rate from 4 purchases out of 9 visits. Which check fails?",
+  "o": [
+   "Volume",
+   "Range",
+   "Sum",
+   "Source"
+  ],
+  "a": 0,
+  "why": "Nine visits is noise, not a rate."
+ },
+ {
+  "t": "mc",
+  "q": "An average payment of $1.9 million. Which check?",
+  "o": [
+   "Volume",
+   "Range",
+   "Trend",
+   "Source"
+  ],
+  "a": 1,
+  "why": "Outside believable bounds: a bug until proven otherwise."
+ },
+ {
+  "t": "mc",
+  "q": "Android + iOS + web learners add up to more than total learners. Likely cause?",
+  "o": [
+   "A real surge",
+   "Double counting",
+   "Bots",
+   "Refunds"
+  ],
+  "a": 1,
+  "why": "People in two segments are counted twice."
+ },
+ {
+  "t": "mf",
+  "q": "Surprising results deserve less scrutiny because they're exciting.",
+  "a": false,
+  "why": "Myth. Surprising results deserve more scrutiny, not less."
+ },
+ {
+  "t": "mc",
+  "q": "A 'would you recommend us' survey can't explain why people leave the payment screen. Which check?",
+  "o": [
+   "Trend",
+   "Sum",
+   "Source",
+   "Volume"
+  ],
+  "a": 2,
+  "why": "It's the wrong instrument for the question."
+ }
+]

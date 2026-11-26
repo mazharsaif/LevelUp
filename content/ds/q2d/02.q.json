@@ -1,0 +1,50 @@
+[
+ {
+  "t": "mc",
+  "q": "Which rung of the ladder names the fork in the road: should we do A or B?",
+  "o": [
+   "Goal",
+   "Decision",
+   "Metric",
+   "Hypothesis"
+  ],
+  "a": 1,
+  "why": "The decision rung names the choice the answer will inform."
+ },
+ {
+  "t": "mc",
+  "q": "Which is a hypothesis rather than a fact?",
+  "o": [
+   "Members are cancelling a lot",
+   "Cancellations are concentrated among members who joined in a promotion and never used a Plus feature",
+   "Churn was 6% last month",
+   "Plus has 20,000 members"
+  ],
+  "a": 1,
+  "why": "A hypothesis names a segment, a mechanism and a direction, and could turn out wrong."
+ },
+ {
+  "t": "mf",
+  "q": "\"Engagement\" is a good metric as long as everyone agrees it matters.",
+  "a": false,
+  "why": "Myth. It's a concept. A metric names the table, the segment and the time window."
+ },
+ {
+  "t": "mc",
+  "q": "What does skipping the hypothesis rung cost you?",
+  "o": [
+   "You optimise the wrong thing",
+   "You measure vibes",
+   "You miss the surprises",
+   "Your work doesn't matter"
+  ],
+  "a": 2,
+  "why": "Without a prediction, every result looks like noise and nothing looks surprising."
+ },
+ {
+  "t": "tf",
+  "q": "If no answer would change any decision, the analysis is usually not worth doing right now.",
+  "a": true,
+  "why": "That's the strong default of the decision rung (with low-stakes questions parked, not killed)."
+ }
+]

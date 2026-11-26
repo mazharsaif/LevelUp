@@ -1,0 +1,820 @@
+{
+  "version": 1,
+  "kind": "tree",
+  "title": "Data Science",
+  "xpPerSkill": 15,
+  "branches": [
+    {
+      "id": "q2d",
+      "title": "Question to Decision",
+      "icon": "🧭",
+      "color": "#57E3A0",
+      "order": 1,
+      "status": "open",
+      "reading": "data/ds/q2d/",
+      "intro": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "q2d.loop",
+      "branch": "q2d",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🔁",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "The analytics loop",
+      "short": "Seven steps, front-loaded",
+      "learn": [
+        "Name the seven steps of the loop",
+        "Say where most of the time should go",
+        "Spot the cost of each skipped step",
+        "Map a request onto the loop"
+      ],
+      "concepts": [
+        "Goal",
+        "Question",
+        "Metric",
+        "Close the loop"
+      ],
+      "exercises": [
+        "Concept check",
+        "Order the flow"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Seven steps"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Notice where the work is",
+            "Each shortcut has a predictable cost"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "How this track maps onto the loop",
+            "Self-check"
+          ],
+          "a": 4,
+          "b": 5
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.ladder",
+      "branch": "q2d",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "🪜",
+      "req": [
+        "q2d.loop"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "The question ladder",
+      "short": "Goal, decision, metric, hypothesis",
+      "learn": [
+        "Climb a vague ask to a real goal",
+        "Name the decision the answer informs",
+        "Turn a concept into a metric",
+        "Write a hypothesis that could be wrong"
+      ],
+      "concepts": [
+        "Decision rung",
+        "Hypothesis",
+        "Churn",
+        "Acquisition channel"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Four rungs"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The ladder in action"
+          ],
+          "a": 4,
+          "b": 5
+        },
+        {
+          "t": [
+            "What skipping a rung costs, and three mistakes",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.anatomy",
+      "branch": "q2d",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🔬",
+      "req": [
+        "q2d.loop"
+      ],
+      "mins": 5,
+      "chapter": 5,
+      "title": "Metric anatomy",
+      "short": "Seven parts of a metric",
+      "learn": [
+        "List the seven parts of a metric",
+        "Choose an honest denominator",
+        "Pick a rolling or calendar window",
+        "Pass the two-person test"
+      ],
+      "concepts": [
+        "Numerator",
+        "Denominator",
+        "Rolling window",
+        "Two-person test",
+        "Metric spec"
+      ],
+      "exercises": [
+        "Concept check",
+        "Spot the bug"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Seven questions",
+            "The test that catches every gap"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The ambiguity, made concrete"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "The fill-in metric spec",
+            "Self-check"
+          ],
+          "a": 7,
+          "b": 8
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.check",
+      "branch": "q2d",
+      "n": 4,
+      "level": 2,
+      "col": 0,
+      "icon": "✅",
+      "req": [
+        "q2d.ladder"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "The 3-check test",
+      "short": "Decision, data, specific",
+      "learn": [
+        "Run the three checks on a question",
+        "Score a question out of three",
+        "Upgrade a weak question",
+        "Use the metric + window + decision template"
+      ],
+      "concepts": [
+        "Decision-tied",
+        "Data-grounded",
+        "Specific enough",
+        "Upgrade formula"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The three checks"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Score it out of three",
+            "Bad, better, good",
+            "The quick upgrade formula"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "A sharpening gallery",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 9
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.tree",
+      "branch": "q2d",
+      "n": 5,
+      "level": 2,
+      "col": 2,
+      "icon": "🌳",
+      "req": [
+        "q2d.anatomy"
+      ],
+      "mins": 5,
+      "chapter": 6,
+      "title": "Metric trees",
+      "short": "Drivers that rebuild the parent",
+      "learn": [
+        "Split a number into drivers",
+        "Check the children rebuild the parent",
+        "Find which driver moved",
+        "Avoid the parent in disguise"
+      ],
+      "concepts": [
+        "Driver decomposition",
+        "Reconstruction test",
+        "Revenue tree"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Children must rebuild the parent",
+            "A tree for Parla revenue"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Why the tree earns its keep"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "Three jobs, one mistake",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.pick",
+      "branch": "q2d",
+      "n": 6,
+      "level": 3,
+      "col": 0,
+      "icon": "🎯",
+      "req": [
+        "q2d.check"
+      ],
+      "mins": 6,
+      "chapter": 4,
+      "title": "Pick & prioritise",
+      "short": "Six questions, one matrix",
+      "learn": [
+        "Grade competing framings and pick one",
+        "Sort questions by impact and curiosity",
+        "Explain why a question is parked",
+        "Write a one-page question brief"
+      ],
+      "concepts": [
+        "Six questions",
+        "Impact vs curiosity",
+        "Be careful",
+        "Question brief",
+        "Rejection condition"
+      ],
+      "exercises": [
+        "Design decision",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The six questions exercise"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "The impact vs curiosity matrix"
+          ],
+          "a": 4,
+          "b": 7
+        },
+        {
+          "t": [
+            "The one-page question brief",
+            "Do it with AI in ninety seconds",
+            "Self-check"
+          ],
+          "a": 8,
+          "b": 11
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.guard",
+      "branch": "q2d",
+      "n": 7,
+      "level": 3,
+      "col": 2,
+      "icon": "🛡️",
+      "req": [
+        "q2d.tree"
+      ],
+      "mins": 5,
+      "chapter": 7,
+      "title": "Guardrail metrics",
+      "short": "Win without wrecking",
+      "learn": [
+        "Tell success from guardrail metrics",
+        "Run the independence test",
+        "Set roll-back thresholds",
+        "Put a guardrail on another team"
+      ],
+      "concepts": [
+        "Success metric",
+        "Guardrail",
+        "Diagnostic",
+        "Independence test"
+      ],
+      "exercises": [
+        "Concept check",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Success and guardrail"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "A worked example at Parla"
+          ],
+          "a": 2,
+          "b": 4
+        },
+        {
+          "t": [
+            "The confound this protects you from",
+            "Three ways guardrails go wrong",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.north",
+      "branch": "q2d",
+      "n": 8,
+      "level": 4,
+      "col": 1,
+      "icon": "⭐",
+      "req": [
+        "q2d.pick",
+        "q2d.guard"
+      ],
+      "mins": 5,
+      "chapter": 8,
+      "title": "The North Star",
+      "short": "One number for real value",
+      "learn": [
+        "Spot vanity metrics",
+        "Apply the four dealbreakers",
+        "Pick a North Star for a product",
+        "Break it into BDEF inputs"
+      ],
+      "concepts": [
+        "Vanity metric",
+        "Leading vs lagging",
+        "Dealbreakers",
+        "BDEF inputs"
+      ],
+      "exercises": [
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Vanity metrics"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Seven questions, four dealbreakers"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "The North Star for Parla",
+            "The inputs under the star",
+            "Self-check"
+          ],
+          "a": 4,
+          "b": 7
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.depth",
+      "branch": "q2d",
+      "n": 9,
+      "level": 5,
+      "col": 1,
+      "icon": "🎚️",
+      "req": [
+        "q2d.north"
+      ],
+      "mins": 5,
+      "chapter": 9,
+      "title": "How deep to go",
+      "short": "Match depth to stakes",
+      "learn": [
+        "Place work on the analysis continuum",
+        "Automate repeated, stable questions",
+        "Turn the depth dial one rung at a time",
+        "Know when to stop"
+      ],
+      "concepts": [
+        "Number pull",
+        "Proactive alert",
+        "Initial exploration",
+        "Deep dive"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The analysis continuum"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Depth is a dial, not a switch"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "The support spike, placed on the continuum",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 6
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.sanity",
+      "branch": "q2d",
+      "n": 10,
+      "level": 6,
+      "col": 0,
+      "icon": "🧪",
+      "req": [
+        "q2d.depth"
+      ],
+      "mins": 5,
+      "chapter": 10,
+      "title": "Sanity checks",
+      "short": "Five checks and a smell test",
+      "learn": [
+        "Run volume, range, sum, trend, source",
+        "Read raw counts behind a rate",
+        "Spot a tracking glitch",
+        "Apply the smell test"
+      ],
+      "concepts": [
+        "Volume",
+        "Range",
+        "Sum",
+        "Trend",
+        "Source"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Five checks"
+          ],
+          "a": 0,
+          "b": 1
+        },
+        {
+          "t": [
+            "Each check, with a red flag"
+          ],
+          "a": 2,
+          "b": 3
+        },
+        {
+          "t": [
+            "The smell test",
+            "Clean data that still lies",
+            "Self-check"
+          ],
+          "a": 4,
+          "b": 6
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.rec",
+      "branch": "q2d",
+      "n": 11,
+      "level": 6,
+      "col": 2,
+      "icon": "📣",
+      "req": [
+        "q2d.depth"
+      ],
+      "mins": 5,
+      "chapter": 12,
+      "title": "Recommend & tailor",
+      "short": "3 lines, four rooms",
+      "learn": [
+        "Write a 3-line recommendation",
+        "Translate a finding into money",
+        "Name uncertainty honestly",
+        "Reframe for exec, product, eng, data"
+      ],
+      "concepts": [
+        "What we found",
+        "What it means",
+        "What to do",
+        "Stakeholder matrix"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The 3-line recommendation"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Weak and strong"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "The stakeholder communication matrix",
+            "The default rule",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 10
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.mix",
+      "branch": "q2d",
+      "n": 12,
+      "level": 7,
+      "col": 0,
+      "icon": "🔀",
+      "req": [
+        "q2d.sanity"
+      ],
+      "mins": 5,
+      "chapter": 11,
+      "title": "Mix shift & confounds",
+      "short": "Clean data that lies",
+      "learn": [
+        "Detect a mix shift by segmenting",
+        "Explain Simpson's paradox",
+        "Separate correlation from cause",
+        "Compute a test's lift"
+      ],
+      "concepts": [
+        "Mix shift",
+        "Simpson's paradox",
+        "Randomised test",
+        "Lift",
+        "Confound"
+      ],
+      "exercises": [
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Trap 1: the mix changed, not the thing"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Simpson's paradox",
+            "Trap 2: correlation that looks like cause"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Confounds",
+            "Self-check"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.close",
+      "branch": "q2d",
+      "n": 13,
+      "level": 7,
+      "col": 2,
+      "icon": "🔄",
+      "req": [
+        "q2d.rec"
+      ],
+      "mins": 5,
+      "chapter": 13,
+      "title": "Close the loop",
+      "short": "Did it work?",
+      "learn": [
+        "Write the decision-time checklist",
+        "Measure in a clean window",
+        "Compare actual to predicted",
+        "Turn the result into the next question"
+      ],
+      "concepts": [
+        "Follow-up date",
+        "Owner",
+        "Actual vs predicted",
+        "Recommendation brief"
+      ],
+      "exercises": [
+        "Scenario",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "The checklist"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Compare actual to predicted"
+          ],
+          "a": 3,
+          "b": 4
+        },
+        {
+          "t": [
+            "The loop feeds the next question",
+            "The one-page recommendation brief",
+            "Self-check"
+          ],
+          "a": 5,
+          "b": 7
+        }
+      ],
+      "quiz": 5
+    },
+    {
+      "id": "q2d.boss",
+      "branch": "q2d",
+      "n": 14,
+      "level": 8,
+      "col": 1,
+      "icon": "👑",
+      "req": [
+        "q2d.mix",
+        "q2d.close"
+      ],
+      "mins": 5,
+      "chapter": 14,
+      "title": "Capstone: run the loop",
+      "short": "A fuzzy ask, end to end",
+      "learn": [
+        "Sharpen a new request",
+        "Spec the metric and a guardrail",
+        "Catch a mix shift in real numbers",
+        "Recommend and plan the follow-up"
+      ],
+      "concepts": [
+        "Case study",
+        "Whole loop"
+      ],
+      "exercises": [
+        "Capstone review",
+        "Practice exam"
+      ],
+      "boss": true,
+      "parts": [
+        {
+          "t": [
+            "The request",
+            "Step 1: sharpen the question"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Step 2: pin the metric",
+            "Step 3: check the result"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Step 4: recommend",
+            "Step 5: close the loop"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ],
+      "quiz": 10
+    }
+  ]
+}

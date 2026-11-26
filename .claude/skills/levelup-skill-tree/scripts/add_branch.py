@@ -146,7 +146,7 @@ def main():
         b = {**{k: b[k] for k in existing if k in b}, **b}      # keep the existing key order
         d["branches"] = [b if x["id"] == bid else x for x in d["branches"]]
     else:
-        b.setdefault("order", max(x["order"] for x in d["branches"]) + 1)
+        b.setdefault("order", max((x["order"] for x in d["branches"]), default=0) + 1)
         used = {x["color"].lower() for x in d["branches"]}
         if b["color"].lower() in used:
             sys.exit(f"refused: colour {b['color']} is already used by another branch")

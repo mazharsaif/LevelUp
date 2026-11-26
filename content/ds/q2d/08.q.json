@@ -1,0 +1,56 @@
+[
+ {
+  "t": "mc",
+  "q": "Which is NOT one of the four North Star dealbreakers?",
+  "o": [
+   "Customer value",
+   "Leading",
+   "Easy to explain",
+   "Free of vanity"
+  ],
+  "a": 2,
+  "why": "The dealbreakers are customer value, leading, movable and free of vanity."
+ },
+ {
+  "t": "mc",
+  "q": "Why is monthly revenue not a North Star?",
+  "o": [
+   "It's vanity",
+   "It's lagging",
+   "It can't be measured",
+   "Teams can't move it"
+  ],
+  "a": 1,
+  "why": "It confirms what already happened."
+ },
+ {
+  "t": "mc",
+  "q": "Which is Parla's North Star?",
+  "o": [
+   "Total registered users",
+   "Daily logins",
+   "Weekly completed lessons",
+   "Monthly revenue"
+  ],
+  "a": 2,
+  "why": "A completed lesson is real value, leads revenue, is movable and hard to fake."
+ },
+ {
+  "t": "mc",
+  "q": "'Sessions per learner per week' is which BDEF input?",
+  "o": [
+   "Breadth",
+   "Depth",
+   "Efficiency",
+   "Frequency"
+  ],
+  "a": 3,
+  "why": "Frequency: how often they come back."
+ },
+ {
+  "t": "mf",
+  "q": "Daily active users is a good North Star because it's easy to measure.",
+  "a": false,
+  "why": "Myth. It counts logins, not value, and is easy to inflate."
+ }
+]
