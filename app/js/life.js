@@ -2,22 +2,13 @@
 // Four kinds: daily (do it on scheduled days), abstain (a clean run: check in "still clean"), target (an amount per week
 // or in total), milestone (steps by a date). A track with a length is a gate (dungeon) ranked E–S by that length.
 //
-// Each day (or week, for weekly targets) is a "slot". Once a slot is over it is settled:
-//   good  → run +1; a crack heals after 7 good days (2 good weeks) in a row
-//   bad   → a shield covers it if one is free, else the run cracks (⚠); never miss twice: a second bad slot in a row,
-//           or a bad slot while cracked, breaks the run (a gate fails; an open-ended track starts a new run).
-// Shields (anti-abuse, feedback 11-22): hold at most 2; earned only, by clearing a D-rank gate or better (no buying, feedback
-// 11-22b); a track can use one at most once a week; never two slots in a row; never on hard-mode tracks.
-// Long gates (28+ days) also earn a 🛡 part-way (feedback 11-23): after 14 good days and again after 28, at most two per gate
-// (`tr.mileShields`), still within the hold-2 limit.
-// "I missed this" (feedback 11-24): a daily or abstain track can be marked missed/slipped today (log "slip"); it settles at once
-// like an automatic miss (shield / crack / break) and isn't reversible from the UI.
-// 💎 can instead heal a crack at once (healCrack), at most once every 14 days.
-// Rule set of 11-24 (docs/decisions/feedback-decisions-2026-11-24.md §2; gates created from then carry `tr.v = 2`):
-//   1 gates of 7 days or fewer never spend a shield; 2 the heal timer is min(7, days left - 1) good days, or none when that is
-//   under 3 (or the gate is 7 days or fewer); 3 the 💎 heal is offered only when it can work and be paid; 4 a shield and a
-//   penalty quest never stack; 5 hard mode (new gates only, v2) fails the gate on the first miss; 6 any heal clears the pending
-//   penalty; 7 a second miss in a row, or a miss while cracked (and not shielded), fails the gate.
+// Each day (or week, for weekly targets) is a "slot". Once a slot is over it is settled.
+// LIVES (feedback fc61/195a, 11-26; replaces shields, cracks and the 💎 heal): every gate has ❤️ lives by rank:
+//   E/D 1, C/B 2, A/S 3, open-ended tracks 2, hard mode 0.
+//   good slot → run +1; after 7 good days in a row (2 good weeks for weekly targets) a lost life comes back
+//   bad slot  → you lose a life; with none left, the gate fails (an open-ended track starts a new run with full lives)
+// "I missed this" (feedback 11-24): a daily or abstain track can be marked missed/slipped today (log "slip"); it settles at once.
+// System mode: a miss also gives a penalty quest for the next day (XP when done).
 // Gate lengths (feedback bf7a, 11-24): E 7, D 14, C 30, B 45, A 60, S 120. A gate keeps the rank it was created with (`tr.rank`;
 // gates made before 11-24 have none and use LEGACY_GATES: B 60, A 90, S 180).
 import { S, save, today, addDays, daysBetween, parse } from "./store.js";
@@ -27,8 +18,7 @@ export const GATES = [[7, "E"], [14, "D"], [30, "C"], [45, "B"], [60, "A"], [120
 export const LEGACY_GATES = [[7, "E"], [14, "D"], [30, "C"], [60, "B"], [90, "A"], [180, "S"]]; // gates created before 11-24 keep these
 export const RULES_V = 2; // `tr.v`: rule set a gate was created under (2 = 11-24: hard mode fails on the first miss)
 export const GATE_REWARD = { E: [50, 5], D: [100, 10], C: [250, 25], B: [500, 50], A: [900, 80], S: [2000, 150] }; // [XP, 💎]
-export const MILE_DAYS = [14, 28], MILE_MIN_LEN = 28;
-export const SHIELD_MAX = 2, HEAL_COST = 40, HEAL_BUY_DAYS = 14, SHIELD_TRACK_DAYS = 7, HEAL_DAYS = 7, HEAL_WEEKS = 2;
+export const LIVES = { E: 1, D: 1, C: 2, B: 2, A: 3, S: 3 }, LIVES_OPEN = 2, HEAL_DAYS = 7, HEAL_WEEKS = 2;
 export const XP = { day: 5, unit: 2, week: 15, urge: 2, penalty: 3, step: 20, allDone: 5 };
 export const TITLES = [[1, "Gate Opener"], [3, "Dungeon Runner"], [5, "Gatebreaker"], [10, "Raid Leader"], [20, "Monarch"]]; // gates cleared
 
@@ -39,12 +29,19 @@ export const raisedRank = (days, want) => { const own = gateRank(days), ks = Obj
 /** the rank a track was created with (older tracks have no `rank`: they use the old length table) */
 export const rankOf = tr => (tr.days ? tr.rank || gateRank(tr.days, true) : null);
 export const hardFails = tr => !!tr.hard && (tr.v || 1) >= 2;
+/** ❤️ lives a gate starts with (rank; open-ended 2; hard mode 0) */
+export const livesMax = tr => (hardFails(tr) ? 0 : tr.days ? LIVES[rankOf(tr)] || 1 : LIVES_OPEN);
+/** lives lost and good slots toward the next one back; older tracks (crack state) convert: a crack = one life lost */
+const lv = st => { if (st.lost === undefined) { st.lost = st.cracked ? 1 : 0; st.healRun = st.cracked ? st.cracked.heal || 0 : 0; delete st.cracked; } return st; };
+export const livesLeft = tr => Math.max(0, livesMax(tr) - lv(tr.st).lost);
+/** good slots still needed for a lost life to come back (null when none is lost) */
+export const healLeft = tr => (lv(tr.st).lost ? (tr.kind === "target" ? HEAL_WEEKS : HEAL_DAYS) - tr.st.healRun : null);
 export const H = () => {
   S.tracks = S.tracks || {};
   S.hunter = S.hunter || {};
   const h = S.hunter;
   if (S.settings && S.settings.quest !== false) S.settings.quest = false; // streak = any day with a check-in (no daily XP goal here)
-  h.shields ??= 0; h.healAt ??= null; h.stats ??= {}; h.cleared ??= 0; h.titles ??= []; h.log ??= []; h.system ??= false; h.allDone ??= {};
+  h.stats ??= {}; h.cleared ??= 0; h.titles ??= []; h.log ??= []; h.system ??= false; h.allDone ??= {};
   return h;
 };
 const note = (d, why, n = 0) => { const h = H(); h.log.push({ d, why, n }); if (h.log.length > 300) h.log = h.log.slice(-300); };
@@ -76,11 +73,12 @@ export function newTrack(o) {
     period: o.period || "week", steps: (o.steps || []).map(s => (typeof s === "string" ? { t: s, d: null } : s)), why: o.why || "", penalty: o.penalty || "",
     hard: !!o.hard, template: o.template || null, auto: o.auto || null, party: o.party || null, v: RULES_V, rank: o.days ? raisedRank(o.days, o.rank) : null,
     log: {}, urges: {}, pen: {}, status: "active",
-    st: { settled: addDays(o.start || t, -1), run: 0, best: 0, good: 0, bad: 0, cracked: null, prevBad: false, prevShield: false, lastShield: null, shielded: {}, pendingPen: null, events: [] },
+    st: freshSt(o.start || t),
   };
   H(); S.tracks[id] = tr; save();
   return tr;
 }
+const freshSt = start => ({ settled: addDays(start, -1), run: 0, best: 0, good: 0, bad: 0, lost: 0, healRun: 0, pendingPen: null, events: [] });
 export const shown = tr => (tr.private && tr.alias ? tr.alias : tr.title);
 export const endDate = tr => (tr.days ? addDays(tr.start, tr.days - 1) : null);
 export const dayNo = (tr, d = today()) => daysBetween(tr.start, d) + 1;
@@ -122,7 +120,7 @@ export function doneToday(tr, d = today()) {
   return dayValue(tr, d) === true;
 }
 
-// ---------- settle: apply finished slots (shields, cracks, heals, breaks) ----------
+// ---------- settle: apply finished slots (lives lost, lives back, fails) ----------
 export function settleAll() {
   H(); let changed = false;
   for (const tr of Object.values(S.tracks)) if (tr._resettle) { resettle(tr); changed = true; }
@@ -163,80 +161,44 @@ function settle(tr) {
     }
     if ((tr.kind === "abstain" || tr.kind === "daily") && tr.log[t] === "slip" && st.settled < t && (!end || t <= end)) slots.push({ d: t, good: false, slip: true });
   }
+  lv(st);
   for (const s of slots) {
     if (tr.status !== "active") break;
     changed = true;
     st.settled = s.d;
     if (s.good) {
-      st.run++; st.good++; st.best = Math.max(st.best, st.run); st.prevBad = false; st.prevShield = false;
-      mileShield(tr, s.d);
-      if (st.cracked) { st.cracked.heal++; const need = healNeed(tr, st.cracked); if (need && st.cracked.heal >= need) { st.cracked = null; st.pendingPen = null; ev(tr, s.d, "heal", "The crack healed."); } }
+      st.run++; st.good++; st.best = Math.max(st.best, st.run);
+      if (st.lost && ++st.healRun >= (tr.kind === "target" ? HEAL_WEEKS : HEAL_DAYS)) { st.lost--; st.healRun = 0; ev(tr, s.d, "heal", `❤️ A life came back (${livesLeft(tr)} of ${livesMax(tr)}).`); }
       continue;
     }
     st.bad++;
-    const h = H();
-    const canShield = shieldUsable(tr, s.d);
-    if (st.prevBad && !st.prevShield) { brk(tr, s.d, "Two misses in a row."); continue; }
     if (hardFails(tr)) { brk(tr, s.d, "Hard mode: one miss ends the gate."); continue; }
-    if (canShield) {
-      h.shields--; st.lastShield = s.d; st.shielded[s.d] = true; st.prevBad = true; st.prevShield = true; st.pendingPen = null; // shield and penalty quest never stack
-      ev(tr, s.d, "shield", "A shield covered this day."); note(s.d, `🛡 used on ${shown(tr)}`);
-      continue;
-    }
-    if (st.cracked) { brk(tr, s.d, "A miss while the run was cracked."); continue; }
-    st.cracked = { at: s.d, heal: 0 }; st.prevBad = true; st.prevShield = false;
+    if (livesLeft(tr) <= 0) { brk(tr, s.d, "A miss with no lives left."); continue; }
+    st.lost++; st.healRun = 0;
     if (H().system && tr.penalty) st.pendingPen = addDays(s.d, 1) < t ? t : addDays(s.d, 1);
-    ev(tr, s.d, "crack", "The run cracked.");
+    ev(tr, s.d, "life", `💔 Lost a life (${livesLeft(tr)} of ${livesMax(tr)} left).`);
   }
   if (tr.status === "active" && end && st.settled >= end) clear(tr, end);
   return changed;
-}
-/** can a shield cover a miss on day d? (not hard mode, not a gate of 7 days or fewer, one held, not two in a row, one a week per track) */
-function shieldUsable(tr, d) {
-  const st = tr.st;
-  if (tr.hard || (tr.days && tr.days <= 7)) return false;
-  return H().shields > 0 && !st.prevBad && (!st.lastShield || daysBetween(st.lastShield, d) >= SHIELD_TRACK_DAYS);
-}
-/** good slots a crack needs to heal by itself: min(7, days left - 1), none (null) when that is under 3 or the gate is 7 days or
- *  fewer; weekly goals min(2, weeks left), none when no week is left. Open-ended tracks: 7 days / 2 weeks. */
-export function healNeed(tr, c) {
-  const end = endDate(tr), weekly = tr.kind === "target";
-  if (weekly) { if (!end) return HEAL_WEEKS; const wl = Math.floor(daysBetween(c.at, end) / 7); return wl >= 1 ? Math.min(HEAL_WEEKS, wl) : null; }
-  if (!end) return HEAL_DAYS;
-  if (tr.days <= 7) return null;
-  const n = Math.min(HEAL_DAYS, daysBetween(c.at, end) - 1);
-  return n >= 3 ? n : null;
-}
-/** long gates: a shield after 14 good days and another after 28 (max two per gate); waits if you already hold 2 */
-function mileShield(tr, d) {
-  if (!tr.days || tr.days < MILE_MIN_LEN || tr.hard) return;
-  const h = H(), n = tr.mileShields || 0;
-  if (n < MILE_DAYS.length && tr.st.good >= MILE_DAYS[n] && h.shields < SHIELD_MAX) {
-    h.shields++; tr.mileShields = n + 1;
-    ev(tr, d, "shield", `🛡 earned: ${MILE_DAYS[n]} good days in this gate.`); note(d, `🛡 earned: ${MILE_DAYS[n]} days of ${shown(tr)}`);
-  }
 }
 function brk(tr, d, why) {
   const st = tr.st;
   if (tr.days) { fail(tr, d, why); return; }
   ev(tr, d, "break", why + " A new run starts.");
-  st.run = 0; st.cracked = null; st.prevBad = false; st.prevShield = false; st.pendingPen = null;
+  st.run = 0; st.lost = 0; st.healRun = 0; st.pendingPen = null;
 }
 function fail(tr, d, why) {
   tr.status = "failed"; tr.ended = d; tr.st.pendingPen = null;
   ev(tr, d, "fail", why);
 }
-// after two copies were merged (merge.js): work the run out again from the merged check-ins. Shields this track used
-// are given back first and used again where the rules say so; a clear that was already paid isn't paid twice.
+// after two copies were merged (merge.js): work the run out again from the merged check-ins; a clear that was already
+// paid isn't paid twice.
 function resettle(tr) {
   delete tr._resettle;
   if (tr.status === "archived") return;
-  const h = H(), used = Object.keys(tr.st.shielded || {}).length;
-  h.shields = Math.min(SHIELD_MAX + used, h.shields + used);
   tr.status = "active"; delete tr.ended;
-  tr.st = { settled: addDays(tr.start, -1), run: 0, best: 0, good: 0, bad: 0, cracked: null, prevBad: false, prevShield: false, lastShield: null, shielded: {}, pendingPen: null, events: [] };
+  tr.st = freshSt(tr.start);
   settle(tr);
-  h.shields = Math.min(SHIELD_MAX, h.shields);
 }
 function clear(tr, d) {
   tr.status = "cleared"; tr.ended = d;
@@ -244,7 +206,6 @@ function clear(tr, d) {
   const g = (tr.days && tr.rank) || gateRank(tr.days || daysBetween(tr.start, d) + 1) || "E", [x, dm] = GATE_REWARD[g];   // a raised rank (feedback 951f) pays its own reward
   award(x, tr.stat, `Gate cleared: ${shown(tr)}`); gems(dm, `${g}-rank gate cleared`);
   const h = H(); h.cleared++;
-  if ("DCBAS".includes(g) && h.shields < SHIELD_MAX) { h.shields++; note(d, `🛡 earned: ${g}-rank gate`); }
   for (const [n, name] of TITLES) if (h.cleared >= n && !h.titles.includes(name)) h.titles.push(name);
   ev(tr, d, "clear", `${g}-rank gate cleared · +${x} XP · 💎 ${dm}`);
   tr.reward = { g, x, dm };
@@ -274,7 +235,6 @@ export function toggleStep(tr, i) {
 export function urgeBeaten(tr) { const t = today(); tr.urges[t] = (tr.urges[t] || 0) + 1; award(XP.urge, tr.stat, "Urge defeated"); save(); }
 export function penaltyDone(tr) {
   const t = today(); tr.pen[t] = true; tr.st.pendingPen = null;
-  if (tr.st.cracked) { tr.st.cracked = null; ev(tr, t, "heal", "Penalty quest done: the crack healed."); }
   award(XP.penalty, tr.stat, "Penalty quest done"); save();
 }
 /** all of today's quests done → 💎 2 and a small XP bonus, once a day */
@@ -286,28 +246,9 @@ function dailyAll() {
 export const active = () => Object.values(H() && S.tracks).filter(tr => tr.status === "active" && tr.start <= today());
 export const todayList = () => active().filter(tr => tr.kind === "target" || tr.kind === "milestone" || scheduled(tr, today()));
 
-// ---------- crack heal (💎): shields can't be bought, but a crack can be healed at once, at most once every 14 days ----------
-export function healShop(tr) {
-  const h = H(), t = today();
-  const next = h.healAt ? addDays(h.healAt, HEAL_BUY_DAYS) : t;
-  const end = tr && endDate(tr);
-  const why = !tr || !tr.st.cracked || tr.status !== "active" || (end && daysBetween(t, end) < 1) ? "none" : next > t ? "wait" : (S.gems || 0) < HEAL_COST ? "gems" : null;
-  return { ok: !why, why, next, cost: HEAL_COST };
-}
-export function healCrack(tr) {
-  const s = healShop(tr); if (!s.ok) return false;
-  const h = H(), t = today(); h.healAt = t; tr.st.cracked = null; tr.st.pendingPen = null;
-  gems(-HEAL_COST, "Crack healed"); note(t, `🩹 crack healed: ${shown(tr)}`); ev(tr, t, "heal", `Healed with 💎 ${HEAL_COST}.`); save();
-  return true;
-}
-
-/** what a miss or slip would do right now (for the slip sheet) */
-export function missOutcome(tr, d = today()) {
-  const st = tr.st;
-  if (st.prevBad && !st.prevShield) return "break";
-  if (hardFails(tr)) return "break";
-  if (shieldUsable(tr, d)) return "shield";
-  return st.cracked ? "break" : "crack";
+/** what a miss or slip would do right now (for the slip sheet): "life" (lose one) or "break" (gate fails / run restarts) */
+export function missOutcome(tr) {
+  return hardFails(tr) || livesLeft(tr) <= 0 ? "break" : "life";
 }
 export function reenter(tr) {
   const o = { ...tr, start: today(), v: undefined, rank: tr.rank, steps: tr.steps.map(s => ({ t: s.t, d: null })) };
@@ -334,7 +275,7 @@ export function teamClear(tr) {
 export function reportOf(tr) {
   const status = tr.status === "active" ? "active" : tr.status === "cleared" ? "cleared" : "failed";
   return { track: tr.id, status, run: tr.st.run, day: Math.max(0, Math.min(dayNo(tr), tr.days || 9999)), today: tr.start <= today() && doneToday(tr),
-    cracked: !!tr.st.cracked, date: today(), why: status === "failed" ? String((tr.st.events.at(-1) || {}).txt || "").slice(0, 120) : "" };
+    cracked: !!lv(tr.st).lost, lives: livesLeft(tr), date: today(), why: status === "failed" ? String((tr.st.events.at(-1) || {}).txt || "").slice(0, 120) : "" };
 }
 /** You're in a party gate on the server but this device has no track for it (progress reset, new device, lost save):
  *  rebuild it from the gate so it shows on Today again. Days before today count as settled (nothing is judged
@@ -347,7 +288,7 @@ export function restoreTrack(g, mine) {
   tr.pgate = g.id;
   tr.st.settled = g.start < t ? addDays(t, -1) : addDays(g.start, -1);
   tr.st.run = tr.st.best = mine.run || 0;
-  if (mine.cracked) tr.st.cracked = { at: addDays(t, -1), heal: 0 };
+  if (mine.cracked) tr.st.lost = Math.max(1, livesMax(tr) - (mine.lives ?? livesMax(tr) - 1));
   ev(tr, t, "info", "Restored from your party gate on this device.");
   save();
   return tr;

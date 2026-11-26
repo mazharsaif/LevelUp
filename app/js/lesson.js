@@ -568,10 +568,12 @@ function wireTidbit(lb, t) {
 }
 
 // ---------- step renderers ----------
+const noteClip = de => { for (const w of Object.values(C.word || {})) if (w.de === de) return w.a || ""; return ""; };
 function note(s, lb) {
   const c = s.c;
   lb.innerHTML = `<div class="q-title">Good to know</div><div class="card note-card"><h3 style="margin-top:0">${esc(c.h)}</h3><p>${esc(c.p)}</p>
-    ${(c.ex || []).map(([de, en]) => `<div style="margin:6px 0"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div>`).join("")}</div>`;
+    ${(c.ex || []).map(([de, en]) => `<div class="ex"><button class="spk sm" data-a="${noteClip(de)}" data-t="${esc(de)}">🔊</button><div class="t"><b>${esc(de)}</b><div class="muted small">${esc(en)}</div></div></div>`).join("")}</div>`;
+  wireSpeakers(lb);   // feedback d294: 🔊 on the note's examples (the word's own clip when the course has it, else the phone's voice)
   foot(`<button class="btn" id="go">Got it</button>`).querySelector("#go").onclick = next;
 }
 

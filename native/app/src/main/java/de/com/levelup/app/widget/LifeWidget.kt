@@ -123,7 +123,7 @@ class LifeWidget : GlanceAppWidget() {
                     T("🔥${life.optInt("streak")}", look, 16.sp, bold = true, display = true)
                 }
                 else -> {
-                    Header(look, "Hunter's Path · $rk · Lv $lv", "🛡${life.optInt("shields")} 🔥${life.optInt("streak")}")
+                    Header(look, "Hunter's Path · $rk · Lv $lv", "❤${life.optInt("lives", life.optInt("shields"))} 🔥${life.optInt("streak")}")
                     Gap(4)
                     LinearProgressIndicator(life.optDouble("frac", 0.0).toFloat(), GlanceModifier.fillMaxWidth().height(4.dp), look.accentC, ColorProvider(Color(look.track)))
                     Gap(6)

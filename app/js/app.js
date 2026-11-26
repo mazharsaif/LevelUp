@@ -2695,11 +2695,12 @@ const hunter = () => { const lv = LF.hunterLevel(LF.totalLifeXP()); return { ...
 const gateEmblem = (letter, stat, px, label) => `<span class="gemb gs-${stat}" style="width:${px}px;height:${px}px" role="img" aria-label="${esc(label)}"><svg viewBox="0 0 64 64" aria-hidden="true"><g class="gv3"><path d="M32 3L58 11V33C58 47 46 57 32 62C18 57 6 47 6 33V11Z" fill="var(--gc)" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linejoin="round"/><text x="32" y="46" text-anchor="middle" font-weight="900" font-size="34" fill="#fff">${letter}</text></g><g class="gv6"><polygon points="32,2 58,17 58,47 32,62 6,47 6,17" fill="#060c18" stroke="var(--gn)" stroke-width="2.6" stroke-linejoin="round"/><polygon points="32,8 52,20 52,44 32,56 12,44 12,20" fill="var(--gn)" fill-opacity=".1" stroke="var(--gn)" stroke-opacity=".4"/><text x="32" y="44" text-anchor="middle" font-weight="900" font-size="34" fill="#eaf6ff">${letter}</text></g></svg></span>`;
 const gateEmb = (days, tr, stat, px = 72) => { const g = tr ? LF.rankOf(tr) : LF.gateRank(days); return gateEmblem(g || "∞", stat, px, g ? `${g}-rank gate` : "Open-ended gate"); };
 const gateBadge = (days, tr) => { const g = tr ? LF.rankOf(tr) : LF.gateRank(days); return g ? `<span class="gbadge g-${g}">${g}</span>` : `<span class="gbadge g-open">∞</span>`; };
-function crackText(tr) {
-  const c = tr.st.cracked; if (!c) return "";
-  const total = LF.healNeed(tr, c), need = total ? Math.max(1, total - c.heal) : 0, wk = tr.kind === "target";
-  if (!total) return tr.days && tr.days <= 7 ? "⚠ 1 slip used · one more miss ends the gate" : "⚠ Cracked · no more misses allowed";
-  return `⚠ Cracked · heals after ${need} more good ${wk ? (need === 1 ? "week" : "weeks") : need === 1 ? "day" : "days"}`;
+// ❤️ lives (feedback fc61): full hearts left, black hearts lost, and when the next one comes back
+const hearts = tr => { const m = LF.livesMax(tr), l = LF.livesLeft(tr); return m ? "❤️".repeat(l) + "🖤".repeat(m - l) : "Hard mode: no lives"; };
+function livesText(tr) {
+  const l = LF.livesLeft(tr), back = LF.healLeft(tr), wk = tr.kind === "target";
+  if (!LF.livesMax(tr)) return "Hard mode: one miss ends the gate";
+  return `${hearts(tr)}${back ? ` · a life back after ${back} more good ${wk ? (back === 1 ? "week" : "weeks") : back === 1 ? "day" : "days"}` : ""}${l === 0 ? " · one more miss ends it" : ""}`;
 }
 function trackLine(tr) {
   const t = today(), n = LF.dayNo(tr, t);
@@ -2728,9 +2729,9 @@ function questAction(tr) {
 }
 function questRow(tr) {
   const done = LF.doneToday(tr);
-  return `<div class="qrow ${done ? "done" : ""} ${tr.st.cracked ? "cracked" : ""}" data-open="${tr.id}">
+  return `<div class="qrow ${done ? "done" : ""} ${LF.healLeft(tr) ? "cracked" : ""}" data-open="${tr.id}">
     <span class="qic">${tr.icon}</span><div class="grow qmid"><b>${esc(LF.shown(tr))}</b> ${gateBadge(tr.days, tr)}
-      <div class="tiny muted">${trackLine(tr)}${teamLine(tr)}${tr.st.cracked ? ` · <span class="crk">${crackText(tr)}</span>` : ""}</div></div>
+      <div class="tiny muted">${trackLine(tr)}${teamLine(tr)}${LF.healLeft(tr) ? ` · <span class="crk">${livesText(tr)}</span>` : ""}</div></div>
     <div class="qact">${questAction(tr)}</div></div>`;
 }
 function wireQuests(root, rerender) {
@@ -2743,7 +2744,7 @@ function wireQuests(root, rerender) {
   root.querySelectorAll("[data-add]").forEach(b => (b.onclick = () => { const tr = T(b.dataset.add); LF.logUnits(tr, 1); toast(`+1 ${tr.unit} · +${LF.XP.unit} XP`); rerender(); }));
   root.querySelectorAll("[data-amt]").forEach(b => (b.onclick = () => amountSheet(T(b.dataset.amt), rerender)));
   root.querySelectorAll("[data-sos]").forEach(b => (b.onclick = e => { e.stopPropagation(); sosView(T(b.dataset.sos), rerender); }));
-  root.querySelectorAll("[data-pen]").forEach(b => (b.onclick = () => { LF.penaltyDone(T(b.dataset.pen)); toast("Penalty quest done · the crack healed"); rerender(); }));
+  root.querySelectorAll("[data-pen]").forEach(b => (b.onclick = () => { LF.penaltyDone(T(b.dataset.pen)); toast(`Penalty quest done · +${LF.XP.penalty} XP`); rerender(); }));
   root.querySelectorAll("[data-yes],[data-no]").forEach(b => (b.onclick = () => {
     const tr = T(b.dataset.yes || b.dataset.no), y = addDays(t, -1);
     LF.checkIn(tr, y, b.dataset.yes ? true : tr.kind === "abstain" ? "slip" : false); LF.settleAll(); rerender();
@@ -2763,7 +2764,7 @@ function amountSheet(tr, done) {
 }
 function slipSheet(tr, done) {
   const out = LF.missOutcome(tr), best = Math.max(tr.st.best, tr.st.run), clean = LF.cleanDays(tr);
-  const msg = { shield: "A 🛡 shield will cover today, so your run continues.", crack: "Your run will crack ⚠ but keep going. Another miss would end the gate.",
+  const left = LF.livesLeft(tr) - 1, msg = { life: `You'll lose a ❤️ life (${left} of ${LF.livesMax(tr)} left${left ? "" : ": one more miss ends the gate"}). It comes back after ${tr.kind === "target" ? `${LF.HEAL_WEEKS} good weeks` : `${LF.HEAL_DAYS} good days`} in a row.`,
     break: tr.days ? "This ends the gate. You keep the XP you earned, and you can re-enter it right away." : "This run ends, and a new one starts tomorrow." }[out];
   const dly = tr.kind === "daily";
   sheet(`<h2 style="margin-top:0">${dly ? "Mark today as missed?" : "That happens."}</h2>
@@ -2774,7 +2775,7 @@ function slipSheet(tr, done) {
     <button class="btn" id="slipok">${dly ? "Yes, I missed it" : "Log the slip"}</button>
     ${tr.kind === "abstain" ? `<button class="btn ghost" id="sos">🆘 I'm still fighting an urge</button>` : ""}
     <button class="btn ghost" id="cx">Cancel</button>`, el => {
-    el.querySelector("#slipok").onclick = () => { LF.checkIn(tr, today(), "slip"); LF.settleAll(); closeSheet(); toast(out === "shield" ? "🛡 Shield used. The run continues." : "Logged. Tomorrow is a new day."); done(); };
+    el.querySelector("#slipok").onclick = () => { LF.checkIn(tr, today(), "slip"); LF.settleAll(); closeSheet(); toast(out === "life" ? "💔 A life lost. Tomorrow is a new day." : "Logged. Tomorrow is a new day."); done(); };
     const s = el.querySelector("#sos"); if (s) s.onclick = () => { closeSheet(); sosView(tr, done); };
     el.querySelector("#cx").onclick = closeSheet;
   });
@@ -2803,29 +2804,14 @@ function sosView(tr, done) {
   root.querySelector("#slip").onclick = () => { close(); slipSheet(tr, done); };
   root.querySelector("#close").onclick = close;
 }
-function shieldSheet(done = () => route()) {
-  const h = LF.H(), cracked = LF.active().filter(tr => tr.st.cracked);
-  sheet(`<h2 style="margin-top:0">🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</h2>
-    <p class="small">A shield covers one missed or slipped day, so your run doesn't crack. It's used automatically.</p>
-    <ul class="small rules"><li><b>Earned, never bought:</b> one for every D-rank gate (14 days) or higher you clear.</li>
-      <li><b>Long gates (28+ days)</b> also give one after <b>14</b> good days and another after <b>28</b>, at most two per gate. If you already hold 2, it waits for a free slot.</li>
-      <li>One shield per gate per week, never two days in a row. <b>Not on hard-mode gates, and not on gates of 7 days or fewer.</b></li>
-      <li>No shield? The run <b>cracks ⚠</b> instead (a penalty quest never comes on top of a shield). A crack heals by itself after up to ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly goals), fewer when the gate is nearly over; if too few days remain, or the gate is 7 days or fewer, there is no timer and one more miss ends it.</li>
-      <li><b>🩹 Heal a crack now</b> for 💎 ${LF.HEAL_COST}, at most once every ${LF.HEAL_BUY_DAYS} days. The button only shows when it can work and you can afford it. Any heal also cancels a waiting penalty quest.</li>
-      <li><b>Hard mode</b> (gates made from 24 Nov): no shields, no crack. One miss ends the gate.</li></ul>
-    ${cracked.map(tr => healButton(tr)).join("")}<button class="btn ghost" id="cx">Close</button>`, el => {
-    wireHeal(el, () => { closeSheet(); done(); });
-    el.querySelector("#cx").onclick = closeSheet;
-  });
-}
-function healButton(tr) {
-  const shop = LF.healShop(tr);
-  const why = { wait: `Next 💎 heal on ${fmtDate(shop.next, { day: "numeric", month: "long" })}.`, gems: `A 💎 heal costs ${shop.cost} (you have ${S.gems || 0}).` }[shop.why];
-  if (!shop.ok) return why ? `<p class="muted small" style="text-align:center;margin:4px 0">${esc(LF.shown(tr))}: ${why}</p>` : "";   // no button when it can't work or can't be paid
-  return `<button class="btn" data-heal="${tr.id}">🩹 Heal ${esc(LF.shown(tr))} · 💎 ${shop.cost}</button>`;
-}
-function wireHeal(el, after) {
-  el.querySelectorAll("[data-heal]").forEach(b => (b.onclick = () => { if (LF.healCrack(S.tracks[b.dataset.heal])) { toast("🩹 Crack healed"); after(); } }));
+function livesSheet() {
+  const act = LF.active().filter(tr => tr.days || tr.kind === "daily" || tr.kind === "abstain" || tr.period === "week");
+  sheet(`<h2 style="margin-top:0">❤️ Lives</h2>
+    <p class="small">Every gate has lives. A missed or slipped day costs one. Miss with none left and the gate fails (an open-ended track starts a new run).</p>
+    <ul class="small rules"><li><b>Lives by rank:</b> ${Object.entries(LF.LIVES).map(([g, n]) => `${g} ${n}`).join(" · ")} · no end ${LF.LIVES_OPEN}. <b>Hard mode:</b> none, one miss ends it.</li>
+      <li><b>They come back:</b> after ${LF.HEAL_DAYS} good days in a row (${LF.HEAL_WEEKS} good weeks for weekly targets), one lost life returns.</li></ul>
+    ${act.length ? `<div class="card">${act.map(tr => `<div class="small" style="margin:4px 0">${tr.icon} <b>${esc(LF.shown(tr))}</b> · ${livesText(tr)}</div>`).join("")}</div>` : ""}
+    <button class="btn ghost" id="cx">Close</button>`, el => { el.querySelector("#cx").onclick = closeSheet; });
 }
 let rankSent = "";
 function lifeHome() {
@@ -2841,9 +2827,9 @@ function lifeHome() {
   <div class="card hcard"><a href="#/hunter" class="emb-link">${rankEmblem(Math.min(100, hu.lv), "sm", hu.rk)}</a>
     <div class="grow"><div class="lv">Level <b>${hu.lv}</b> · ${hu.rk}-Rank Hunter</div><div class="tiny muted rk-course">Hunter's Path rank · separate from your language courses</div><div class="hbar" style="margin-top:4px"><div style="width:${100 * hu.frac}%"></div></div>
       <div class="tiny muted" style="margin-top:3px">${hu.into} / ${hu.need} XP to level ${hu.lv + 1}</div></div>
-    <div class="hchips"><button class="hchip" id="shl" aria-label="Shields">🛡 ${h.shields} / ${LF.SHIELD_MAX}</button><span class="hchip">🔥 ${streak()} day${streak() === 1 ? "" : "s"}</span><span class="hchip">💎 ${S.gems || 0}</span></div></div>
+    <div class="hchips"><button class="hchip" id="shl" aria-label="Lives">❤️ Lives</button><span class="hchip">🔥 ${streak()} day${streak() === 1 ? "" : "s"}</span><span class="hchip">💎 ${S.gems || 0}</span></div></div>
   ${ended.map(tr => `<div class="card endcard ${tr.status}"><div class="grow"><b>${tr.status === "cleared" ? `🏆 Gate cleared: ${esc(LF.shown(tr))}` : `Gate failed: ${esc(LF.shown(tr))}`}</b>
-    <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}${"DCBAS".includes(tr.reward.g) ? " · 🛡 if you had room" : ""}` : `${esc((tr.st.events.at(-1) || {}).txt || "")}${/keep the XP/.test((tr.st.events.at(-1) || {}).txt || "") ? "" : " You keep the XP you earned."}`}</div></div>
+    <div class="small muted">${tr.status === "cleared" && tr.reward ? `${tr.reward.g}-rank · +${tr.reward.x} XP · 💎 ${tr.reward.dm}` : `${esc((tr.st.events.at(-1) || {}).txt || "")}${/keep the XP/.test((tr.st.events.at(-1) || {}).txt || "") ? "" : " You keep the XP you earned."}`}</div></div>
     ${tr.status === "failed" ? `<button class="btn sm" data-re="${tr.id}" style="width:auto;margin:0">Re-enter</button>` : ""}<button class="link" data-seen="${tr.id}" aria-label="Dismiss">✕</button></div>`).join("")}
   <div class="card sysq"><div class="sys-h"><span class="ex">!</span> Daily quests</div>
     ${list.length ? `<div class="tiny muted" style="text-align:center;margin:-4px 0 8px;letter-spacing:1px">${doneN === list.length ? "ALL QUESTS COMPLETE ✓" : `${doneN} OF ${list.length} DONE`}</div>${doneN === list.length ? "" : dayLeftBlock("quests")}` : ""}
@@ -2858,7 +2844,7 @@ function lifeHome() {
     <div class="tiny muted">Starts ${fmtDate(tr.start, { weekday: "long", day: "numeric", month: "short" })}${tr.pgate ? " · 👥 party gate" : ""}</div></div></div>`).join("")}</div>` : ""}
   ${list.length ? `<a class="btn ghost" href="#/gates" style="display:block;text-decoration:none;text-align:center">＋ Enter another gate</a>` : ""}`;
   wireTop(); wireGuideCard(); maybeTour();
-  view().querySelector("#shl").onclick = () => shieldSheet(lifeHome);
+  view().querySelector("#shl").onclick = livesSheet;
   clearInterval(tleftTimer); tleftTimer = setInterval(tickLeft, 30000);
   const nx = view().querySelector("#nudgex"); if (nx) nx.onclick = () => { markNudgesSeen(PG.nudges.map(n => n.id)); PG.nudges = []; lifeHome(); };
   view().querySelectorAll("[data-seen]").forEach(b => (b.onclick = () => { S.tracks[b.dataset.seen].seen = true; save(); lifeHome(); }));
@@ -2875,7 +2861,7 @@ function lifeGates() {
   view().innerHTML = topRow() + lifeNav("gates") + `
   <a class="card gnew" href="#/new"><div class="grow"><b>Create your own gate</b><div class="small muted">A habit to build, something to quit, a target, or a big goal with steps.</div></div>${gateEmblem("+", "mind", 72, "Create your own gate")}</a>
   <div class="card rankstrip"><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b class="small">Rank = length:</b>${LF.GATES.map(([d, g]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> ${d}d</span>`).join("")}</div>
-    <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎. D-rank and up also earn a 🛡; gates of 28+ days earn one at 14 and 28 good days.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
+    <div class="row" style="margin-top:6px;gap:8px"><span class="tiny muted grow">Longer gates pay more XP and 💎, and higher ranks give more ❤️ lives.</span><button class="btn ghost sm" data-tour style="width:auto;margin:0">🧭 Tour</button></div></div>
   <div class="sys-h" style="margin:14px 2px 6px">Gate board</div>
   ${lifeTemplates().map(tp => { const atr = all.find(x => x.template === tp.id && x.status === "active"), rtr = ran[tp.id], etr = atr || (open.has(tp.id) ? null : rtr);
     return `<div class="card gtpl"><div class="row" style="gap:10px;align-items:flex-start">
@@ -2916,7 +2902,7 @@ function lifeBuilder(arg) {
         <div class="chips" style="margin-top:8px">${[["week", "Every week"], ["total", "In total"]].map(([k, l]) => `<button class="chipx ${f.period === k ? "on" : ""}" data-p="${k}">${l}</button>`).join("")}</div>` : ""}
       ${f.kind === "milestone" ? `<label class="f">Steps <span class="muted">(one per line)</span></label><textarea id="st" rows="4" placeholder="Run 3 km&#10;Run 5 km&#10;Run 10 km">${esc(f.steps || "")}</textarea>` : ""}
       <label class="f">${f.kind === "milestone" ? "Finish within" : "How long? (the gate)"}</label><div class="chips">${lens.map(([d, l]) => `<button class="chipx ${(f.days || 0) === d ? "on" : ""}" data-l="${d}">${l} ${d ? gateBadge(d) : ""}</button>`).join("")}</div>
-      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 120 days) and pay more XP and 💎. D-rank and up also give a 🛡 shield, and gates of 28+ days give one at 14 and 28 good days.</p>
+      <p class="tiny muted" style="margin:6px 0 0">Longer gates rank higher (E 7 days → S 120 days), pay more XP and 💎, and give more ❤️ lives (E/D 1, C/B 2, A/S 3).</p>
       ${f.days ? `<div class="row" style="gap:8px;align-items:center;margin-top:10px"><span class="grow small">Rank: ${gateBadge(f.days, { days: f.days, rank: LF.raisedRank(f.days, f.rank) })} ${LF.raisedRank(f.days, f.rank) !== LF.gateRank(f.days) ? `<span class="muted">raised from ${LF.gateRank(f.days)} (length)</span> <button class="link" id="rkx" style="padding:0">undo</button>` : `<span class="muted">from its length</span>`}</span>
         ${LF.gateRank(f.days) !== "S" ? `<button class="btn ghost sm" id="rku" style="width:auto;margin:0">⬆ Raise rank</button>` : ""}</div>` : ""}</div>
     <div class="card"><label class="f">Why are you doing this? <span class="muted">(shown when it gets hard)</span></label><textarea id="wy" rows="2" placeholder="${f.kind === "abstain" ? "For the moment an urge hits…" : "What will be better when you've done it?"}">${esc(tp && tp.why && tp.why.startsWith("Why do you") ? "" : f.why || "")}</textarea>
@@ -2924,7 +2910,7 @@ function lifeBuilder(arg) {
       ${inParty ? `<label class="toggle"><span><b>👥 Run it with my party</b><div class="small muted">Starts tomorrow so everyone can join. The whole team must survive: if one run breaks, the gate fails for all.</div></span><input type="checkbox" id="pty" ${f.party ? "checked" : ""}></label>` : ""}
       <label class="toggle">Private (never shown to your party) <input type="checkbox" id="pv" ${f.private && !f.party ? "checked" : ""} ${f.party ? "disabled" : ""}></label>
       <label class="f">Name on widgets and in Party <span class="muted">(optional)</span></label><input id="al" value="${esc(f.alias || "")}" placeholder="e.g. Clean run">
-      <label class="toggle">Hard mode (no shields, one miss ends the gate) <input type="checkbox" id="hd" ${f.hard ? "checked" : ""}></label></div>
+      <label class="toggle">Hard mode (no lives: one miss ends the gate) <input type="checkbox" id="hd" ${f.hard ? "checked" : ""}></label></div>
     <button class="btn" id="go">🌀 Enter the gate</button>`;
     const v = view(), keep = () => {
       const pty = v.querySelector("#pty"); if (pty) f.party = pty.checked;
@@ -2997,7 +2983,6 @@ function lifeTrack(id) {
   const tr = S.tracks[id], t = today(), st = tr.st, end = LF.endDate(tr), n = LF.dayNo(tr, t);
   const frac = tr.kind === "milestone" ? tr.steps.filter(s => s.d).length / Math.max(1, tr.steps.length) : tr.kind === "target" && tr.period === "total" ? Math.min(1, LF.totalCount(tr) / tr.amount)
     : tr.days ? Math.min(1, (tr.status === "active" ? n - 1 : tr.days) / tr.days) : 0;
-  const shieldsUsed = Object.keys(st.shielded || {}).length;
   // calendar: every day from the start to the end (or today), Monday-aligned
   let cal = "";
   if (tr.kind !== "milestone") {
@@ -3005,9 +2990,9 @@ function lifeTrack(id) {
     const pad = (parse(first).getDay() + 6) % 7;
     cal = `<div class="lcal">${DAYNAMES.map(d => `<b>${d}</b>`).join("")}${"<i></i>".repeat(pad)}`;
     for (let d = first; d <= last; d = addDays(d, 1)) {
-      const v = LF.dayValue(tr, d), sh = st.shielded && st.shielded[d], sched = LF.scheduled(tr, d);
-      const c = d > t ? "fut" : !sched ? "off" : sh ? "sh" : tr.kind === "target" ? (+tr.log[d] ? "ok" : "none") : v === true ? "ok" : tr.log[d] === "slip" || v === false ? "bad" : d < t && d <= st.settled ? "bad" : "none";
-      cal += `<i class="${c} ${d === t ? "now" : ""}" title="${d}">${sh ? "🛡" : tr.kind === "target" && +tr.log[d] ? +tr.log[d] : ""}</i>`;
+      const v = LF.dayValue(tr, d), sched = LF.scheduled(tr, d);
+      const c = d > t ? "fut" : !sched ? "off" : tr.kind === "target" ? (+tr.log[d] ? "ok" : "none") : v === true ? "ok" : tr.log[d] === "slip" || v === false ? "bad" : d < t && d <= st.settled ? "bad" : "none";
+      cal += `<i class="${c} ${d === t ? "now" : ""}" title="${d}">${tr.kind === "target" && +tr.log[d] ? +tr.log[d] : ""}</i>`;
     }
     cal += `</div>`;
   }
@@ -3019,13 +3004,12 @@ function lifeTrack(id) {
   <div class="card"><div class="row" style="gap:14px;align-items:center">${ringSVG(frac, "var(--blue)", tr.icon, 64)}
     <div class="grow"><div style="font-weight:800;font-size:calc(18px*var(--fs))">${tr.status === "active" ? trackLine(tr) : tr.status === "cleared" ? "Cleared ✓" : "Ended"}</div>
       ${end ? `<div class="tiny muted">${tr.status === "active" ? `Ends ${fmtDate(end, { day: "numeric", month: "long" })}` : ""}</div>` : ""}
-      ${st.cracked ? `<div class="small crk">${crackText(tr)}</div>` : ""}</div></div>
-    ${st.cracked && tr.status === "active" ? `<div style="margin-top:8px">${healButton(tr)}</div>` : ""}
+      ${tr.status === "active" && tr.kind !== "milestone" && !(tr.kind === "target" && tr.period === "total") ? `<div class="small ${LF.healLeft(tr) ? "crk" : "muted"}">${livesText(tr)}</div>` : ""}</div></div>
     ${tr.status === "active" && tr.start <= t ? bigAction(tr) : ""}
-    <div class="tstats">${tr.kind === "daily" || tr.kind === "abstain" ? stat(st.run, "current run") + stat(Math.max(st.best, st.run), "best run") + stat(st.good, tr.kind === "abstain" ? "clean days" : "days done") : tr.kind === "target" ? stat(LF.totalCount(tr), `${tr.unit} logged`) + stat(st.good, "weeks hit") + stat(st.bad, "weeks missed") : stat(tr.steps.filter(s => s.d).length + " / " + tr.steps.length, "steps")}${stat(shieldsUsed, "🛡 used")}</div></div>
+    <div class="tstats">${tr.kind === "daily" || tr.kind === "abstain" ? stat(st.run, "current run") + stat(Math.max(st.best, st.run), "best run") + stat(st.good, tr.kind === "abstain" ? "clean days" : "days done") : tr.kind === "target" ? stat(LF.totalCount(tr), `${tr.unit} logged`) + stat(st.good, "weeks hit") + stat(st.bad, "weeks missed") : stat(tr.steps.filter(s => s.d).length + " / " + tr.steps.length, "steps")}</div></div>
   ${tr.kind === "milestone" ? `<div class="card">${tr.steps.map((s, i) => `<label class="toggle"><span>${s.d ? "✅" : "⬜"} ${esc(s.t)}${s.d ? ` <span class="tiny muted">${fmtDate(s.d)}</span>` : ""}</span><input type="checkbox" data-step="${i}" ${s.d ? "checked" : ""} ${tr.status !== "active" ? "disabled" : ""}></label>`).join("")}</div>` : ""}
   ${tr.pgate ? `<div id="tpg"></div>` : ""}
-  ${cal ? `<div class="card"><div class="sys-h">Calendar</div>${cal}<div class="tiny muted lleg"><span><i class="ok"></i>done</span><span><i class="bad"></i>missed / slipped</span><span><i class="sh">🛡</i>shield</span></div></div>` : ""}
+  ${cal ? `<div class="card"><div class="sys-h">Calendar</div>${cal}<div class="tiny muted lleg"><span><i class="ok"></i>done</span><span><i class="bad"></i>missed / slipped</span></div></div>` : ""}
   ${tr.kind === "abstain" && tr.status === "active" ? `<button class="btn ghost sosbtn" data-sos="${tr.id}">🆘 Urge SOS</button>` : ""}
   ${tr.why ? `<div class="card"><div class="sys-h">Why I'm doing this</div><p style="margin:0">${esc(tr.why)}</p></div>` : ""}
   ${st.events.length ? `<div class="card"><div class="sys-h">History</div>${st.events.slice(-8).reverse().map(e => `<div class="small" style="margin:4px 0"><span class="muted">${fmtDate(e.d)}</span> · ${esc(e.txt)}</div>`).join("")}</div>` : ""}
@@ -3036,7 +3020,7 @@ function lifeTrack(id) {
   v.querySelector("#bx").onclick = () => (location.hash = "#/home");
   wireQuests(v, rr);
   v.querySelectorAll("[data-step]").forEach(c => (c.onchange = () => { LF.toggleStep(tr, +c.dataset.step); LF.settleAll(); rr(); }));
-  wireCounter(v, tr, rr); wireHeal(v, rr);
+  wireCounter(v, tr, rr);
   const bd = v.querySelector("#bigdone"); if (bd) bd.onclick = () => { LF.checkIn(tr, t, LF.doneToday(tr) ? null : true); questToast(tr); rr(); };
   v.querySelector("#ed").onclick = () => editTrackSheet(tr, rr);
   // party gate: who has checked in today, with a Nudge button for the ones who haven't (feedback 11-23)
@@ -3110,13 +3094,13 @@ function lifeHunter() {
     ${h.titles.length ? `<div class="chips" style="justify-content:center;margin-top:10px">${h.titles.map(t => `<span class="chipx on">🏅 ${esc(t)}</span>`).join("")}</div>` : ""}</div>
   <div class="card"><div class="sys-h">Stats</div>${radarSVG(vals, max)}<p class="tiny muted" style="text-align:center;margin:0">Each gate trains one stat. A balanced shape beats one huge spike.</p></div>
   <div class="card"><div class="tstats">${[[h.cleared, "gates cleared"], [Object.values(S.tracks).filter(t => t.status === "failed").length, "gates failed"], [streak(), "day streak"], [LF.totalLifeXP() + otherXP(), "all XP (incl. learning)"]].map(([v, l]) => `<div class="tstat"><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>
-  <div class="card"><div class="row"><div class="grow"><b>🛡 Shields: ${h.shields} / ${LF.SHIELD_MAX}</b><div class="small muted">Cover a missed day. Earned only: clear a D-rank gate or higher, or hit 14 and 28 good days in a 28+ day gate.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
-  <div class="card"><label class="toggle"><span><b>⚡ System mode</b><div class="small muted">A missed day gives you a penalty quest for the next day. Doing it heals the crack at once.</div></span><input type="checkbox" id="sys" ${h.system ? "checked" : ""}></label>
+  <div class="card"><div class="row"><div class="grow"><b>❤️ Lives</b><div class="small muted">Each gate has lives by rank; a miss costs one, and one comes back after ${LF.HEAL_DAYS} good days in a row.</div></div><button class="btn ghost sm" id="shl" style="width:auto;margin:0">Details</button></div></div>
+  <div class="card"><label class="toggle"><span><b>⚡ System mode</b><div class="small muted">A missed day gives you a penalty quest for the next day.</div></span><input type="checkbox" id="sys" ${h.system ? "checked" : ""}></label>
     ${rem ? `<label class="f">Daily reminder (this phone)</label><select id="rem"><option value="">Off</option>${["07:00", "08:00", "12:00", "18:00", "20:00", "21:00", "22:00"].map(x => `<option ${remAt === x ? "selected" : ""}>${x}</option>`).join("")}</select>
       <p class="tiny muted" style="margin:4px 0 0">Only if some of today's quests are still open.</p>` : ""}</div>
   <div class="card"><div class="sys-h">Log</div>${h.log.slice(-10).reverse().map(e => `<div class="small" style="margin:3px 0"><span class="muted">${fmtDate(e.d)}</span> · ${esc(e.why)}${e.n ? ` <b>${e.n > 0 ? "+" : ""}${e.n} XP</b>` : ""}</div>`).join("") || `<p class="muted small" style="margin:0">Nothing yet.</p>`}</div>`;
   wireTop();
-  view().querySelector("#shl").onclick = () => shieldSheet(lifeHunter);
+  view().querySelector("#shl").onclick = livesSheet;
   view().querySelector("#sys").onchange = e => { h.system = e.target.checked; save(); toast(h.system ? "⚡ System mode on: penalties are real now" : "System mode off"); };
   const r = view().querySelector("#rem");
   if (r) r.onchange = () => { try { localStorage.setItem("a1.lifeRem", r.value); } catch { /* ignore */ } N.setLifeReminder(r.value); toast(r.value ? `Reminder at ${r.value}` : "Reminder off"); };
@@ -3153,21 +3137,20 @@ function lifeSnapshot() {
   LF.H(); const t = today(), hu = hunter();
   const items = LF.todayList().map(tr => ({ id: tr.id, icon: tr.icon, title: tr.private ? (tr.alias || "Private quest") : LF.shown(tr), kind: tr.kind,
     done: LF.doneToday(tr, t), tickable: (tr.kind === "daily" && !tr.amount && !tr.auto) || tr.kind === "abstain", slip: tr.log[t] === "slip",
-    line: trackLine(tr), cracked: !!tr.st.cracked, day: Math.min(LF.dayNo(tr, t), tr.days || 9999), days: tr.days || 0 }));
-  return { items, level: hu.lv, rank: hu.rk, frac: hu.frac, shields: LF.H().shields, streak: streak(), gems: S.gems || 0, open: items.filter(i => !i.done).length };
+    line: trackLine(tr), cracked: !!LF.healLeft(tr), lives: LF.livesLeft(tr), day: Math.min(LF.dayNo(tr, t), tr.days || 9999), days: tr.days || 0 }));
+  return { items, level: hu.lv, rank: hu.rk, frac: hu.frac, lives: items.reduce((a, i) => a + i.lives, 0), shields: items.reduce((a, i) => a + i.lives, 0), streak: streak(), gems: S.gems || 0, open: items.filter(i => !i.done).length };
 }
 
 // Hunter's Path tour (feedback 11-22: explain what gates are and what the ranks mean)
 function lifeSteps() {
-  const ladder = LF.GATES.map(([d, g]) => `<div class="tl-row"><span class="gbadge g-${g}">${g}</span><span class="grow">${d} days</span><span class="tiny muted">+${LF.GATE_REWARD[g][0]} XP · 💎 ${LF.GATE_REWARD[g][1]}${"DCBAS".includes(g) ? " · 🛡" : ""}</span></div>`).join("");
+  const ladder = LF.GATES.map(([d, g]) => `<div class="tl-row"><span class="gbadge g-${g}">${g}</span><span class="grow">${d} days</span><span class="tiny muted">+${LF.GATE_REWARD[g][0]} XP · 💎 ${LF.GATE_REWARD[g][1]}${` · ${"❤️".repeat(LF.LIVES[g])}`}</span></div>`).join("");
   const hr = [["E", 1], ["D", 10], ["C", 25], ["B", 45], ["A", 70], ["S", 95]].map(([g, l]) => `<span class="tl-chip"><span class="gbadge g-${g}">${g}</span> Lv ${l}</span>`).join("");
   return [
     { title: "Welcome to Hunter's Path ⚔️", text: "Your own goals, played like a game: habits to build, things to quit, targets and big goals. A 1-minute tour." },
     { title: "What is a gate? 🌀", text: "A <b>gate</b> is a challenge you enter for a set number of days, like <i>Gym 3× a week for 8 weeks</i> or <i>Read every day for 30 days</i>.<br><br>Check in on every day you do it. Reach the last day without breaking your run and the gate is <b>cleared</b> 🏆." },
-    { title: "Gate ranks: E to S", text: `The longer the gate, the higher its rank and the bigger the reward:<div class="tl">${ladder}</div><span class="tiny muted">🛡 = clearing it also earns a shield.</span>` },
+    { title: "Gate ranks: E to S", text: `The longer the gate, the higher its rank and the bigger the reward:<div class="tl">${ladder}</div><span class="tiny muted">❤️ = lives: misses the gate can take.</span>` },
     { sel: ".hcard", title: "Your Hunter rank", text: `Separate from gate ranks: every check-in earns XP, XP raises your <b>level</b>, and your level sets your rank.<div class="tl-chips">${hr}</div>` },
-    { title: "Miss a day? ⚠", text: "First miss: a 🛡 shield covers it (not on gates of 7 days or fewer), or the run <b>cracks</b>. A crack heals after up to 7 good days in a row (or right away for 💎, when there is time left).<br><br>Miss <b>twice in a row</b>, or again while cracked, and the gate fails. In <b>hard mode</b> a single miss fails it. You keep all XP you earned and can re-enter." },
-    { sel: "#shl", title: "Shields 🛡", text: "You hold up to 2. They're <b>earned only</b>: by clearing D-rank gates or higher, or in a long gate (28+ days) after 14 and 28 good days. They can't be bought." },
+    { sel: "#shl", title: "Miss a day? ❤️", text: "Every gate has <b>lives</b>: E/D 1, C/B 2, A/S 3. A miss costs one; miss with none left and the gate fails. A lost life comes back after 7 good days in a row.<br><br>In <b>hard mode</b> a single miss fails it. You keep all XP you earned and can re-enter." },
     { sel: ".lnav", title: "Today · Gates · License · Party", text: "<b>Today</b>: your check-ins. <b>Gates</b>: the board of challenges. <b>License</b>: your stats and rank. <b>Party</b>: run gates together; the whole team must survive." },
     { sel: ".sysq", title: "Daily quests", text: "One tap per quest each day. Finish them all for 💎 2. Forgot yesterday? You can still answer it today." },
     { sel: ".lnav a[href='#/gates']", title: "Enter your first gate", text: "Pick a ready-made challenge (a book a week, gym 3× a week, no sugar…) or build your own. Start small: an E-rank gate is just 7 days." },
@@ -3186,13 +3169,12 @@ function lifeGuide() {
     ${idea(2, "🛡", "Quit", "A clean run: no sugar, no smoking, no phone after 22:00. Check in “still clean” each day.")}
     ${idea(3, "🎯", "Target", "An amount per week or in total: 1 book a week, gym 3 times a week.")}
     ${idea(4, "🏔", "Big goal", "Steps by a date: run a 10K.")}`)}
-  ${sec("🌀", "Gates and ranks", `<p>Longer gates rank higher: <b>E</b> 7 days, <b>D</b> 14, <b>C</b> 30, <b>B</b> 45, <b>A</b> 60, <b>S</b> 120. Clearing one pays XP and 💎, and D-rank or higher also gives a 🛡 shield. Fail a gate and you keep the XP you earned; re-enter it right away.</p>`)}
-  ${sec("🛡", "Shields and cracks", `<ul class="gtips">
-    ${tip(true, "A <b>shield</b> covers one missed or slipped day automatically, so the run goes on.")}
-    ${tip(true, "Hold at most <b>2</b>. Shields are <b>earned only</b>: by clearing D-rank gates or higher, or in a long gate (28+ days) after 14 and 28 good days (max two per gate). They can't be bought.")}
-    ${tip(true, `Cracked? You can <b>heal it at once for 💎 ${LF.HEAL_COST}</b>, at most once every 2 weeks, if the gate still has time left and you have the 💎. A heal also cancels a waiting penalty quest.`)}
-    ${tip(true, "No shield? The run <b>cracks ⚠</b>. A crack heals by itself after up to <b>7 good days</b> in a row (2 good weeks for weekly targets), fewer when the gate is nearly over. On a gate of 7 days or fewer there is no timer: one slip is allowed, and a second ends it.")}
-    ${tip(false, "Miss <b>twice in a row</b>, or again while cracked, and the run breaks. Shields never cover two days in a row, the same gate twice in a week, or any gate of 7 days or fewer. A shield and a penalty quest never come together. <b>Hard mode</b> (gates made from 24 Nov): no shields, and the first miss fails the gate.")}</ul>`)}
+  ${sec("🌀", "Gates and ranks", `<p>Longer gates rank higher: <b>E</b> 7 days, <b>D</b> 14, <b>C</b> 30, <b>B</b> 45, <b>A</b> 60, <b>S</b> 120. Clearing one pays XP and 💎. Fail a gate and you keep the XP you earned; re-enter it right away.</p>`)}
+  ${sec("❤️", "Lives", `<ul class="gtips">
+    ${tip(true, "Every gate has <b>lives</b> by rank: <b>E/D 1</b>, <b>C/B 2</b>, <b>A/S 3</b> (no-end tracks 2).")}
+    ${tip(true, "A missed or slipped day costs <b>one life</b>. The run goes on.")}
+    ${tip(true, "Lives <b>come back</b>: after <b>7 good days</b> in a row (2 good weeks for weekly targets), one lost life returns.")}
+    ${tip(false, "Miss with <b>no lives left</b> and the gate fails. <b>Hard mode</b> has no lives: the first miss ends it.")}</ul>`)}
   ${sec("🆘", "Hard goals", `<p>Quit gates can be <b>private</b> and shown under a neutral name. When an urge hits, the <b>Urge SOS</b> button gives you 90 seconds of breathing, your own reason, and a quick task. A slip is met with support, not shame: your best run and calendar stay. If it feels bigger than a habit, talk to a doctor or counsellor; LevelUp isn't a medical tool.</p>`)}
   ${sec("🏆", "Tips", `<ul class="gtips">
     ${tip(true, "Start with one or two gates. Add more once they feel easy.")}
@@ -3273,7 +3255,7 @@ function pgateCard(g) {
     <div class="tiny muted">${status} · ${g.members.length} hunter${g.members.length > 1 ? "s" : ""} · everyone must survive</div></div>
     ${joinable ? `<button class="btn sm" data-pgjoin="${g.id}" style="width:auto;margin:0">Join</button>` : ""}</div>
     ${g.members.map(m => `<div class="pgm ${m.status}">${avatar(m.id, true)}<span class="grow"><b>${esc(m.name)}${m.id === USER ? " (you)" : ""}</b>
-      <span class="tiny muted"> · run ${m.run}${m.cracked ? " · ⚠ cracked" : ""}</span></span>
+      <span class="tiny muted"> · run ${m.run}${m.cracked ? " · 💔 lost a life" : ""}</span></span>
       ${m.status === "failed" ? `<span class="tiny" style="color:var(--red)">✗ fell</span>` : m.status === "cleared" ? `<span class="tiny okc">✓ cleared</span>`
         : g.start > t ? `<span class="tiny muted">ready</span>` : m.checked === t ? `<span class="tiny okc">✓ today</span>`
         : m.id !== USER && me && g.status === "active" ? `<button class="qbtn sm2" data-nudge="${g.id}:${m.id}">🔔 Nudge</button>` : `<span class="tiny muted">⏳ not yet</span>`}</div>`).join("")}</div>`;

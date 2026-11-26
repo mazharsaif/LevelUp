@@ -427,11 +427,18 @@ NOTES = {
         ex=[("der erste Tag", "the first day (Tag is masculine)"), ("die erste Woche", "the first week (Woche is feminine)"),
             ("das erste Mal", "the first time (Mal is neuter)")])])],
     "v4": [dict(at="start", cards=[
+        # feedback fb19 (11-26): explain der/die/das from zero here, so the course needs nothing from outside
+        dict(h="der, die, das: three words for “the”",
+             p="English has one word for “the”. German has three: der, die and das. Which one you use depends on the noun, because every German noun has a grammatical gender: masculine (der), feminine (die) or neuter (das). The gender belongs to the word, not to the thing: a table is masculine, a door feminine, a child neuter. All three just mean “the”.",
+             ex=[("der Tag", "the day (masculine)"), ("die Woche", "the week (feminine)"), ("das Kind", "the child (neuter)"),
+                 ("die Kinder", "the children (plural: always die)")]),
         dict(h="Learn every noun with its der, die or das",
              p="The gender of a noun is part of the word. Nothing in the meaning tells you that Glückwunsch is “der” but Mädchen is “das”, so you can't work it out later. Learn “der Glückwunsch” as one piece, never just “Glückwunsch”.",
              ex=[("der Glückwunsch", "the congratulations"), ("die Gratulation", "the congratulation"), ("das Mädchen", "the girl (neuter, even though she is female)")]),
         dict(h="Why it matters",
-             p="Other words change with the gender: ein / eine, er / sie / es, and endings on adjectives. Only the plural is easy: it is always “die”. When you meet a new noun, say it aloud with its article, and the app's DER / DIE / DAS tag will help it stick. This is just the basics: you will learn more about genders as the course goes on.")])],
+             p="Other words follow the gender. “A / an” is ein for der and das nouns, but eine for die nouns. “It” is er, sie or es, matching der, die, das. Later, the articles also change with a noun's job in the sentence (der Tag becomes den Tag after “für”), and the course teaches that step by step. Only the plural is easy: it is always “die”. When you meet a new noun, say it aloud with its article; the app's DER / DIE / DAS tag shows it on every noun card.",
+             ex=[("ein Tag · eine Woche · ein Kind", "a day · a week · a child"), ("Der Tag ist lang. Er ist lang.", "The day is long. It is long."),
+                 ("Die Woche ist lang. Sie ist lang.", "The week is long. It is long."), ("Das Kind ist hier. Es ist hier.", "The child is here. It is here.")])])],
 }
 NOTES["p1"] = [dict(at="Gern geschehen.", cards=[dict(
     h="Bitte schön or gern geschehen?",
