@@ -1825,7 +1825,8 @@ function loginView(msg = "") {
   document.body.classList.add("in-lesson");
   const up = authTab === "signup";
   view().innerHTML = `${gearBtn()}<div style="text-align:center;padding-top:5vh"><img src="icons/icon.svg" alt="" width="84" height="84" style="border-radius:20px"><div class="brand">LevelUp</div>
-    <h1>${up ? "Create your account" : "Welcome back"}</h1></div>
+    <h1>${up ? "Create your account" : "Welcome back"}</h1>
+    <button class="link" id="aint" style="display:block;margin:-6px auto 14px">What is LevelUp?</button></div>
     <div class="segt authtabs" role="tablist"><button data-t="login" class="${up ? "" : "on"}">Log in</button><button data-t="signup" class="${up ? "on" : ""}">Sign up</button></div>
     <form class="card authform" id="af" autocomplete="on">
       ${up ? `<label class="f" for="an">Your name</label><input id="an" name="name" autocomplete="name" maxlength="40" required>` : ""}
@@ -1839,7 +1840,6 @@ function loginView(msg = "") {
     </form>
     ${isGuest() ? `<button class="btn ghost" id="agb">‹ Back to the app (guest)</button>` : `<button class="btn ghost" id="agt">${hasGuestData() ? "Continue as guest" : "Try it first as a guest"}</button>
     <p class="muted small" style="text-align:center;margin:6px 0 0">No account needed. Progress stays on this phone; sign up later to keep it.</p>`}
-    <button class="link" id="aint" style="display:block;margin:14px auto 0">What is LevelUp?</button>
     ${apkBtn("btn ghost", "margin-top:14px")}`;
   window.scrollTo(0, 0); // e.g. after logging out from the bottom of Settings
   view().querySelector("#gear").onclick = themeSheet;
@@ -1915,7 +1915,7 @@ function introView() {
 const GUEST_NOTE = `<div style="font-weight:800">👋 You're trying LevelUp as a guest</div>
   <p class="muted small">Your progress is saved only on this phone. Create a free account to keep it, back it up and use it on other devices: everything you've done so far moves into the account.</p>`;
 async function enterGuest() {
-  startGuest(); await switchUser(USER); unpick(); document.body.classList.remove("in-lesson");
+  startGuest(); await switchUser(USER); unpick(); askCourse = true; document.body.classList.remove("in-lesson");
   toast("Guest mode: progress stays on this phone");
   if (location.hash !== "#/today") location.hash = "#/today"; else route();
 }
@@ -1996,9 +1996,13 @@ async function checkNativeUpdate() {
 const verBox = () => `<div class="verbox tiny muted" data-ver>Checking version…</div>`;
 // one line (feedback 11-22: "why does it show both web app and android app"): the release you run, plus an update
 // link when the Android app itself is out of date; the separate numbers sit under "details"
-async function fillVersions(root = document) {
-  const boxes = [...root.querySelectorAll("[data-ver]:not([data-filled])")]; if (!boxes.length) return;
+// feedback daed: show when it last checked, and a "Check again" button (also asks the service worker for new files)
+const verWhen = t => { if (!t) return "never"; const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? "just now" : m < 60 ? `${m} min ago` : new Date(t).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); };
+async function fillVersions(root = document, force = false) {
+  const boxes = [...root.querySelectorAll(force ? "[data-ver]" : "[data-ver]:not([data-filled])")]; if (!boxes.length) return;
   boxes.forEach(b => b.setAttribute("data-filled", ""));
+  if (force) boxes.forEach(b => { const w = b.querySelector("[data-verwhen]"); if (w) w.textContent = "checking…"; });
   const N = window.LevelUpNative, more = [];
   let mineName = "", appOld = false, appNew = "";
   if (N && N.version) {
@@ -2008,15 +2012,25 @@ async function fillVersions(root = document) {
     appOld = !!(r && r.versionCode > mineCode); appNew = r ? String(r.versionName).replace(/-native.*$/, "") : "";
     more.push(`📱 Android app ${esc(mineName)}`);
   }
-  const web = window.__luVersion || await fetch("api/health", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).then(j => j && j.version).catch(() => null);
-  if (web && mineName) more.push(`🌐 Lessons and screens ${esc(web)}`);
+  // the release this page runs (from start-up) vs the one the server has now: differ = new lessons/screens are out
+  const server = await fetch("api/health", { cache: "no-store" }).then(x => (x.ok ? x.json() : null)).then(j => j && j.version).catch(() => null);
+  const running = window.__luVersion || server, webOld = !!(server && running && server !== running);
+  if (force && navigator.serviceWorker) { try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch { /* offline */ } }
+  if (server) { try { localStorage.setItem("a1.verChecked", String(Date.now())); } catch { /* ignore */ } }
+  const checked = +(localStorage.getItem("a1.verChecked") || 0);
+  if (running && mineName) more.push(`🌐 Lessons and screens ${esc(running)}`);
   try { const k = (await caches.keys()).find(x => /^a1-shell-v\d+$/.test(x)); if (k) more.push(`💾 Offline copy ${esc(k.replace("a1-shell-", ""))}`); } catch { /* no cache API over http */ }
-  const main = `LevelUp <b>${esc(web || mineName || "?")}</b> ${appOld ? `· <span style="color:var(--red)">app update ${esc(appNew)}</span> <button class="link" data-verupd style="padding:0">Update</button>` : web || mineName ? `· <span style="color:var(--green)">latest ✓</span>` : ""}`;
+  const main = `LevelUp <b>${esc(running || mineName || "?")}</b> ${appOld ? `· <span style="color:var(--red)">app update ${esc(appNew)}</span> <button class="link" data-verupd style="padding:0">Update</button>`
+    : webOld ? `· <span style="color:var(--red)">update ${esc(server)}</span> <button class="link" data-verreload style="padding:0">Reload</button>`
+    : running || mineName ? `· <span style="color:var(--green)">latest ✓</span>` : ""}`;
   boxes.forEach(b => {
-    b.innerHTML = `<div>${main}</div>${more.length > 1 ? `<details class="verdet"><summary>details</summary>${more.map(x => `<div>${x}</div>`).join("")}</details>` : ""}`;
+    b.innerHTML = `<div>${main}</div><div>Last checked <span data-verwhen>${server ? verWhen(checked) : `${verWhen(checked)} (offline)`}</span> · <button class="link" data-vercheck style="padding:0">Check again</button></div>`
+      + (more.length > 1 ? `<details class="verdet"><summary>details</summary>${more.map(x => `<div>${x}</div>`).join("")}</details>` : "");
     const u = b.querySelector("[data-verupd]");
     if (u) u.onclick = async () => { const r = await fetch("download/native.json", { cache: "no-store" }).then(x => x.json()).catch(() => null);
       N.openExternal(new URL((r && r.url) || NATIVE_APK_URL, location.href).href); };
+    const rl = b.querySelector("[data-verreload]"); if (rl) rl.onclick = () => location.reload();
+    b.querySelector("[data-vercheck]").onclick = () => fillVersions(b.parentNode || document, true);
   });
 }
 new MutationObserver(() => { if (document.querySelector("[data-ver]:not([data-filled])")) fillVersions(); }).observe(document.body, { childList: true, subtree: true });
