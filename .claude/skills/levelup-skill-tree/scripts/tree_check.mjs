@@ -16,7 +16,7 @@ const TREE = process.env.TREE || "se", COURSE = process.env.COURSE || "se-path";
 const T = await (await fetch(U + `data/${TREE}-path.json`)).json();
 const br = T.branches.find(b => b.id === branch); if (!br) { console.error("no branch", branch); process.exit(1); }
 const nodes = T.nodes.filter(n => n.branch === branch), first = nodes.find(n => !n.req.length);
-const b = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: "new" });
+const b = await puppeteer.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", headless: "new" });
 const pg = await b.newPage(); const errs = [], fails = [];
 pg.on("pageerror", e => errs.push(e.message)); pg.on("console", m => m.type() === "error" && !/^Failed to load resource/.test(m.text()) && errs.push("console: " + m.text()));
 // failed requests by URL; /api/auth/*, /api/health and /api/ask/* are 404s on server.py (no logins, health check or study helper) and expected there

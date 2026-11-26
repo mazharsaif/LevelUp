@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "Which pair of commands are Ruff's two main jobs?",
+  "o": [
+   "ruff lint and ruff style",
+   "ruff check and ruff format",
+   "ruff test and ruff build",
+   "ruff scan and ruff sort"
+  ],
+  "a": 1,
+  "why": "check lints (and fixes); format rewrites layout."
+ },
+ {
+  "t": "mc",
+  "q": "Ruff replaces which formatter?",
+  "o": [
+   "isort",
+   "Flake8",
+   "Black",
+   "pytest"
+  ],
+  "a": 2,
+  "why": "ruff format is built as a drop-in replacement for Black."
+ },
+ {
+  "t": "mc",
+  "q": "How do you run Ruff once without adding it to the project?",
+  "o": [
+   "uv add ruff check",
+   "pip run ruff",
+   "ruff --install check",
+   "uvx ruff check ."
+  ],
+  "a": 3,
+  "why": "uvx downloads Ruff into a cache and runs it."
+ },
+ {
+  "t": "mc",
+  "q": "In 'F401 [*] `os` imported but unused', what does [*] mean?",
+  "o": [
+   "Ruff has an automatic fix",
+   "The rule is unsafe",
+   "The finding is a warning only",
+   "The rule is new"
+  ],
+  "a": 0,
+  "why": "[*] marks findings that --fix can fix."
+ },
+ {
+  "t": "mc",
+  "q": "ruff check exits with code 1. What happened?",
+  "o": [
+   "Ruff crashed",
+   "It found problems",
+   "The config is broken",
+   "Everything is clean"
+  ],
+  "a": 1,
+  "why": "1 means findings; 2 means Ruff itself failed; 0 means clean."
+ },
+ {
+  "t": "mf",
+  "q": "To learn what a rule like F401 checks, you have to search the web.",
+  "a": false,
+  "why": "Myth: ruff rule F401 prints the rule's full explanation."
+ }
+]

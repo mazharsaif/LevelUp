@@ -1,0 +1,62 @@
+{
+  "branch": {
+    "id": "lint",
+    "title": "Linting",
+    "icon": "🧹",
+    "color": "#D4A373"
+  },
+  "nodes": [
+    {
+      "key": "what", "level": 0, "col": 1, "req": [], "icon": "🔍", "chapter": 1,
+      "title": "What linting is",
+      "short": "Static checks, bugs vs style",
+      "learn": [
+        "Explain static analysis: checking code without running it",
+        "Tell likely-bug findings from style findings",
+        "Say how a linter differs from a formatter, a type checker and tests",
+        "Name what a linter cannot catch, and why node --check isn't linting"
+      ],
+      "concepts": ["Linter", "Static analysis", "Formatter", "Type checker", "False positive"],
+      "exercises": ["Concept check", "Match the terms", "Myth or fact"]
+    },
+    {
+      "key": "rules", "level": 1, "col": 0, "req": ["what"], "icon": "⚙️", "chapter": 2,
+      "title": "Rules & config",
+      "short": "Severity, ignores, baselines",
+      "learn": [
+        "Set a rule to off, warn or error and know which fails the run",
+        "Keep rules in a config file shared by editor and CI",
+        "Write an inline ignore that names the rule and says why",
+        "Adopt a linter on old code: start small, auto-fix, baseline, ratchet"
+      ],
+      "concepts": ["Rule", "Severity", "Config file", "Inline ignore", "Baseline"],
+      "exercises": ["Spot the bug", "Scenario", "Design decision"]
+    },
+    {
+      "key": "langs", "level": 1, "col": 2, "req": ["what"], "icon": "🗺️", "chapter": 3,
+      "title": "Linters by language",
+      "short": "Python, JS, shell and more",
+      "learn": [
+        "Compare Ruff, Pylint and Flake8 for Python",
+        "Choose between ESLint and Biome for JavaScript",
+        "Use ShellCheck to catch quoting bugs in scripts",
+        "Pick a linter with four questions: team, one tool, speed, plugins"
+      ],
+      "concepts": ["Ruff", "Pylint", "ESLint", "Biome", "ShellCheck"],
+      "exercises": ["Match the terms", "Design decision", "Concept check"]
+    },
+    {
+      "key": "flow", "level": 2, "col": 1, "req": ["rules", "langs"], "icon": "🔁", "chapter": 4,
+      "title": "Lint in your workflow",
+      "short": "Editor, hook, CI gate",
+      "learn": [
+        "Place the linter in the editor, a pre-commit hook and CI",
+        "Set up a pre-commit hook and know what it checks",
+        "Use auto-fix safely and keep it out of CI",
+        "Keep linting fast with changed files, caches and excludes"
+      ],
+      "concepts": ["Pre-commit hook", "CI gate", "Auto-fix", "Exit code", "Cache"],
+      "exercises": ["Order the flow", "Scenario", "Myth or fact"]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "Which prefix is the isort family (import sorting)?",
+  "o": [
+   "F",
+   "UP",
+   "I",
+   "B"
+  ],
+  "a": 2,
+  "why": "I001 is unsorted-imports."
+ },
+ {
+  "t": "mc",
+  "q": "select = [\"E\", \"F\"] with ignore = [\"F401\"] runs …",
+  "o": [
+   "only F401",
+   "E, F and the defaults",
+   "nothing",
+   "all E and F rules except F401"
+  ],
+  "a": 3,
+  "why": "select replaces the set; ignore removes from it."
+ },
+ {
+  "t": "mc",
+  "q": "You want to add the B rules on top of the defaults. Use …",
+  "o": [
+   "extend-select = [\"B\"]",
+   "select = [\"B\"]",
+   "ignore = [\"B\"]",
+   "per-file-ignores"
+  ],
+  "a": 0,
+  "why": "select = [\"B\"] would run only B."
+ },
+ {
+  "t": "mc",
+  "q": "Which comment silences only unused-import on one line?",
+  "o": [
+   "# noqa",
+   "# noqa: F401",
+   "# ruff: off",
+   "# type: ignore"
+  ],
+  "a": 1,
+  "why": "Always name the code; a bare noqa hides everything on the line."
+ },
+ {
+  "t": "mc",
+  "q": "LevelUp's pyproject.toml has requires-python >=3.13 and no target-version. Ruff assumes …",
+  "o": [
+   "Python 3.11",
+   "the newest Python",
+   "Python 3.13",
+   "Python 3.7"
+  ],
+  "a": 2,
+  "why": "Ruff reads requires-python when no Ruff config sets target-version."
+ },
+ {
+  "t": "mf",
+  "q": "E501 (line too long) is in Ruff's default rule set.",
+  "a": false,
+  "why": "Myth: you add it with extend-select if you want line length enforced."
+ }
+]

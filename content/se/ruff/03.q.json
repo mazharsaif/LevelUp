@@ -1,0 +1,62 @@
+[
+ {
+  "t": "mc",
+  "q": "By default, ruff check --fix applies …",
+  "o": [
+   "safe and unsafe fixes",
+   "only formatting",
+   "nothing until you confirm",
+   "only safe fixes"
+  ],
+  "a": 3,
+  "why": "Unsafe fixes need --unsafe-fixes as well."
+ },
+ {
+  "t": "mc",
+  "q": "Why is the B006 fix (cache={} to cache=None) unsafe?",
+  "o": [
+   "Code may rely on the shared default object",
+   "It deletes the function",
+   "It breaks the syntax",
+   "It changes the line length"
+  ],
+  "a": 0,
+  "why": "Unsafe fixes may change what the code does at run time."
+ },
+ {
+  "t": "mc",
+  "q": "Which command shows what --fix would change without writing anything?",
+  "o": [
+   "ruff check --watch",
+   "ruff check --diff",
+   "ruff format --check",
+   "ruff check --statistics"
+  ],
+  "a": 1,
+  "why": "--diff prints a unified diff and changes no files."
+ },
+ {
+  "t": "mc",
+  "q": "In CI, which command fails when a file isn't formatted?",
+  "o": [
+   "ruff format",
+   "ruff check --fix",
+   "ruff format --check",
+   "ruff format --fix"
+  ],
+  "a": 2,
+  "why": "--check writes nothing and exits 1 if a file would change."
+ },
+ {
+  "t": "mf",
+  "q": "ruff format also sorts your imports.",
+  "a": false,
+  "why": "Myth: sorting is lint rule I001; run ruff check --select I --fix, then ruff format."
+ },
+ {
+  "t": "mf",
+  "q": "ruff format changes layout but never what the code does.",
+  "a": true,
+  "why": "Fact: that is the difference between a formatter and a lint fix."
+ }
+]

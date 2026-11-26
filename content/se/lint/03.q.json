@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "Which Python linter infers real values and is more thorough but slower?",
+  "o": [
+   "Ruff",
+   "Pylint",
+   "Flake8",
+   "ShellCheck"
+  ],
+  "a": 1,
+  "why": "Pylint's own docs say inference makes it slower but finds more issues in untyped code."
+ },
+ {
+  "t": "mc",
+  "q": "Flake8 combines which two older tools?",
+  "o": [
+   "Black and isort",
+   "pyflakes and pycodestyle",
+   "mypy and pytest",
+   "ESLint and Prettier"
+  ],
+  "a": 1,
+  "why": "Pyflakes finds likely bugs (F codes) and pycodestyle checks style (E and W codes)."
+ },
+ {
+  "t": "mc",
+  "q": "You want one fast tool that both lints and formats JavaScript with little setup.",
+  "o": [
+   "Biome",
+   "ShellCheck",
+   "Pylint",
+   "node --check"
+  ],
+  "a": 0,
+  "why": "Biome's check command runs the formatter and linter in one pass."
+ },
+ {
+  "t": "mc",
+  "q": "ShellCheck is best known for catching …",
+  "o": [
+   "slow loops",
+   "quoting mistakes such as an unquoted variable",
+   "type errors",
+   "unused CSS"
+  ],
+  "a": 1,
+  "why": "An unquoted variable splits on spaces, which can break or misdirect a command."
+ },
+ {
+  "t": "mc",
+  "q": "Which is NOT one of the four questions for choosing a linter?",
+  "o": [
+   "What does the team already use?",
+   "How fast is it?",
+   "Does it need plugins?",
+   "Which has the most GitHub stars?"
+  ],
+  "a": 3,
+  "why": "The chapter asks about the team, one tool or two, speed and plugins."
+ },
+ {
+  "t": "mf",
+  "q": "Ruff reuses many Flake8 codes, which makes moving from Flake8 to Ruff easy.",
+  "a": true,
+  "why": "Fact: Ruff covers many of the same pyflakes and pycodestyle codes."
+ }
+]

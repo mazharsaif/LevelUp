@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "Which place is the only lint check you can rely on to always run?",
+  "o": [
+   "The editor",
+   "A pre-commit hook",
+   "CI",
+   "A code review comment"
+  ],
+  "a": 2,
+  "why": "The editor needs setup and a hook can be skipped with --no-verify; CI runs on every push."
+ },
+ {
+  "t": "mc",
+  "q": "By default, pre-commit hooks check …",
+  "o": [
+   "every file in the repo",
+   "only the staged files",
+   "only files in CI",
+   "only Python files"
+  ],
+  "a": 1,
+  "why": "That keeps the hook fast; run pre-commit run --all-files once when you add a hook."
+ },
+ {
+  "t": "mc",
+  "q": "Why not auto-fix in CI?",
+  "o": [
+   "CI can't run linters",
+   "Silent changes hide what changed; a reported fix becomes a visible commit",
+   "Auto-fix is always unsafe",
+   "It makes CI faster"
+  ],
+  "a": 1,
+  "why": "In CI, just report so the fix is a commit someone reviews."
+ },
+ {
+  "t": "mc",
+  "q": "What makes a CI lint job fail and block a merge?",
+  "o": [
+   "Any output at all",
+   "The linter exiting with a failure code",
+   "Warnings shown in yellow",
+   "A slow run"
+  ],
+  "a": 1,
+  "why": "The gate works through the exit code; by default only errors cause a failure."
+ },
+ {
+  "t": "mc",
+  "q": "Which does NOT help keep linting fast?",
+  "o": [
+   "Lint only changed files",
+   "Use a cache",
+   "Exclude generated and vendored files",
+   "Run every linter twice"
+  ],
+  "a": 3,
+  "why": "Changed files, caches, fast tools and excludes all cut the time."
+ },
+ {
+  "t": "mf",
+  "q": "Editor, hook and CI should each use their own rule settings.",
+  "a": false,
+  "why": "Myth: all three should read the same config file, or people get CI failures they never saw locally."
+ }
+]

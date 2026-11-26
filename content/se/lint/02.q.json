@@ -1,0 +1,68 @@
+[
+ {
+  "t": "mc",
+  "q": "In ESLint, which severity makes the run fail?",
+  "o": [
+   "off",
+   "warn",
+   "error",
+   "info"
+  ],
+  "a": 2,
+  "why": "Only an error makes the linter exit with a failure code; a warning is just reported."
+ },
+ {
+  "t": "mc",
+  "q": "Why keep lint rules in a config file in the repo?",
+  "o": [
+   "It makes the linter faster",
+   "Editor, teammates and CI all use the same settings",
+   "It hides warnings",
+   "Linters refuse command-line flags"
+  ],
+  "a": 1,
+  "why": "One shared file means no surprises between your editor and CI."
+ },
+ {
+  "t": "mc",
+  "q": "Which inline ignore is best?",
+  "o": [
+   "# noqa",
+   "# noqa: F401 with a note on why",
+   "Turning the rule off for the whole repo",
+   "Deleting the line"
+  ],
+  "a": 1,
+  "why": "Naming the rule hides only that rule, and the reason tells the next reader it's still needed."
+ },
+ {
+  "t": "mc",
+  "q": "A baseline is …",
+  "o": [
+   "the recommended rule set",
+   "a saved list of old findings that are no longer reported",
+   "the first line of a config file",
+   "the linter's version"
+  ],
+  "a": 1,
+  "why": "New code must be clean while old findings are fixed when someone touches them."
+ },
+ {
+  "t": "mc",
+  "q": "Your first lint run gives 2,000 findings. Best first step?",
+  "o": [
+   "Fix them all in one big change",
+   "Turn the linter off",
+   "Turn on only bug rules, auto-fix the safe ones, baseline the rest",
+   "Make every rule a warning forever"
+  ],
+  "a": 2,
+  "why": "Starting small avoids a huge risky change and doesn't block everyone's commits."
+ },
+ {
+  "t": "mf",
+  "q": "Making every rule an error is the safest setup.",
+  "a": false,
+  "why": "Myth: if everything fails the run, people stop reading the output; keep errors short and real."
+ }
+]

@@ -1,0 +1,62 @@
+{
+  "branch": {
+    "id": "ruff",
+    "title": "Ruff",
+    "icon": "⚡",
+    "color": "#D7FF64"
+  },
+  "nodes": [
+    {
+      "key": "meet", "level": 0, "col": 1, "req": [], "icon": "🚀", "chapter": 1,
+      "title": "Meet Ruff",
+      "short": "Install, run, read output",
+      "learn": [
+        "Say which older tools Ruff replaces and what it costs you",
+        "Run Ruff with uvx or as a uv dev dependency",
+        "Read a finding: rule code, [*] fix mark, file, line and column",
+        "Use ruff rule and the exit code to understand a result"
+      ],
+      "concepts": ["ruff check", "ruff format", "Rule code", "uvx", "Exit code"],
+      "exercises": ["Concept check", "Match the terms"]
+    },
+    {
+      "key": "rules", "level": 1, "col": 0, "req": ["meet"], "icon": "📏", "chapter": 2,
+      "title": "Rules & config",
+      "short": "Prefixes, select, pyproject",
+      "learn": [
+        "Name the rule families behind F, E, W, I, UP, B and SIM",
+        "Shape the rule set with select, extend-select and ignore",
+        "Silence one finding with noqa or per-file-ignores",
+        "Move LevelUp's lint flags into pyproject.toml"
+      ],
+      "concepts": ["Default rule set", "select", "noqa", "per-file-ignores", "pyproject.toml"],
+      "exercises": ["Fill the code", "Spot the bug", "Concept check"]
+    },
+    {
+      "key": "fix", "level": 1, "col": 2, "req": ["meet"], "icon": "🪄", "chapter": 3,
+      "title": "Fixes & format",
+      "short": "Safe fixes and the formatter",
+      "learn": [
+        "Apply safe fixes with --fix and preview them with --diff",
+        "Explain why a fix like B006 is unsafe and opt in with care",
+        "Format code with ruff format and check it with --check",
+        "Sort imports with the I rules, since the formatter won't"
+      ],
+      "concepts": ["Safe fix", "Unsafe fix", "--diff", "Formatter", "Import sorting"],
+      "exercises": ["Myth or fact", "Concept check", "Scenario"]
+    },
+    {
+      "key": "everywhere", "level": 2, "col": 1, "req": ["rules", "fix"], "icon": "🔁", "chapter": 4,
+      "title": "Ruff everywhere",
+      "short": "Editor, pre-commit, CI",
+      "learn": [
+        "Get findings as you type through the Ruff language server",
+        "Add the ruff-check and ruff-format pre-commit hooks in the right order",
+        "Fail a CI job on lint or format problems with GitHub notes",
+        "Adopt Ruff on an existing repo step by step, with a pinned version"
+      ],
+      "concepts": ["ruff server", "pre-commit", "CI", "Version pin", "--add-noqa"],
+      "exercises": ["Order the flow", "Design decision", "Scenario"]
+    }
+  ]
+}

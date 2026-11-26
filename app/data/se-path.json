@@ -182,6 +182,26 @@
       "reading": "data/se/fcm/",
       "intro": 0,
       "order": 15
+    },
+    {
+      "id": "lint",
+      "title": "Linting",
+      "icon": "🧹",
+      "color": "#D4A373",
+      "status": "open",
+      "reading": "data/se/lint/",
+      "intro": 0,
+      "order": 16
+    },
+    {
+      "id": "ruff",
+      "title": "Ruff",
+      "icon": "⚡",
+      "color": "#D7FF64",
+      "status": "open",
+      "reading": "data/se/ruff/",
+      "intro": 0,
+      "order": 17
     }
   ],
   "nodes": [
@@ -6285,6 +6305,486 @@
         }
       ],
       "quiz": 10
+    },
+    {
+      "id": "lint.what",
+      "branch": "lint",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🔍",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "What linting is",
+      "short": "Static checks, bugs vs style",
+      "learn": [
+        "Explain static analysis: checking code without running it",
+        "Tell likely-bug findings from style findings",
+        "Say how a linter differs from a formatter, a type checker and tests",
+        "Name what a linter cannot catch, and why node --check isn't linting"
+      ],
+      "concepts": [
+        "Linter",
+        "Static analysis",
+        "Formatter",
+        "Type checker",
+        "False positive"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "A linter reads code without running it"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "Bugs versus style",
+            "Linter, formatter, type checker, tests"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "What a linter cannot do",
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "lint.rules",
+      "branch": "lint",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "⚙️",
+      "req": [
+        "lint.what"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "Rules & config",
+      "short": "Severity, ignores, baselines",
+      "learn": [
+        "Set a rule to off, warn or error and know which fails the run",
+        "Keep rules in a config file shared by editor and CI",
+        "Write an inline ignore that names the rule and says why",
+        "Adopt a linter on old code: start small, auto-fix, baseline, ratchet"
+      ],
+      "concepts": [
+        "Rule",
+        "Severity",
+        "Config file",
+        "Inline ignore",
+        "Baseline"
+      ],
+      "exercises": [
+        "Spot the bug",
+        "Scenario",
+        "Design decision"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Rules and severity",
+            "The config file"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "Ignoring one line, with a reason",
+            "Adopting a linter on an old codebase"
+          ],
+          "a": 5,
+          "b": 8
+        },
+        {
+          "t": [
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 9,
+          "b": 10
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "lint.langs",
+      "branch": "lint",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🗺️",
+      "req": [
+        "lint.what"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Linters by language",
+      "short": "Python, JS, shell and more",
+      "learn": [
+        "Compare Ruff, Pylint and Flake8 for Python",
+        "Choose between ESLint and Biome for JavaScript",
+        "Use ShellCheck to catch quoting bugs in scripts",
+        "Pick a linter with four questions: team, one tool, speed, plugins"
+      ],
+      "concepts": [
+        "Ruff",
+        "Pylint",
+        "ESLint",
+        "Biome",
+        "ShellCheck"
+      ],
+      "exercises": [
+        "Match the terms",
+        "Design decision",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Python"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "JavaScript and TypeScript",
+            "Shell scripts"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Other languages in one line",
+            "How to choose",
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 6,
+          "b": 9
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "lint.flow",
+      "branch": "lint",
+      "n": 4,
+      "level": 2,
+      "col": 1,
+      "icon": "🔁",
+      "req": [
+        "lint.rules",
+        "lint.langs"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Lint in your workflow",
+      "short": "Editor, hook, CI gate",
+      "learn": [
+        "Place the linter in the editor, a pre-commit hook and CI",
+        "Set up a pre-commit hook and know what it checks",
+        "Use auto-fix safely and keep it out of CI",
+        "Keep linting fast with changed files, caches and excludes"
+      ],
+      "concepts": [
+        "Pre-commit hook",
+        "CI gate",
+        "Auto-fix",
+        "Exit code",
+        "Cache"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Scenario",
+        "Myth or fact"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Three places to run it",
+            "The editor"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "A pre-commit hook",
+            "A CI gate",
+            "Auto-fix"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Keep it fast",
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 7,
+          "b": 9
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "ruff.meet",
+      "branch": "ruff",
+      "n": 1,
+      "level": 0,
+      "col": 1,
+      "icon": "🚀",
+      "req": [],
+      "mins": 5,
+      "chapter": 1,
+      "title": "Meet Ruff",
+      "short": "Install, run, read output",
+      "learn": [
+        "Say which older tools Ruff replaces and what it costs you",
+        "Run Ruff with uvx or as a uv dev dependency",
+        "Read a finding: rule code, [*] fix mark, file, line and column",
+        "Use ruff rule and the exit code to understand a result"
+      ],
+      "concepts": [
+        "ruff check",
+        "ruff format",
+        "Rule code",
+        "uvx",
+        "Exit code"
+      ],
+      "exercises": [
+        "Concept check",
+        "Match the terms"
+      ],
+      "parts": [
+        {
+          "t": [
+            "One tool instead of many"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "Install and run",
+            "Read the output"
+          ],
+          "a": 3,
+          "b": 7
+        },
+        {
+          "t": [
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 8,
+          "b": 9
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "ruff.rules",
+      "branch": "ruff",
+      "n": 2,
+      "level": 1,
+      "col": 0,
+      "icon": "📏",
+      "req": [
+        "ruff.meet"
+      ],
+      "mins": 5,
+      "chapter": 2,
+      "title": "Rules & config",
+      "short": "Prefixes, select, pyproject",
+      "learn": [
+        "Name the rule families behind F, E, W, I, UP, B and SIM",
+        "Shape the rule set with select, extend-select and ignore",
+        "Silence one finding with noqa or per-file-ignores",
+        "Move LevelUp's lint flags into pyproject.toml"
+      ],
+      "concepts": [
+        "Default rule set",
+        "select",
+        "noqa",
+        "per-file-ignores",
+        "pyproject.toml"
+      ],
+      "exercises": [
+        "Fill the code",
+        "Spot the bug",
+        "Concept check"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Rule codes and prefixes",
+            "The default rule set"
+          ],
+          "a": 0,
+          "b": 3
+        },
+        {
+          "t": [
+            "select, extend-select, ignore",
+            "Silencing one finding"
+          ],
+          "a": 4,
+          "b": 6
+        },
+        {
+          "t": [
+            "Config in pyproject.toml",
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 7,
+          "b": 11
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "ruff.fix",
+      "branch": "ruff",
+      "n": 3,
+      "level": 1,
+      "col": 2,
+      "icon": "🪄",
+      "req": [
+        "ruff.meet"
+      ],
+      "mins": 5,
+      "chapter": 3,
+      "title": "Fixes & format",
+      "short": "Safe fixes and the formatter",
+      "learn": [
+        "Apply safe fixes with --fix and preview them with --diff",
+        "Explain why a fix like B006 is unsafe and opt in with care",
+        "Format code with ruff format and check it with --check",
+        "Sort imports with the I rules, since the formatter won't"
+      ],
+      "concepts": [
+        "Safe fix",
+        "Unsafe fix",
+        "--diff",
+        "Formatter",
+        "Import sorting"
+      ],
+      "exercises": [
+        "Myth or fact",
+        "Concept check",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "Safe fixes with --fix",
+            "Unsafe fixes",
+            "Look before you leap: --diff"
+          ],
+          "a": 0,
+          "b": 4
+        },
+        {
+          "t": [
+            "The formatter"
+          ],
+          "a": 5,
+          "b": 7
+        },
+        {
+          "t": [
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 8,
+          "b": 9
+        }
+      ],
+      "quiz": 6
+    },
+    {
+      "id": "ruff.everywhere",
+      "branch": "ruff",
+      "n": 4,
+      "level": 2,
+      "col": 1,
+      "icon": "🔁",
+      "req": [
+        "ruff.rules",
+        "ruff.fix"
+      ],
+      "mins": 5,
+      "chapter": 4,
+      "title": "Ruff everywhere",
+      "short": "Editor, pre-commit, CI",
+      "learn": [
+        "Get findings as you type through the Ruff language server",
+        "Add the ruff-check and ruff-format pre-commit hooks in the right order",
+        "Fail a CI job on lint or format problems with GitHub notes",
+        "Adopt Ruff on an existing repo step by step, with a pinned version"
+      ],
+      "concepts": [
+        "ruff server",
+        "pre-commit",
+        "CI",
+        "Version pin",
+        "--add-noqa"
+      ],
+      "exercises": [
+        "Order the flow",
+        "Design decision",
+        "Scenario"
+      ],
+      "parts": [
+        {
+          "t": [
+            "In the editor",
+            "Before each commit"
+          ],
+          "a": 0,
+          "b": 2
+        },
+        {
+          "t": [
+            "In CI",
+            "Adopting Ruff on an existing repo"
+          ],
+          "a": 3,
+          "b": 5
+        },
+        {
+          "t": [
+            "Try it",
+            "Check yourself"
+          ],
+          "a": 6,
+          "b": 7
+        }
+      ],
+      "quiz": 6
     }
   ]
 }

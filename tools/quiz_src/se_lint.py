@@ -1,0 +1,28 @@
+from _q import MC, MF, save
+LINT = {
+1: [MC("A linter checks your code by …", ["running it with test inputs", "reading it without running it", "timing it on the server", "rewriting its layout"], 1, "That is static analysis: checking code by looking at it, not executing it."),
+    MC("Which finding is most likely a real bug?", ["A line over 88 characters", "An undefined name such as dat", "An unused import", "A long function"], 1, "Using a name that doesn't exist crashes when that line runs; the others are style or smells."),
+    MC("Which tool only makes the layout consistent and doesn't look for bugs?", ["A linter", "A type checker", "A formatter", "A test suite"], 2, "A formatter such as Black or Prettier rewrites spacing and line breaks only."),
+    MC("Which check can tell you load() returns the wrong user?", ["A linter", "A formatter", "node --check", "A test"], 3, "Only tests run the code with real inputs and compare the output."),
+    MF("node --check finds a typo in a variable name inside a function.", False, "Myth: it only checks that the file parses, so the typo fails later in the browser."),
+    MF("A linter can warn about code that is actually fine.", True, "Fact: that is a false positive, which is why linters have ignore comments.")],
+2: [MC("In ESLint, which severity makes the run fail?", ["off", "warn", "error", "info"], 2, "Only an error makes the linter exit with a failure code; a warning is just reported."),
+    MC("Why keep lint rules in a config file in the repo?", ["It makes the linter faster", "Editor, teammates and CI all use the same settings", "It hides warnings", "Linters refuse command-line flags"], 1, "One shared file means no surprises between your editor and CI."),
+    MC("Which inline ignore is best?", ["# noqa", "# noqa: F401 with a note on why", "Turning the rule off for the whole repo", "Deleting the line"], 1, "Naming the rule hides only that rule, and the reason tells the next reader it's still needed."),
+    MC("A baseline is …", ["the recommended rule set", "a saved list of old findings that are no longer reported", "the first line of a config file", "the linter's version"], 1, "New code must be clean while old findings are fixed when someone touches them."),
+    MC("Your first lint run gives 2,000 findings. Best first step?", ["Fix them all in one big change", "Turn the linter off", "Turn on only bug rules, auto-fix the safe ones, baseline the rest", "Make every rule a warning forever"], 2, "Starting small avoids a huge risky change and doesn't block everyone's commits."),
+    MF("Making every rule an error is the safest setup.", False, "Myth: if everything fails the run, people stop reading the output; keep errors short and real.")],
+3: [MC("Which Python linter infers real values and is more thorough but slower?", ["Ruff", "Pylint", "Flake8", "ShellCheck"], 1, "Pylint's own docs say inference makes it slower but finds more issues in untyped code."),
+    MC("Flake8 combines which two older tools?", ["Black and isort", "pyflakes and pycodestyle", "mypy and pytest", "ESLint and Prettier"], 1, "Pyflakes finds likely bugs (F codes) and pycodestyle checks style (E and W codes)."),
+    MC("You want one fast tool that both lints and formats JavaScript with little setup.", ["Biome", "ShellCheck", "Pylint", "node --check"], 0, "Biome's check command runs the formatter and linter in one pass."),
+    MC("ShellCheck is best known for catching …", ["slow loops", "quoting mistakes such as an unquoted variable", "type errors", "unused CSS"], 1, "An unquoted variable splits on spaces, which can break or misdirect a command."),
+    MC("Which is NOT one of the four questions for choosing a linter?", ["What does the team already use?", "How fast is it?", "Does it need plugins?", "Which has the most GitHub stars?"], 3, "The chapter asks about the team, one tool or two, speed and plugins."),
+    MF("Ruff reuses many Flake8 codes, which makes moving from Flake8 to Ruff easy.", True, "Fact: Ruff covers many of the same pyflakes and pycodestyle codes.")],
+4: [MC("Which place is the only lint check you can rely on to always run?", ["The editor", "A pre-commit hook", "CI", "A code review comment"], 2, "The editor needs setup and a hook can be skipped with --no-verify; CI runs on every push."),
+    MC("By default, pre-commit hooks check …", ["every file in the repo", "only the staged files", "only files in CI", "only Python files"], 1, "That keeps the hook fast; run pre-commit run --all-files once when you add a hook."),
+    MC("Why not auto-fix in CI?", ["CI can't run linters", "Silent changes hide what changed; a reported fix becomes a visible commit", "Auto-fix is always unsafe", "It makes CI faster"], 1, "In CI, just report so the fix is a commit someone reviews."),
+    MC("What makes a CI lint job fail and block a merge?", ["Any output at all", "The linter exiting with a failure code", "Warnings shown in yellow", "A slow run"], 1, "The gate works through the exit code; by default only errors cause a failure."),
+    MC("Which does NOT help keep linting fast?", ["Lint only changed files", "Use a cache", "Exclude generated and vendored files", "Run every linter twice"], 3, "Changed files, caches, fast tools and excludes all cut the time."),
+    MF("Editor, hook and CI should each use their own rule settings.", False, "Myth: all three should read the same config file, or people get CI failures they never saw locally.")],
+}
+save("se", "lint", LINT)

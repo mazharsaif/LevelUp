@@ -1,0 +1,74 @@
+[
+ {
+  "t": "mc",
+  "q": "What gives you Ruff findings as you type in the editor?",
+  "o": [
+   "ruff server, the language server",
+   "pre-commit",
+   "ruff format --check",
+   "a CI job"
+  ],
+  "a": 0,
+  "why": "The editor plugin talks to ruff server."
+ },
+ {
+  "t": "mc",
+  "q": "In .pre-commit-config.yaml, ruff-check uses --fix. Where does it go?",
+  "o": [
+   "After ruff-format",
+   "Before ruff-format",
+   "Order doesn't matter",
+   "In a separate file"
+  ],
+  "a": 1,
+  "why": "Fixes can leave code that the formatter then tidies."
+ },
+ {
+  "t": "mc",
+  "q": "Which flag makes GitHub show findings as notes on the pull request?",
+  "o": [
+   "--diff",
+   "--statistics",
+   "--output-format github",
+   "--show-fixes"
+  ],
+  "a": 2,
+  "why": "GitHub Actions turns that format into inline notes."
+ },
+ {
+  "t": "mc",
+  "q": "Why pin the Ruff version (rev, uv add --dev ruff)?",
+  "o": [
+   "Newer versions are slower",
+   "Pinning makes Ruff skip files",
+   "Unpinned Ruff can't fix",
+   "New versions can change defaults and fail unchanged code"
+  ],
+  "a": 3,
+  "why": "Ruff 0.16 grew the default rule set from 59 to 413 rules."
+ },
+ {
+  "t": "mc",
+  "q": "Adopting Ruff on an old repo: what goes in its own commit?",
+  "o": [
+   "The first ruff format run",
+   "Each single fix",
+   "The CI step and the fixes together",
+   "Nothing; do it all at once"
+  ],
+  "a": 0,
+  "why": "It touches many lines but no behaviour, so it is easy to review and skip."
+ },
+ {
+  "t": "mc",
+  "q": "CI must go green today, but 50 old findings remain. Which command helps?",
+  "o": [
+   "ruff check --unsafe-fixes",
+   "ruff check --add-noqa",
+   "ruff format --check",
+   "ruff check --exit-zero forever"
+  ],
+  "a": 1,
+  "why": "It writes a noqa on each remaining finding, to remove later."
+ }
+]
