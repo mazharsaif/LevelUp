@@ -1035,14 +1035,8 @@ export const setNextHook = f => { NEXT_HOOK = f; };
 function evolveCard(r) {
   return `<div class="evolve">✦ Rank up ✦<br><b>${r}-Rank</b><br><span class="tiny">in ${C.course ? C.course.title : "this course"}</span></div>`;
 }
-const CHEERS = {
-  perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – even the dictionary is impressed."], ["🚀", "Not a single slip. Your brain should be in a museum."],
-    ["🌟", "100 %! Somewhere a German grammar book just smiled."], ["🥇", "Perfekt! You're making this look far too easy."], ["🎯", "Bullseye every time. Researchers want to study your memory."]],
-  great: [["🎉", "Sehr gut! Those words are sticking."], ["💪", "Strong work – your future self in Germany says danke."], ["🔥", "Great focus. Keep that momentum going!"]],
-  ok: [["🌱", "Every mistake is a word you'll remember better. Weiter so!"], ["🧗", "Progress, not perfection. You're climbing!"], ["☕", "Good effort – a quick review tomorrow will lock it in."]],
-};
 function cheerFor(acc, perfect) {
-  const CH = L.cheers || CHEERS;
+  const CH = L.cheers;
   const set = perfect ? CH.perfect : acc >= 80 ? CH.great : CH.ok;
   const [art, line] = set[Math.floor(Math.random() * set.length)];
   return { art, line };

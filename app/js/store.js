@@ -21,7 +21,7 @@ export async function loadContent(courseId = COURSE) {
   const r = await fetch(info.content || "data/content.json");
   const c = await r.json();
   C.content = c; C.course = info; COURSE = info.id;
-  setLang(c.lang || info.lang || "de"); // target-language profile (field `de` holds the target language in every file)
+  setLang(c.lang || info.lang || (info.type === "language" ? "de" : "en")); // target-language profile (field `de` holds the target language in every file); "en" = no language taught
   C.word = {}; C.item = {}; C.grammar = {}; C.phrases = {};
   _w = null; _plan = null; _planKey = ""; C.unitMap = null;
   (c.words || []).forEach(w => (C.word[w.id] = w));

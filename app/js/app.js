@@ -155,7 +155,7 @@ const daysText = to => { const n = daysBetween(today(), to); return n > 0 ? `${n
 function setupView() {
   document.body.classList.add("in-lesson"); // hides the tab bar until setup is done
   const tgt = in3Months();
-  view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>${L.code === "fr" ? "Bienvenue" : "Willkommen"}, ${esc(userInfo(USER).name)}! 👋</h1>
+  view().innerHTML = `<button class="link" id="sw">‹ Not ${esc(userInfo(USER).name)}?</button><h1>${L.welcome}, ${esc(userInfo(USER).name)}! 👋</h1>
   <p class="muted">${courseIcon(C.course.icon)} <b>${esc(C.course.title)}</b> · ${esc(C.course.subtitle || "")}</p>
   <div class="card"><label class="f" style="margin-top:0">How do you like to learn?</label>
     <div class="choices" id="md" role="radiogroup">${[["calm", "Calm", "Simple screens, no penalties. More of the app appears over your first days."], ["planner", "Planner", "A plan to your date: pace, progress and reviews up front."], ["game", "Game", "Ranks, streaks and daily quests from the start."]]
@@ -2120,7 +2120,7 @@ function userSheet() {
     el.querySelectorAll("button[data-u]").forEach(b => (b.onclick = async () => {
       closeSheet();
       if (b.dataset.u === USER) return;
-      await switchUser(b.dataset.u); unpick(); toast(`Hallo ${userInfo(USER).name}!`);
+      await switchUser(b.dataset.u); unpick(); toast(`Hi ${userInfo(USER).name}!`);
       location.hash = "#/today"; route();
     }));
   });

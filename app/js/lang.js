@@ -35,7 +35,13 @@ const DE = {
   bare: low => [low + "en", low + "n"],
   genderQ: w => ({ title: "der, die or das?", opts: ["der", "die", "das"], cls: ["m", "f", "n"], ans: { m: "der", f: "die", n: "das", pl: "die" }[w.g],
     note: w.g === "pl" ? "Plural-only noun → die" : "" }),
-  cheers: null,
+  cheers: {
+    perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – even the dictionary is impressed."], ["🚀", "Not a single slip. Your brain should be in a museum."],
+      ["🌟", "100 %! Somewhere a German grammar book just smiled."], ["🥇", "Perfekt! You're making this look far too easy."], ["🎯", "Bullseye every time. Researchers want to study your memory."]],
+    great: [["🎉", "Sehr gut! Those words are sticking."], ["💪", "Strong work – your future self in Germany says danke."], ["🔥", "Great focus. Keep that momentum going!"]],
+    ok: [["🌱", "Every mistake is a word you'll remember better. Weiter so!"], ["🧗", "Progress, not perfection. You're climbing!"], ["☕", "Good effort – a quick review tomorrow will lock it in."]],
+  },
+  welcome: "Willkommen",
 };
 
 // ---------- French ----------
@@ -97,6 +103,7 @@ const FR = {
     if (p[0] && p[0].startsWith("l")  && p[0] !== "le" && p[0] !== "la") return { title: "un or une?", opts: ["un", "une"], cls: ["m", "f"], ans: w.g === "f" ? "une" : "un", note: `l' hides the gender: ${w.g === "f" ? "une" : "un"} ${p[1]}`, shown: p[1] };
     return { title: "le or la?", opts: ["le", "la"], cls: ["m", "f"], ans: w.g === "f" ? "la" : "le", note: "" };
   },
+  welcome: "Bienvenue",
   canGender: w => (w.g === "m" || w.g === "f") && /^(le |la |l['’])[^\s/()]+$/.test(w.de),
   cheers: {
     perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – even the dictionary is impressed."], ["🥐", "Parfait ! Somewhere in Paris a baker just smiled."],
@@ -106,10 +113,20 @@ const FR = {
   },
 };
 
-export const LANGS = { de: DE, fr: FR };
-export const L = { ...DE };
+// ---------- English: courses that teach no language (SE, Maths, Life). German words only on the German course.
+const EN = { ...DE, code: "en", name: "English", bcp: "en-US", keys: [],
+  praise: ["Correct!", "Nice!", "Well done!", "Exactly!", "Great!"], understood: "Got it!", perfLabel: "Perfect", welcome: "Welcome",
+  cheers: {
+    perfect: [["🧠✨", "Flawless! Your neurons are doing push-ups."], ["🏆", "Perfect run – not a single slip."], ["🚀", "Not a single slip. Your brain should be in a museum."],
+      ["🎯", "Bullseye every time. Researchers want to study your memory."]],
+    great: [["🎉", "Very good! That's sticking."], ["💪", "Strong work – your future self says thanks."], ["🔥", "Great focus. Keep that momentum going!"]],
+    ok: [["🌱", "Every mistake is something you'll remember better."], ["🧗", "Progress, not perfection. You're climbing!"], ["☕", "Good effort – a quick review tomorrow will lock it in."]],
+  } };
+
+export const LANGS = { de: DE, fr: FR, en: EN };
+export const L = { ...EN };
 export function setLang(code) {
   for (const k of Object.keys(L)) delete L[k];
-  Object.assign(L, LANGS[code] || DE);
+  Object.assign(L, LANGS[code] || EN);
   return L;
 }
