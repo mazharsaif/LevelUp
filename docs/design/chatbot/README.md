@@ -66,6 +66,22 @@ These are 2-4 sentence answers about one item. They are **not** open conversatio
 | `02-states.html` | Loading, error, daily cap reached, off-topic decline + offline banner (Calm) |
 | `03-standalone.html` | Ask & Notes screen with word picker, saved notes, bitte schön / gern geschehen |
 | `04-reader-card.html` | Reader card with "Explain simply" tidbit and Ask (Calm) |
+| `05-older-chats.html` | Older chats on the same card (feedback 3946): options A, B, C side by side; theme switch |
+
+## Older chats on the same card (feedback 3946, 11-28, designs only)
+Today every 💬 sheet starts empty; only the last question and answer inside one open sheet are kept. The learner wants to see chats they had on a card before. Mockups: `05-older-chats.html`.
+
+| Option | What the learner sees | For | Against |
+|---|---|---|---|
+| **A. "Earlier on this card" in the sheet** | A folded row at the top of the sheet: "🕘 Earlier on this card · 2 chats". Tap: old questions and answers, by date, dimmed, above the new chat. | Smallest change. No new screen. The new question can use the last old answer as context. | Only reachable from the card. |
+| **B. Chat switcher in the sheet header** | "Chat 3 of 3 ▾" in the header. A menu lists the chats on this card (first question, date) and "＋ New chat". | Like a normal chat app. Each chat continues where it stopped. | One more control in a small sheet. Most cards have 0–1 old chats. |
+| **C. Count under the card + list sheet** | Under the 💬 chip: "🕘 2 earlier chats on this card ›". It opens a list of chats; each opens to its answers, with "Ask a follow-up". | Visible before opening anything. Can grow into the planned Ask & Notes screen. | Two sheets. Most work. |
+
+Recommendation: **A** first. It fits "ask about this card" (short doubts, not long chats). C can come later with the Ask & Notes screen.
+
+Where the history comes from (decide before building):
+- **Server** (recommended): `ask/YYYY-MM.jsonl` already logs every question and answer with the user, course and item. Add `GET /api/ask/history?card=…` that returns this learner's chats on one card. Works on every device. Needs a stable card key in the log (today it logs the item text, not the card id), and the log must be kept as long as history should show.
+- **Phone only**: keep the last N chats per card in localStorage. No server change, but the history is lost on a new phone or after clearing data.
 
 ## Open questions for the owner
 - Daily cap of 10: right number? (Cost estimate in `prompt-and-api.md`.)
