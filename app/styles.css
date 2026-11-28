@@ -1286,6 +1286,10 @@ body.theme-sl button.chipx.on{background:rgba(47,140,255,.25);color:#eaf4ff;bord
 .askrow.after{margin:2px 0 10px}
 .askchip{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--blue);background:var(--blue-l);color:var(--ink);font-size:calc(14px*var(--fs));font-weight:600;cursor:pointer}
 .askchip:disabled{opacity:.45;cursor:default}
+/* feedback 5028: a learner has been on the card for a long time, so the helper chip glows (no motion with reduced-motion) */
+.askchip.lit{border-style:solid;border-width:2px;background:var(--blue-l);box-shadow:0 0 0 4px rgba(47,140,255,.3),0 0 18px rgba(47,140,255,.45);animation:asklit 1.6s ease-in-out 3}
+@keyframes asklit{50%{box-shadow:0 0 0 8px rgba(47,140,255,.18),0 0 26px rgba(47,140,255,.6)}}
+@media (prefers-reduced-motion:reduce){.askchip.lit{animation:none;box-shadow:0 0 0 3px rgba(47,140,255,.35)}}
 .askrow.before .askchip{border-style:dashed;background:transparent}
 .asksheet{display:flex;flex-direction:column;gap:10px}
 .ask-head{display:flex;align-items:flex-start;gap:10px}

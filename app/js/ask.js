@@ -1,6 +1,7 @@
 // Study helper: "Ask about this card" (design: docs/design/chatbot/). A short, capped, free Q&A about the card on screen.
 // Entry points: a 💡 Hint chip before you answer, context chips after the feedback screen (B), "More about this" / "Explain simply"
 // on teaching and reader cards (C). All share one bottom sheet. The server (server_fastapi/ask.py) enforces the rules; this file is the UI.
+import { markAsked } from "./cardtime.js";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 let host = { sheet: null, closeSheet: null, toast: null };
@@ -65,6 +66,7 @@ export function mountAfter(f, ctxFn) {
 // ---- the sheet ----
 export function openAsk(ctx, firstChip, firstQuestion) {
   if (!host.sheet) return;
+  markAsked();
   const before = ctx.phase === "before";
   const item = ctx.item || {};
   const chips = before ? [["hint", "💡 Give me a hint"]] : [["why", "Why this answer?"], ["example", "Example"], ["explain", "Explain simply"]].filter(([id]) => id !== "why" || ctx.correct);

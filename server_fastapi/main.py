@@ -22,6 +22,7 @@ from typing import Annotated, Literal
 
 import ask
 import auth
+import cardtime
 from fastapi import FastAPI, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -849,6 +850,36 @@ def ask_feedback(request: Request, body: AskFeedback):
         return denied
     ask.feedback(DATA, me(request), body.id, body.kind)
     return {"ok": True}
+
+
+# ---------- time per card (feedback 5028, see cardtime.py) ----------
+CT_CLIP = {"course": 40, "card": 120, "title": 120, "kind": 20}   # long text is cut, never a 422
+
+
+class CardTimeRec(BaseModel):
+    course: str = ""
+    card: str = ""              # reader: "<skill id>/<card index>", lesson: "<step type>:<item id>"
+    title: str = ""
+    kind: str = ""              # "reader" or the lesson step type
+    s: int = Field(0, ge=0, le=86400)
+    asked: bool = False         # the study helper was opened on this card
+
+
+class CardTimeIn(BaseModel):
+    recs: list[CardTimeRec] = Field(default_factory=list, max_length=cardtime.MAX_BATCH)
+
+
+@app.post("/api/cardtime", tags=["study helper"])
+def card_time(request: Request, body: CardTimeIn):
+    """Seconds spent on each card, sent in batches by the app; appended to <data>/cardtime/YYYY-MM.jsonl."""
+    denied = need(request)
+    if denied:
+        return denied
+    uid = me(request) or ""
+    if not cardtime.allowed(uid, len(body.recs)):
+        return JSONResponse({"ok": False, "code": "slow_down"}, status_code=429)
+    recs = [{**r.model_dump(), **{k: getattr(r, k)[:n] for k, n in CT_CLIP.items()}} for r in body.recs]
+    return {"ok": True, "saved": cardtime.record(DATA, uid, recs)}
 
 
 @app.get("/api/nudges", tags=["party gates"])

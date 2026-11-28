@@ -3,6 +3,7 @@ import { C, S, USERS, USER, SYNC, userInfo, loadUsers, switchUser, signOut, COUR
   dueWords, wordStatus, progress, retention, pace, history, nextItem, learnWord, resetAll, exportState,
   importState, WEIGHTS, level, rank, A1_LEVEL, POST_A1_XP, memory, weekPlan, weekOf, thisWeek, goalFor, autoGoal, remainingXP, bitsOf, bitCount, bitsDone, nextBit, phraseTopics, mondayOf, overdueDays, checkRewards, openGift, nextMilestone, tierFor, TIERS, QUEST_GEMS, grammarOf, gPart, questMode, completeItem, health, AUTH, checkAuth, login, signup, changePassword, logout, isGuest, hasGuestData, startGuest, leaveGuest, claimGuest , personalize, partsGoal, partsToday, nextPick, planParts, startTimeTracking, dayCounts , unitOf } from "./store.js";
 import { setAskHost, loadQuota, askOn, askCap, askLimited, openAsk } from "./ask.js";
+import * as ct from "./cardtime.js";
 import { esc, wordCard, wireSpeakers, grammarXP, startVocab, startReview, startPractice, startGrammarPractice, startPhrases, abortLesson, inLesson, speakAvailable, confirmQuit, setNextHook } from "./lesson.js";
 import { play, stopAudio } from "./audio.js";
 import { mountTranslator } from "./translate.js";
@@ -815,6 +816,7 @@ function settingsView() {
     <label class="toggle">🔇 Skip hearing exercises <input type="checkbox" id="nl" ${S.settings.noListen ? "checked" : ""}></label>
     <p class="muted small" style="margin:4px 0 0">For public places: lessons leave out “What do you hear?” questions. A skipped one isn't counted against you.</p>
     ${askOn() ? `<div style="font-weight:700;margin-top:12px">💬 Study helper</div><p class="muted small" style="margin:4px 0 0">Ask about the card you're on (a hint before you answer, more help after). Free${askLimited() ? `, up to ${askCap()} questions a day` : ""}. Your question and the card text go to an AI service (Groq) and are saved to improve the answers. Your name and email are never sent. Answers can be wrong: tap 🚩 to report one.</p>` : ""}
+    ${!isGuest() ? `<div style="font-weight:700;margin-top:12px">⏱️ Time per card</div><p class="muted small" style="margin:4px 0 0">LevelUp records how many seconds you spend on each card and lesson step, and whether you opened the study helper there. Nothing you type is recorded. It shows which cards are hard to follow, so they can be made clearer.</p>` : ""}
     ${speakAvailable() ? `<label class="toggle">🎤 Speaking practice in phrase lessons <input type="checkbox" id="spk" ${S.settings.speak !== false ? "checked" : ""}></label>
     <p class="muted small" style="margin:4px 0 0">Uses the microphone; Chrome sends the audio to Google to recognise it. Optional, never costs XP.</p>` : ""}</div>
   <div class="card"><div class="sys-h">Offline</div><div style="font-weight:800">📶 Offline</div>
@@ -1414,13 +1416,17 @@ async function openReader(br, node, partIdx) {
       <div class="lesson-foot"><div class="row" style="gap:10px"><button class="btn ghost grow" id="rb" ${i === A ? "disabled" : ""} style="margin:0">‹ Back</button>
         <button class="btn grow" id="rn" style="margin:0">${last ? finishLabel : "Next ›"}</button></div></div>`;
     window.scrollTo(0, 0);
-    view().querySelector("#rx").onclick = () => { treeView(); };
+    view().querySelector("#rx").onclick = () => { ct.stop(); treeView(); };
     const ex = view().querySelector("#explain");
+    // feedback 5028: time on this card; the 💬 chip lights up when the learner stays much longer than the card needs
+    ct.start({ card: `${key}/${i}`, title: c.s, kind: "reader", course: COURSE },
+      { words: ct.wordsIn(view().querySelector(".rcard").textContent), onLong: () => { const b = view().querySelector("#explain"); if (b) b.classList.add("lit"); } });
     if (ex) ex.onclick = () => { const t = document.createElement("div"); t.innerHTML = c.html;
       openAsk({ course: COURSE, target_lang: br.title, ui_lang: "en", lesson: node ? node.title : br.title, step_type: "reader_card", phase: "after",
         item: { text: c.s, meaning: "", kind: "card" }, card_text: (t.textContent || "").replace(/\s+/g, " ").trim().slice(0, 1200) }, "explain", "Explain this simply."); };
     view().querySelector("#rb").onclick = () => { if (i > A) { i--; S.read[key] = i; save(); draw(); } };
     view().querySelector("#rn").onclick = () => {
+      if (last) ct.stop();
       if (!last) { i++; S.read[key] = i; save(); draw(); return; }
       if (parts && counting) {
         (S.parts[node.id] = S.parts[node.id] || {})[k] = S.parts[node.id][k] || today();

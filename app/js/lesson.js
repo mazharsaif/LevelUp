@@ -3,6 +3,7 @@ import { C, S, save, today, addXP, xpToday, totalXP, level, progress, learnWord,
 import { play, blip, stopAudio, playSoon } from "./audio.js";
 import { L } from "./lang.js";
 import { askOn, mountBefore, mountExplain, mountAfter } from "./ask.js";
+import * as ct from "./cardtime.js";
 import { rankEmblem, applyAura, auraName, STAGES, stageFor } from "./hero.js";
 
 // ---------- tiny helpers ----------
@@ -388,7 +389,7 @@ export function runLesson({ title, steps, kind, onFinish, practice }) {
         retried: new Set(), firstTry: {}, grades: [0, 0, 0, 0, 0], combo: 0, best: 0, words: new Set(), kind, onFinish, practice: !!practice, t0: Date.now() };
   render();
 }
-export function abortLesson() { stopAudio(); R = null; document.body.classList.remove("in-lesson"); }
+export function abortLesson() { ct.stop(); stopAudio(); R = null; document.body.classList.remove("in-lesson"); }
 export const inLesson = () => !!R;
 // Snapshot of the current exercise for bug reports (no answers needed, just what was on screen).
 export function lessonDebug() {
@@ -405,6 +406,7 @@ function header() {
 }
 
 function render() {
+  ct.stop();     // the previous step's visit ends here (also before the retry intro screen)
   if (!R) return;
   stopAudio(); // the previous exercise's clip must not carry over
   const s = R.steps[R.i];
@@ -440,6 +442,10 @@ function render() {
     if (["mc", "type", "gender", "read", "cloze", "build", "say", "gq", "gmc"].includes(s.t)) mountBefore(lb, () => askContext(s, "before"));
     else if (s.t === "intro" || s.t === "flip") mountExplain(lb, () => askContext(s, "after", true, ""), s.t === "intro" ? "💬 More about this word" : "💬 More about this");
   }
+  // feedback 5028: time on this step (until it is answered); the 💬 / 💡 chip lights up when the learner is stuck
+  const it = s.w || s.p, id = (it && it.id) || s.key || s.de || s.sayDe || (s.q && s.q.q) || String(R.i);
+  ct.start({ card: `${s.t}:${String(id).slice(0, 100)}`, title: (it && (it.de || it.en)) || s.de || s.sayDe || R.title || "", kind: s.t + (s.retry ? "-retry" : ""),
+    course: (C.course && C.course.id) || "" }, { words: ct.wordsIn(lb.innerText), onLong: () => lb.querySelectorAll(".askrow .askchip").forEach(b => b.classList.add("lit")) });
 }
 
 export function confirmQuit() {
@@ -502,6 +508,7 @@ function askContext(s, phase, ok, correctHTML) {
 
 // record an answer, show feedback, requeue on miss
 function answered(s, ok, { correctHTML = "", note = "", allowOverride = false } = {}) {
+  ct.stop();     // time to answer; the feedback screen isn't counted
   const key = s.key || (s.w ? s.w.id : s.q ? s.q.q : String(R.i));
   const first = !(key in R.firstTry);
   if (first) R.firstTry[key] = ok;
@@ -1028,6 +1035,7 @@ function cloze(s, lb) {
 
 // ---------- finishing ----------
 function finish() {
+  ct.stop();
   const r = R; R = null;
   const acc = r.answered ? Math.round(100 * r.right / r.answered) : 100;
   const before = xpToday(), lvBefore = level(progress().total).lv;
